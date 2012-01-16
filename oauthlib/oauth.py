@@ -92,7 +92,7 @@ def normalize_base_string_uri(uri):
         netloc = netloc[:-3]
     elif scheme == 'https' and netloc[-4:] == ':443':
         netloc = netloc[:-4]
-    return escape('{0}://{1}{2}'.format(scheme, netloc, path))
+    return escape('{0}://{1}{2}'.format(scheme, netloc.lower(), path))
 
 
 def normalize_parameters(params):
@@ -111,14 +111,14 @@ def normalize_parameters(params):
 
     # Escape key values before sorting.
     key_values = []
-    for k, v in params.items():
+    for k, v in params:
         key_values.append((escape(utf8_str(k)), escape(utf8_str(v))))
 
     # Sort lexicographically, first after key, then after value.
     key_values.sort()
 
     # Combine key value pairs into a string and return.
-    return escape('&'.join(['{0}={1}'.format(escape(k), escape(v)) for k, v in key_values]))
+    return escape('&'.join(['{0}={1}'.format(k, v) for k, v in key_values]))
 
 
 def prepare_hmac_key(client_secret, access_secret=None):
@@ -130,7 +130,7 @@ def prepare_hmac_key(client_secret, access_secret=None):
 
     """
     return '{0}&{1}'.format(
-        escape(client_secret),
+        escape(client_secret or ''),
         escape(access_secret or ''))
 
 
@@ -142,6 +142,17 @@ def prepare_base_string(method, uri, params):
     .. _`section 3.4.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1
 
     """
+    # Convert dictionaries to list of tuples
+    if isinstance(params, dict):
+        params = params.items()
+
+    # Add uri query components to parameters as per 3.4.1.3.1
+    for qc in urlparse(uri).query.split("&"):
+        if "=" in qc:
+            k, v = qc.split("=")
+            k, v = urllib.unquote(k), urllib.unquote(v) 
+            params.append((k,v))
+
     return "{method}&{uri}&{params}".format(
         method=normalize_http_method(method),
         uri=normalize_base_string_uri(uri),
@@ -170,6 +181,10 @@ def prepare_authorization_header(realm, params):
     .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
 
     """
+    # Convert dictionaries to list of tuples
+    if isinstance(params, dict):
+        params = params.items()
+
     return 'OAuth realm="{realm}", {params}'.format(
         realm=realm, params=', '.join(
-            ['{0}="{1}"'.format(k, params[k]) for k in params.keys()]))
+            ['{0}="{1}"'.format(k, v) for k, v in params]))
