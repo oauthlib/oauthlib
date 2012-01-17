@@ -109,7 +109,6 @@ class VerifyRFCSpecification(unittest.TestCase):
         client_secret = "kd94hf93k423kf44"
         access_secret = "pfkkdhi9sl3r4s00"
         signature = sign_hmac(method, url, params, client_secret, access_secret)
-
         correct_signature = "tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"
         self.assertEquals(signature, correct_signature)
 
@@ -124,7 +123,6 @@ class VerifyRFCSpecification(unittest.TestCase):
         client_secret = "kd94hf93k423kf44"
         access_secret = "pfkkdhi9sl3r4s00"
         signature = sign_plain(client_secret, access_secret)
-
         correct_signature = "kd94hf93k423kf44&pfkkdhi9sl3r4s00"
         self.assertEquals(signature, correct_signature)
 
@@ -135,6 +133,7 @@ class VerifyRFCSpecification(unittest.TestCase):
 
             .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
         """
+        # TODO: Confirm correct behaviour against trusted recorded input/output
         # Using sample from http://hueniverse.com/oauth/guide/authentication/
         method = "GET"
         url = "http://photos.example.net:80/photos?size=original&file=vacation.jpg"
@@ -146,17 +145,25 @@ class VerifyRFCSpecification(unittest.TestCase):
             ("oauth_signature_method", "HMAC-SHA1"),
             ("oauth_version", "1.0")
         ]
+
+        # Using a 1024 RSA private key stored in private.pem, generated using
+        # openssl genrsa -out private.pem 1024
+        # Reading from private.pem since there was a bug in my pycrypto 2.3
+        # when generating new keys. You may also get warnings about timing 
+        # attacks if you are using libgmp < 5
         from Crypto.PublicKey import RSA
         with open("private.pem") as f:
             key = RSA.importKey("".join(f.readlines()))
         signature = sign_rsa(method, url, params, key.exportKey())
 
-        correct_signature =("PU2pFZrI3gmcFkObM/8vcB5lTLFo/88Izvd/zmXr3cN+t7iJ"+
-                            "mO0RR54ZL4M43O1uRo5MwqPhFa1pvJiJV07Jy64TTZBz30em"+
-                            "jF2QKHoirR6fyxQNMi59P2hizF6hbvDk+Y+fvkC/+j6Ueu6E"+
-                            "B/WpwSBZPv+45FN8wc6UmOnEztA=")
+        # The string in private.pem
+        correct_signature = ("RxpS4MV4cKTtiMQ9OfHfF6ixrVf2jiwfe67rYaeFDAf6LN" +
+                             "Jh3ERBFsYHARRZ+uSjSbUB1HmBrfsQqr57p779Jeu+uGoT" +
+                             "ZtXSjoYpWneMnAYr2YCA/gTXbRVF0Zd9X+yxplLWTP+Hx4" +
+                             "vRzwmhXqWIspgbdxPVA3j6EgysHU8/J9Q=")
         self.assertEqual(signature, correct_signature)
 
+        # Reset parameters
         params = [
             ("oauth_consumer_key", "dpf43f3p2l4k3l03"),
             ("oauth_token", "nnch734d00sl2jdk"),
@@ -165,7 +172,8 @@ class VerifyRFCSpecification(unittest.TestCase):
             ("oauth_signature_method", "HMAC-SHA1"),
             ("oauth_version", "1.0")
         ]
-        
+       
+        # Test if verification works with public key
         pubkey = key.publickey()
         res = verify_rsa(method, url, params, pubkey.exportKey(), signature) 
         self.assertTrue(res)
