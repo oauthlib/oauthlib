@@ -172,6 +172,49 @@ def sign_hmac(method, url, params, client_secret, access_secret):
     signature = hmac.new(key, base_string, hashlib.sha1)
     return escape(binascii.b2a_base64(signature.digest())[:-1])
 
+def sign_plain(client_secret, access_secret):
+    """Sign a request using plaintext.
+
+    Per `section 3.4.4`_ of the spec.
+
+    .. _`section 3.4.4`: http://tools.ietf.org/html/rfc5849#section-3.4.4
+
+    """
+    # HMAC-SHA1 concatenates the secrets in the same way a plain signature
+    # is crafted.
+    return prepare_hmac_key(client_secret, access_secret)
+
+def sign_rsa(method, url, params, private_rsa):
+    """Sign a request using RSASSA-PKCS #1 v1.5.
+
+    Per `section 3.4.3`_ of the spec.
+
+    .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
+
+    """
+    from Crypto.PublicKey import RSA
+    from Crypto.Signature import PKCS1_v1_5
+    from Crypto.Hash import SHA
+    key = RSA.importKey(private_rsa)
+    h = SHA.new(prepare_base_string(method, url, params))
+    p = PKCS1_v1_5.new(key)
+    return escape(binascii.b2a_base64(p.sign(h))[:-1])
+
+def verify_rsa(method, url, params, public_rsa, signature):
+    """Verify a RSASSA-PKCS #1 v1.5 signature.
+
+    Per `section 3.4.3`_ of the spec.
+
+    .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
+
+    """
+    from Crypto.PublicKey import RSA
+    from Crypto.Signature import PKCS1_v1_5
+    from Crypto.Hash import SHA
+    key = RSA.importKey(public_rsa)
+    h = SHA.new(prepare_base_string(method, url, params))
+    p = PKCS1_v1_5.new(key)
+    return p.verify(h, signature)
 
 def prepare_authorization_header(realm, params):
     """Prepare the authorization header.

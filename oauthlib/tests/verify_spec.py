@@ -77,7 +77,7 @@ class VerifyRFCSpecification(unittest.TestCase):
         self.assertIsNotNone(params["oauth_timestamp"])
         self.assertIsNotNone(params["oauth_version"])
     
-    def test_signature_base_string(self):
+    def test_base_string(self):
         """ Signature Base String
 
             Per `section 3.4.1`_ of the spec.
@@ -88,19 +88,12 @@ class VerifyRFCSpecification(unittest.TestCase):
         for method, uri, params, correct  in self.samples:
             self.assertEqual(prepare_base_string(method, uri, params), correct)
 
-    def test_authorization_header(self):
-        """ Authorization Header
-
-            Per `section 3.5.1`_ of the spec.
-
-            .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
-
-            Uses HMAC-SHA1 Signature 
+    def test_sign_hmac(self):
+        """ Signature method HMAC-SHA1 
             
             Per `section 3.4.2`_ of the spec.
 
             .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
-
         """
         # Using sample from http://hueniverse.com/oauth/guide/authentication/
         method = "GET"
@@ -120,7 +113,61 @@ class VerifyRFCSpecification(unittest.TestCase):
         correct_signature = "tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"
         self.assertEquals(signature, correct_signature)
 
-        # Continuing with the sample, but using dictionary for params
+    def test_sign_plain(self):
+        """ Signature method plaintext 
+            
+            Per `section 3.4.4`_ of the spec.
+
+            .. _`section 3.4.4`: http://tools.ietf.org/html/rfc5849#section-3.4.4
+        """
+        # Using sample from http://hueniverse.com/oauth/guide/authentication/
+        client_secret = "kd94hf93k423kf44"
+        access_secret = "pfkkdhi9sl3r4s00"
+        signature = sign_plain(client_secret, access_secret)
+
+        correct_signature = "kd94hf93k423kf44&pfkkdhi9sl3r4s00"
+        self.assertEquals(signature, correct_signature)
+
+    def test_sign_rsa(self):
+        """ Signature method RSA-SHA1 
+            
+            Per `section 3.4.3`_ of the spec.
+
+            .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
+        """
+        # Using sample from http://hueniverse.com/oauth/guide/authentication/
+        method = "GET"
+        url = "http://photos.example.net:80/photos?size=original&file=vacation.jpg"
+        params = [
+            ("oauth_consumer_key", "dpf43f3p2l4k3l03"),
+            ("oauth_token", "nnch734d00sl2jdk"),
+            ("oauth_nonce", "kllo9940pd9333jh"),
+            ("oauth_timestamp", "1191242096"),
+            ("oauth_signature_method", "HMAC-SHA1"),
+            ("oauth_version", "1.0")
+        ]
+        from Crypto.PublicKey import RSA
+        with open("oauth") as f:
+            key = RSA.importKey("".join(f.readlines()))
+        signature = sign_rsa(method, url, params, key.exportKey())
+        # TODO: Find a way to confirm that the signature is correct
+
+    def test_verify_rsa(self):
+        # TODO: Make sure verification works too
+        pass 
+
+    def test_authorization_header(self):
+        """ Authorization Header
+
+            Per `section 3.5.1`_ of the spec.
+
+            .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
+        """
+        # Using sample from http://hueniverse.com/oauth/guide/authentication/
+        method = "GET"
+        url = "http://photos.example.net:80/photos?size=original&file=vacation.jpg"
+        client_secret = "kd94hf93k423kf44"
+        access_secret = "pfkkdhi9sl3r4s00"
         params = {
             "oauth_consumer_key" : "dpf43f3p2l4k3l03",
             "oauth_token" : "nnch734d00sl2jdk",
@@ -128,7 +175,7 @@ class VerifyRFCSpecification(unittest.TestCase):
             "oauth_timestamp" : "1191242096",
             "oauth_signature_method" : "HMAC-SHA1",
             "oauth_version" : "1.0",
-            "oauth_signature" : correct_signature
+            "oauth_signature" : "tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"
         }
         realm = "http://photos.example.net/photos"
         header = prepare_authorization_header(realm, params)
