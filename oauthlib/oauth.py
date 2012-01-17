@@ -197,9 +197,9 @@ def sign_rsa(method, url, params, private_rsa):
     from Crypto.Hash import SHA
     key = RSA.importKey(private_rsa)
     message = prepare_base_string(method, url, params)
-    h = SHA.new(message)
+    h = SHA.new(message)    
     p = PKCS1_v1_5.new(key)
-    return binascii.b2a_base64(p.sign(h))[:-1]
+    return escape(binascii.b2a_base64(p.sign(h))[:-1])
 
 def verify_rsa(method, url, params, public_rsa, signature):
     """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
@@ -216,7 +216,7 @@ def verify_rsa(method, url, params, public_rsa, signature):
     message = prepare_base_string(method, url, params)
     h = SHA.new(message)
     p = PKCS1_v1_5.new(key)
-    signature = binascii.a2b_base64(signature)
+    signature = binascii.a2b_base64(urllib.unquote(signature))
     return p.verify(h, signature)
 
 def prepare_authorization_header(realm, params):
