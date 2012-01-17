@@ -147,14 +147,28 @@ class VerifyRFCSpecification(unittest.TestCase):
             ("oauth_version", "1.0")
         ]
         from Crypto.PublicKey import RSA
-        with open("oauth") as f:
+        with open("private.pem") as f:
             key = RSA.importKey("".join(f.readlines()))
         signature = sign_rsa(method, url, params, key.exportKey())
-        # TODO: Find a way to confirm that the signature is correct
 
-    def test_verify_rsa(self):
-        # TODO: Make sure verification works too
-        pass 
+        correct_signature =("PU2pFZrI3gmcFkObM/8vcB5lTLFo/88Izvd/zmXr3cN+t7iJ"+
+                            "mO0RR54ZL4M43O1uRo5MwqPhFa1pvJiJV07Jy64TTZBz30em"+
+                            "jF2QKHoirR6fyxQNMi59P2hizF6hbvDk+Y+fvkC/+j6Ueu6E"+
+                            "B/WpwSBZPv+45FN8wc6UmOnEztA=")
+        self.assertEqual(signature, correct_signature)
+
+        params = [
+            ("oauth_consumer_key", "dpf43f3p2l4k3l03"),
+            ("oauth_token", "nnch734d00sl2jdk"),
+            ("oauth_nonce", "kllo9940pd9333jh"),
+            ("oauth_timestamp", "1191242096"),
+            ("oauth_signature_method", "HMAC-SHA1"),
+            ("oauth_version", "1.0")
+        ]
+        
+        pubkey = key.publickey()
+        res = verify_rsa(method, url, params, pubkey.exportKey(), signature) 
+        self.assertTrue(res)
 
     def test_authorization_header(self):
         """ Authorization Header

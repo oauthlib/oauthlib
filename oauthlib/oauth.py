@@ -196,12 +196,13 @@ def sign_rsa(method, url, params, private_rsa):
     from Crypto.Signature import PKCS1_v1_5
     from Crypto.Hash import SHA
     key = RSA.importKey(private_rsa)
-    h = SHA.new(prepare_base_string(method, url, params))
+    message = prepare_base_string(method, url, params)
+    h = SHA.new(message)
     p = PKCS1_v1_5.new(key)
-    return escape(binascii.b2a_base64(p.sign(h))[:-1])
+    return binascii.b2a_base64(p.sign(h))[:-1]
 
 def verify_rsa(method, url, params, public_rsa, signature):
-    """Verify a RSASSA-PKCS #1 v1.5 signature.
+    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
 
     Per `section 3.4.3`_ of the spec.
 
@@ -212,8 +213,10 @@ def verify_rsa(method, url, params, public_rsa, signature):
     from Crypto.Signature import PKCS1_v1_5
     from Crypto.Hash import SHA
     key = RSA.importKey(public_rsa)
-    h = SHA.new(prepare_base_string(method, url, params))
+    message = prepare_base_string(method, url, params)
+    h = SHA.new(message)
     p = PKCS1_v1_5.new(key)
+    signature = binascii.a2b_base64(signature)
     return p.verify(h, signature)
 
 def prepare_authorization_header(realm, params):
