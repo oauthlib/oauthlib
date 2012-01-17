@@ -1,7 +1,7 @@
 import unittest
 import sys
 sys.path.append("..")
-from oauth import *
+from oauthlib.oauth import *
 
 class VerifyRFCSpecification(unittest.TestCase):
 
