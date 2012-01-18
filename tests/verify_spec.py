@@ -201,7 +201,7 @@ class VerifyRFCSpecification(unittest.TestCase):
             "oauth_signature" : "tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"
         }
         realm = "http://photos.example.net/photos"
-        header = prepare_authorization_header(realm, params)
+        header = prepare_authorization_header(params, realm)
 
         correct_header = ('OAuth realm="http://photos.example.net/photos", ' +
                           'oauth_nonce="kllo9940pd9333jh", ' +

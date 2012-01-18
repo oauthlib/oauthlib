@@ -219,7 +219,7 @@ def verify_rsa(method, url, params, public_rsa, signature):
     signature = binascii.a2b_base64(urllib.unquote(signature))
     return p.verify(h, signature)
 
-def prepare_authorization_header(realm, params):
+def prepare_authorization_header(params, realm=None):
     """Prepare the authorization header.
 
     Per `section 3.5.1`_ of the spec.
@@ -231,6 +231,8 @@ def prepare_authorization_header(realm, params):
     if isinstance(params, dict):
         params = params.items()
 
-    return 'OAuth realm="{realm}", {params}'.format(
+    realm = 'realm="{realm}"'.format(realm=realm) if realm else ""
+
+    return 'OAuth {realm}, {params}'.format(
         realm=realm, params=', '.join(
             ['{0}="{1}"'.format(k, v) for k, v in params]))
