@@ -121,6 +121,32 @@ def normalize_parameters(params):
     return escape('&'.join(['{0}={1}'.format(k, v) for k, v in key_values]))
 
 
+def order_parameters(params):
+    """Order the parameters with OAuth ones first
+
+    Per `section 3.5.` of the spec.
+
+    .. _`section 3.5`: http://tools.ietf.org/html/rfc5849#section-3.5
+    """
+    pdict = dict(params)
+    param_order = [ "oauth_consumer_key",
+                    "oauth_token",
+                    "oauth_signature_method",
+                    "oauth_signature",
+                    "oauth_timestamp",
+                    "oauth_nonce",
+                    "oauth_version" ]
+    ordered_params = []
+    for param in param_order:
+        ordered_params.append((param, pdict[param]))
+    
+    for k,v in params:
+        if not k in param_order:
+            ordered_params.append((k, v))
+
+    return ordered_params
+
+
 def prepare_hmac_key(client_secret, access_secret=None):
     """Prepares the signing key for HMAC-SHA1.
 
@@ -231,6 +257,7 @@ def prepare_authorization_header(params, realm=None):
     if isinstance(params, dict):
         params = params.items()
 
+    params = order_parameters(params)
     realm = 'realm="{realm}"'.format(realm=realm) if realm else ""
 
     return 'OAuth {realm}, {params}'.format(

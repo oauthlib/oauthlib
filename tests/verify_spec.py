@@ -88,6 +88,33 @@ class VerifyRFCSpecification(unittest.TestCase):
         for method, uri, params, correct  in self.samples:
             self.assertEqual(prepare_base_string(method, uri, params), correct)
 
+    def test_order_parameters(self):
+        """Order the parameters with OAuth ones first
+
+        Per `section 3.5.` of the spec.
+
+        .. _`section 3.5`: http://tools.ietf.org/html/rfc5849#section-3.5
+        """
+        params = [
+            ("oauth_consumer_key", "dpf43f3p2l4k3l03"),
+            ("oauth_token", "nnch734d00sl2jdk"),
+            ("oauth_nonce", "kllo9940pd9333jh"),
+            ("file", "some file"),
+            ("oauth_timestamp", "1191242096"),
+            ("oauth_signature", "hello"),
+            ("day", "today"),
+            ("oauth_signature_method", "HMAC-SHA1"),
+            ("oauth_version", "1.0")
+        ]
+        ordered = order_parameters(params)
+        self.assertEqual(ordered[0][0], "oauth_consumer_key")        
+        self.assertEqual(ordered[1][0], "oauth_token")        
+        self.assertEqual(ordered[2][0], "oauth_signature_method")        
+        self.assertEqual(ordered[3][0], "oauth_signature")        
+        self.assertEqual(ordered[4][0], "oauth_timestamp")        
+        self.assertEqual(ordered[5][0], "oauth_nonce")        
+        self.assertEqual(ordered[6][0], "oauth_version")        
+
     def test_sign_hmac(self):
         """ Signature method HMAC-SHA1 
             
@@ -204,13 +231,13 @@ class VerifyRFCSpecification(unittest.TestCase):
         header = prepare_authorization_header(params, realm)
 
         correct_header = ('OAuth realm="http://photos.example.net/photos", ' +
-                          'oauth_nonce="kllo9940pd9333jh", ' +
-                          'oauth_timestamp="1191242096", ' +
                           "oauth_consumer_key=\"dpf43f3p2l4k3l03\", " +
-                          'oauth_signature_method="HMAC-SHA1", ' +
-                          'oauth_version="1.0", ' +
                           'oauth_token="nnch734d00sl2jdk", ' +
-                          'oauth_signature="tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"')
+                          'oauth_signature_method="HMAC-SHA1", ' +
+                          'oauth_signature="tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D", ' +
+                          'oauth_timestamp="1191242096", ' +
+                          'oauth_nonce="kllo9940pd9333jh", ' +
+                          'oauth_version="1.0"')
         self.assertEquals(header, correct_header)
 
 if __name__ == "__main__":
