@@ -57,12 +57,6 @@ class VerifyRFCSpecification(unittest.TestCase):
     ]
 
     def test_generate_params(self):
-        """ Testing the utility function generate_params 
-            
-            Verifying per `section 3.4.1.3`_ of the spec.
-
-            .. _`section 3.4.1.3`_ http://tools.ietf.org/html/rfc5849#section-3.4.1.3
-        """
         # Sample taken from section 3.4.1.2 fully decoded and compared to the
         # decoded version in 3.4.1.3.2 (they are equivalent)
         client_key = "9djdj82h48djs9d2"
@@ -78,23 +72,10 @@ class VerifyRFCSpecification(unittest.TestCase):
         self.assertIsNotNone(params["oauth_version"])
     
     def test_base_string(self):
-        """ Signature Base String
-
-            Per `section 3.4.1`_ of the spec.
-
-            .. _`section 3.4.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1
-
-        """
         for method, uri, params, correct  in self.samples:
             self.assertEqual(prepare_base_string(method, uri, params), correct)
 
     def test_order_parameters(self):
-        """Order the parameters with OAuth ones first
-
-        Per `section 3.5.` of the spec.
-
-        .. _`section 3.5`: http://tools.ietf.org/html/rfc5849#section-3.5
-        """
         params = [
             ("oauth_consumer_key", "dpf43f3p2l4k3l03"),
             ("oauth_token", "nnch734d00sl2jdk"),
@@ -116,12 +97,6 @@ class VerifyRFCSpecification(unittest.TestCase):
         self.assertEqual(ordered[6][0], "oauth_version")        
 
     def test_sign_hmac(self):
-        """ Signature method HMAC-SHA1 
-            
-            Per `section 3.4.2`_ of the spec.
-
-            .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
-        """
         # Using sample from http://hueniverse.com/oauth/guide/authentication/
         method = "GET"
         url = "http://photos.example.net:80/photos?size=original&file=vacation.jpg"
@@ -140,12 +115,6 @@ class VerifyRFCSpecification(unittest.TestCase):
         self.assertEquals(signature, correct_signature)
 
     def test_sign_plain(self):
-        """ Signature method plaintext 
-            
-            Per `section 3.4.4`_ of the spec.
-
-            .. _`section 3.4.4`: http://tools.ietf.org/html/rfc5849#section-3.4.4
-        """
         # Using sample from http://hueniverse.com/oauth/guide/authentication/
         client_secret = "kd94hf93k423kf44"
         access_secret = "pfkkdhi9sl3r4s00"
@@ -154,12 +123,6 @@ class VerifyRFCSpecification(unittest.TestCase):
         self.assertEquals(signature, correct_signature)
 
     def test_sign_rsa(self):
-        """ Signature method RSA-SHA1 
-            
-            Per `section 3.4.3`_ of the spec.
-
-            .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
-        """
         # Confirmed against OAuth playground with custom domain and key
         method = "GET"
         url = "https://www.google.com/accounts/OAuthGetRequestToken"
@@ -207,17 +170,7 @@ class VerifyRFCSpecification(unittest.TestCase):
         self.assertTrue(res)
 
     def test_authorization_header(self):
-        """ Authorization Header
-
-            Per `section 3.5.1`_ of the spec.
-
-            .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
-        """
         # Using sample from http://hueniverse.com/oauth/guide/authentication/
-        method = "GET"
-        url = "http://photos.example.net:80/photos?size=original&file=vacation.jpg"
-        client_secret = "kd94hf93k423kf44"
-        access_secret = "pfkkdhi9sl3r4s00"
         params = {
             "oauth_consumer_key" : "dpf43f3p2l4k3l03",
             "oauth_token" : "nnch734d00sl2jdk",
@@ -238,6 +191,60 @@ class VerifyRFCSpecification(unittest.TestCase):
                           'oauth_timestamp="1191242096", ' +
                           'oauth_nonce="kllo9940pd9333jh", ' +
                           'oauth_version="1.0"')
+        self.assertEquals(header, correct_header)
+
+    def test_form_encoded_body(self):
+        # Using sample from http://hueniverse.com/oauth/guide/authentication/
+        params = {
+            "oauth_consumer_key" : "dpf43f3p2l4k3l03",
+            "oauth_token" : "nnch734d00sl2jdk",
+            "oauth_nonce" : "kllo9940pd9333jh",
+            "oauth_timestamp" : "1191242096",
+            "oauth_signature_method" : "HMAC-SHA1",
+            "oauth_version" : "1.0",
+            "file" : "vacation.jpg",
+            "size" : "original",
+            "oauth_signature" : "tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"
+        }
+        header = prepare_form_encoded_body(params)
+
+        correct_header = ('oauth_consumer_key=dpf43f3p2l4k3l03&'+
+                          'oauth_token=nnch734d00sl2jdk&' +
+                          'oauth_signature_method=HMAC-SHA1&' +
+                          'oauth_signature=tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D&' +
+                          'oauth_timestamp=1191242096&' +
+                          'oauth_nonce=kllo9940pd9333jh&' +
+                          'oauth_version=1.0&' +
+                          'file=vacation.jpg&' +
+                          'size=original')
+        self.assertEquals(header, correct_header)
+
+    def test_request_uri_query(self):
+        # Using sample from http://hueniverse.com/oauth/guide/authentication/
+        params = {
+            "oauth_consumer_key" : "dpf43f3p2l4k3l03",
+            "oauth_token" : "nnch734d00sl2jdk",
+            "oauth_nonce" : "kllo9940pd9333jh",
+            "oauth_timestamp" : "1191242096",
+            "oauth_signature_method" : "HMAC-SHA1",
+            "oauth_version" : "1.0",
+            "file" : "vacation.jpg",
+            "size" : "original",
+            "oauth_signature" : "tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"
+        }
+        header = prepare_request_uri_query("/call/back", params)
+
+        correct_header = ('GET /call/back?'+
+                          'oauth_consumer_key=dpf43f3p2l4k3l03&'+
+                          'oauth_token=nnch734d00sl2jdk&' +
+                          'oauth_signature_method=HMAC-SHA1&' +
+                          'oauth_signature=tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D&' +
+                          'oauth_timestamp=1191242096&' +
+                          'oauth_nonce=kllo9940pd9333jh&' +
+                          'oauth_version=1.0&' +
+                          'file=vacation.jpg&' +
+                          'size=original' +
+                          ' HTTP/1.1')
         self.assertEquals(header, correct_header)
 
 if __name__ == "__main__":

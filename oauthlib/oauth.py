@@ -246,7 +246,7 @@ def verify_rsa(method, url, params, public_rsa, signature):
     return p.verify(h, signature)
 
 def prepare_authorization_header(params, realm=None):
-    """Prepare the authorization header.
+    """Prepare the Authorization header.
 
     Per `section 3.5.1`_ of the spec.
 
@@ -263,3 +263,35 @@ def prepare_authorization_header(params, realm=None):
     return 'OAuth {realm}, {params}'.format(
         realm=realm, params=', '.join(
             ['{0}="{1}"'.format(k, v) for k, v in params]))
+
+def prepare_form_encoded_body(params):
+    """Prepare the Form-Encoded Body.
+
+    Per `section 3.5.2`_ of the spec.
+
+    .. _`section 3.5.2`: http://tools.ietf.org/html/rfc5849#section-3.5.2
+
+    """
+    # Convert dictionaries to list of tuples
+    if isinstance(params, dict):
+        params = params.items()
+
+    params = order_parameters(params)
+    return '&'.join(['{0}={1}'.format(k, v) for k, v in params])
+
+def prepare_request_uri_query(path, params, method="GET", http_version="1.1"):
+    """Prepare the Request URI Query.
+
+    Per `section 3.5.3`_ of the spec.
+
+    .. _`section 3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
+
+    """
+    # Convert dictionaries to list of tuples
+    if isinstance(params, dict):
+        params = params.items()
+
+    params = order_parameters(params)
+    return '{method} {path}?{params} HTTP/{version}'.format(
+        method=method, path=path, version=http_version, params='&'.join(
+            ['{0}={1}'.format(k, v) for k, v in params]))
