@@ -138,8 +138,11 @@ def order_parameters(params):
                     "oauth_version" ]
     ordered_params = []
     for param in param_order:
-        ordered_params.append((param, pdict[param]))
-    
+        try:
+            ordered_params.append((param, pdict[param]))
+        except KeyError:
+            pass
+
     for k,v in params:
         if not k in param_order:
             ordered_params.append((k, v))
@@ -147,7 +150,7 @@ def order_parameters(params):
     return ordered_params
 
 
-def prepare_hmac_key(client_secret, access_secret=None):
+def prepare_hmac_key(client_secret=None, access_secret=None):
     """Prepares the signing key for HMAC-SHA1.
 
     Per `section 3.4.2`_ of the spec.
@@ -185,7 +188,7 @@ def prepare_base_string(method, uri, params):
         params=normalize_parameters(params))
 
 
-def sign_hmac(method, url, params, client_secret, access_secret):
+def sign_hmac(method, url, params, client_secret=None, access_secret=None):
     """Sign a request using HMAC-SHA1.
 
     Per `section 3.4.2`_ of the spec.
@@ -256,13 +259,12 @@ def prepare_authorization_header(params, realm=None):
     # Convert dictionaries to list of tuples
     if isinstance(params, dict):
         params = params.items()
-
+    
+    realm = ' realm="{realm}",'.format(realm=realm) if realm else ""
     params = order_parameters(params)
-    realm = 'realm="{realm}"'.format(realm=realm) if realm else ""
-
-    return 'OAuth {realm}, {params}'.format(
+    return 'OAuth{realm} {params}'.format(
         realm=realm, params=', '.join(
-            ['{0}="{1}"'.format(k, v) for k, v in params]))
+            ['{0}="{1}"'.format(k, v) for k, v in params if k.startswith("oauth_")]))
 
 def prepare_form_encoded_body(params):
     """Prepare the Form-Encoded Body.
