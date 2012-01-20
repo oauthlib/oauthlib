@@ -128,26 +128,18 @@ def order_parameters(params):
 
     .. _`section 3.5`: http://tools.ietf.org/html/rfc5849#section-3.5
     """
-    pdict = dict(params)
-    param_order = [ "oauth_consumer_key",
-                    "oauth_token",
-                    "oauth_signature_method",
-                    "oauth_signature",
-                    "oauth_timestamp",
-                    "oauth_nonce",
-                    "oauth_version" ]
-    ordered_params = []
-    for param in param_order:
-        try:
-            ordered_params.append((param, pdict[param]))
-        except KeyError:
-            pass
+    # Convert dictionaries to list of tuples
+    if isinstance(params, dict):
+        params = params.items()
 
+    ordered = []
     for k,v in params:
-        if not k in param_order:
-            ordered_params.append((k, v))
-
-    return ordered_params
+        if k.startswith("oauth_"):
+            ordered.insert(0, (k, v))
+        else:
+            ordered.append((k, v))
+        
+    return ordered
 
 
 def prepare_hmac_key(client_secret=None, access_secret=None):
@@ -256,10 +248,6 @@ def prepare_authorization_header(params, realm=None):
     .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
 
     """
-    # Convert dictionaries to list of tuples
-    if isinstance(params, dict):
-        params = params.items()
-    
     realm = ' realm="{realm}",'.format(realm=realm) if realm else ""
     params = order_parameters(params)
     return 'OAuth{realm} {params}'.format(
@@ -274,10 +262,6 @@ def prepare_form_encoded_body(params):
     .. _`section 3.5.2`: http://tools.ietf.org/html/rfc5849#section-3.5.2
 
     """
-    # Convert dictionaries to list of tuples
-    if isinstance(params, dict):
-        params = params.items()
-
     params = order_parameters(params)
     return '&'.join(['{0}={1}'.format(k, v) for k, v in params])
 
@@ -289,10 +273,6 @@ def prepare_request_uri_query(path, params, method="GET", http_version="1.1"):
     .. _`section 3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
 
     """
-    # Convert dictionaries to list of tuples
-    if isinstance(params, dict):
-        params = params.items()
-
     params = order_parameters(params)
     return '{method} {path}?{params} HTTP/{version}'.format(
         method=method, path=path, version=http_version, params='&'.join(

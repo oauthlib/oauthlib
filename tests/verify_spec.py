@@ -75,27 +75,6 @@ class VerifyRFCSpecification(unittest.TestCase):
         for method, uri, params, correct  in self.samples:
             self.assertEqual(prepare_base_string(method, uri, params), correct)
 
-    def test_order_parameters(self):
-        params = [
-            ("oauth_consumer_key", "dpf43f3p2l4k3l03"),
-            ("oauth_token", "nnch734d00sl2jdk"),
-            ("oauth_nonce", "kllo9940pd9333jh"),
-            ("file", "some file"),
-            ("oauth_timestamp", "1191242096"),
-            ("oauth_signature", "hello"),
-            ("day", "today"),
-            ("oauth_signature_method", "HMAC-SHA1"),
-            ("oauth_version", "1.0")
-        ]
-        ordered = order_parameters(params)
-        self.assertEqual(ordered[0][0], "oauth_consumer_key")        
-        self.assertEqual(ordered[1][0], "oauth_token")        
-        self.assertEqual(ordered[2][0], "oauth_signature_method")        
-        self.assertEqual(ordered[3][0], "oauth_signature")        
-        self.assertEqual(ordered[4][0], "oauth_timestamp")        
-        self.assertEqual(ordered[5][0], "oauth_nonce")        
-        self.assertEqual(ordered[6][0], "oauth_version")        
-
     def test_sign_hmac(self):
         # Using sample from http://hueniverse.com/oauth/guide/authentication/
         method = "GET"
@@ -184,13 +163,13 @@ class VerifyRFCSpecification(unittest.TestCase):
         header = prepare_authorization_header(params, realm)
 
         correct_header = ('OAuth realm="http://photos.example.net/photos", ' +
-                          "oauth_consumer_key=\"dpf43f3p2l4k3l03\", " +
-                          'oauth_token="nnch734d00sl2jdk", ' +
-                          'oauth_signature_method="HMAC-SHA1", ' +
                           'oauth_signature="tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D", ' +
+                          'oauth_token="nnch734d00sl2jdk", ' +
+                          'oauth_version="1.0", ' +
+                          'oauth_signature_method="HMAC-SHA1", ' +
+                          "oauth_consumer_key=\"dpf43f3p2l4k3l03\", " +
                           'oauth_timestamp="1191242096", ' +
-                          'oauth_nonce="kllo9940pd9333jh", ' +
-                          'oauth_version="1.0"')
+                          'oauth_nonce="kllo9940pd9333jh"')
         self.assertEquals(header, correct_header)
 
     def test_form_encoded_body(self):
@@ -208,12 +187,12 @@ class VerifyRFCSpecification(unittest.TestCase):
         }
         header = prepare_form_encoded_body(params)
 
-        correct_header = ('oauth_consumer_key=dpf43f3p2l4k3l03&'+
-                          'oauth_token=nnch734d00sl2jdk&' +
-                          'oauth_signature_method=HMAC-SHA1&' +
+        correct_header = ('oauth_signature_method=HMAC-SHA1&' +
+                          'oauth_consumer_key=dpf43f3p2l4k3l03&'+
                           'oauth_signature=tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D&' +
                           'oauth_timestamp=1191242096&' +
                           'oauth_nonce=kllo9940pd9333jh&' +
+                          'oauth_token=nnch734d00sl2jdk&' +
                           'oauth_version=1.0&' +
                           'file=vacation.jpg&' +
                           'size=original')
@@ -235,12 +214,12 @@ class VerifyRFCSpecification(unittest.TestCase):
         header = prepare_request_uri_query("/call/back", params)
 
         correct_header = ('GET /call/back?'+
-                          'oauth_consumer_key=dpf43f3p2l4k3l03&'+
-                          'oauth_token=nnch734d00sl2jdk&' +
                           'oauth_signature_method=HMAC-SHA1&' +
+                          'oauth_consumer_key=dpf43f3p2l4k3l03&'+
                           'oauth_signature=tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D&' +
                           'oauth_timestamp=1191242096&' +
                           'oauth_nonce=kllo9940pd9333jh&' +
+                          'oauth_token=nnch734d00sl2jdk&' +
                           'oauth_version=1.0&' +
                           'file=vacation.jpg&' +
                           'size=original' +
