@@ -21,6 +21,30 @@ SIGNATURE_RSA = "RSA-SHA1"
 SIGNATURE_PLAINTEXT = "PLAINTEXT"
 
 
+ # Order oauth parameters first 
+def order_params(target):
+
+    def wrapper(params, *args, **kwargs):
+        params = order_parameters(params)
+        return target(params, *args, **kwargs)
+    
+    return wrapper
+
+# Removes all non oauth parameters
+def filter_oauth(target):
+
+    def wrapper(params, *args, **kwargs):
+        # Convert dictionaries to list of tuples
+        if isinstance(params, dict):
+            filtered = [(k,v) for k,v in params.items() if k.startswith("oauth_")]
+        else:
+            filtered = [(k,v) for k,v in params if k.startswith("oauth_")]
+        return target(filtered, *args, **kwargs)
+    
+    return wrapper
+
+# OAuth methods
+
 def escape(s):
     """Escape a string in an OAuth-compatible fashion.
 
@@ -50,16 +74,31 @@ def generate_nonce():
     return str(getrandbits(64)) + generate_timestamp()
 
 
-def generate_params(client_key, access_token, signature_method):
+def generate_params(client_key=None, 
+                    access_token=None, 
+                    signature_method="HMAC-SHA1",
+                    callback=None,
+                    verifier=None):
     """Generates the requisite parameters for a valid OAuth request."""
     params = {
-       'oauth_consumer_key': client_key,
        'oauth_nonce': generate_nonce(),
-       'oauth_signature_method': signature_method,
-       'oauth_token': access_token,
        'oauth_timestamp': generate_timestamp(),
        'oauth_version': '1.0',
+       'oauth_signature_method': signature_method,
     }
+    
+    if client_key:
+        params['oauth_consumer_key'] = client_key
+
+    if access_token:
+        params["oauth_token"] = access_token
+        
+    if callback:
+        params["oauth_callback"] = callback
+
+    if verifier:
+        params["oauth_verifier"] = verifier
+
     return params
 
 
@@ -103,16 +142,12 @@ def normalize_parameters(params):
     .. _`section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
     """
-    try:
-        # Exclude the signature if it exists.
-        del params['oauth_signature']
-    except:
-        pass
-
     # Escape key values before sorting.
     key_values = []
     for k, v in params:
-        key_values.append((escape(utf8_str(k)), escape(utf8_str(v))))
+        # Exclude the signature if it exists.
+        if not k == "oauth_signature":
+            key_values.append((escape(utf8_str(k)), escape(utf8_str(v))))
 
     # Sort lexicographically, first after key, then after value.
     key_values.sort()
@@ -240,6 +275,7 @@ def verify_rsa(method, url, params, public_rsa, signature):
     signature = binascii.a2b_base64(urllib.unquote(signature))
     return p.verify(h, signature)
 
+@filter_oauth
 def prepare_authorization_header(params, realm=None):
     """Prepare the Authorization header.
 
@@ -248,12 +284,14 @@ def prepare_authorization_header(params, realm=None):
     .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
 
     """
-    realm = ' realm="{realm}",'.format(realm=realm) if realm else ""
-    params = order_parameters(params)
-    return 'OAuth{realm} {params}'.format(
-        realm=realm, params=', '.join(
-            ['{0}="{1}"'.format(k, v) for k, v in params if k.startswith("oauth_")]))
+    if realm:
+        params.insert(0, ("realm", realm))
+    
+    # Only oauth_ and realm parameters allowed
+    return 'OAuth {params}'.format(params=', '.join(
+           ['{0}="{1}"'.format(k, v) for k, v in params])) 
 
+@order_params
 def prepare_form_encoded_body(params):
     """Prepare the Form-Encoded Body.
 
@@ -262,10 +300,10 @@ def prepare_form_encoded_body(params):
     .. _`section 3.5.2`: http://tools.ietf.org/html/rfc5849#section-3.5.2
 
     """
-    params = order_parameters(params)
     return '&'.join(['{0}={1}'.format(k, v) for k, v in params])
 
-def prepare_request_uri_query(path, params, method="GET", http_version="1.1"):
+@order_params
+def prepare_request_uri_query(params, url):
     """Prepare the Request URI Query.
 
     Per `section 3.5.3`_ of the spec.
@@ -273,7 +311,8 @@ def prepare_request_uri_query(path, params, method="GET", http_version="1.1"):
     .. _`section 3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
 
     """
-    params = order_parameters(params)
-    return '{method} {path}?{params} HTTP/{version}'.format(
-        method=method, path=path, version=http_version, params='&'.join(
+    return '{url}?{params}'.format(
+        url=url, params='&'.join(
             ['{0}={1}'.format(k, v) for k, v in params]))
+
+ 

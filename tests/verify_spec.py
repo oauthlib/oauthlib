@@ -163,13 +163,13 @@ class VerifyRFCSpecification(unittest.TestCase):
         header = prepare_authorization_header(params, realm)
 
         correct_header = ('OAuth realm="http://photos.example.net/photos", ' +
-                          'oauth_signature="tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D", ' +
-                          'oauth_token="nnch734d00sl2jdk", ' +
-                          'oauth_version="1.0", ' +
-                          'oauth_signature_method="HMAC-SHA1", ' +
-                          "oauth_consumer_key=\"dpf43f3p2l4k3l03\", " +
+                          'oauth_nonce="kllo9940pd9333jh", ' + 
                           'oauth_timestamp="1191242096", ' +
-                          'oauth_nonce="kllo9940pd9333jh"')
+                          "oauth_consumer_key=\"dpf43f3p2l4k3l03\", " +
+                          'oauth_signature_method="HMAC-SHA1", ' +
+                          'oauth_version="1.0", ' +
+                          'oauth_token="nnch734d00sl2jdk", ' +
+                          'oauth_signature="tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"')
         self.assertEquals(header, correct_header)
 
     def test_form_encoded_body(self):
@@ -211,9 +211,9 @@ class VerifyRFCSpecification(unittest.TestCase):
             "size" : "original",
             "oauth_signature" : "tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D"
         }
-        header = prepare_request_uri_query("/call/back", params)
+        header = prepare_request_uri_query(params, "/call/back")
 
-        correct_header = ('GET /call/back?'+
+        correct_header = ('/call/back?'+
                           'oauth_signature_method=HMAC-SHA1&' +
                           'oauth_consumer_key=dpf43f3p2l4k3l03&'+
                           'oauth_signature=tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D&' +
@@ -222,8 +222,7 @@ class VerifyRFCSpecification(unittest.TestCase):
                           'oauth_token=nnch734d00sl2jdk&' +
                           'oauth_version=1.0&' +
                           'file=vacation.jpg&' +
-                          'size=original' +
-                          ' HTTP/1.1')
+                          'size=original')
         self.assertEquals(header, correct_header)
 
 if __name__ == "__main__":
