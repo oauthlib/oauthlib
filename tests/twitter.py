@@ -60,7 +60,9 @@ class OAuthenticator(object):
         
         # TODO: not hardcode post request
         # Dont hardcode authorization field?
+        print self.params
         headers = { "Authorization" : prepare_authorization_header(self.params) }
+        print headers
         r = requests.post(self.url, {}, headers=headers)
         from urlparse import parse_qs
         info = parse_qs(r.content)

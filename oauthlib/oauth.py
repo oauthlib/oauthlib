@@ -28,6 +28,7 @@ def order_params(target):
         params = order_parameters(params)
         return target(params, *args, **kwargs)
     
+    wrapper.__doc__ = target.__doc__ 
     return wrapper
 
 # Removes all non oauth parameters
@@ -40,7 +41,8 @@ def filter_oauth(target):
         else:
             filtered = [(k,v) for k,v in params if k.startswith("oauth_")]
         return target(filtered, *args, **kwargs)
-    
+
+    wrapper.__doc__ = target.__doc__ 
     return wrapper
 
 # OAuth methods
@@ -76,6 +78,7 @@ def generate_nonce():
 
 def generate_params(client_key=None, 
                     access_token=None, 
+                    request_token=None,
                     signature_method="HMAC-SHA1",
                     callback=None,
                     verifier=None):
@@ -88,24 +91,27 @@ def generate_params(client_key=None,
     }
     
     if client_key:
-        params['oauth_consumer_key'] = client_key
+        params['oauth_consumer_key'] = escape(client_key)
+
+    if request_token:
+        params["oauth_token"] = escape(request_token)
 
     if access_token:
-        params["oauth_token"] = access_token
+        params["oauth_token"] = escape(access_token)
         
     if callback:
-        params["oauth_callback"] = callback
+        params["oauth_callback"] = escape(callback)
 
     if verifier:
-        params["oauth_verifier"] = verifier
+        params["oauth_verifier"] = escape(verifier)
 
-    return params
+    return params.items()
 
 
 def normalize_http_method(method):
     """Uppercases the HTTP method.
 
-    Per `section 3.4.1.1` of the spec.
+    Per `section 3.4.1.1`_ of the spec.
 
     .. _`section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.1
 
@@ -119,7 +125,7 @@ def normalize_base_string_uri(uri):
     Parses the URL and rebuilds it to be scheme://host/path. The normalized
     return value is already escaped.
 
-    Per `section 3.4.1.2` of the spec.
+    Per `section 3.4.1.2`_ of the spec.
 
     .. _`section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
 
@@ -137,7 +143,7 @@ def normalize_base_string_uri(uri):
 def normalize_parameters(params):
     """Prepares the request parameters.
 
-    Per `section 3.4.1.3` of the spec.
+    Per `section 3.4.1.3`_ of the spec.
 
     .. _`section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
@@ -159,7 +165,7 @@ def normalize_parameters(params):
 def order_parameters(params):
     """Order the parameters with OAuth ones first
 
-    Per `section 3.5.` of the spec.
+    Per `section 3.5`_ of the spec.
 
     .. _`section 3.5`: http://tools.ietf.org/html/rfc5849#section-3.5
     """
