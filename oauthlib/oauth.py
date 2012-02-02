@@ -16,14 +16,11 @@ import hmac
 import binascii
 from urlparse import urlparse
 
-SIGNATURE_HMAC = "HMAC-SHA1"
-SIGNATURE_RSA = "RSA-SHA1"
-SIGNATURE_PLAINTEXT = "PLAINTEXT"
-
-
- # Order oauth parameters first 
 def order_params(target):
-
+    """Order OAuth parameters first
+    
+    :param target: A method with the first arg being params.
+    """
     def wrapper(params, *args, **kwargs):
         params = order_parameters(params)
         return target(params, *args, **kwargs)
@@ -31,8 +28,11 @@ def order_params(target):
     wrapper.__doc__ = target.__doc__ 
     return wrapper
 
-# Removes all non oauth parameters
 def filter_oauth(target):
+    """Removes all non oauth parameters
+    
+    :param target: A method with the first arg being params.
+    """
 
     def wrapper(params, *args, **kwargs):
         # Convert dictionaries to list of tuples
@@ -45,12 +45,17 @@ def filter_oauth(target):
     wrapper.__doc__ = target.__doc__ 
     return wrapper
 
+#####################
 # OAuth methods
+#####################
 
 def escape(s):
     """Escape a string in an OAuth-compatible fashion.
 
     Per `section 3.6`_ of the spec.
+
+    :param s: The string to be escaped.
+    :return: An url encoded string.
 
     .. _`section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
 
@@ -59,7 +64,11 @@ def escape(s):
 
 
 def utf8_str(s):
-    """Convert unicode to utf-8."""
+    """Convert unicode to UTF-8.
+       
+    :param s: The string to convert.
+    :return: An UTF-8 string.
+    """
     if isinstance(s, unicode):
         return s.encode("utf-8")
     else:
@@ -67,7 +76,10 @@ def utf8_str(s):
 
 
 def generate_timestamp():
-    """Get seconds since epoch (UTC)."""
+    """Get seconds since epoch (UTC).
+    
+    :return: Seconds since epoch.
+    """
     return str(int(time.time()))
 
 
@@ -82,7 +94,20 @@ def generate_params(client_key=None,
                     signature_method="HMAC-SHA1",
                     callback=None,
                     verifier=None):
-    """Generates the requisite parameters for a valid OAuth request."""
+    """Generates the requisite parameters for a valid OAuth request.
+
+    All values will be escaped/url encoded.
+
+    The nonce, timestamp and version parameters will be generated.
+
+    :param client_key: (Optional) Client/Consumer key.
+    :param access_token: (Optional) Access token (to access resources).
+    :param request_token: (Optional) Request token (to obtain access token).
+    :param signature_method: (Optional) One of HMAC-SHA1, RSA-SHA1 or PLAINTEXT.
+    :param callback: (Optional) The url to redirect to after authorization.
+    :param verifier: (Optional) Used when obtaining access tokens.
+    :return: List of tuples [(parameter, value),..]
+    """
     params = {
        'oauth_nonce': generate_nonce(),
        'oauth_timestamp': generate_timestamp(),
@@ -113,6 +138,9 @@ def normalize_http_method(method):
 
     Per `section 3.4.1.1`_ of the spec.
 
+    :param method: The HTTP request method.
+    :return: Uppercased HTTP request method.
+
     .. _`section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.1
 
     """
@@ -124,6 +152,9 @@ def normalize_base_string_uri(uri):
 
     Parses the URL and rebuilds it to be scheme://host/path. The normalized
     return value is already escaped.
+
+    :param uri: The URI to be normalized.
+    :return: A normalized and lowercased uri with default port numbers removed. 
 
     Per `section 3.4.1.2`_ of the spec.
 
@@ -144,6 +175,9 @@ def normalize_parameters(params):
     """Prepares the request parameters.
 
     Per `section 3.4.1.3`_ of the spec.
+
+    :param params: A dictionary or list of parameters to be normalized.
+    :return: A list of tuples containing sorted and normalized parameters. 
 
     .. _`section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
@@ -167,6 +201,9 @@ def order_parameters(params):
 
     Per `section 3.5`_ of the spec.
 
+    :param params: A dictionary or list of parameters to be sorted.
+    :return: A list of tuples with OAuth parameters first.
+
     .. _`section 3.5`: http://tools.ietf.org/html/rfc5849#section-3.5
     """
     # Convert dictionaries to list of tuples
@@ -188,6 +225,10 @@ def prepare_hmac_key(client_secret=None, access_secret=None):
 
     Per `section 3.4.2`_ of the spec.
 
+    :param client_secret: (Optional) The shared consumer secret.
+    :param access_secret: (Optional) Token secret or access secret.
+    :return: A string of the concatenated secrets.
+
     .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
 
     """
@@ -200,6 +241,11 @@ def prepare_base_string(method, uri, params):
     """Prepare a signature base string.
 
     Per `section 3.4.1`_ of the spec.
+
+    :param method: The HTTP request method.
+    :param uri: The request URI (may contain query parameters).
+    :param params: OAuth parameters and data (i.e. POST data).
+    :return: A base string as per `section 3.4.1`_ of the spec. 
 
     .. _`section 3.4.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1
 
@@ -226,6 +272,13 @@ def sign_hmac(method, url, params, client_secret=None, access_secret=None):
 
     Per `section 3.4.2`_ of the spec.
 
+    :param method: The HTTP request method.
+    :param uri: The request URI (may contain query parameters).
+    :param params: OAuth parameters and data (i.e. POST data).
+    :param client_secret: (Optional) Consumer shared secret.
+    :param access_secret: (Optional) Token secret or access secret.
+    :return: A HMAC-SHA1 signature per `section 3.4.2`_ of the spec.
+
     .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
 
     """
@@ -239,6 +292,10 @@ def sign_plain(client_secret, access_secret):
 
     Per `section 3.4.4`_ of the spec.
 
+    :param client_secret: (Optional) Consumer shared secret.
+    :param access_secret: (Optional) Token secret or access secret.
+    :return: A PLAINTEXT signature per `section 3.4.4`_ of the spec.
+
     .. _`section 3.4.4`: http://tools.ietf.org/html/rfc5849#section-3.4.4
 
     """
@@ -250,6 +307,14 @@ def sign_rsa(method, url, params, private_rsa):
     """Sign a request using RSASSA-PKCS #1 v1.5.
 
     Per `section 3.4.3`_ of the spec.
+
+    Note this method requires the PyCrypto library.
+
+    :param method: The HTTP request method.
+    :param uri: The request URI (may contain query parameters).
+    :param params: OAuth parameters and data (i.e. POST data).
+    :param private_rsa: Private RSA key (string).
+    :return: A RSA-SHA1 signature per `section 3.4.3`_ of the spec.
 
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
 
@@ -267,6 +332,14 @@ def verify_rsa(method, url, params, public_rsa, signature):
     """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
 
     Per `section 3.4.3`_ of the spec.
+
+    Note this method requires the PyCrypto library.
+
+    :param method: The HTTP request method.
+    :param uri: The request URI (may contain query parameters).
+    :param params: OAuth parameters and data (i.e. POST data).
+    :param public_rsa: Public RSA key (string).
+    :return: True or False.
 
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
 
@@ -287,6 +360,10 @@ def prepare_authorization_header(params, realm=None):
 
     Per `section 3.5.1`_ of the spec.
 
+    :param params: OAuth parameters, non OAuth parameters will be removed.
+    :param realm: OAuth realm, often referred to as scope. 
+    :return: An OAuth Authorization header as per `section 3.5.1`_.
+
     .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
 
     """
@@ -303,6 +380,9 @@ def prepare_form_encoded_body(params):
 
     Per `section 3.5.2`_ of the spec.
 
+    :param params: OAuth parameters and data (i.e. POST data).
+    :return: An OAuth Form Encoded body as per `section 3.5.2`_.
+
     .. _`section 3.5.2`: http://tools.ietf.org/html/rfc5849#section-3.5.2
 
     """
@@ -313,6 +393,10 @@ def prepare_request_uri_query(params, url):
     """Prepare the Request URI Query.
 
     Per `section 3.5.3`_ of the spec.
+
+    :param params: OAuth parameters and data (i.e. POST data).
+    :param url: The request url, may NOT include query parameters.
+    :return: An OAuth Request URI query as per `section 3.5.3`_.
 
     .. _`section 3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
 

@@ -56,21 +56,6 @@ class VerifyRFCSpecification(unittest.TestCase):
         )
     ]
 
-    def test_generate_params(self):
-        # Sample taken from section 3.4.1.2 fully decoded and compared to the
-        # decoded version in 3.4.1.3.2 (they are equivalent)
-        client_key = "9djdj82h48djs9d2"
-        access_token = "kkk9d7dh3k39sjv7"
-        signature_method = "HMAC-SHA1"
-
-        params = generate_params(client_key, access_token, signature_method)
-        self.assertEqual(params["oauth_consumer_key"], client_key)
-        self.assertEqual(params["oauth_token"], access_token)
-        self.assertEqual(params["oauth_signature_method"], signature_method)
-        self.assertIsNotNone(params["oauth_nonce"])
-        self.assertIsNotNone(params["oauth_timestamp"])
-        self.assertIsNotNone(params["oauth_version"])
-    
     def test_base_string(self):
         for method, uri, params, correct  in self.samples:
             self.assertEqual(prepare_base_string(method, uri, params), correct)

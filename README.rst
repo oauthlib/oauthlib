@@ -15,6 +15,8 @@ assuming a specific HTTP request object. Use it to graft OAuth support onto your
 favorite HTTP library. If you're a maintainer of such a library, write a thin
 veneer on top of OAuthLib and get OAuth support for very little effort.
 
+OAuthLib will fully support OAuth 1.0 (RFC 5849). 
+
 HTTP Libraries supporting OAuthLib
 ----------------------------------
 
@@ -43,8 +45,6 @@ There are three ways in which you can sign a request.
 * HMAC-SHA1 (Default)
 * RSA-SHA1
 * Plaintext
-
-
 
 Case study: Twitter
 -------------------
@@ -94,7 +94,7 @@ The url is constructed by adding an ``oauth_token`` parameter to the request url
     headers = { "Authorization" : header }
     response = requests.get(request_url, headers=headers)
 
-**Extracting the token from the respone**::
+**Extracting the token from the response**::
 
     from urlparse import parse_qs
     token = parse_qs(response.text)["oauth_token"][0]
