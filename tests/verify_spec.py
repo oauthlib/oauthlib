@@ -210,5 +210,15 @@ class VerifyRFCSpecification(unittest.TestCase):
                           'size=original')
         self.assertEquals(header, correct_header)
 
+    def test_convenience_class(self):
+        key = "dpf43f3p2l4k3l03"
+        secret = "kd94hf93k423kf44"
+        o = OAuth(client_key=key, client_secret=secret)
+        url = "http://photos.example.net:80/photos?size=orig$inal&file=vacation.jpg"
+        self.assertIsNotNone(o.auth_header(url))
+        self.assertIsNotNone(o.uri_query(url))
+        self.assertIsNotNone(o.form_body(url))
+
+
 if __name__ == "__main__":
     unittest.main()

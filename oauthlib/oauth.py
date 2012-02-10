@@ -10,11 +10,13 @@ for signing OAuth requests.
 
 import time
 import hashlib
-from random import getrandbits
+from random import choice, getrandbits
 import urllib
 import hmac
 import binascii
-from urlparse import urlparse
+from urlparse import urlparse, urlunparse, parse_qsl
+from warnings import warn
+import string
 
 def order_params(target):
     """Order OAuth parameters first
@@ -87,6 +89,19 @@ def generate_nonce():
     """Generate pseudorandom nonce that is unlikely to repeat."""
     return str(getrandbits(64)) + generate_timestamp()
 
+def generate_token(length=20, chars=string.ascii_letters + string.digits):
+    """Generates a generic OAuth token
+    
+    Credit to Ignacio Vazquez-Abrams for his excellent `Stackoverflow answer`_
+
+    .. _`Stackoverflow answer` : http://stackoverflow.com/questions/2257441/
+        python-random-string-generation-with-upper-case-letters-and-digits
+
+    :param length: Token string length (default 20)
+    :param chars: The charactes used to populate the token string
+    :return: A length sized string of random characters
+    """
+    return ''.join(choice(chars) for x in range(length))
 
 def generate_params(client_key=None, 
                     access_token=None, 
@@ -254,12 +269,12 @@ def prepare_base_string(method, uri, params):
     if isinstance(params, dict):
         params = params.items()
 
+    # copy to prevent unwanted side effects
+    params = params[:]
+
     # Add uri query components to parameters as per 3.4.1.3.1
-    for qc in urlparse(uri).query.split("&"):
-        if "=" in qc:
-            k, v = qc.split("=")
-            k, v = urllib.unquote(k), urllib.unquote(v) 
-            params.append((k,v))
+    for k, v in parse_qsl(urlparse(uri).query, True):
+        params.append((k,v))
 
     return "{method}&{uri}&{params}".format(
         method=normalize_http_method(method),
@@ -395,14 +410,150 @@ def prepare_request_uri_query(params, url):
     Per `section 3.5.3`_ of the spec.
 
     :param params: OAuth parameters and data (i.e. POST data).
-    :param url: The request url, may NOT include query parameters.
+    :param url: The request url. Query components will be removed.
     :return: An OAuth Request URI query as per `section 3.5.3`_.
 
     .. _`section 3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
 
     """
-    return '{url}?{params}'.format(
-        url=url, params='&'.join(
-            ['{0}={1}'.format(k, v) for k, v in params]))
+    sch, net, path, par, query, fra = urlparse(url)
+    for k,v in parse_qsl(query, True):
+        params.append((escape(k), escape(v)))
+    query = "&".join(["%s=%s" % (k, v) for k,v in params])
+    return urlunparse((sch, net, path, par, query, fra))
 
- 
+
+##################################################
+# Convenience class for working with OAuth methods
+##################################################
+
+class OAuthError(Exception):
+    pass
+
+class OAuth(object):
+
+    """Valid Signature Methods in OAuth 1.0"""
+    SIG_METHODS = ("HMAC-SHA1", "RSA-SHA1", "PLAINTEXT")
+
+    def __init__(self, 
+        client_key=None,
+        client_secret=None,
+        request_token=None,
+        access_token=None,
+        token_secret=None,
+        rsa_key=None,
+        callback=None,
+        signature_method="HMAC-SHA1",
+        verifier=None):
+        """Constructs an :class:`OAuth <OAuth>` object.
+        
+        :param client_key: The client identifier, also known as consumer key.
+        :param client_secret: The client shared secret, or consumer secret
+        :param signature_method: One of HMAC-SHA1, RSA-SHA1 and PLAINTEXT
+        :param request_token: The oauth token used to authenticate users
+        :param callback: The url an authorized user should be redirected to
+        :param verifier: Used in combination with request_token to request 
+                        an access_token
+        :param access_token: The oauth token used to request resources
+        :param token_secret: A secret often used in combination with access_token
+        :param rsa_key: The string of a private RSA key
+        """
+        self.client_key = client_key      
+        self.client_secret = client_secret
+        self.request_token = request_token
+        self.access_token = access_token
+        self.token_secret = token_secret
+        self.rsa_key = rsa_key
+        self.callback = callback
+        self.signature_method = signature_method
+        self.verifier = verifier
+
+    def _verify_fields(self):
+        # OAuth requires a valid signature method
+        if not self.signature_method in OAuth.SIG_METHODS:
+            raise OAuthError("No signature method")
+
+        # Only warn since client key is optional in theory
+        if not self.client_key:
+            warn("No client identifier (consumer key) provided, this is " +
+                 "almost always required.")
+
+        # Usually only client secret is needed in this step, the token
+        # secret is usually used later with the access token
+        if not self.client_secret and "HMAC-SHA1" == self.signature_method:
+            warn("No client shared secret (consumer secret) provided.")
+
+        # Request token and Access token are simply for convenience, 
+        # they cannot be used at the same time
+        if self.request_token and self.access_token:
+            raise OAuthError("Use either access token or request, not both.")
+
+        if not self.rsa_key and "RSA-SHA1" == self.signature_method:
+            raise OAuthError("No RSA key provided")
+
+    def _sign(self, url, params, method):
+        # Crypto signature of all oauth parameters, no data used this time
+        if "HMAC-SHA1" == self.signature_method:
+            return sign_hmac(method, url, params, 
+                               self.client_secret, self.token_secret)
+
+        elif "RSA-SHA1" == self.signature_method:
+            return sign_rsa(method, url, params, self.rsa_key)
+
+        elif "PLAINTEXT" == self.signature_method:
+            return sign_plaintext(self.client_secret, self.token_secret)
+
+        else:
+            raise OAuthError("Invalid signature method")
+           
+    def _prepare_params(self, data=list()):
+        self._verify_fields()
+        args = {}
+
+        if self.client_key:
+            args["client_key"] = self.client_key
+
+        if self.access_token:
+            args["access_token"] = self.access_token
+
+        if self.request_token:
+            args["request_token"] = self.request_token
+
+        if self.callback:
+            args["callback"] = self.callback
+
+        if self.verifier:
+            args["verifier"] = self.verifier
+
+        params = generate_params(**args)
+
+        for k,v in data:
+            params.append((k, v))
+
+        return params
+    
+    def auth_header(self, url, data=list(), method="POST", realm=None):
+        params = self._prepare_params(data)
+        params.append(("oauth_signature", self._sign(url, params, method)))
+        return prepare_authorization_header(params, realm) 
+
+    def verify_header(self, url, header, data=list(), method="POST"):
+        pass
+
+    def uri_query(self, url, data=list(), method="POST"):
+        params = self._prepare_params(data)
+        params.append(("oauth_signature", self._sign(url, params, method)))
+        return prepare_request_uri_query(params, url) 
+
+    def verify_uri(self, url, data=list(), method="POST"):
+        pass
+
+    def form_body(self, url, data=list(), method="POST"):
+        params = self._prepare_params(data)
+        params.append(("oauth_signature", self._sign(url, params, method)))
+        return prepare_form_encoded_body(params) 
+
+    def verify_form(self, uri, body, method="POST"):
+        pass
+
+
