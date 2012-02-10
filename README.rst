@@ -7,15 +7,14 @@ both of the following:
 
 1. They predate the `OAuth 1.0 spec`_, AKA RFC 5849.
 2. They assume the usage of a specific HTTP request library.
+3. They only support use of HMAC-SHA1 signatures and authorization headers.
 
 .. _`OAuth 1.0 spec`: http://tools.ietf.org/html/rfc5849
 
 OAuthLib is a generic utility which implements the logic of OAuth without
-assuming a specific HTTP request object. Use it to graft OAuth support onto your
-favorite HTTP library. If you're a maintainer of such a library, write a thin
-veneer on top of OAuthLib and get OAuth support for very little effort.
-
-OAuthLib will fully support OAuth 1.0 (RFC 5849). 
+assuming a specific HTTP request object or workflow. Use it to graft OAuth support 
+onto your favorite HTTP library. If you're a maintainer of such a library, 
+write a thin veneer on top of OAuthLib and get OAuth support for very little effort.
 
 HTTP Libraries supporting OAuthLib
 ----------------------------------
@@ -49,7 +48,7 @@ There are three ways in which you can sign a request.
 Case study: Twitter
 -------------------
 
-The study aims to show HTTP library developers how OAuthLib can be used. Using OAuthLib this way is not recommended. Instead use it indirectly through an HTTP library that uses OAuthLib, such as `requests`.
+**Objective: Show HTTP library developers how OAuthLib can be used.**
 
 Twitter will give each client a consumer key and a consumer secret. The OAuth parameters are suplied in the authorization header and signed using HMAC-SHA1::
 
@@ -78,15 +77,9 @@ The url is constructed by adding an ``oauth_token`` parameter to the request url
 
 **Crafting the authorization header using OAuthLib**::
 
-    import oauthlib.oauth as oauth
-    params = oauth.generate_params(client_key=client_key)
-    signature = oauth.sign_hmac("GET", request_url, params, client_secret)
-    params["oauth_signature"] = signature
-    header = oauth.prepare_authorization_header(params)
-
-*Use oauth.generate_params to create a dictionary of the required OAuth parameters. It will in addition to supplied parameters generate nonce, signature method, timestamp and version for you.*
-
-*Note that any signature method (HMAC, SHA, Plaintext) requires type of request method, url and OAuth parameters. Client and token secrets are used with HMAC and RSA.* 
+    from oauthlib.oauth import OAuth
+    oauth = OAuth(client_key=client_key, client_secret=client_secret)
+    header = oauth.auth_header(request_url)
 
 **Fetching the token using requests**::
 
@@ -121,16 +114,12 @@ Fetch the access token
 
 **Crafting the authorization header**::
 
-    callback = "http://whatever.you/registered"
-
-    import oauthlib.oauth as oauth
-    params = oauth.generate_params(client_key=client_key,
-                                   request_token=token,
-                                   verifier=verifier,
-                                   callback=callback)
-    signature = oauth.sign_hmac("GET", access_url, params, client_secret)
-    params["oauth_signature"] = signature
-    header = oauth.prepare_authorization_header(params)
+    from oauthlib.oauth import OAuth
+    oauth = OAuth(client_key=client_key,
+                  client_secret=client_secret,
+                  request_token=token,
+                  verifier=verifier)
+    header = oauth.auth_header(access_url)
 
 **Fetching the token using requests**::
 
@@ -152,21 +141,16 @@ Tweet hello world
     update_url = "'http://api.twitter.com/1/statuses/update.json"
     post = { 'status': "Hello world!", 'wrap_links': True }
 
-    import oauthlib.oauth as oauth
-    params = oauth.generate_params(client_key=client_key,
-                                   access_token=access_token)
-    for k,v in post:
-        params[k] = v
-    signature = oauth.sign_hmac("GET", request_url, params, 
-                                client_secret, token_secret)
-    params["oauth_signature"] = signature
-    header = oauth.prepare_authorization_header(params)
+    from oauthlib.oauth import OAuth
+    oauth = OAuth(client_key=client_key,
+                  client_secret=client_secret,
+                  token_secret=token_secret
+                  access_token=access_token)
+    header = oauth.auth_header(update_url, post)
 
     import requests
     headers = { "Authorization" : header }
     response = requests.post(update_url, post, headers=headers)
-
-*Note that to create a correct signature the POST data will need to be included in params.*
 
 License
 -------
