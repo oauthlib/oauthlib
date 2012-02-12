@@ -215,9 +215,28 @@ class VerifyRFCSpecification(unittest.TestCase):
         secret = "kd94hf93k423kf44"
         o = OAuth(client_key=key, client_secret=secret)
         url = "http://photos.example.net:80/photos?size=orig$inal&file=vacation.jpg"
-        self.assertIsNotNone(o.auth_header(url))
-        self.assertIsNotNone(o.uri_query(url))
-        self.assertIsNotNone(o.form_body(url))
+        
+        h = o.auth_header(url)
+        self.assertEqual(o.verify_auth_header(url, h), True)
+        
+        u = o.uri_query(url)
+        self.assertEqual(o.verify_uri_query(u), True)
+
+        f = o.form_body(url)
+        self.assertEqual(o.verify_form_body(url, f), True)
+
+        # Now with form/body data
+        data = { "hell$" : "w$rld" }
+
+        h = o.auth_header(url, data, realm="photos")
+        self.assertEqual(o.verify_auth_header(url, h, data), True)
+        
+        u = o.uri_query(url, data)
+        self.assertEqual(o.verify_uri_query(u, data), True)
+
+        f = o.form_body(url, data)
+        self.assertEqual(o.verify_form_body(url, f), True)
+        
 
 
 if __name__ == "__main__":

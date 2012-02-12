@@ -507,6 +507,7 @@ class OAuth(object):
             raise OAuthError("Invalid signature method")
            
     def _prepare_params(self, data=list()):
+        """Generate parameters from all set fields"""
         self._verify_fields()
         args = {}
 
@@ -527,33 +528,151 @@ class OAuth(object):
 
         params = generate_params(**args)
 
-        for k,v in data:
-            params.append((k, v))
+        if isinstance(data, dict):
+            data = data.items()
+
+        for k, v in data:
+            params.append((escape(k), escape(v)))
 
         return params
     
+    def _convert_to_list(self, data):
+       
+        if isinstance(data, str):
+            return [(escape(k), escape(v)) for k, v in parse_qsl(data)]
+
+        elif isinstance(data, dict):
+            return [(escape(k), escape(v)) for k, v in data.items()]
+
+        elif isinstance(data, list):
+            return [(escape(k), escape(v)) for k, v in data]
+
+        else:
+            raise OAuthError("Could not convert data of type %s" % type(data))
+
     def auth_header(self, url, data=list(), method="POST", realm=None):
+        """Construct a signed OAuth 1.0 RFC Authorization header
+
+        :param url: The requested server url.
+        :param data: A dictionary(or tuple list) of (form-)data to send.
+        :param method: The HTTP method. GET, POST, PUT, etc.
+        :param realm: The scope/realm of the request.
+        :return: A string to be used with the Authorization HTTP header.
+        """
         params = self._prepare_params(data)
         params.append(("oauth_signature", self._sign(url, params, method)))
         return prepare_authorization_header(params, realm) 
 
-    def verify_header(self, url, header, data=list(), method="POST"):
-        pass
+    def verify_auth_header(self, url, header, data=list(), method="POST"):
+        """Verify a signed OAuth 1.0 RFC Authorization header
+
+        :param url: The full request url (with query components).
+        :param data: A string, dictionary(or tuple list) of unescaped sent (form-)data.
+        :param method: The HTTP method. GET, POST, PUT, etc.
+        :param realm: The scope/realm of the request.
+        :return: True or False.
+        """
+        # Header pattern: OAuth [{k}={v},] (without ending comma), i.e.
+        # OAuth realm="photos", oauth_consumer_key="w3489sfkjhsdf"
+        # OAuth oauth_consumer_key="w3489sfkjhsdf", oauth_token="34785sfikasdf"
+        params = []
+        realm = None
+        client_sig = None
+
+        # Remove "OAuth " and split in pairs  
+        for pair in header[6:].split(","):
+            k, _, v = pair.partition("=")
+
+            # Remove whitespace and enclosing quotation marks
+            k, v = k.strip(), v.strip()[1:-1]
+            
+            # Do not include signature nor realm
+            if k == "oauth_signature":
+                client_sig = v
+            elif k == "realm":
+                realm = v
+            else:
+                params.append((k, v))
+    
+        # For a correct signature, data must be appended to params
+        params.extend(self._convert_to_list(data))
+        print params
+        return client_sig == self._sign(url, params, method)
 
     def uri_query(self, url, data=list(), method="POST"):
-        params = self._prepare_params(data)
-        params.append(("oauth_signature", self._sign(url, params, method)))
-        return prepare_request_uri_query(params, url) 
+        """Construct a signed OAuth 1.0 RFC Request URI Query
 
-    def verify_uri(self, url, data=list(), method="POST"):
-        pass
+        :param url: The request server url.
+        :param data: A dictionary(or tuple list) of (form-)data to send.
+        :param method: The HTTP method. GET, POST, PUT, etc.
+        :return: The input URL modified to include the necessary OAuth parameters.
+        """
+        # We do not want to include the form data in the URI
+        query = self._prepare_params()
+        params = query[:]
+
+        if isinstance(data, dict):
+            data = data.items()
+
+        for k, v in data:
+            params.append((escape(k), escape(v)))
+
+        query.append(("oauth_signature", self._sign(url, params, method)))
+        return prepare_request_uri_query(query, url) 
+
+    def verify_uri_query(self, url, data=list(), method="POST"):
+        """Verify a signed OAuth 1.0 RFC Request URI Query
+
+        :param url: The full request url (with query components).
+        :param data: A string, dictionary(or tuple list) of unescaped sent (form-)data.
+        :param method: The HTTP method. GET, POST, PUT, etc.
+        :return: True or False.
+        """
+        # OAuth parameters passed as query components in the url
+        # Need to extra parameters from the url
+        # Then reconstruct the url without oauth parameters
+        params = []
+        qcs =  []
+        client_sig = None
+
+        sch, net, path, par, query, fra = urlparse(url)
+        for k,v in parse_qsl(query, True):
+            k, v = escape(k), escape(v)
+            if k.startswith("oauth_"):
+                if k == "oauth_signature":
+                    client_sig = v
+                else:
+                    params.append((k, v))
+            else:
+                qcs.append((k, v))
+
+        query = "&".join(["%s=%s" % (k, v) for k,v in qcs])
+        old_url = urlunparse((sch, net, path, par, query, fra))
+        params.extend(self._convert_to_list(data))
+        return client_sig == self._sign(old_url, params, method)
 
     def form_body(self, url, data=list(), method="POST"):
+        """Construct a signed OAuth 1.0 RFC Form Encoded Body
+
+        :param url: The request server url.
+        :param data: A dictionary(or tuple list) of (form-)data to send.
+        :param method: The HTTP method. GET, POST, PUT, etc.
+        :return: A string, including OAuth parameters, to be sent in the request body.
+        """
         params = self._prepare_params(data)
         params.append(("oauth_signature", self._sign(url, params, method)))
         return prepare_form_encoded_body(params) 
 
-    def verify_form(self, uri, body, method="POST"):
-        pass
+    def verify_form_body(self, url, body, method="POST"):
+        """Verify a signed OAuth 1.0 RFC Form Encoded Body
+
+        :param url: The full request url (with query components).
+        :param data: A string, dictionary(or tuple list) of sent unescaped (form-)data.
+        :param method: The HTTP method. GET, POST, PUT, etc.
+        :return: True or False.
+        """
+        # OAuth parameters passed in the body of the request
+        params = self._convert_to_list(body)
+        return dict(params)["oauth_signature"] == self._sign(url, params, method)
 
 
