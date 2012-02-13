@@ -529,13 +529,7 @@ class OAuth(object):
             args["verifier"] = self.verifier
 
         params = generate_params(**args)
-
-        if isinstance(data, dict):
-            data = data.items()
-
-        for k, v in data:
-            params.append((escape(k), escape(v)))
-
+        params.extend(self._convert_to_list(data))
         return params
     
     def _convert_to_list(self, data):

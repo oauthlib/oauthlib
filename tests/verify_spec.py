@@ -294,5 +294,25 @@ class VerifyRFCSpecification(unittest.TestCase):
         f = o.form_body(url, data)
         self.assertEqual(o.verify_form_body(url, f), True)
 
+    def test_invalid_convenience_objects(self):
+        o = OAuth(signature_method=None)
+        p = OAuth(signature_method="RSA-SHA1",
+                  client_key="test")
+        q = OAuth(access_token="A",
+                  request_token="B",
+                  client_key="test",
+                  client_secret="test")
+        r = OAuth(client_key="test",
+                  client_secret="test")
+        with self.assertRaises(OAuthError):
+            o.auth_header(None)
+        with self.assertRaises(OAuthError):
+            p.auth_header(None)
+        with self.assertRaises(OAuthError):
+            p.auth_header(None)
+        with self.assertRaises(OAuthError):
+            r.auth_header(None, 10)
+
+
 if __name__ == "__main__":
     unittest.main()
