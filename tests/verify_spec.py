@@ -83,7 +83,7 @@ class VerifyRFCSpecification(unittest.TestCase):
         client_secret = "kd94hf93k423kf44"
         access_secret = "pfkkdhi9sl3r4s00"
         signature = sign_plain(client_secret, access_secret)
-        correct_signature = "kd94hf93k423kf44&pfkkdhi9sl3r4s00"
+        correct_signature = "kd94hf93k423kf44%26pfkkdhi9sl3r4s00"
         self.assertEquals(signature, correct_signature)
 
     def test_sign_rsa(self):
@@ -240,6 +240,7 @@ class VerifyRFCSpecification(unittest.TestCase):
         # And some tokens!
         token = generate_token()
         token_secret = generate_token(40)
+        verifier = generate_token()
 
         o = OAuth(client_key=key,
                   client_secret=secret,
@@ -263,7 +264,8 @@ class VerifyRFCSpecification(unittest.TestCase):
         o = OAuth(client_key=key,
                   rsa_key=rsa_key.exportKey(),
                   signature_method="RSA-SHA1",
-                  request_token=token)
+                  request_token=token,
+                  verifier=verifier)
 
         s = OAuth(rsa_key=rsa_key.publickey().exportKey(),
                   signature_method="RSA-SHA1")
@@ -276,6 +278,21 @@ class VerifyRFCSpecification(unittest.TestCase):
 
         f = o.form_body(url, data)
         self.assertEqual(s.verify_form_body(url, f), True)
+        
+        # And lets not forget plaintext!
+        o = OAuth(client_key=key,
+                  client_secret=secret,
+                  callback="http://www.example.com/cb",
+                  signature_method="PLAINTEXT")
+
+        h = o.auth_header(url, data, realm="photos")
+        self.assertEqual(o.verify_auth_header(url, h, data), True)
+        
+        u = o.uri_query(url, data)
+        self.assertEqual(o.verify_uri_query(u, data), True)
+
+        f = o.form_body(url, data)
+        self.assertEqual(o.verify_form_body(url, f), True)
 
 if __name__ == "__main__":
     unittest.main()

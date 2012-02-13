@@ -316,7 +316,7 @@ def sign_plain(client_secret, access_secret):
     """
     # HMAC-SHA1 concatenates the secrets in the same way a plain signature
     # is crafted.
-    return prepare_hmac_key(client_secret, access_secret)
+    return escape(prepare_hmac_key(client_secret, access_secret))
 
 def sign_rsa(method, url, params, private_rsa):
     """Sign a request using RSASSA-PKCS #1 v1.5.
@@ -503,7 +503,7 @@ class OAuth(object):
             return sign_rsa(method, url, params, self.rsa_key)
 
         elif "PLAINTEXT" == self.signature_method:
-            return sign_plaintext(self.client_secret, self.token_secret)
+            return sign_plain(self.client_secret, self.token_secret)
 
         else:
             raise OAuthError("Invalid signature method")
