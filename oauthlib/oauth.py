@@ -338,6 +338,7 @@ def sign_rsa(method, url, params, private_rsa):
     from Crypto.Signature import PKCS1_v1_5
     from Crypto.Hash import SHA
     key = RSA.importKey(private_rsa)
+    params = params[:]
     message = prepare_base_string(method, url, params)
     h = SHA.new(message)    
     p = PKCS1_v1_5.new(key)
@@ -362,6 +363,7 @@ def verify_rsa(method, url, params, public_rsa, signature):
     from Crypto.PublicKey import RSA
     from Crypto.Signature import PKCS1_v1_5
     from Crypto.Hash import SHA
+    params = params[:]
     key = RSA.importKey(public_rsa)
     message = prepare_base_string(method, url, params)
     h = SHA.new(message)
@@ -596,8 +598,10 @@ class OAuth(object):
     
         # For a correct signature, data must be appended to params
         params.extend(self._convert_to_list(data))
-        print params
-        return client_sig == self._sign(url, params, method)
+        if "RSA-SHA1" == self.signature_method:
+            return verify_rsa(method, url, params, self.rsa_key, client_sig)
+        else:
+            return client_sig == self._sign(url, params, method)
 
     def uri_query(self, url, data=list(), method="POST"):
         """Construct a signed OAuth 1.0 RFC Request URI Query
@@ -649,7 +653,10 @@ class OAuth(object):
         query = "&".join(["%s=%s" % (k, v) for k,v in qcs])
         old_url = urlunparse((sch, net, path, par, query, fra))
         params.extend(self._convert_to_list(data))
-        return client_sig == self._sign(old_url, params, method)
+        if "RSA-SHA1" == self.signature_method:
+            return verify_rsa(method, old_url, params, self.rsa_key, client_sig)
+        else:
+            return client_sig == self._sign(old_url, params, method)
 
     def form_body(self, url, data=list(), method="POST"):
         """Construct a signed OAuth 1.0 RFC Form Encoded Body
@@ -673,6 +680,10 @@ class OAuth(object):
         """
         # OAuth parameters passed in the body of the request
         params = self._convert_to_list(body)
-        return dict(params)["oauth_signature"] == self._sign(url, params, method)
+        client_sig = dict(params)["oauth_signature"]
+        if "RSA-SHA1" == self.signature_method:
+            return verify_rsa(method, url, params, self.rsa_key, client_sig)
+        else:
+            return client_sig == self._sign(url, params, method)
 
 

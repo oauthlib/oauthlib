@@ -237,7 +237,45 @@ class VerifyRFCSpecification(unittest.TestCase):
         f = o.form_body(url, data)
         self.assertEqual(o.verify_form_body(url, f), True)
         
+        # And some tokens!
+        token = generate_token()
+        token_secret = generate_token(40)
 
+        o = OAuth(client_key=key,
+                  client_secret=secret,
+                  token_secret=token_secret,
+                  access_token=token)
+
+        h = o.auth_header(url, data, realm="photos")
+        self.assertEqual(o.verify_auth_header(url, h, data), True)
+        
+        u = o.uri_query(url, data)
+        self.assertEqual(o.verify_uri_query(u, data), True)
+
+        f = o.form_body(url, data)
+        self.assertEqual(o.verify_form_body(url, f), True)
+
+        # And now signing with rsa
+        from Crypto.PublicKey import RSA
+        with open("myrsakey.pem") as f:
+            rsa_key = RSA.importKey(f.read())
+
+        o = OAuth(client_key=key,
+                  rsa_key=rsa_key.exportKey(),
+                  signature_method="RSA-SHA1",
+                  request_token=token)
+
+        s = OAuth(rsa_key=rsa_key.publickey().exportKey(),
+                  signature_method="RSA-SHA1")
+                  
+        h = o.auth_header(url, data, realm="photos")
+        self.assertEqual(s.verify_auth_header(url, h, data), True)
+        
+        u = o.uri_query(url, data)
+        self.assertEqual(s.verify_uri_query(u, data), True)
+
+        f = o.form_body(url, data)
+        self.assertEqual(s.verify_form_body(url, f), True)
 
 if __name__ == "__main__":
     unittest.main()
