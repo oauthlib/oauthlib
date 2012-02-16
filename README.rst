@@ -2,8 +2,7 @@ OAuthLib: a generic library for signing OAuth requests
 ======================================================
 
 OAuth often seems complicated and difficult-to-implement. There are several
-prominent libraries for signing OAuth requests, but they all suffer from one or
-both of the following:
+prominent libraries for signing OAuth requests, but they all suffer from one of the following:
 
 1. They predate the `OAuth 1.0 spec`_, AKA RFC 5849.
 2. They assume the usage of a specific HTTP request library.
@@ -16,145 +15,134 @@ assuming a specific HTTP request object or workflow. Use it to graft OAuth suppo
 onto your favorite HTTP library. If you're a maintainer of such a library, 
 write a thin veneer on top of OAuthLib and get OAuth support for very little effort.
 
-HTTP Libraries supporting OAuthLib
-----------------------------------
+OAuthLib features
+-----------------
 
-* The `requests`_ library will soon have full support for OAuthLibs features. 
+* Easy to use OAuth class for any server and workflow.
+* Convenience methods for OAuth clients including signing, encoding and nonces.
+* Conveniene methods for OAuth servers including verification and token generation.
+* Completely decoupled from HTTP libraries.
+* Supports all signature methods; HMAC-SHA1, RSA-SHA1 and PLAINTEXT.
+* Supports all methods of supplying credentials; Authorization header, Request URI Query and Form Encoded Body.
 
-.. _`requests`: http://docs.python-requests.org/en/latest/
+OAuthLib takes care of all encoding, ordering, signing and other nuisance, allowing you to more quickly get to the pub. 
 
-Signing requests using OAuthLib
--------------------------------
+Diving into OAuthLib (Quick Flask Twitter App) 
+----------------------------------------------
 
-For an introduction to OAuth 1.0 please visit `hueniverse/oauth`_.
+**While this tutorial does not add OAuth support to a specific library it does show a fully working example of how it can be used in a typical workflow. From this it should be easy to see how it might fit in into your library of choice.**
 
-.. _`hueniverse/oauth`: http://hueniverse.com/oauth/
+**An OAuth server example is on its way.**
 
+Dependencies and credentials
+````````````````````````````
 
-In order to authenticate with OAuth you need to register a third party client with an authorization server such as Twitter, Facebook or Google. Upon doing so you will receive a set of credentials which will be used when requesting access to protected resources. The credentials are sent using specific oauth parameters, which in addition needs to be signed. Different servers will provide and require different parameters depending on what authentication method you use and their preference. 
+We will use `Flask`_, `Requests`_ and OAuthLib. The former two are available on PyPI, OAuthLib can be installed by cloning this repository and moving the oauthlib dir to site-packages.::
 
-The OAuth RFC supports three places in which you can supply authentication parameters to your request.
+    #!/usr/bin/env python
+    from flask import Flask, request, render_template, redirect, session
+    from urlparse import parse_qs
+    from oauthlib.oauth import OAuth
+    import requests
+    import os
 
-* The Authorization header (Recommended)
-* The Request URI Query
-* The Form-Encoded Body
+    app = Flask(__name__)
 
-There are three ways in which you can sign a request.
+.. _`Flask`: http://flask.pocoo.org/ 
+.. _`Requests`: http://docs.python-requests.org/en/latest/index.html 
 
-* HMAC-SHA1 (Default)
-* RSA-SHA1
-* Plaintext
+When registering an app with twitter you will receive a ``client key`` and a ``client secret``. You will also register a callback url which in our example is set to ``/callback``.::
 
-Case study: Twitter
--------------------
-
-**Objective: Show HTTP library developers how OAuthLib can be used.**
-
-Twitter will give each client a consumer key and a consumer secret. The OAuth parameters are suplied in the authorization header and signed using HMAC-SHA1::
-
-    client_key = "325oyusfsdfksf"
-    client_secret = "43wiuyfskdf98234"
+    key = "<your client key>"
+    secret = "<your client secret>"
     request_url = "https://api.twitter.com/oauth/request_token"
-    auth_url = "https://api.twitter.com/oauth/authorize"
+    auth_url = "http://api.twitter.com/oauth/authorize"
     access_url = "https://api.twitter.com/oauth/access_token"
+    update_url = "http://api.twitter.com/1/statuses/update.json" 
 
-A common workflow when using OAuth is to first request access to protected resources by having the user (resource owner) authorize access. This is done by redirecting the user to an authorization url, with a request token supplied, and after the authorization is complete, requesting an access token. The access token can be stored for later use, thus it is only needed to obtain it once. 
+Redirect based user authorization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In our example we will
- 
-#. Create an authorization url 
-#. Receive an oauth verifier from the user (manually copy/pasted)
-#. Fetch an access token
-#. Tweet "Hello world"
+The first view will redirect the user in order to authorize the client access his/her twitter resources and post updates. In order to redirect the user we fetch a request token from twitter and use that to create the redirection url.::
 
-*Note that we do not use the included OAuth features of requests.*
+    def demo():
+        # Create an OAuth object with client key and secret set, 
+        # other parameters, such as nonce, timestamp, version, will
+        # be set for you automatically.
+        twitter = OAuth(client_key=key,
+                        client_secret=secret)
 
-Creating a redirection url for user authorization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        # Create an authorization header for this particular request.
+        # It will be signed using the default encryption method, HMAC-SHA1.
+        header = twitter.auth_header(request_url)
 
-The url is constructed by adding an ``oauth_token`` parameter to the request url. We obtain the token from the response of a GET request to https://api.twitter.com/oauth/request_token.
+        # Add it to the Authorization header
+        r = requests.post(request_url, headers={"Authorization":header})
 
+        # Extract the request token from the response
+        token = parse_qs(r.text)["oauth_token"][0]
 
-**Crafting the authorization header using OAuthLib**::
+        # Create the authorization url and redirect
+        auth = "{url}?oauth_token={token}".format(url=auth_url, token=token)
+        return redirect(auth)
 
-    from oauthlib.oauth import OAuth
-    oauth = OAuth(client_key=client_key, client_secret=client_secret)
-    header = oauth.auth_header(request_url)
+Obtaining an access token
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Fetching the token using requests**::
+Callback will receive a request token along with a verifier code. These are used to fetch an access token and secret from twitter, that we then store in a session variable. Do not show these to a user!::
 
-    import requests
-    headers = { "Authorization" : header }
-    response = requests.get(request_url, headers=headers)
+    @app.route("/callback", methods=["GET", "POST"])
+    def callback():
+        # Fetch the access token
+        verifier = request.args.get("oauth_verifier")
+        token = request.args.get("oauth_token")
+        twitter = OAuth(client_key=key,
+                        client_secret=secret,
+                        request_token=token,
+                        verifier=verifier)
+        header = twitter.auth_header(access_url)
+        r = requests.post(access_url, headers={"Authorization" : header})
 
-**Extracting the token from the response**::
+        # Extract the token, secret and screen name from the response
+        info = parse_qs(r.text)
+        session["access_token"] = info["oauth_token"][0]
+        session["token_secret"] = info["oauth_token_secret"][0]
+        session["screen_name"] = info["screen_name"][0]
 
-    from urlparse import parse_qs
-    token = parse_qs(response.text)["oauth_token"][0]
-
-*The response is an url encoded query string in the response body*
-
-**Creating the redirection url**::
-
-    redirect_url = "{url}?oauth_token={token}".format(url=auth_url, token=token)
-    print "Please open this url and authorize access, then copy the oauth_verifier"
-    print redirect_url
-
-
-Allow the user to supply oauth_verifier
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-We will use ``raw_input`` and have the user manually copy and paste the ``oauth_verifier``, when using a webapp rather than a command line app this step can be automated.::
-
-    verifier = raw_input("OAuth verifier: ")
- 
-
-Fetch the access token
-^^^^^^^^^^^^^^^^^^^^^^
-
-**Crafting the authorization header**::
-
-    from oauthlib.oauth import OAuth
-    oauth = OAuth(client_key=client_key,
-                  client_secret=client_secret,
-                  request_token=token,
-                  verifier=verifier)
-    header = oauth.auth_header(access_url)
-
-**Fetching the token using requests**::
-
-    import requests
-    headers = { "Authorization" : header }
-    response = requests.get(request_url, headers=headers)
-
-**Extracting the access token and secret from the respone**::
-
-    from urlparse import parse_qs
-    access_token = parse_qs(response.text)["oauth_token"][0]
-    token_secret = parse_qs(response.text)["oauth_token_secret"][0]
+        # Return the form
+        return """<html><head></head><body>
+        <form method="POST" action="/post">
+        <input name="status_update" type="text" value="hello"/>
+        <input type="submit" value="Send"/>
+        </form></body></html>"""
 
 
-Tweet hello world
-^^^^^^^^^^^^^^^^^
-::
+Tweeting using the access token
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    update_url = "'http://api.twitter.com/1/statuses/update.json"
-    post = { 'status': "Hello world!", 'wrap_links': True }
+The last view uses the access token and token secret to post a status update to twitter. Note that once an access token has been obtained it can be stored but should be stored with the same precautions as passwords.::
 
-    from oauthlib.oauth import OAuth
-    oauth = OAuth(client_key=client_key,
-                  client_secret=client_secret,
-                  token_secret=token_secret
-                  access_token=access_token)
-    header = oauth.auth_header(update_url, post)
+    @app.route("/post", methods=["POST"])
+    def post_update():
+        post = { "status" : request.form["status_update"] }
+        token_secret = session["token_secret"]
+        access_token= session["access_token"]
+         
+        twitter = OAuth(client_key=key,
+                        client_secret=secret,
+                        token_secret=token_secret,
+                        access_token=access_token)
 
-    import requests
-    headers = { "Authorization" : header }
-    response = requests.post(update_url, post, headers=headers)
+        # If you send data, don't forget to pass it to auth_header
+        header = twitter.auth_header(update_url, post)
+        r = requests.post(update_url, data=post, headers={"Authorization": header})
 
-License
--------
+        # Redirect to twitter to see the post
+        return redirect("https://twitter.com/#!/%s" % session["screen_name"])
 
-OAuthLib is yours to use and abuse according to the terms of the BSD license.
-Check the LICENSE file for full details.
+    if __name__ == "__main__":
+        app.secret_key = os.urandom(24)
+        app.run(debug=True)
+
+
 

@@ -1,117 +1,65 @@
+#!/usr/bin/env python
+
+from flask import Flask, request, render_template, redirect, session
+from oauthlib.oauth import OAuth
+from urlparse import parse_qs
 import requests
-import sys
-sys.path.append("..")
-from oauthlib.oauth import *
-import time
+import os
 
+app = Flask(__name__)
 
-class OAuthenticator(object):
+key = "mCA55VGdkg0isw5rVi5Ww"
+secret = "y8h2tzximLpXFTspl7FpMURoGKZYAo2Vq1WeYxVwyg"
+request_url = "https://api.twitter.com/oauth/request_token"
+auth_url = "http://api.twitter.com/oauth/authorize"
+access_url = "https://api.twitter.com/oauth/access_token"
+update_url = "http://api.twitter.com/1/statuses/update.json" 
 
-    def __init__(self, 
-                    client_key,
-                    url=None,
-                    request_method = "POST",
-                    client_secret = None,
-                    token_secret = None,
-                    signature_method="HMAC-SHA1",
-                    callback = None):
+@app.route("/")
+def demo():
+    twitter = OAuth(client_key=key,
+                    client_secret=secret)
+    header = twitter.auth_header(request_url)
+    r = requests.post(request_url, headers={"Authorization":header})
+    token = parse_qs(r.text)["oauth_token"][0]
+    auth = "{url}?oauth_token={token}".format(url=auth_url, token=token)
+    return redirect(auth)
 
-        self.params = {
-            "oauth_consumer_key" : client_key,
-            "oauth_signature_method" : signature_method,
-            "oauth_timestamp" : generate_timestamp(),
-            "oauth_nonce" : generate_nonce(),
-            "oauth_version" : "1.0"
-        }
+@app.route("/callback", methods=["GET", "POST"])
+def callback():
+    verifier = request.args.get("oauth_verifier")
+    token = request.args.get("oauth_token")
+    twitter = OAuth(client_key=key,
+                    client_secret=secret,
+                    request_token=token,
+                    verifier=verifier)
+    header = twitter.auth_header(access_url)
+    r = requests.post(access_url, headers={"Authorization" : header})
+    info = parse_qs(r.text)
+    session["access_token"] = info["oauth_token"][0]
+    session["token_secret"] = info["oauth_token_secret"][0]
+    session["screen_name"] = info["screen_name"][0]
+    return """<html><head></head><body>
+    <form method="POST" action="/post">
+    <input name="status_update" type="text" value="hello"/>
+    <input type="submit" value="Send"/>
+    </form></body></html>"""
 
-        if callback:
-            self.params["oauth_callback"] = escape(callback) #TODO: library should escape
-
-        self.client_secret = client_secret
-        self.token_secret = token_secret
-        self.request_method = request_method
-        self.url = url
-
-    def _sign_hmac(self, params):
-        return sign_hmac(self.request_method, self.url, params, self.client_secret, self.token_secret)
-
-    def access(self, token, url=None, client_secret=None, token_secret=None, verifier=None, callback=None):
-        self.params["oauth_token"] = token
-        
-        if url:
-            self.url = url
-
-        if client_secret:
-            self.client_secret = client_secret
-
-        if token_secret:
-            self.token_secret = token_secret
-        
-        if verifier:
-            self.params["oauth_verifier"] = verifier
-        
-        if callback:
-            self.params["oauth_callback"] = callback
-
-        self.params["oauth_timestamp"] = generate_timestamp()
-        self.params["oauth_nonce"] = generate_nonce()
-        # TODO: not hardcoded sign hmac
-        self.params["oauth_signature"] = self._sign_hmac(self.params)
-        
-        # TODO: not hardcode post request
-        # Dont hardcode authorization field?
-        print self.params
-        headers = { "Authorization" : prepare_authorization_header(self.params) }
-        print headers
-        r = requests.post(self.url, {}, headers=headers)
-        from urlparse import parse_qs
-        info = parse_qs(r.content)
-        self.params["oauth_token"] = info["oauth_token"][0]
-        self.token_secret = info["oauth_token_secret"][0]
-        del info["oauth_token"]
-        del info["oauth_token_secret"]
-        return info
-
-    def redirect_token(self):
-        self.params["oauth_signature"] = self._sign_hmac(self.params)
-        # Dont hardcode authorization field?
-        headers = { "Authorization" : prepare_authorization_header(self.params) }
-        # TODO: not hardcode post request
-        r = requests.post(self.url, {}, headers=headers)
-        # TODO: answer might not always be parsable like this...
-        from urlparse import parse_qs
-        info = parse_qs(r.content)
-        return info["oauth_token"][0]
-
-    def header(self, data=None, url=None):
-        if url:
-            self.url = url
-
-        try:
-            del self.params["oauth_callback"]
-            del self.params["oauth_verifier"]
-        except KeyError:
-            pass
-
-        data = data or {}
-        data.update(self.params)
-        self.params["oauth_signature"] = self._sign_hmac(data)
-        return { "Authorization" : prepare_authorization_header(self.params) }
-
+@app.route("/post", methods=["POST"])
+def post_update():
+    post = { "status" : request.form["status_update"] }
+    token_secret = session["token_secret"]
+    access_token= session["access_token"]
+     
+    twitter = OAuth(client_key=key,
+                    client_secret=secret,
+                    token_secret=token_secret,
+                    access_token=access_token)
+    header = twitter.auth_header(update_url, post)
+    r = requests.post(update_url, data=post, headers={"Authorization": header})
+    return redirect("https://twitter.com/#!/%s" % session["screen_name"])
 
 if __name__ == "__main__":
+    app.secret_key = os.urandom(24)
+    app.run(debug=True)
 
-    key = "mCA55VGdkg0isw5rVi5Ww"
-    secret = "y8h2tzximLpXFTspl7FpMURoGKZYAo2Vq1WeYxVwyg"
-    request_url = "https://api.twitter.com/oauth/request_token"
-
-    o = OAuthenticator(key, url=request_url, client_secret=secret)
-    token = o.redirect_token()
-    print "http://api.twitter.com/oauth/authorize?oauth_token=" + token 
-    
-    token = raw_input("Token:")
-    verifier = raw_input("Verifier:")
-    access_url = "https://api.twitter.com/oauth/access_token"
-    print o.access(token, url=access_url, verifier=verifier, callback="http://127.0.0.1")
-
-    print o.header({ "hej" : "svej"}, "http://www.hej.svej")
