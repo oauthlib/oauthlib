@@ -8,15 +8,11 @@ This module is a generic implementation of various logic needed
 for signing OAuth requests.
 """
 
-import time
-import hashlib
+import time, string, urllib, hashlib, hmac, binascii
 from random import choice, getrandbits
-import urllib
-import hmac
-import binascii
 from urlparse import urlparse, urlunparse, parse_qsl
 from warnings import warn
-import string
+from itertools import chain
 
 def order_params(target):
     """Order OAuth parameters first
@@ -37,12 +33,11 @@ def filter_oauth(target):
     """
 
     def wrapper(params, *args, **kwargs):
-        # Convert dictionaries to list of tuples
+        isOAuth = lambda kv: kv[0].startswith("oauth_")
         if isinstance(params, dict):
-            filtered = [(k,v) for k,v in params.items() if k.startswith("oauth_")]
+           return target(filter(isOAuth, params.items()), *args, **kwargs)
         else:
-            filtered = [(k,v) for k,v in params if k.startswith("oauth_")]
-        return target(filtered, *args, **kwargs)
+           return target(filter(isOAuth, params), *args, **kwargs)
 
     wrapper.__doc__ = target.__doc__ 
     return wrapper
@@ -197,12 +192,9 @@ def normalize_parameters(params):
     .. _`section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
     """
-    # Escape key values before sorting.
-    key_values = []
-    for k, v in params:
-        # Exclude the signature if it exists.
-        if not k == "oauth_signature":
-            key_values.append((escape(utf8_str(k)), escape(utf8_str(v))))
+    # Escape key values before sorting (remove signature if present).
+    key_values = [(escape(k), escape(v)) for k, v in params 
+                                         if not k == "oauth_signature"]
 
     # Sort lexicographically, first after key, then after value.
     key_values.sort()
@@ -269,17 +261,13 @@ def prepare_base_string(method, uri, params):
     if isinstance(params, dict):
         params = params.items()
 
-    # copy to prevent unwanted side effects
-    params = params[:]
-
-    # Add uri query components to parameters as per 3.4.1.3.1
-    for k, v in parse_qsl(urlparse(uri).query, True):
-        params.append((k,v))
+    # Extract uri query components to parameters as per 3.4.1.3.1
+    query = [(k, v) for k, v in parse_qsl(urlparse(uri).query, True)]
 
     return "{method}&{uri}&{params}".format(
         method=normalize_http_method(method),
         uri=normalize_base_string_uri(uri),
-        params=normalize_parameters(params))
+        params=normalize_parameters(chain(params, query)))
 
 
 def sign_hmac(method, url, params, client_secret=None, access_secret=None):
@@ -338,7 +326,6 @@ def sign_rsa(method, url, params, private_rsa):
     from Crypto.Signature import PKCS1_v1_5
     from Crypto.Hash import SHA
     key = RSA.importKey(private_rsa)
-    params = params[:]
     message = prepare_base_string(method, url, params)
     h = SHA.new(message)    
     p = PKCS1_v1_5.new(key)
@@ -363,7 +350,6 @@ def verify_rsa(method, url, params, public_rsa, signature):
     from Crypto.PublicKey import RSA
     from Crypto.Signature import PKCS1_v1_5
     from Crypto.Hash import SHA
-    params = params[:]
     key = RSA.importKey(public_rsa)
     message = prepare_base_string(method, url, params)
     h = SHA.new(message)
@@ -384,6 +370,7 @@ def prepare_authorization_header(params, realm=None):
     .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
 
     """
+    # Realm should always be the first parameter
     if realm:
         params.insert(0, ("realm", realm))
     
@@ -418,10 +405,11 @@ def prepare_request_uri_query(params, url):
     .. _`section 3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
 
     """
+    # Add params to the existing set of query components
     sch, net, path, par, query, fra = urlparse(url)
     for k,v in parse_qsl(query, True):
         params.append((escape(k), escape(v)))
-    query = "&".join(["%s=%s" % (k, v) for k,v in params])
+    query = "&".join(['{0}={1}'.format(k, v) for k,v in params])
     return urlunparse((sch, net, path, par, query, fra))
 
 
