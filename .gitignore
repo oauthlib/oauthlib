@@ -1,2 +1,4 @@
 *.pyc
 *.sublime-project
+docs/build
+*.swp
