@@ -5,7 +5,6 @@ from .unittest import TestCase
 from oauthlib.parameters import *
 
 
-
 class ParameterTests(TestCase):
     def test_order_oauth_parameters(self):
         unordered = {
