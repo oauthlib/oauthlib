@@ -13,6 +13,20 @@ import urllib
 from random import getrandbits
 
 
+def filter_params(target):
+    """Decorator which filters params to remove non-oauth_* parameters
+
+    Assumes the decorated method takes a params dict or list of tuples as its
+    first argument.
+    """
+    def wrapper(params, *args, **kwargs):
+        params = filter_oauth_params(params)
+        return target(params, *args, **kwargs)
+
+    wrapper.__doc__ = target.__doc__
+    return wrapper
+
+
 def filter_oauth_params(params):
     """Removes all non oauth parameters from a dict or a list of params."""
     is_oauth = lambda kv: kv[0].startswith("oauth_")
