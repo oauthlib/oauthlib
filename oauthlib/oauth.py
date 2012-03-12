@@ -21,33 +21,6 @@ SIGNATURE_RSA = "RSA-SHA1"
 SIGNATURE_PLAINTEXT = "PLAINTEXT"
 
 
-def escape(s):
-    """Escape a string in an OAuth-compatible fashion.
-
-    Per `section 3.6`_ of the spec.
-
-    .. _`section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
-
-    """
-    return urllib.quote(s.encode('utf-8'), safe='~')
-
-
-def utf8_str(s):
-    """Convert unicode to utf-8."""
-    if isinstance(s, unicode):
-        return s.encode("utf-8")
-    else:
-        return str(s)
-
-
-def generate_timestamp():
-    """Get seconds since epoch (UTC)."""
-    return str(int(time.time()))
-
-
-def generate_nonce():
-    """Generate pseudorandom nonce that is unlikely to repeat."""
-    return str(getrandbits(64)) + generate_timestamp()
 
 
 def generate_params(client_key, access_token, signature_method):
