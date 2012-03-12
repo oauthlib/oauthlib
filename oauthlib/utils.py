@@ -78,3 +78,14 @@ def escape(s):
     if not isinstance(s, unicode):
         raise ValueError('Only unicode objects are escapable.')
     return urllib.quote(s.encode('utf-8'), safe='~')
+
+
+def urlencode(query):
+    """Encode a sequence of two-element tuples or dictionary into a URL query string.
+
+    Operates using an OAuth-safe escape() method, in contrast to urllib.urlenocde.
+    """
+    # Convert dictionaries to list of tuples
+    if isinstance(query, dict):
+        query = query.items()
+    "&".join(['%s=%s' % (escape(k), escape(v)) for k, v in query])
