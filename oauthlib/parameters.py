@@ -63,8 +63,7 @@ def prepare_authorization_header(params, realm=None):
         params.insert(0, ("realm", realm))
 
     # Only oauth_ and realm parameters should remain by this point.
-    return 'OAuth {params}'.format(params=', '.join(
-           ['{0}="{1}"'.format(k, v) for k, v in params]))
+    return 'OAuth ' + ','.join(['='.join([k, v]) for k, v in params])
 
 
 @order_params
@@ -78,7 +77,7 @@ def prepare_form_encoded_body(params):
     .. _`section 3.5.2`: http://tools.ietf.org/html/rfc5849#section-3.5.2
 
     """
-    return '&'.join(['{0}={1}'.format(k, v) for k, v in params])
+    return urlencode(params)
 
 
 @order_params
