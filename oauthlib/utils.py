@@ -88,4 +88,5 @@ def urlencode(query):
     # Convert dictionaries to list of tuples
     if isinstance(query, dict):
         query = query.items()
-    "&".join(['%s=%s' % (escape(k), escape(v)) for k, v in query])
+    return "&".join(['='.join([escape(k), escape(v)]) for k, v in query])
+
