@@ -7,16 +7,16 @@ from oauthlib.parameters import *
 
 class ParameterTests(TestCase):
     auth_only_params = [
-        ('oauth_consumer_key', "9djdj82h48djs9d2"),
-        ('oauth_token', "kkk9d7dh3k39sjv7"),
-        ('oauth_signature_method', "HMAC-SHA1"),
-        ('oauth_timestamp', "137131201"),
-        ('oauth_nonce', "7d8f3e4a"),
-        ('oauth_signature', "bYT5CMsGcbgUdFHObYMEfcx6bsw%3D")
+        (u'oauth_consumer_key', u"9djdj82h48djs9d2"),
+        (u'oauth_token', u"kkk9d7dh3k39sjv7"),
+        (u'oauth_signature_method', u"HMAC-SHA1"),
+        (u'oauth_timestamp', u"137131201"),
+        (u'oauth_nonce', u"7d8f3e4a"),
+        (u'oauth_signature', u"bYT5CMsGcbgUdFHObYMEfcx6bsw%3D")
     ]
     auth_and_data = list(auth_only_params)
-    auth_and_data.append(('data_param_foo', 'foo'))
-    auth_and_data.append(('data_param_1', 1))
+    auth_and_data.append((u'data_param_foo', u'foo'))
+    auth_and_data.append((u'data_param_1', u'1'))
     realm = 'testrealm'
     norealm_authorization_header = 'OAuth oauth_consumer_key=9djdj82h48djs9d2,oauth_token=kkk9d7dh3k39sjv7,oauth_signature_method=HMAC-SHA1,oauth_timestamp=137131201,oauth_nonce=7d8f3e4a,oauth_signature=bYT5CMsGcbgUdFHObYMEfcx6bsw%3D'
     withrealm_authorization_header = 'OAuth realm=testrealm,oauth_consumer_key=9djdj82h48djs9d2,oauth_token=kkk9d7dh3k39sjv7,oauth_signature_method=HMAC-SHA1,oauth_timestamp=137131201,oauth_nonce=7d8f3e4a,oauth_signature=bYT5CMsGcbgUdFHObYMEfcx6bsw%3D'
@@ -49,3 +49,8 @@ class ParameterTests(TestCase):
         self.assertEqual(
             prepare_authorization_header(self.auth_and_data, realm=self.realm),
             self.withrealm_authorization_header)
+
+    def test_prepare_form_encoded_body(self):
+        form_encoded_body = 'oauth_signature=bYT5CMsGcbgUdFHObYMEfcx6bsw%253D&oauth_nonce=7d8f3e4a&oauth_timestamp=137131201&oauth_signature_method=HMAC-SHA1&oauth_token=kkk9d7dh3k39sjv7&oauth_consumer_key=9djdj82h48djs9d2&data_param_foo=foo&data_param_1=1'
+        self.assertEqual(
+            prepare_form_encoded_body(self.auth_and_data), form_encoded_body)
