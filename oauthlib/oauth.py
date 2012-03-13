@@ -37,6 +37,9 @@ class OAuthClient(object):
         self.rsa_key = rsa_key
         self.verifier = verifier
 
+        if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
+            raise ValueError('rsa_key is required when using RSA signature method.')
+
     def get_oauth_signature(self, uri, http_method=u'GET', body=None,
             authorization_header=None):
         """Get an OAuth signature to be used in signing a request"""

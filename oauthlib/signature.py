@@ -137,7 +137,7 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     from Crypto.Signature import PKCS1_v1_5
     from Crypto.Hash import SHA
 
-    key = RSA.importKey(private_rsa)
+    key = RSA.importKey(rsa_private_key)
     h = SHA.new(base_string)
     p = PKCS1_v1_5.new(key)
     return binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
