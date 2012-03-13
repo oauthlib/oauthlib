@@ -47,26 +47,26 @@ class SignatureTests(TestCase):
         base_string = construct_base_string(http_method, base_string_url , normalized_encoded_request_parameters)
         
         self.assertEqual(control_test_string, base_string)
-        
+    
     def test_normalize_base_string_uri(self):
         """
         Example text to be turned into a normalized base string uri::
-        
+            
             GET /?q=1 HTTP/1.1
             Host: www.example.net:8080
-            
-        Sample string generated::
         
+        Sample string generated::
+            
             https://www.example.net:8080/
         """
         
         # test for unicode failure
         uri = "www.example.com:8080"
         self.assertRaises(ValueError, normalize_base_string_uri, uri)
-
+        
         uri = u"http://www.example.com:80"
         self.assertEquals(normalize_base_string_uri(uri), "http://www.example.com")
-
+    
     def test_collect_parameters(self):
         
         # check against empty parameters
@@ -77,4 +77,28 @@ class SignatureTests(TestCase):
         parameters = collect_parameters(uri_query=uri_query)
         self.assertEquals(parameters[0], ('b5', ['=%3D']))
         self.assertEquals(parameters[1], ('a3', ['a']))
-        self.assertEquals(parameters[2], ('a2', ['r b']))        
+        self.assertEquals(parameters[2], ('a2', ['r b']))
+        
+        # check against authorization header as well
+        authorization_header = """Authorization: OAuth realm="Example",
+oauth_consumer_key="9djdj82h48djs9d2",
+oauth_token="kkk9d7dh3k39sjv7",
+oauth_signature_method="HMAC-SHA1",
+oauth_timestamp="137131201",
+oauth_nonce="7d8f3e4a",
+oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
+        
+        parameters = collect_parameters(uri_query=uri_query, authorization_header=authorization_header)
+        
+        self.assertEquals(len(parameters), 9)
+        self.assertEquals(parameters[3], ('oauth_nonce', '7d8f3e4a'))
+        self.assertEquals(parameters[4], ('oauth_timestamp', '137131201'))
+        self.assertEquals(parameters[5], ('oauth_consumer_key', '9djdj82h48djs9d2'))
+        self.assertEquals(parameters[6], ('oauth_signature_method', 'HMAC-SHA1'))
+        self.assertEquals(parameters[7], ('oauth_token', 'kkk9d7dh3k39sjv7'))
+        self.assertEquals(parameters[8], ('Authorization: OAuth realm', 'Example'))
+        
+        
+        
+        
+        
