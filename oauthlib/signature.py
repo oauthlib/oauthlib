@@ -27,6 +27,7 @@ import hmac
 import urlparse
 from . import utils
 
+
 def construct_base_string(http_method, base_string_uri,
         normalized_encoded_request_parameters):
     """Construct the final base string to use for signing.
@@ -40,6 +41,7 @@ def construct_base_string(http_method, base_string_uri,
         utils.escape(base_string_uri),
         utils.escape(normalized_encoded_request_parameters),
     ))
+
 
 def normalize_base_string_uri(uri):
     """Normalize a uri for use in constructing a base string.
@@ -63,6 +65,7 @@ def normalize_base_string_uri(uri):
             netloc = host
 
     return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
+
 
 def collect_parameters(uri_query=None, authorization_header=None, body=None,
         exclude_oauth_signature=True):
@@ -93,6 +96,7 @@ def collect_parameters(uri_query=None, authorization_header=None, body=None,
 
     return params
 
+
 def normalize_parameters(params):
     """Normalize querystring parameters for use in constructing a base string.
     Per `section 3.4.1.3.2`_ of the spec.
@@ -109,6 +113,7 @@ def normalize_parameters(params):
     # Combine key value pairs into a string and return.
     return u'&'.join([u'{0}={1}'.format(k, v) for k, v in key_values])
 
+
 def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     """Sign a request using HMAC-SHA1.
 
@@ -121,6 +126,7 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
         utils.escape(resource_owner_secret)))
     signature = hmac.new(key, base_string, hashlib.sha1)
     return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
+
 
 def sign_rsa_sha1(base_string, rsa_private_key):
     """Sign a request using RSASSA-PKCS #1 v1.5.
@@ -141,6 +147,7 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     p = PKCS1_v1_5.new(key)
     return binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
 
+
 def sign_plaintext(client_secret, resource_owner_secret):
     """Sign a request using plaintext.
 
@@ -151,4 +158,3 @@ def sign_plaintext(client_secret, resource_owner_secret):
     """
     return u'&'.join((utils.escape(client_secret),
         utils.escape(resource_owner_secret)))
-
