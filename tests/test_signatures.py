@@ -90,7 +90,7 @@ class SignatureTests(TestCase):
         # check against authorization header as well
         # check against authorization header as well
         # check against authorization header as well                
-        authorization_header = """Authorization: OAuth realm="Example",
+        authorization_header = """OAuth realm="Example",
 oauth_consumer_key="9djdj82h48djs9d2",
 oauth_token="kkk9d7dh3k39sjv7",
 oauth_signature_method="HMAC-SHA1",
@@ -101,7 +101,7 @@ oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
         parameters = collect_parameters(uri_query=uri_query, authorization_header=authorization_header)
 
         # Redo the checks against all the parameters. Duplicated code but better safety
-        self.assertEquals(len(parameters), 9)
+        self.assertEquals(len(parameters), 8)
         self.assertEquals(parameters[0], ('b5', '=%3D'))
         self.assertEquals(parameters[1], ('a3', 'a'))
         self.assertEquals(parameters[2], ('a2', 'r b'))        
@@ -117,7 +117,7 @@ oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
         
         # Redo again the checks against all the parameters. Duplicated code but better safety        
         parameters = collect_parameters(uri_query=uri_query, authorization_header=authorization_header, body=body)        
-        self.assertEquals(len(parameters), 10)
+        self.assertEquals(len(parameters), 9)
         self.assertEquals(parameters[0], ('b5', '=%3D'))
         self.assertEquals(parameters[1], ('a3', 'a'))
         self.assertEquals(parameters[2], ('a2', 'r b'))
@@ -126,7 +126,6 @@ oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
         self.assertEquals(parameters[5], ('oauth_consumer_key', '9djdj82h48djs9d2'))
         self.assertEquals(parameters[6], ('oauth_signature_method', 'HMAC-SHA1'))
         self.assertEquals(parameters[7], ('oauth_token', 'kkk9d7dh3k39sjv7'))        
-        self.assertEquals(parameters[9], ('content', 'This is being the body of things'))
-        
-        
+        self.assertEquals(parameters[8], ('content', 'This is being the body of things'))
+
         
