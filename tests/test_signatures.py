@@ -66,3 +66,15 @@ class SignatureTests(TestCase):
 
         uri = u"http://www.example.com:80"
         self.assertEquals(normalize_base_string_uri(uri), "http://www.example.com")
+
+    def test_collect_parameters(self):
+        
+        # check against empty parameters
+        self.assertEquals(collect_parameters(), [])
+        
+        # Check against uri_query
+        uri_query = "b5=%3D%253D&a3=a&c%40=&a2=r%20b"
+        parameters = collect_parameters(uri_query=uri_query)
+        self.assertEquals(parameters[0], ('b5', ['=%3D']))
+        self.assertEquals(parameters[1], ('a3', ['a']))
+        self.assertEquals(parameters[2], ('a2', ['r b']))        
