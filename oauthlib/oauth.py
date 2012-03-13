@@ -20,6 +20,7 @@ SIGNATURE_PLAINTEXT = u"PLAINTEXT"
 SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = u'QUERY'
 
+
 class OAuthClient(object):
     """An OAuth client used to sign OAuth requests"""
     def __init__(self, client_key, client_secret,
