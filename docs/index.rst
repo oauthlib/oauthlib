@@ -12,6 +12,15 @@ Contents:
    :maxdepth: 2
 
 
+Running Tests
+==============
+
+From the root of the project:
+
+.. sourcecode:: bash
+
+    $ python -m unittest discover
+
 
 Indices and tables
 ==================
