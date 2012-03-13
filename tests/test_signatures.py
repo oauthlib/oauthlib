@@ -8,9 +8,10 @@ from oauthlib.signature import *
 
 
 class SignatureTests(TestCase):
+    
     def test_construct_base_string(self):
         """
-        Example text to be represented::
+        Example text to be turned into a base string::
             
             POST /request?b5=%3D%253D&a3=a&c%40=&a2=r%20b HTTP/1.1
             Host: example.com
@@ -23,7 +24,7 @@ class SignatureTests(TestCase):
                            oauth_nonce="7d8f3e4a",
                            oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"
         
-        Base string to be generated and tested against::
+        Sample Base string generated and tested against::
             
             POST&http%3A//example.com/request%3Fb5%3D%253D%25253D%26a3%3Da%26c%2540%3D
             %26a2%3Dr%2520b&OAuth%20realm%3D%22Example%22%2Coauth_consumer_key%3D%229d
@@ -46,3 +47,22 @@ class SignatureTests(TestCase):
         base_string = construct_base_string(http_method, base_string_url , normalized_encoded_request_parameters)
         
         self.assertEqual(control_test_string, base_string)
+        
+    def test_normalize_base_string_uri(self):
+        """
+        Example text to be turned into a normalized base string uri::
+        
+            GET /?q=1 HTTP/1.1
+            Host: www.example.net:8080
+            
+        Sample string generated::
+        
+            https://www.example.net:8080/
+        """
+        
+        # test for unicode failure
+        uri = "www.example.com:8080"
+        self.assertRaises(ValueError, normalize_base_string_uri, uri)
+
+        uri = u"http://www.example.com:80"
+        self.assertEquals(normalize_base_string_uri(uri), "http://www.example.com")
