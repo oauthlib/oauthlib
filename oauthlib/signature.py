@@ -27,6 +27,7 @@ import hmac
 import urlparse
 from . import utils
 
+
 def construct_base_string(http_method, base_string_uri,
         normalized_encoded_request_parameters):
     """Construct the final base string to use for signing.

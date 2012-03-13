@@ -24,7 +24,6 @@ class SignatureTests(TestCase):
     client_secret = "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ"
     resource_owner_secret = "just-a-string    asdasd"
 
-
     def test_construct_base_string(self):
         """
         Example text to be turned into a base string::
@@ -41,7 +40,7 @@ class SignatureTests(TestCase):
                            oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"
 
         Sample Base string generated and tested against::
-            
+
             POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D%25253D%2525253D
             %2526a3%253Da%2526c%252540%253D%2526a2%253Dr%252520b&OAuth%2520realm%
             253D%2522Example%2522%252Coauth_consumer_key%253D%25229djdj82h48djs9d
@@ -69,15 +68,15 @@ class SignatureTests(TestCase):
     def test_normalize_base_string_uri(self):
         """
         Example text to be turned into a normalized base string uri::
-            
+
             GET /?q=1 HTTP/1.1
             Host: www.example.net:8080
-        
+
         Sample string generated::
-            
+
             https://www.example.net:8080/
         """
-        
+
         # test for unicode failure
         uri = "www.example.com:8080"
         self.assertRaises(ValueError, normalize_base_string_uri, uri)
@@ -97,7 +96,7 @@ class SignatureTests(TestCase):
         # Check against uri_query
         # Check against uri_query
         # Check against uri_query
-        
+
         parameters = collect_parameters(uri_query=self.uri_query)
 
         self.assertEquals(len(parameters), 3)
@@ -159,7 +158,7 @@ class SignatureTests(TestCase):
         # Lets see if things are in order
         # check to see that querystring keys come in alphanumeric order:
         querystring_keys = ['a2', 'a3', 'b5', 'content', 'oauth_consumer_key', 'oauth_nonce', 'oauth_signature_method', 'oauth_timestamp', 'oauth_token']
-        index = -1 # start at -1 because the 'a2' key starts at index 0
+        index = -1  # start at -1 because the 'a2' key starts at index 0
         for key in querystring_keys:
             self.assertTrue(normalized.index(key) > index)
             index = normalized.index(key)
