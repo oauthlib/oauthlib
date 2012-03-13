@@ -175,3 +175,10 @@ class SignatureTests(TestCase):
     def test_sign_rsa_sha1(self):
         """ TODO: Someone figure a test for this."""
         pass
+
+    def test_sign_plaintext(self):
+        """ """
+
+        self.assertRaises(ValueError, sign_plaintext, self.client_secret, self.resource_owner_secret)
+        sign = sign_plaintext(unicode(self.client_secret), unicode(self.resource_owner_secret))
+        self.assertEquals(sign, "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ&just-a-string%20%20%20%20asdasd")
