@@ -21,7 +21,8 @@ class SignatureTests(TestCase):
     http_method = "post"
     base_string_url = urllib.quote("http://example.com/request?b5=%3D%253D&a3=a&c%40=&a2=r%20b")
     normalized_encoded_request_parameters = urllib.quote("""OAuth realm="Example",oauth_consumer_key="9djdj82h48djs9d2",oauth_token="kkk9d7dh3k39sjv7",oauth_signature_method="HMAC-SHA1",oauth_timestamp="137131201",oauth_nonce="7d8f3e4a",oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D" """.strip())
-
+    client_secret = "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ"
+    resource_owner_secret = "just-a-string    asdasd"
 
 
     def test_construct_base_string(self):
@@ -163,14 +164,22 @@ class SignatureTests(TestCase):
 
         # construct_base_string copied from the test_construct_base_string above
         base_string = construct_base_string(self.http_method, self.base_string_url , self.normalized_encoded_request_parameters)
-        client_secret = "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ"
-        resource_owner_secret = "just-a-string    asdasd"
 
         # check for Unicode
-        self.assertRaises(ValueError, sign_hmac_sha1, base_string, client_secret, resource_owner_secret)
+        self.assertRaises(ValueError, sign_hmac_sha1, base_string, self.client_secret, self.resource_owner_secret)
 
-        sign = sign_hmac_sha1(unicode(base_string), unicode(client_secret), unicode(resource_owner_secret))
+        # Do the actual test
+        sign = sign_hmac_sha1(unicode(base_string), unicode(self.client_secret), unicode(self.resource_owner_secret))
         self.assertEquals(len(sign), 28)
 
+    def test_sign_rsa_sha1(self):
+        """ TODO: Someone make a better test for this."""
 
+        # construct_base_string copied from the test_construct_base_string above
+        base_string = construct_base_string(self.http_method, self.base_string_url , self.normalized_encoded_request_parameters)
 
+        # check for Unicode
+        self.assertRaises(ValueError, sign_rsa_sha1, base_string, "rsa_private_key")
+
+        sign = sign_rsa_sha1(unicode(base_string), unicode("rsa_private_key"))
+        
