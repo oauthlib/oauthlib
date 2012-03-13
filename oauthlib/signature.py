@@ -121,7 +121,7 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
         utils.escape(resource_owner_secret)))
     signature = hmac.new(key.encode('utf-8'), base_string.encode('utf-8'),
         hashlib.sha1)
-    return binascii.b2a_base64(signature.digest())[:-1]
+    return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
 
 def sign_rsa_sha1(base_string, rsa_private_key):
     """Sign a request using RSASSA-PKCS #1 v1.5.
@@ -140,7 +140,7 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     key = RSA.importKey(private_rsa)
     h = SHA.new(base_string)
     p = PKCS1_v1_5.new(key)
-    return binascii.b2a_base64(p.sign(h))[:-1]
+    return binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
 
 def sign_plaintext(client_secret, resource_owner_secret):
     """Sign a request using plaintext.

@@ -55,7 +55,7 @@ def generate_timestamp():
 
     .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return str(int(time.time()))
+    return unicode(int(time.time()))
 
 
 def generate_nonce():
@@ -68,7 +68,7 @@ def generate_nonce():
 
     .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return str(getrandbits(64)) + generate_timestamp()
+    return unicode(getrandbits(64)) + generate_timestamp()
 
 def generate_token(length=20, chars=UNICODE_ASCII_CHARACTER_SET):
     """Generates a generic OAuth token

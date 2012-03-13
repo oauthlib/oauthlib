@@ -13,12 +13,12 @@ import urlparse
 
 from . import parameters, signature, utils
 
-SIGNATURE_HMAC = "HMAC-SHA1"
-SIGNATURE_RSA = "RSA-SHA1"
-SIGNATURE_PLAINTEXT = "PLAINTEXT"
+SIGNATURE_HMAC = u"HMAC-SHA1"
+SIGNATURE_RSA = u"RSA-SHA1"
+SIGNATURE_PLAINTEXT = u"PLAINTEXT"
 
-SIGNATURE_TYPE_AUTH_HEADER = 'AUTH_HEADER'
-SIGNATURE_TYPE_QUERY = 'QUERY'
+SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
+SIGNATURE_TYPE_QUERY = u'QUERY'
 
 class OAuthClient(object):
     """An OAuth client used to sign OAuth requests"""
@@ -67,7 +67,7 @@ class OAuthClient(object):
         params = [
             (u'oauth_nonce', utils.generate_nonce()),
             (u'oauth_timestamp', utils.generate_timestamp()),
-            (u'oauth_version', '1.0'),
+            (u'oauth_version', u'1.0'),
             (u'oauth_signature_method', self.signature_method),
             (u'oauth_consumer_key', self.client_key),
             (u'oauth_token', self.resource_owner_key),
@@ -86,7 +86,7 @@ class OAuthClient(object):
             complete_uri = uri
         else:
             authorization_header = None
-            complete_uri = paramaters.prepare_request_uri_query(params, uri)
+            complete_uri = parameters.prepare_request_uri_query(params, uri)
 
         return complete_uri, authorization_header
 
