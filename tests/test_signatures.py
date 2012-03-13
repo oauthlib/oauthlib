@@ -24,7 +24,6 @@ class SignatureTests(TestCase):
     client_secret = "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ"
     resource_owner_secret = "just-a-string    asdasd"
 
-
     def test_construct_base_string(self):
         """
         Example text to be turned into a base string::
@@ -41,7 +40,7 @@ class SignatureTests(TestCase):
                            oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"
 
         Sample Base string generated and tested against::
-            
+
             POST&http%3A//example.com/request%3Fb5%3D%253D%25253D%26a3%3Da%26c%2540%3D
             %26a2%3Dr%2520b&OAuth%20realm%3D%22Example%22%2Coauth_consumer_key%3D%229d
             jdj82h48djs9d2%22%2Coauth_token%3D%22kkk9d7dh3k39sjv7%22%2Coauth_signature
@@ -57,22 +56,22 @@ class SignatureTests(TestCase):
         # Create test variables
         # Create test variables
 
-        base_string = construct_base_string(self.http_method, self.base_string_url , self.normalized_encoded_request_parameters)
+        base_string = construct_base_string(self.http_method, self.base_string_url, self.normalized_encoded_request_parameters)
 
         self.assertEqual(control_test_string, base_string)
 
     def test_normalize_base_string_uri(self):
         """
         Example text to be turned into a normalized base string uri::
-            
+
             GET /?q=1 HTTP/1.1
             Host: www.example.net:8080
-        
+
         Sample string generated::
-            
+
             https://www.example.net:8080/
         """
-        
+
         # test for unicode failure
         uri = "www.example.com:8080"
         self.assertRaises(ValueError, normalize_base_string_uri, uri)
@@ -92,7 +91,7 @@ class SignatureTests(TestCase):
         # Check against uri_query
         # Check against uri_query
         # Check against uri_query
-        
+
         parameters = collect_parameters(uri_query=self.uri_query)
 
         self.assertEquals(len(parameters), 3)
@@ -154,7 +153,7 @@ class SignatureTests(TestCase):
         # Lets see if things are in order
         # check to see that querystring keys come in alphanumeric order:
         querystring_keys = ['a2', 'a3', 'b5', 'content', 'oauth_consumer_key', 'oauth_nonce', 'oauth_signature_method', 'oauth_timestamp', 'oauth_token']
-        index = -1 # start at -1 because the 'a2' key starts at index 0
+        index = -1  # start at -1 because the 'a2' key starts at index 0
         for key in querystring_keys:
             self.assertTrue(normalized.index(key) > index)
             index = normalized.index(key)
@@ -163,7 +162,7 @@ class SignatureTests(TestCase):
         """ TODO: Someone make a better test for this."""
 
         # construct_base_string copied from the test_construct_base_string above
-        base_string = construct_base_string(self.http_method, self.base_string_url , self.normalized_encoded_request_parameters)
+        base_string = construct_base_string(self.http_method, self.base_string_url, self.normalized_encoded_request_parameters)
 
         # check for Unicode
         self.assertRaises(ValueError, sign_hmac_sha1, base_string, self.client_secret, self.resource_owner_secret)
