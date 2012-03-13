@@ -12,10 +12,11 @@ import string
 import time
 import urllib
 import urllib2
-from random import getrandbits
+from random import getrandbits, choice
 
 UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
     string.digits.decode('ascii'))
+
 
 def filter_params(target):
     """Decorator which filters params to remove non-oauth_* parameters
@@ -70,6 +71,7 @@ def generate_nonce():
     """
     return unicode(getrandbits(64)) + generate_timestamp()
 
+
 def generate_token(length=20, chars=UNICODE_ASCII_CHARACTER_SET):
     """Generates a generic OAuth token
 
@@ -84,6 +86,7 @@ def generate_token(length=20, chars=UNICODE_ASCII_CHARACTER_SET):
 
     """
     return u''.join(choice(chars) for x in range(length))
+
 
 def escape(s):
     """Escape a string in an OAuth-compatible fashion.
@@ -108,6 +111,7 @@ def urlencode(query):
         query = query.items()
     return "&".join(['='.join([escape(k), escape(v)]) for k, v in query])
 
+
 def parse_authorization_header(authorization_header):
     """Parse an OAuth authorization header into a list of 2-tuples"""
     auth_scheme = 'OAuth '
@@ -118,4 +122,3 @@ def parse_authorization_header(authorization_header):
         return urllib2.parse_keqv_list(items).items()
     except ValueError:
         raise ValueError('Malformed authorization header')
-
