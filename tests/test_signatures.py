@@ -68,18 +68,28 @@ class SignatureTests(TestCase):
         self.assertEquals(normalize_base_string_uri(uri), "http://www.example.com")
     
     def test_collect_parameters(self):
-        
+        """ We check against parameters multiple times in case things change after more
+                parameters are added.
+        """
+        # check against empty parameters        
+        # check against empty parameters        
         # check against empty parameters
         self.assertEquals(collect_parameters(), [])
         
         # Check against uri_query
+        # Check against uri_query
+        # Check against uri_query                
         uri_query = "b5=%3D%253D&a3=a&c%40=&a2=r%20b"
         parameters = collect_parameters(uri_query=uri_query)
+        
+        self.assertEquals(len(parameters), 3)
         self.assertEquals(parameters[0], ('b5', '=%3D'))
         self.assertEquals(parameters[1], ('a3', 'a'))
         self.assertEquals(parameters[2], ('a2', 'r b'))
         
         # check against authorization header as well
+        # check against authorization header as well
+        # check against authorization header as well                
         authorization_header = """Authorization: OAuth realm="Example",
 oauth_consumer_key="9djdj82h48djs9d2",
 oauth_token="kkk9d7dh3k39sjv7",
@@ -89,7 +99,8 @@ oauth_nonce="7d8f3e4a",
 oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
         
         parameters = collect_parameters(uri_query=uri_query, authorization_header=authorization_header)
-        
+
+        # Redo the checks against all the parameters. Duplicated code but better safety
         self.assertEquals(len(parameters), 9)
         self.assertEquals(parameters[0], ('b5', '=%3D'))
         self.assertEquals(parameters[1], ('a3', 'a'))
@@ -104,6 +115,7 @@ oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
         # TODO - add more valid content for the body. Daniel Greenfeld 2012/03/12
         body = "content=This is being the body of things"
         
+        # Redo again the checks against all the parameters. Duplicated code but better safety        
         parameters = collect_parameters(uri_query=uri_query, authorization_header=authorization_header, body=body)        
         self.assertEquals(len(parameters), 10)
         self.assertEquals(parameters[0], ('b5', '=%3D'))
