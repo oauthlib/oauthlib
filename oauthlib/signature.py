@@ -24,7 +24,6 @@ Steps for signing a request:
 import binascii
 import hashlib
 import hmac
-import urllib2
 import urlparse
 from . import utils
 
@@ -78,12 +77,7 @@ def collect_parameters(uri_query=None, authorization_header=None, body=None):
         params.extend(urlparse.parse_qs(uri_query).items())
 
     if authorization_header is not None:
-        items = urllib2.parse_http_list(authorization_header)
-        try:
-            auth_header_params = urllib2.parse_keqv_list(items)
-        except ValueError:
-            raise ValueError('Malformed authorization header')
-        params.extend(auth_header_params.items())
+        params.extend(utils.parse_authorization_header(authorization_header))
 
     if body is not None:
         params.extend(urlparse.parse_qs(body).items())
@@ -94,7 +88,7 @@ def collect_parameters(uri_query=None, authorization_header=None, body=None):
     )
     params = filter(lambda i: i[0] not in exclude_params, params)
 
-    return params.items()
+    return params
 
 def normalize_parameters(params):
     """Normalize querystring parameters for use in constructing a base string.
@@ -122,7 +116,8 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
 
     key = u'&'.join((utils.escape(client_secret),
         utils.escape(resource_owner_secret)))
-    signature = hmac.new(key, base_string, hashlib.sha1)
+    signature = hmac.new(key.encode('utf-8'), base_string.encode('utf-8'),
+        hashlib.sha1)
     return binascii.b2a_base64(signature.digest())[:-1]
 
 def sign_rsa_sha1(base_string, rsa_private_key):
