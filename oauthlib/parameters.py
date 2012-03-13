@@ -100,5 +100,6 @@ def prepare_request_uri_query(params, url):
     sch, net, path, par, query, fra = urlparse(url)
     queryparams = parse_qsl(query, True)
     queryparams.extend(params)
-    query = urlencode(params)
+    queryparams.sort(key=lambda i: i[0].startswith('oauth_'))
+    query = urlencode(queryparams)
     return urlunparse((sch, net, path, par, query, fra))
