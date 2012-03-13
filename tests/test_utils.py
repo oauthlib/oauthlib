@@ -95,3 +95,16 @@ class UtilsTests(TestCase):
         self.assertEqual(len(nonce), 30)
         for i in range(50):
             self.assertTrue(nonce != generate_nonce())
+
+    def generate_token(self):
+        token = generate_token()
+        self.assertEqual(len(token), 20)
+
+        token = generate_token(length=44)
+        self.assertEqual(len(token), 44)
+
+        token = generate_token(length=6, chars="python")
+        self.assertEqual(len(token), 6)
+        self.assertTrue("a" in token)
+
+        
