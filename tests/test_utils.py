@@ -23,6 +23,21 @@ class UtilsTests(TestCase):
             "notoautheither":"shouldnotbehere"
         }
 
+    sample_params_unicode_list = [
+            (u"notoauth", u"shouldnotbehere"),
+            (u"oauth_consumer_key", u"9djdj82h48djs9d2"),
+            (u"oauth_token", u"kkk9d7dh3k39sjv7"),
+            (u"notoautheither", u"shouldnotbehere")
+        ]
+
+    sample_params_unicode_dict = {
+            u"notoauth":u"shouldnotbehere",
+            u"oauth_consumer_key":u"9djdj82h48djs9d2",
+            u"oauth_token":u"kkk9d7dh3k39sjv7",
+            u"notoautheither":u"shouldnotbehere"
+        }        
+
+
     def test_filter_params(self):
 
         # The following is an isolated test functon used to test the filter_params decorator.
@@ -108,5 +123,12 @@ class UtilsTests(TestCase):
 
     def test_escape(self):
         self.assertRaises(ValueError, escape, "I am a string type. Not a unicode type.")
+        self.assertEqual(escape(u"I am a unicode type."), u"I%20am%20a%20unicode%20type.")
 
-        #print escape(u"I am a unicode type.")
+    def test_urlencode(self):
+
+        self.assertEqual(urlencode(self.sample_params_unicode_list), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
+        self.assertEqual(urlencode(self.sample_params_unicode_dict), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
+
+
+
