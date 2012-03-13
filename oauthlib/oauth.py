@@ -20,6 +20,7 @@ SIGNATURE_PLAINTEXT = u"PLAINTEXT"
 SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = u'QUERY'
 
+
 class OAuthClient(object):
     """An OAuth client used to sign OAuth requests"""
     def __init__(self, client_key, client_secret,
@@ -114,6 +115,7 @@ class OAuthClient(object):
         # now-complete parameters to the uri or authorization header
         return self._contribute_parameters(uri, params)
 
+
 class OAuthServer(object):
     def __init__(self, signature_method=SIGNATURE_HMAC, rsa_key=None):
         self.signature_method = signature_method
@@ -180,4 +182,3 @@ class OAuthServer(object):
         client_signature = oauth_client.get_oauth_signature(uri,
             body=body, authorization_header=authorization_header)
         return client_signature == request_signature
-
