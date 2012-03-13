@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 from .unittest import TestCase
@@ -67,4 +69,14 @@ class UtilsTests(TestCase):
         self.assertEqual(len(filtered_params), 2)
         
         self.assertTrue(filtered_params[0][0].startswith('oauth'))
-        self.assertTrue(filtered_params[1][0].startswith('oauth'))        
+        self.assertTrue(filtered_params[1][0].startswith('oauth'))
+
+    def test_utf8_str(self):
+
+        # check against crazy string
+        crazy_string = "àçéghîłñôßûÿž♬♨♧"
+        self.assertTrue(isinstance(utf8_str(crazy_string), str))
+        
+        # check against crazy unicode
+        crazy_unicode = utf8_str(u"àçéghîłñôßûÿž♬♨♧")
+        self.assertTrue(isinstance(crazy_unicode, str))
