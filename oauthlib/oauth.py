@@ -13,17 +13,17 @@ import urlparse
 
 from . import parameters, signature, utils
 
-SIGNATURE_HMAC = "HMAC-SHA1"
-SIGNATURE_RSA = "RSA-SHA1"
-SIGNATURE_PLAINTEXT = "PLAINTEXT"
+SIGNATURE_HMAC = u"HMAC-SHA1"
+SIGNATURE_RSA = u"RSA-SHA1"
+SIGNATURE_PLAINTEXT = u"PLAINTEXT"
 
-SIGNATURE_TYPE_AUTH_HEADER = 'AUTH_HEADER'
-SIGNATURE_TYPE_QUERY = 'QUERY'
+SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
+SIGNATURE_TYPE_QUERY = u'QUERY'
 
 class OAuthClient(object):
     """An OAuth client used to sign OAuth requests"""
     def __init__(self, client_key, client_secret,
-            resource_owner_key, resource_owner_secret, callback_uri,
+            resource_owner_key, resource_owner_secret, callback_uri=None,
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None):
@@ -67,12 +67,13 @@ class OAuthClient(object):
         params = [
             (u'oauth_nonce', utils.generate_nonce()),
             (u'oauth_timestamp', utils.generate_timestamp()),
-            (u'oauth_version', '1.0'),
+            (u'oauth_version', u'1.0'),
             (u'oauth_signature_method', self.signature_method),
             (u'oauth_consumer_key', self.client_key),
             (u'oauth_token', self.resource_owner_key),
-            (u'oauth_callback', self.callback_uri),
         ]
+        if self.callback_uri:
+            params.append((u'oauth_callback', self.callback_uri))
         if self.verifier:
             params.append((u'oauth_verifier', self.verifier))
 
@@ -85,7 +86,7 @@ class OAuthClient(object):
             complete_uri = uri
         else:
             authorization_header = None
-            complete_uri = paramaters.prepare_request_uri_query(params, uri)
+            complete_uri = parameters.prepare_request_uri_query(params, uri)
 
         return complete_uri, authorization_header
 
@@ -126,6 +127,13 @@ class OAuthServer(object):
 
     def check_request_signature(self, uri, http_method=u'GET', body=None,
             authorization_header=None):
+        """Check a request's supplied signature to make sure the request is
+        valid.
+
+        Per `section 3.2`_ of the spec.
+
+        .. _`section 3.2`: http://tools.ietf.org/html/rfc5849#section-3.2
+        """
         # extract parameters
         uri_query = urlparse.urlparse(uri).query
         params = dict(signature.collect_parameters(uri_query=uri_query,
@@ -141,7 +149,11 @@ class OAuthServer(object):
         callback_uri = params.get(u'oauth_callback')
         verifier = params.get(u'oauth_verifier')
         if not all((signature, client_key, resource_owner_key, nonce,
-                timestamp, callback_uri)):
+                timestamp)):
+            return False
+
+        # if version is supplied, it must be "1.0"
+        if u'oauth_version' in params and params[u'oauth_version'] != u'1.0':
             return False
 
         # ensure the nonce and timestamp haven't been used before
@@ -157,7 +169,8 @@ class OAuthServer(object):
             signature_type = SIGNATURE_TYPE_QUERY
 
         oauth_client = OAuthClient(client_key, client_secret,
-            resource_owner_key, resource_owner_secret, callback_uri,
+            resource_owner_key, resource_owner_secret,
+            callback_uri=callback_uri,
             signature_method=self.signature_method,
             signature_type=signature_type,
             rsa_key=self.rsa_key, verifier=verifier)
