@@ -64,7 +64,8 @@ def normalize_base_string_uri(uri):
 
     return urlparse.urlunparse((scheme, netloc, path, params, query, fragment))
 
-def collect_parameters(uri_query=None, authorization_header=None, body=None):
+def collect_parameters(uri_query=None, authorization_header=None, body=None,
+        exclude_oauth_signature=True):
     """Collect parameters from the uri query, authorization header, and request
     body.
     Per `section 3.4.1.3.1`_ of the spec.
@@ -74,18 +75,20 @@ def collect_parameters(uri_query=None, authorization_header=None, body=None):
     params = []
 
     if uri_query is not None:
-        params.extend(urlparse.parse_qs(uri_query).items())
+        params.extend(urlparse.parse_qsl(uri_query))
 
     if authorization_header is not None:
         params.extend(utils.parse_authorization_header(authorization_header))
 
     if body is not None:
-        params.extend(urlparse.parse_qs(body).items())
+        params.extend(urlparse.parse_qsl(body))
 
-    exclude_params = (
+    exclude_params = [
         u'realm',
-        u'oauth_signature',
-    )
+    ]
+    if exclude_oauth_signature:
+        exclude_params.append(u'oauth_signature')
+
     params = filter(lambda i: i[0] not in exclude_params, params)
 
     return params

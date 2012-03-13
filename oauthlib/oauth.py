@@ -23,10 +23,10 @@ SIGNATURE_TYPE_QUERY = 'QUERY'
 class OAuthClient(object):
     """An OAuth client used to sign OAuth requests"""
     def __init__(self, client_key, client_secret,
-            resource_owner_key, resource_owner_secret,
+            resource_owner_key, resource_owner_secret, callback_uri,
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
-            callback_uri=None, rsa_key=None, verifier=None):
+            rsa_key=None, verifier=None):
         self.client_key = client_key
         self.client_secret = client_secret
         self.resource_owner_key = resource_owner_key
@@ -71,9 +71,8 @@ class OAuthClient(object):
             (u'oauth_signature_method', self.signature_method),
             (u'oauth_consumer_key', self.client_key),
             (u'oauth_token', self.resource_owner_key),
+            (u'oauth_callback', self.callback_uri),
         ]
-        if self.callback_uri:
-            params.append((u'oauth_callback', self.callback_uri))
         if self.verifier:
             params.append((u'oauth_verifier', self.verifier))
 
@@ -110,4 +109,59 @@ class OAuthClient(object):
         # take the new OAuth params with signature and contribute the
         # now-complete parameters to the uri or authorization header
         return self._contribute_parameters(uri, params)
+
+class OAuthServer(object):
+    def __init__(self, signature_method=SIGNATURE_HMAC, rsa_key=None):
+        self.signature_method = signature_method
+        self.rsa_key = rsa_key
+
+    def get_client_secret(self, client_key):
+        raise NotImplementedError("Subclasses must implement this function.")
+
+    def get_resource_owner_secret(self, resource_owner_key):
+        raise NotImplementedError("Subclasses must implement this function.")
+
+    def check_timestamp_and_nonce(self, timestamp, nonce):
+        raise NotImplementedError("Subclasses must implement this function.")
+
+    def check_request_signature(self, uri, http_method=u'GET', body=None,
+            authorization_header=None):
+        # extract parameters
+        uri_query = urlparse.urlparse(uri).query
+        params = dict(signature.collect_parameters(uri_query=uri_query,
+            authorization_header=authorization_header, body=body,
+            exclude_oauth_signature=False))
+
+        # ensure required parameters exist
+        request_signature = params.get(u'oauth_signature')
+        client_key = params.get(u'oauth_consumer_key')
+        resource_owner_key = params.get(u'oauth_token')
+        nonce = params.get(u'oauth_nonce')
+        timestamp = params.get(u'oauth_timestamp')
+        callback_uri = params.get(u'oauth_callback')
+        verifier = params.get(u'oauth_verifier')
+        if not all((signature, client_key, resource_owner_key, nonce,
+                timestamp, callback_uri)):
+            return False
+
+        # ensure the nonce and timestamp haven't been used before
+        if not self.check_timestamp_and_nonce(timestamp, nonce):
+            return False
+
+        client_secret = self.get_client_secret(client_key)
+        resource_owner_secret = self.get_resource_owner_secret(
+            resource_owner_key)
+        if authorization_header:
+            signature_type = SIGNATURE_TYPE_AUTH_HEADER
+        else:
+            signature_type = SIGNATURE_TYPE_QUERY
+
+        oauth_client = OAuthClient(client_key, client_secret,
+            resource_owner_key, resource_owner_secret, callback_uri,
+            signature_method=self.signature_method,
+            signature_type=signature_type,
+            rsa_key=self.rsa_key, verifier=verifier)
+        client_signature = oauth_client.get_oauth_signature(uri,
+            body=body, authorization_header=authorization_header)
+        return client_signature == request_signature
 
