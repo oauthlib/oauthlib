@@ -42,22 +42,27 @@ class SignatureTests(TestCase):
 
         Sample Base string generated and tested against::
             
-            POST&http%3A//example.com/request%3Fb5%3D%253D%25253D%26a3%3Da%26c%2540%3D
-            %26a2%3Dr%2520b&OAuth%20realm%3D%22Example%22%2Coauth_consumer_key%3D%229d
-            jdj82h48djs9d2%22%2Coauth_token%3D%22kkk9d7dh3k39sjv7%22%2Coauth_signature
-            _method%3D%22HMAC-SHA1%22%2Coauth_timestamp%3D%22137131201%22%2Coauth_nonc
-            e%3D%227d8f3e4a%22%2Coauth_signature%3D%22bYT5CMsGcbgUdFHObYMEfcx6bsw%253D
-            %22
+            POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D%25253D%2525253D
+            %2526a3%253Da%2526c%252540%253D%2526a2%253Dr%252520b&OAuth%2520realm%
+            253D%2522Example%2522%252Coauth_consumer_key%253D%25229djdj82h48djs9d
+            2%2522%252Coauth_token%253D%2522kkk9d7dh3k39sjv7%2522%252Coauth_signa
+            ture_method%253D%2522HMAC-SHA1%2522%252Coauth_timestamp%253D%25221371
+            31201%2522%252Coauth_nonce%253D%25227d8f3e4a%2522%252Coauth_signature
+            %253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522
         """
 
         # This is the string we want to match
-        control_test_string = "POST&http%3A//example.com/request%3Fb5%3D%253D%25253D%26a3%3Da%26c%2540%3D%26a2%3Dr%2520b&OAuth%20realm%3D%22Example%22%2Coauth_consumer_key%3D%229djdj82h48djs9d2%22%2Coauth_token%3D%22kkk9d7dh3k39sjv7%22%2Coauth_signature_method%3D%22HMAC-SHA1%22%2Coauth_timestamp%3D%22137131201%22%2Coauth_nonce%3D%227d8f3e4a%22%2Coauth_signature%3D%22bYT5CMsGcbgUdFHObYMEfcx6bsw%253D%22"
+        control_test_string = "POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D%25253D%2525253D%2526a3%253Da%2526c%252540%253D%2526a2%253Dr%252520b&OAuth%2520realm%253D%2522Example%2522%252Coauth_consumer_key%253D%25229djdj82h48djs9d2%2522%252Coauth_token%253D%2522kkk9d7dh3k39sjv7%2522%252Coauth_signature_method%253D%2522HMAC-SHA1%2522%252Coauth_timestamp%253D%2522137131201%2522%252Coauth_nonce%253D%25227d8f3e4a%2522%252Coauth_signature%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522"
 
         # Create test variables
         # Create test variables
         # Create test variables
 
-        base_string = construct_base_string(self.http_method, self.base_string_url , self.normalized_encoded_request_parameters)
+        self.assertRaises(ValueError, construct_base_string, self.http_method, self.base_string_url, self.normalized_encoded_request_parameters)
+        self.assertRaises(ValueError, construct_base_string, unicode(self.http_method), self.base_string_url, self.normalized_encoded_request_parameters)
+        self.assertRaises(ValueError, construct_base_string, unicode(self.http_method), unicode(self.base_string_url), self.normalized_encoded_request_parameters)
+
+        base_string = construct_base_string(unicode(self.http_method), unicode(self.base_string_url), unicode(self.normalized_encoded_request_parameters))
 
         self.assertEqual(control_test_string, base_string)
 
@@ -163,7 +168,7 @@ class SignatureTests(TestCase):
         """ TODO: Someone make a better test for this."""
 
         # construct_base_string copied from the test_construct_base_string above
-        base_string = construct_base_string(self.http_method, self.base_string_url , self.normalized_encoded_request_parameters)
+        base_string = construct_base_string(unicode(self.http_method), unicode(self.base_string_url), unicode(self.normalized_encoded_request_parameters))
 
         # check for Unicode
         self.assertRaises(ValueError, sign_hmac_sha1, base_string, self.client_secret, self.resource_owner_secret)
