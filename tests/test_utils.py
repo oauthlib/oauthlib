@@ -35,7 +35,15 @@ class UtilsTests(TestCase):
             u"oauth_consumer_key":u"9djdj82h48djs9d2",
             u"oauth_token":u"kkk9d7dh3k39sjv7",
             u"notoautheither":u"shouldnotbehere"
-        }        
+        }
+
+    authorization_header = """OAuth realm="Example",
+    oauth_consumer_key="9djdj82h48djs9d2",
+    oauth_token="kkk9d7dh3k39sjv7",
+    oauth_signature_method="HMAC-SHA1",
+    oauth_timestamp="137131201",
+    oauth_nonce="7d8f3e4a",
+    oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()            
 
 
     def test_filter_params(self):
@@ -130,5 +138,28 @@ class UtilsTests(TestCase):
         self.assertEqual(urlencode(self.sample_params_unicode_list), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
         self.assertEqual(urlencode(self.sample_params_unicode_dict), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
 
+    def test_parse_authorization_header(self):
 
+        # make us some headers
+        authorization_headers = parse_authorization_header(self.authorization_header)
+
+        # is it a list?
+        self.assertTrue(isinstance(authorization_headers, list))
+
+        # are the internal items tuples?
+        for header in authorization_headers:
+            self.assertTrue(isinstance(header, tuple))
+
+        # are the internal components of each tuple strings?
+        for k,v in authorization_headers:
+            self.assertTrue(isinstance(k, str))
+            self.assertTrue(isinstance(v, str))
+
+        # let's check some of the parsed headers created
+        self.assertEquals(authorization_headers[1][0], "oauth_nonce")
+        self.assertEquals(authorization_headers[1][1], "7d8f3e4a")
+        self.assertEquals(authorization_headers[2][0], "oauth_timestamp")
+        self.assertEquals(authorization_headers[2][1], "137131201")
+        self.assertEquals(authorization_headers[3][0], "oauth_consumer_key")
+        self.assertEquals(authorization_headers[3][1], "9djdj82h48djs9d2")
 
