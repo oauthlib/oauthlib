@@ -80,3 +80,10 @@ class UtilsTests(TestCase):
         # check against crazy unicode
         crazy_unicode = utf8_str(u"àçéghîłñôßûÿž♬♨♧")
         self.assertTrue(isinstance(crazy_unicode, str))
+
+    def test_generate_timestamp(self):
+        """ TODO: Better test here """
+        timestamp = generate_timestamp()
+        self.assertTrue(isinstance(timestamp, unicode))
+        self.assertTrue(int(timestamp))
+        self.assertTrue(int(timestamp) > 1331672335) # is this increasing?
