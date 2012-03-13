@@ -92,7 +92,6 @@ class UtilsTests(TestCase):
         """ TODO: better test here """
 
         nonce = generate_nonce()
-        self.assertEqual(len(nonce), 30)
         for i in range(50):
             self.assertTrue(nonce != generate_nonce())
 
@@ -107,4 +106,7 @@ class UtilsTests(TestCase):
         self.assertEqual(len(token), 6)
         self.assertTrue("a" in token)
 
-        
+    def test_escape(self):
+        self.assertRaises(ValueError, escape, "I am a string type. Not a unicode type.")
+
+        #print escape(u"I am a unicode type.")
