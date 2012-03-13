@@ -9,6 +9,17 @@ from oauthlib.signature import *
 
 class SignatureTests(TestCase):
 
+    uri_query = "b5=%3D%253D&a3=a&c%40=&a2=r%20b"
+    authorization_header = """OAuth realm="Example",
+    oauth_consumer_key="9djdj82h48djs9d2",
+    oauth_token="kkk9d7dh3k39sjv7",
+    oauth_signature_method="HMAC-SHA1",
+    oauth_timestamp="137131201",
+    oauth_nonce="7d8f3e4a",
+    oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
+    body = "content=This is being the body of things"
+
+
     def test_construct_base_string(self):
         """
         Example text to be turned into a base string::
@@ -79,8 +90,8 @@ class SignatureTests(TestCase):
         # Check against uri_query
         # Check against uri_query
         # Check against uri_query
-        uri_query = "b5=%3D%253D&a3=a&c%40=&a2=r%20b"
-        parameters = collect_parameters(uri_query=uri_query)
+        
+        parameters = collect_parameters(uri_query=self.uri_query)
 
         self.assertEquals(len(parameters), 3)
         self.assertEquals(parameters[0], ('b5', '=%3D'))
@@ -90,15 +101,8 @@ class SignatureTests(TestCase):
         # check against authorization header as well
         # check against authorization header as well
         # check against authorization header as well
-        authorization_header = """OAuth realm="Example",
-oauth_consumer_key="9djdj82h48djs9d2",
-oauth_token="kkk9d7dh3k39sjv7",
-oauth_signature_method="HMAC-SHA1",
-oauth_timestamp="137131201",
-oauth_nonce="7d8f3e4a",
-oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
 
-        parameters = collect_parameters(uri_query=uri_query, authorization_header=authorization_header)
+        parameters = collect_parameters(uri_query=self.uri_query, authorization_header=self.authorization_header)
 
         # Redo the checks against all the parameters. Duplicated code but better safety
         self.assertEquals(len(parameters), 8)
@@ -113,10 +117,8 @@ oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
 
         # Add in the body.
         # TODO - add more valid content for the body. Daniel Greenfeld 2012/03/12
-        body = "content=This is being the body of things"
-
         # Redo again the checks against all the parameters. Duplicated code but better safety
-        parameters = collect_parameters(uri_query=uri_query, authorization_header=authorization_header, body=body)
+        parameters = collect_parameters(uri_query=self.uri_query, authorization_header=self.authorization_header, body=self.body)
         self.assertEquals(len(parameters), 9)
         self.assertEquals(parameters[0], ('b5', '=%3D'))
         self.assertEquals(parameters[1], ('a3', 'a'))
@@ -127,3 +129,30 @@ oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
         self.assertEquals(parameters[6], ('oauth_signature_method', 'HMAC-SHA1'))
         self.assertEquals(parameters[7], ('oauth_token', 'kkk9d7dh3k39sjv7'))
         self.assertEquals(parameters[8], ('content', 'This is being the body of things'))
+
+    def test_normalize_parameters(self):
+        """ We copy some of the variables from the test method above."""
+
+        # First we check for unicode issues.
+        # We should generate Value Errors
+        parameters = collect_parameters(uri_query=self.uri_query, authorization_header=self.authorization_header, body=self.body)
+        self.assertRaises(ValueError, normalize_parameters, parameters)
+        parameters = collect_parameters(uri_query=unicode(self.uri_query), authorization_header=self.authorization_header, body=self.body)
+        self.assertRaises(ValueError, normalize_parameters, parameters)
+        parameters = collect_parameters(uri_query=unicode(self.uri_query), authorization_header=unicode(self.authorization_header), body=self.body)
+        self.assertRaises(ValueError, normalize_parameters, parameters)
+
+        # Create the parameters
+        parameters = collect_parameters(uri_query=unicode(self.uri_query), authorization_header=unicode(self.authorization_header), body=unicode(self.body))
+        normalized = normalize_parameters(parameters)
+
+        # check the parameters type
+        self.assertTrue(isinstance(normalized, unicode))
+
+        # Lets see if things are in order
+        # check to see that querystring keys come in alphanumeric order:
+        querystring_keys = ['a2', 'a3', 'b5', 'content', 'oauth_consumer_key', 'oauth_nonce', 'oauth_signature_method', 'oauth_timestamp', 'oauth_token']
+        index = -1 # start at -1 because the 'a2' key starts at index 0
+        for key in querystring_keys:
+            self.assertTrue(normalized.index(key) > index)
+            index = normalized.index(key)
