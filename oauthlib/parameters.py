@@ -20,8 +20,8 @@ def order_params(target):
     first argument.
     """
     def wrapper(params, *args, **kwargs):
-        params = order_oauth_parameters(params)
-        return target(params, *args, **kwargs)
+        ordered_params = order_oauth_parameters(params)
+        return target(ordered_params, *args, **kwargs)
 
     wrapper.__doc__ = target.__doc__
     return wrapper

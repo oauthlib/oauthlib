@@ -35,10 +35,10 @@ def construct_base_string(http_method, base_string_uri,
     .. _`section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.1
     """
 
-    return u'&'.join((
-        http_method.upper(),
-        base_string_uri,
-        normalized_encoded_request_parameters,
+    return '&'.join((
+        utils.escape(http_method.upper()),
+        utils.escape(base_string_uri),
+        utils.escape(normalized_encoded_request_parameters),
     ))
 
 def normalize_base_string_uri(uri):
@@ -62,7 +62,7 @@ def normalize_base_string_uri(uri):
         if port == u'80':
             netloc = host
 
-    return urlparse.urlunparse((scheme, netloc, path, params, query, fragment))
+    return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
 
 def collect_parameters(uri_query=None, authorization_header=None, body=None,
         exclude_oauth_signature=True):
@@ -117,10 +117,9 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
     """
 
-    key = u'&'.join((utils.escape(client_secret),
+    key = '&'.join((utils.escape(client_secret),
         utils.escape(resource_owner_secret)))
-    signature = hmac.new(key.encode('utf-8'), base_string.encode('utf-8'),
-        hashlib.sha1)
+    signature = hmac.new(key, base_string, hashlib.sha1)
     return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
 
 def sign_rsa_sha1(base_string, rsa_private_key):
