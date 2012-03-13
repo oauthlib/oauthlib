@@ -87,3 +87,11 @@ class UtilsTests(TestCase):
         self.assertTrue(isinstance(timestamp, unicode))
         self.assertTrue(int(timestamp))
         self.assertTrue(int(timestamp) > 1331672335) # is this increasing?
+
+    def test_generate_nonce(self):
+        """ TODO: better test here """
+
+        nonce = generate_nonce()
+        self.assertEqual(len(nonce), 30)
+        for i in range(50):
+            self.assertTrue(nonce != generate_nonce())
