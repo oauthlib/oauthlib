@@ -10,6 +10,7 @@ spec.
 
 import time
 import urllib
+import urllib2
 from random import getrandbits
 
 
@@ -89,4 +90,15 @@ def urlencode(query):
     if isinstance(query, dict):
         query = query.items()
     return "&".join(['='.join([escape(k), escape(v)]) for k, v in query])
+
+def parse_authorization_header(authorization_header):
+    """Parse an OAuth authorization header into a list of 2-tuples"""
+    auth_scheme = 'OAuth '
+    if authorization_header.startswith(auth_scheme):
+        authorization_header = authorization_header.replace(auth_scheme, '', 1)
+    items = urllib2.parse_http_list(authorization_header)
+    try:
+        return urllib2.parse_keqv_list(items).items()
+    except ValueError:
+        raise ValueError('Malformed authorization header')
 
