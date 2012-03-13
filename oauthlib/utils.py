@@ -8,11 +8,14 @@ This module contains utility methods used by various parts of the OAuth
 spec.
 """
 
+import string
 import time
 import urllib
 import urllib2
 from random import getrandbits
 
+UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
+    string.digits.decode('ascii'))
 
 def filter_params(target):
     """Decorator which filters params to remove non-oauth_* parameters
@@ -30,7 +33,7 @@ def filter_params(target):
 
 def filter_oauth_params(params):
     """Removes all non oauth parameters from a dict or a list of params."""
-    is_oauth = lambda kv: kv[0].startswith("oauth_")
+    is_oauth = lambda kv: kv[0].startswith(u"oauth_")
     if isinstance(params, dict):
         return filter(is_oauth, params.items())
     else:
@@ -67,6 +70,20 @@ def generate_nonce():
     """
     return str(getrandbits(64)) + generate_timestamp()
 
+def generate_token(length=20, chars=UNICODE_ASCII_CHARACTER_SET):
+    """Generates a generic OAuth token
+
+    According to `section 2`_ of the spec, the method of token
+    construction is undefined. This implementation is simply a random selection
+    of `length` choices from `chars`.
+
+    Credit to Ignacio Vazquez-Abrams for his excellent `Stackoverflow answer`_
+
+    .. _`Stackoverflow answer` : http://stackoverflow.com/questions/2257441/
+        python-random-string-generation-with-upper-case-letters-and-digits
+
+    """
+    return u''.join(choice(chars) for x in range(length))
 
 def escape(s):
     """Escape a string in an OAuth-compatible fashion.
