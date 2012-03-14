@@ -19,6 +19,7 @@ SIGNATURE_PLAINTEXT = u"PLAINTEXT"
 
 SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = u'QUERY'
+SIGNATURE_TYPE_BODY = u'BODY'
 
 
 class OAuth1aClient(object):
@@ -84,15 +85,26 @@ class OAuth1aClient(object):
         return params
 
     def _contribute_parameters(self, uri, params):
+        if self.signature_type not in (SIGNATURE_TYPE_BODY,
+                                       SIGNATURE_TYPE_QUERY,
+                                       SIGNATURE_TYPE_AUTH_HEADER):
+            raise ValueError('Unknown signature type used.')
+
+        # defaults
+        authorization_header = None
+        complete_uri = uri
+        body = None
+
+        # Sign with the specified signature type
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
             authorization_header = parameters.prepare_authorization_header(
                 params)
-            complete_uri = uri
-        else:
-            authorization_header = None
+        elif self.signature_type == SIGNATURE_TYPE_BODY:
+            body = parameters.prepare_form_encoded_body(params)
+        else:  # self.signature_type == SIGNATURE_TYPE_QUERY:
             complete_uri = parameters.prepare_request_uri_query(params, uri)
 
-        return complete_uri, authorization_header
+        return complete_uri, authorization_header, body
 
     def sign_request(self, uri, http_method=u'GET', body=None):
         """Get the signed uri and authorization header.
