@@ -108,7 +108,9 @@ class SignatureTests(TestCase):
         # check against authorization header as well
         # check against authorization header as well
 
-        parameters = collect_parameters(uri_query=self.uri_query, authorization_header=self.authorization_header)
+        parameters = collect_parameters(uri_query=self.uri_query, headers={
+            'Authorization': self.authorization_header,
+        })
 
         # Redo the checks against all the parameters. Duplicated code but better safety
         self.assertEquals(len(parameters), 8)
@@ -124,7 +126,10 @@ class SignatureTests(TestCase):
         # Add in the body.
         # TODO - add more valid content for the body. Daniel Greenfeld 2012/03/12
         # Redo again the checks against all the parameters. Duplicated code but better safety
-        parameters = collect_parameters(uri_query=self.uri_query, authorization_header=self.authorization_header, body=self.body)
+        parameters = collect_parameters(uri_query=self.uri_query,
+            body=self.body, headers={
+                'Authorization': self.authorization_header,
+            })
         self.assertEquals(len(parameters), 9)
         self.assertEquals(parameters[0], ('b5', '=%3D'))
         self.assertEquals(parameters[1], ('a3', 'a'))
@@ -139,17 +144,11 @@ class SignatureTests(TestCase):
     def test_normalize_parameters(self):
         """ We copy some of the variables from the test method above."""
 
-        # First we check for unicode issues.
-        # We should generate Value Errors
-        parameters = collect_parameters(uri_query=self.uri_query, authorization_header=self.authorization_header, body=self.body)
-        self.assertRaises(ValueError, normalize_parameters, parameters)
-        parameters = collect_parameters(uri_query=unicode(self.uri_query), authorization_header=self.authorization_header, body=self.body)
-        self.assertRaises(ValueError, normalize_parameters, parameters)
-        parameters = collect_parameters(uri_query=unicode(self.uri_query), authorization_header=unicode(self.authorization_header), body=self.body)
-        self.assertRaises(ValueError, normalize_parameters, parameters)
-
         # Create the parameters
-        parameters = collect_parameters(uri_query=unicode(self.uri_query), authorization_header=unicode(self.authorization_header), body=unicode(self.body))
+        parameters = collect_parameters(uri_query=unicode(self.uri_query),
+            body=unicode(self.body), headers={
+                u'Authorization': unicode(self.authorization_header),
+            })
         normalized = normalize_parameters(parameters)
 
         # check the parameters type

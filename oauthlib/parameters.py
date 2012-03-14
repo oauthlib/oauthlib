@@ -63,7 +63,7 @@ def prepare_headers(params, headers, realm=None):
     # Doesn't seem to be specified.
     full_params = []
     if realm:
-        full_params.append(("realm", realm))
+        full_params.append((u"realm", realm))
     full_params.extend(params)
 
     # Only oauth_ and realm parameters should remain by this point.
