@@ -84,7 +84,7 @@ class OAuth1aClient(object):
 
         return params
 
-    def _contribute_parameters(self, uri, params):
+    def _contribute_parameters(self, uri, params, body=None):
         if self.signature_type not in (SIGNATURE_TYPE_BODY,
                                        SIGNATURE_TYPE_QUERY,
                                        SIGNATURE_TYPE_AUTH_HEADER):
@@ -93,14 +93,14 @@ class OAuth1aClient(object):
         # defaults
         authorization_header = None
         complete_uri = uri
-        body = None
+        body = body
 
         # Sign with the specified signature type
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
             authorization_header = parameters.prepare_authorization_header(
                 params)
         elif self.signature_type == SIGNATURE_TYPE_BODY:
-            body = parameters.prepare_form_encoded_body(params)
+            body = parameters.prepare_form_encoded_body(params, body)
         else:  # self.signature_type == SIGNATURE_TYPE_QUERY:
             complete_uri = parameters.prepare_request_uri_query(params, uri)
 
@@ -113,8 +113,8 @@ class OAuth1aClient(object):
         # get the OAuth params and contribute them to either the uri or
         # authorization header
         params = self.get_oauth_params()
-        complete_uri, authorization_header = self._contribute_parameters(uri,
-            params)
+        complete_uri, authorization_header, body = self._contribute_parameters(uri,
+            params, body=body)
 
         # use the new uri and authorization header to generate a signature and
         # contribute that signature to the OAuth parameters

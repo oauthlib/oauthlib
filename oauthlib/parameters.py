@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 """
 oauthlib.parameters
@@ -10,8 +11,7 @@ This module contains methods related to `section 3.5`_ of the OAuth 1.0a spec.
 """
 
 from urlparse import urlparse, urlunparse, parse_qsl
-from utils import filter_params, urlencode
-
+from . import utils
 
 def order_params(target):
     """Decorator which reorders params contents to start with oauth_* params
@@ -48,7 +48,7 @@ def order_oauth_parameters(params):
     return ordered
 
 
-@filter_params
+@utils.filter_params
 def prepare_authorization_header(params, realm=None):
     """Prepare the Authorization header.
 
@@ -66,8 +66,14 @@ def prepare_authorization_header(params, realm=None):
     return 'OAuth ' + ','.join(['='.join([k, v]) for k, v in params])
 
 
+def _add_params_to_qs(query, params):
+    queryparams = parse_qsl(query, True)
+    queryparams.extend(params)
+    queryparams.sort(key=lambda i: i[0].startswith('oauth_'))
+    return utils.urlencode(queryparams)
+
 @order_params
-def prepare_form_encoded_body(params):
+def prepare_form_encoded_body(params, body):
     """Prepare the Form-Encoded Body.
 
     Per `section 3.5.2`_ of the spec.
@@ -77,11 +83,12 @@ def prepare_form_encoded_body(params):
     .. _`section 3.5.2`: http://tools.ietf.org/html/rfc5849#section-3.5.2
 
     """
-    return urlencode(params)
+    # append OAuth params to the existing body
+    return _add_params_to_qs(body, params)
 
 
 @order_params
-def prepare_request_uri_query(params, url):
+def prepare_request_uri_query(params, uri):
     """Prepare the Request URI Query.
 
     Per `section 3.5.3`_ of the spec.
@@ -92,14 +99,8 @@ def prepare_request_uri_query(params, url):
     .. _`section 3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
 
     """
-    # convert dict to list of tuples
-    if isinstance(params, dict):
-        params = params.items()
-
     # append OAuth params to the existing set of query components
-    sch, net, path, par, query, fra = urlparse(url)
-    queryparams = parse_qsl(query, True)
-    queryparams.extend(params)
-    queryparams.sort(key=lambda i: i[0].startswith('oauth_'))
-    query = urlencode(queryparams)
+    sch, net, path, par, query, fra = urlparse(uri)
+    query = _add_params_to_qs(query, params)
     return urlunparse((sch, net, path, par, query, fra))
+
