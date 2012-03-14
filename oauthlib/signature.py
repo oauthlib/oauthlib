@@ -67,7 +67,7 @@ def normalize_base_string_uri(uri):
     return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
 
 
-def collect_parameters(uri_query=None, body=None, headers=None,
+def collect_parameters(uri_query='', body='', headers=None,
         exclude_oauth_signature=True):
     """Collect parameters from the uri query, authorization header, and request
     body.
@@ -78,6 +78,7 @@ def collect_parameters(uri_query=None, body=None, headers=None,
 
     .. _`section 3.4.1.3.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
     """
+    headers = headers or {}
     params = []
 
     if uri_query:

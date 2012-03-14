@@ -42,10 +42,9 @@ class OAuth1aClient(object):
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
 
-    def get_oauth_signature(self, uri, http_method=u'GET', body=None,
+    def get_oauth_signature(self, uri, http_method=u'GET', body='',
             headers=None):
         """Get an OAuth signature to be used in signing a request"""
-        body = body or ''
         headers = headers or {}
 
         if self.signature_method == SIGNATURE_PLAINTEXT:
@@ -88,14 +87,13 @@ class OAuth1aClient(object):
 
         return params
 
-    def _contribute_parameters(self, uri, params, body=None, headers=None):
+    def _contribute_parameters(self, uri, params, body='', headers=None):
         if self.signature_type not in (SIGNATURE_TYPE_BODY,
                                        SIGNATURE_TYPE_QUERY,
                                        SIGNATURE_TYPE_AUTH_HEADER):
             raise ValueError('Unknown signature type used.')
 
         # defaults
-        body = body or ''
         headers = headers or {}
         complete_uri = uri
 
@@ -112,11 +110,10 @@ class OAuth1aClient(object):
 
         return complete_uri, body, headers
 
-    def sign_request(self, uri, http_method=u'GET', body=None, headers=None):
+    def sign_request(self, uri, http_method=u'GET', body='', headers=None):
         """Get the signed uri and authorization header.
         Authorization header will be None if signature type is "query".
         """
-        body = body or ''
         headers = headers or {}
 
         # get the OAuth params and contribute them to either the uri or
@@ -152,7 +149,7 @@ class OAuth1aServer(object):
     def check_timestamp_and_nonce(self, timestamp, nonce):
         raise NotImplementedError("Subclasses must implement this function.")
 
-    def check_request_signature(self, uri, http_method=u'GET', body=None,
+    def check_request_signature(self, uri, http_method=u'GET', body='',
             headers=None):
         """Check a request's supplied signature to make sure the request is
         valid.
@@ -161,7 +158,6 @@ class OAuth1aServer(object):
 
         .. _`section 3.2`: http://tools.ietf.org/html/rfc5849#section-3.2
         """
-        body = body or ''
         headers = headers or {}
 
         # extract parameters
