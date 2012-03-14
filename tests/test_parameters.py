@@ -51,9 +51,11 @@ class ParameterTests(TestCase):
             self.withrealm_authorization_header)
 
     def test_prepare_form_encoded_body(self):
-        form_encoded_body = 'oauth_signature=bYT5CMsGcbgUdFHObYMEfcx6bsw%253D&oauth_nonce=7d8f3e4a&oauth_timestamp=137131201&oauth_signature_method=HMAC-SHA1&oauth_token=kkk9d7dh3k39sjv7&oauth_consumer_key=9djdj82h48djs9d2&data_param_foo=foo&data_param_1=1'
+        existing_body = u''
+        form_encoded_body = 'data_param_foo=foo&data_param_1=1&oauth_signature=bYT5CMsGcbgUdFHObYMEfcx6bsw%253D&oauth_nonce=7d8f3e4a&oauth_timestamp=137131201&oauth_signature_method=HMAC-SHA1&oauth_token=kkk9d7dh3k39sjv7&oauth_consumer_key=9djdj82h48djs9d2'
         self.assertEqual(
-            prepare_form_encoded_body(self.auth_and_data), form_encoded_body)
+            prepare_form_encoded_body(self.auth_and_data, existing_body),
+            form_encoded_body)
 
     def test_prepare_request_uri_query(self):
         url = u'http://notarealdomain.com/foo/bar/baz?some=args&go=here'
