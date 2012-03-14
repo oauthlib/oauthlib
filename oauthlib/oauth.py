@@ -21,8 +21,8 @@ SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = u'QUERY'
 
 
-class OAuthClient(object):
-    """An OAuth client used to sign OAuth requests"""
+class OAuth1aClient(object):
+    """A client used to sign OAuth 1.0a requests"""
     def __init__(self, client_key, client_secret,
             resource_owner_key, resource_owner_secret, callback_uri=None,
             signature_method=SIGNATURE_HMAC,
@@ -116,7 +116,8 @@ class OAuthClient(object):
         return self._contribute_parameters(uri, params)
 
 
-class OAuthServer(object):
+class OAuth1aServer(object):
+    """A server used to verify OAuth 1.0a requests"""
     def __init__(self, signature_method=SIGNATURE_HMAC, rsa_key=None):
         self.signature_method = signature_method
         self.rsa_key = rsa_key
@@ -173,7 +174,7 @@ class OAuthServer(object):
         else:
             signature_type = SIGNATURE_TYPE_QUERY
 
-        oauth_client = OAuthClient(client_key, client_secret,
+        oauth_client = OAuth1aClient(client_key, client_secret,
             resource_owner_key, resource_owner_secret,
             callback_uri=callback_uri,
             signature_method=self.signature_method,
