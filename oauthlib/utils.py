@@ -88,7 +88,7 @@ def generate_token(length=20, chars=UNICODE_ASCII_CHARACTER_SET):
     return u''.join(choice(chars) for x in range(length))
 
 
-def escape(s):
+def escape(u):
     """Escape a string in an OAuth-compatible fashion.
 
     Per `section 3.6`_ of the spec.
@@ -96,9 +96,14 @@ def escape(s):
     .. _`section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
 
     """
-    if not isinstance(s, unicode):
+    if not isinstance(u, unicode):
         raise ValueError('Only unicode objects are escapable.')
-    return urllib.quote(s.encode('utf-8'), safe='~')
+    return urllib.quote(u.encode('utf-8'), safe='~')
+
+def unescape(s):
+    if not isinstance(s, str):
+        raise ValueError('Only string objects are unescapable.')
+    return urllib.unquote(s, safe='~').decode('utf-8')
 
 
 def urlencode(query):

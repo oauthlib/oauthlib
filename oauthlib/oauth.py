@@ -43,16 +43,20 @@ class OAuth1aClient(object):
             raise ValueError('rsa_key is required when using RSA signature method.')
 
     def get_oauth_signature(self, uri, http_method=u'GET', body=None,
-            authorization_header=None):
+            headers=None):
         """Get an OAuth signature to be used in signing a request"""
+        body = body or ''
+        headers = headers or {}
+
         if self.signature_method == SIGNATURE_PLAINTEXT:
             # fast-path
             return signature.sign_plaintext(self.client_secret,
                 self.resource_owner_secret)
 
+        headers = headers or {}
         query = urlparse.urlparse(uri).query
         params = signature.collect_parameters(uri_query=query,
-            authorization_header=authorization_header, body=body)
+            body=body, headers=headers)
         normalized_params = signature.normalize_parameters(params)
         normalized_uri = signature.normalize_base_string_uri(uri)
         base_string = signature.construct_base_string(http_method,
@@ -84,43 +88,48 @@ class OAuth1aClient(object):
 
         return params
 
-    def _contribute_parameters(self, uri, params, body=None):
+    def _contribute_parameters(self, uri, params, body=None, headers=None):
         if self.signature_type not in (SIGNATURE_TYPE_BODY,
                                        SIGNATURE_TYPE_QUERY,
                                        SIGNATURE_TYPE_AUTH_HEADER):
             raise ValueError('Unknown signature type used.')
 
         # defaults
-        authorization_header = None
+        body = body or ''
+        headers = headers or {}
         complete_uri = uri
-        body = body
 
         # Sign with the specified signature type
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
-            authorization_header = parameters.prepare_authorization_header(
-                params)
-        elif self.signature_type == SIGNATURE_TYPE_BODY:
+            headers = parameters.prepare_headers(
+                params, headers)
+
+        if self.signature_type == SIGNATURE_TYPE_BODY:
             body = parameters.prepare_form_encoded_body(params, body)
-        else:  # self.signature_type == SIGNATURE_TYPE_QUERY:
+
+        if self.signature_type == SIGNATURE_TYPE_QUERY:
             complete_uri = parameters.prepare_request_uri_query(params, uri)
 
-        return complete_uri, authorization_header, body
+        return complete_uri, body, headers
 
-    def sign_request(self, uri, http_method=u'GET', body=None):
+    def sign_request(self, uri, http_method=u'GET', body=None, headers=None):
         """Get the signed uri and authorization header.
         Authorization header will be None if signature type is "query".
         """
+        body = body or ''
+        headers = headers or {}
+
         # get the OAuth params and contribute them to either the uri or
         # authorization header
         params = self.get_oauth_params()
-        complete_uri, authorization_header, body = self._contribute_parameters(uri,
-            params, body=body)
+        complete_uri, body, headers = self._contribute_parameters(uri,
+            params, body=body, headers=headers)
 
         # use the new uri and authorization header to generate a signature and
         # contribute that signature to the OAuth parameters
         oauth_signature = self.get_oauth_signature(complete_uri,
             http_method=http_method, body=body,
-            authorization_header=authorization_header)
+            headers=headers)
         params.append((u'oauth_signature', oauth_signature))
 
         # take the new OAuth params with signature and contribute the
@@ -144,7 +153,7 @@ class OAuth1aServer(object):
         raise NotImplementedError("Subclasses must implement this function.")
 
     def check_request_signature(self, uri, http_method=u'GET', body=None,
-            authorization_header=None):
+            headers=None):
         """Check a request's supplied signature to make sure the request is
         valid.
 
@@ -152,10 +161,13 @@ class OAuth1aServer(object):
 
         .. _`section 3.2`: http://tools.ietf.org/html/rfc5849#section-3.2
         """
+        body = body or ''
+        headers = headers or {}
+
         # extract parameters
         uri_query = urlparse.urlparse(uri).query
         params = dict(signature.collect_parameters(uri_query=uri_query,
-            authorization_header=authorization_header, body=body,
+            headers=headers, body=body,
             exclude_oauth_signature=False))
 
         # ensure required parameters exist
@@ -181,7 +193,8 @@ class OAuth1aServer(object):
         client_secret = self.get_client_secret(client_key)
         resource_owner_secret = self.get_resource_owner_secret(
             resource_owner_key)
-        if authorization_header:
+        # FIXME: check for body signature type
+        if headers: # FIXME: check for oauth scheme in authorization header
             signature_type = SIGNATURE_TYPE_AUTH_HEADER
         else:
             signature_type = SIGNATURE_TYPE_QUERY
@@ -193,5 +206,6 @@ class OAuth1aServer(object):
             signature_type=signature_type,
             rsa_key=self.rsa_key, verifier=verifier)
         client_signature = oauth_client.get_oauth_signature(uri,
-            body=body, authorization_header=authorization_header)
+            body=body, headers=headers)
         return client_signature == request_signature
+

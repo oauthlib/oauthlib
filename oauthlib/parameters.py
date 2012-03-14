@@ -49,7 +49,7 @@ def order_oauth_parameters(params):
 
 
 @utils.filter_params
-def prepare_authorization_header(params, realm=None):
+def prepare_headers(params, headers, realm=None):
     """Prepare the Authorization header.
 
     Per `section 3.5.1`_ of the spec.
@@ -57,14 +57,24 @@ def prepare_authorization_header(params, realm=None):
     .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
 
     """
+    headers = headers or {}
+
     # TODO: Realm should always be the first parameter, right?
     # Doesn't seem to be specified.
+    full_params = []
     if realm:
-        params.insert(0, ("realm", realm))
+        full_params.append(("realm", realm))
+    full_params.extend(params)
 
     # Only oauth_ and realm parameters should remain by this point.
-    return 'OAuth ' + ','.join(['='.join([k, v]) for k, v in params])
+    authorization_header = 'OAuth ' + ', '.join(
+        ['{0}="{1}"'.format(utils.escape(k), utils.escape(v)) for k, v in full_params])
 
+    # contribute the Authorization header to the given headers
+    full_headers = {}
+    full_headers.update(headers)
+    full_headers['Authorization'] = authorization_header
+    return full_headers
 
 def _add_params_to_qs(query, params):
     queryparams = parse_qsl(query, True)

@@ -67,35 +67,53 @@ def normalize_base_string_uri(uri):
     return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
 
 
-def collect_parameters(uri_query=None, authorization_header=None, body=None,
+def collect_parameters(uri_query=None, body=None, headers=None,
         exclude_oauth_signature=True):
     """Collect parameters from the uri query, authorization header, and request
     body.
+
+    String paramters will be decoded into unicode using utf-8.
+    Parameters starting with `oauth_` will be unescaped.
     Per `section 3.4.1.3.1`_ of the spec.
 
     .. _`section 3.4.1.3.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
     """
     params = []
 
-    if uri_query is not None:
+    if uri_query:
         params.extend(urlparse.parse_qsl(uri_query))
 
-    if authorization_header is not None:
-        params.extend(utils.parse_authorization_header(authorization_header))
+    if headers:
+        # look for an authorization header (case-insensitive)
+        headers_lower = dict((k.lower(), v) for k,v in headers.items())
+        authorization_header = headers_lower.get('authorization')
+        if authorization_header is not None:
+            params.extend(utils.parse_authorization_header(
+                authorization_header))
 
-    if body is not None:
+    if body:
         params.extend(urlparse.parse_qsl(body))
 
+    # ensure all paramters are unicode and not escaped
+    unicode_params = []
+    for k, v in params:
+        if isinstance(k, str):
+            k = k.decode('utf-8')
+        if isinstance(v, str):
+            if v.startswith('oauth_'):
+                v = utils.unescape(v)
+            else:
+                v = v.decode('utf-8')
+        unicode_params.append((k, v))
+
+    # exclude particular parameters according to the spec
     exclude_params = [
         u'realm',
     ]
     if exclude_oauth_signature:
         exclude_params.append(u'oauth_signature')
 
-    params = filter(lambda i: i[0] not in exclude_params, params)
-
-    return params
-
+    return filter(lambda i: i[0] not in exclude_params, unicode_params)
 
 def normalize_parameters(params):
     """Normalize querystring parameters for use in constructing a base string.
@@ -158,3 +176,4 @@ def sign_plaintext(client_secret, resource_owner_secret):
     """
     return u'&'.join((utils.escape(client_secret),
         utils.escape(resource_owner_secret)))
+
