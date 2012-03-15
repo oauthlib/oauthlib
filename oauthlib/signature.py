@@ -59,9 +59,13 @@ def normalize_base_string_uri(uri):
     netloc = netloc.lower()
 
     # strip port 80 from host if expliticly present (3.4.1.2 #3)
+    default_ports = (
+        (u'http', u'80'),
+        (u'https', u'443'),
+    )
     if u':' in netloc:
         host, port = netloc.split(u':', 1)
-        if port == u'80' or port == u'443':
+        if (scheme, port) in default_ports:
             netloc = host
 
     return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
