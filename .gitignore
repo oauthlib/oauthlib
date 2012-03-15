@@ -1,6 +1,7 @@
 *.pyc
 *.sublime-project
 *.sublime-workspace
+*.swp
 
 *.py[co]
 
