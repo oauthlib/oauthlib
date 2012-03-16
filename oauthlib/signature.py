@@ -86,7 +86,7 @@ def collect_parameters(uri_query='', body='', headers=None,
     params = []
 
     if uri_query:
-        params.extend(urlparse.parse_qsl(uri_query))
+        params.extend(urlparse.parse_qsl(uri_query, True))
 
     if headers:
         # look for an authorization header (case-insensitive)
