@@ -97,7 +97,7 @@ def collect_parameters(uri_query='', body='', headers=None,
                 authorization_header))
 
     if body:
-        params.extend(urlparse.parse_qsl(body))
+        params.extend(urlparse.parse_qsl(body, True))
 
     # ensure all paramters are unicode and not escaped
     unicode_params = []
