@@ -199,8 +199,10 @@ class OAuth1aServer(object):
         else:
             signature_type = SIGNATURE_TYPE_QUERY
 
-        oauth_client = OAuth1aClient(client_key, client_secret,
-            resource_owner_key, resource_owner_secret,
+        oauth_client = OAuth1aClient(client_key,
+            client_secret=client_secret,
+            resource_owner_key=resource_owner_key,
+            resource_owner_secret=resource_owner_secret,
             callback_uri=callback_uri,
             signature_method=self.signature_method,
             signature_type=signature_type,
