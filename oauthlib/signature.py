@@ -96,11 +96,11 @@ def collect_parameters(uri_query='', body='', headers=None,
             params.extend(utils.parse_authorization_header(
                 authorization_header))
 
-    if body and isinstance(body, dict):
+    if isinstance(body, dict):
         params.extend(body.items())
-    elif body and isinstance(body, list):
+    elif isinstance(body, list):
         params.extend(body)
-    else:
+    elif body:
         params.extend(urlparse.parse_qsl(body))
 
     # ensure all paramters are unicode and not escaped
