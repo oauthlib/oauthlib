@@ -163,7 +163,8 @@ class SignatureTests(TestCase):
     def test_sign_hmac_sha1(self):
         """ Verifying correct HMAC-SHA1 signature against one created by openssl."""
 
-        # Base string saved in <message>, hmac_key in <key>.
+        # self.control_base_string saved in <message>, hmac_key in <key>.
+        # hmac_key = "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ&just-a-string%20%20%20%20asdasd"
         # Control signature created using openssl:
         # $ echo -n $(cat <message>) | openssl dgst -binary -hmac <key> | base64
         control_signature = "Uau4O9Kpd2k6rvh7UZN/RN+RG7Y="
