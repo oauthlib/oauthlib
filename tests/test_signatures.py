@@ -23,6 +23,7 @@ class SignatureTests(TestCase):
     normalized_encoded_request_parameters = urllib.quote("""OAuth realm="Example",oauth_consumer_key="9djdj82h48djs9d2",oauth_token="kkk9d7dh3k39sjv7",oauth_signature_method="HMAC-SHA1",oauth_timestamp="137131201",oauth_nonce="7d8f3e4a",oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D" """.strip())
     client_secret = "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ"
     resource_owner_secret = "just-a-string    asdasd"
+    control_base_string = "POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D%25253D%2525253D%2526a3%253Da%2526c%252540%253D%2526a2%253Dr%252520b&OAuth%2520realm%253D%2522Example%2522%252Coauth_consumer_key%253D%25229djdj82h48djs9d2%2522%252Coauth_token%253D%2522kkk9d7dh3k39sjv7%2522%252Coauth_signature_method%253D%2522HMAC-SHA1%2522%252Coauth_timestamp%253D%2522137131201%2522%252Coauth_nonce%253D%25227d8f3e4a%2522%252Coauth_signature%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522"
 
     def test_construct_base_string(self):
         """
@@ -50,9 +51,6 @@ class SignatureTests(TestCase):
             %253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522
         """
 
-        # This is the string we want to match
-        control_test_string = "POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D%25253D%2525253D%2526a3%253Da%2526c%252540%253D%2526a2%253Dr%252520b&OAuth%2520realm%253D%2522Example%2522%252Coauth_consumer_key%253D%25229djdj82h48djs9d2%2522%252Coauth_token%253D%2522kkk9d7dh3k39sjv7%2522%252Coauth_signature_method%253D%2522HMAC-SHA1%2522%252Coauth_timestamp%253D%2522137131201%2522%252Coauth_nonce%253D%25227d8f3e4a%2522%252Coauth_signature%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522"
-
         # Create test variables
         # Create test variables
         # Create test variables
@@ -63,7 +61,7 @@ class SignatureTests(TestCase):
 
         base_string = construct_base_string(unicode(self.http_method), unicode(self.base_string_url), unicode(self.normalized_encoded_request_parameters))
 
-        self.assertEqual(control_test_string, base_string)
+        self.assertEqual(self.control_base_string, base_string)
 
     def test_normalize_base_string_uri(self):
         """
@@ -165,22 +163,16 @@ class SignatureTests(TestCase):
     def test_sign_hmac_sha1(self):
         """ Verifying correct HMAC-SHA1 signature against one created by openssl."""
 
-        # Remember to update hmac_key if the secrets are updated
-        client_secret = "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ"
-        resource_owner_secret = "just-a-string    asdasd"
-        hmac_key = "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ&just-a-string%20%20%20%20asdasd"
-        base_string = "POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D%25253D%2525253D%2526a3%253Da%2526c%252540%253D%2526a2%253Dr%252520b&OAuth%2520realm%253D%2522Example%2522%252Coauth_consumer_key%253D%25229djdj82h48djs9d2%2522%252Coauth_token%253D%2522kkk9d7dh3k39sjv7%2522%252Coauth_signature_method%253D%2522HMAC-SHA1%2522%252Coauth_timestamp%253D%2522137131201%2522%252Coauth_nonce%253D%25227d8f3e4a%2522%252Coauth_signature%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522"
-
         # Base string saved in <message>, hmac_key in <key>.
         # Control signature created using openssl:
         # $ echo -n $(cat <message>) | openssl dgst -binary -hmac <key> | base64
         control_signature = "Uau4O9Kpd2k6rvh7UZN/RN+RG7Y="
 
         # check for Unicode
-        self.assertRaises(ValueError, sign_hmac_sha1, base_string, client_secret, resource_owner_secret)
+        self.assertRaises(ValueError, sign_hmac_sha1, self.control_base_string, self.client_secret, self.resource_owner_secret)
 
         # Do the actual test
-        sign = sign_hmac_sha1(unicode(base_string), unicode(client_secret), unicode(resource_owner_secret))
+        sign = sign_hmac_sha1(unicode(self.control_base_string), unicode(self.client_secret), unicode(self.resource_owner_secret))
         self.assertEquals(len(sign), 28)
         self.assertEquals(sign, control_signature)
 
