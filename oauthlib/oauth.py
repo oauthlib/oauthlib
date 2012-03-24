@@ -178,7 +178,7 @@ class OAuth1aServer(object):
         timestamp = params.get(u'oauth_timestamp')
         callback_uri = params.get(u'oauth_callback')
         verifier = params.get(u'oauth_verifier')
-        if not all((signature, client_key, nonce, timestamp)):
+        if not all((request_signature, client_key, nonce, timestamp)):
             return False
 
         # if version is supplied, it must be "1.0"
