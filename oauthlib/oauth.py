@@ -24,8 +24,11 @@ SIGNATURE_TYPE_BODY = u'BODY'
 
 class OAuth1aClient(object):
     """A client used to sign OAuth 1.0a requests"""
-    def __init__(self, client_key, client_secret,
-            resource_owner_key, resource_owner_secret, callback_uri=None,
+    def __init__(self, client_key, 
+            client_secret=None,
+            resource_owner_key=None,
+            resource_owner_secret=None,
+            callback_uri=None,
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None):
@@ -78,8 +81,9 @@ class OAuth1aClient(object):
             (u'oauth_version', u'1.0'),
             (u'oauth_signature_method', self.signature_method),
             (u'oauth_consumer_key', self.client_key),
-            (u'oauth_token', self.resource_owner_key),
         ]
+        if self.resource_owner_key:
+            params.append((u'oauth_token', self.resource_owner_key))
         if self.callback_uri:
             params.append((u'oauth_callback', self.callback_uri))
         if self.verifier:
@@ -174,8 +178,7 @@ class OAuth1aServer(object):
         timestamp = params.get(u'oauth_timestamp')
         callback_uri = params.get(u'oauth_callback')
         verifier = params.get(u'oauth_verifier')
-        if not all((signature, client_key, resource_owner_key, nonce,
-                timestamp)):
+        if not all((request_signature, client_key, nonce, timestamp)):
             return False
 
         # if version is supplied, it must be "1.0"
@@ -195,8 +198,10 @@ class OAuth1aServer(object):
         else:
             signature_type = SIGNATURE_TYPE_QUERY
 
-        oauth_client = OAuth1aClient(client_key, client_secret,
-            resource_owner_key, resource_owner_secret,
+        oauth_client = OAuth1aClient(client_key,
+            client_secret=client_secret,
+            resource_owner_key=resource_owner_key,
+            resource_owner_secret=resource_owner_secret,
             callback_uri=callback_uri,
             signature_method=self.signature_method,
             signature_type=signature_type,

@@ -86,7 +86,7 @@ def collect_parameters(uri_query='', body='', headers=None,
     params = []
 
     if uri_query:
-        params.extend(urlparse.parse_qsl(uri_query))
+        params.extend(urlparse.parse_qsl(uri_query, keep_blank_values=True))
 
     if headers:
         # look for an authorization header (case-insensitive)
@@ -96,12 +96,15 @@ def collect_parameters(uri_query='', body='', headers=None,
             params.extend(utils.parse_authorization_header(
                 authorization_header))
 
-    if isinstance(body, dict):
+    if isinstance(body, (str, unicode)):
+        params.extend(urlparse.parse_qsl(body, keep_blank_values=True))
+    elif isinstance(body, dict):
         params.extend(body.items())
-    elif isinstance(body, list):
-        params.extend(body)
-    elif body:
-        params.extend(urlparse.parse_qsl(body))
+    else:
+        try:
+            params.extend(body)
+        except TypeError:
+            raise ValueError("Body must be a string, dict, or iterable")
 
     # ensure all paramters are unicode and not escaped
     unicode_params = []
