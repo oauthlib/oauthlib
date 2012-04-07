@@ -2,11 +2,11 @@
 from __future__ import absolute_import
 
 """
-oauthlib.oauth
+oauthlib.oauth1.rfc5849
 ~~~~~~~~~~~~~~
 
-This module is a generic implementation of various logic needed
-for signing OAuth requests.
+This module is an implementation of various logic needed
+for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 
 import urlparse
@@ -23,9 +23,9 @@ SIGNATURE_TYPE_QUERY = u'QUERY'
 SIGNATURE_TYPE_BODY = u'BODY'
 
 
-class OAuth1aClient(object):
-    """A client used to sign OAuth 1.0a requests"""
-    def __init__(self, client_key, 
+class Client(object):
+    """A client used to sign OAuth 1.0 RFC 5849 requests"""
+    def __init__(self, client_key,
             client_secret=None,
             resource_owner_key=None,
             resource_owner_secret=None,
@@ -139,8 +139,8 @@ class OAuth1aClient(object):
         return self._contribute_parameters(uri, params)
 
 
-class OAuth1aServer(object):
-    """A server used to verify OAuth 1.0a requests"""
+class Server(object):
+    """A server used to verify OAuth 1.0 RFC 5849 requests"""
     def __init__(self, signature_method=SIGNATURE_HMAC, rsa_key=None):
         self.signature_method = signature_method
         self.rsa_key = rsa_key
@@ -166,7 +166,7 @@ class OAuth1aServer(object):
 
         if len(signature_types_with_params) > 1:
             raise ValueError('oauth_ params must come from only 1 signature type but were found in %s' % ', '.join(
-                [s[0] for s in signature_types_with_params])
+                [s[0] for s in signature_types_with_params]))
         try:
             signature_type, params = signature_types_with_params[0]
         except IndexError:
@@ -199,7 +199,8 @@ class OAuth1aServer(object):
         signature_type = None
         uri_query = urlparse.urlparse(uri).query
 
-        signature_type, params = self.get_signature_type_and_params(uri_query, headers, body)
+        signature_type, params = self.get_signature_type_and_params(uri_query,
+            headers, body)
 
         # the parameters may not include duplicate oauth entries
         filtered_params = utils.filter_oauth_params(params)
@@ -207,8 +208,6 @@ class OAuth1aServer(object):
             raise ValueError("Duplicate OAuth entries.")
 
         params = dict(params)
-
-        # ensure required parameters exist
         request_signature = params.get(u'oauth_signature')
         client_key = params.get(u'oauth_consumer_key')
         resource_owner_key = params.get(u'oauth_token')
@@ -219,7 +218,7 @@ class OAuth1aServer(object):
         signature_method = params.get(u'oauth_signature')
 
         # ensure all mandatory parameters are present
-        if not all((request_signature, client_key, nonce, 
+        if not all((request_signature, client_key, nonce,
                     timestamp, signature_method)):
             raise ValueError("Missing OAuth parameters.")
 
@@ -249,18 +248,17 @@ class OAuth1aServer(object):
         # which may vary for each request, section 3.4
         # HMAC-SHA1 and PLAINTEXT share parameters
         if signature_method == RSA_SHA1:
-            oauth_client = OAuth1aClient(client_key,
+            oauth_client = Client(client_key,
                 resource_owner_key=resource_owner_key,
                 callback_uri=callback_uri,
                 signature_method=signature_method,
                 signature_type=signature_type,
                 rsa_key=self.rsa_key, verifier=verifier)
-                
         else:
             client_secret = self.get_client_secret(client_key)
             resource_owner_secret = self.get_resource_owner_secret(
                 resource_owner_key)
-            oauth_client = OAuth1aClient(client_key, 
+            oauth_client = Client(client_key, 
                 client_secret=client_secret,
                 resource_owner_key=resource_owner_key,
                 resource_owner_secret=resource_owner_secret,

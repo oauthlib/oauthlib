@@ -1,8 +1,7 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
-
-from .unittest import TestCase
-
-from oauthlib.parameters import *
+from oauthlib.oauth1.rfc5849.parameters import *
+from ...unittest import TestCase
 
 
 class ParameterTests(TestCase):

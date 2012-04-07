@@ -1,10 +1,9 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
-
-from .unittest import TestCase
-
 import urllib
 
-from oauthlib.signature import *
+from oauthlib.oauth1.rfc5849.signature import *
+from ...unittest import TestCase
 
 
 class SignatureTests(TestCase):

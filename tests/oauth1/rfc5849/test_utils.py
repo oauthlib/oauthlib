@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
-
-from .unittest import TestCase
-
-from oauthlib.utils import *
-
+from oauthlib.oauth1.rfc5849.utils import *
+from ...unittest import TestCase
 
 class UtilsTests(TestCase):
 
