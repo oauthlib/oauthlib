@@ -151,6 +151,29 @@ class OAuth1aServer(object):
     def get_resource_owner_secret(self, resource_owner_key):
         raise NotImplementedError("Subclasses must implement this function.")
 
+    def get_signature_type_and_params(self, uri_query, headers, body):
+        signature_types_with_oauth_params = filter(lambda s: s[1], (
+            (SIGNATURE_TYPE_AUTH_HEADER, utils.filter_oauth_params(
+                signature.collect_parameters(header=header,
+                exclude_oauth_signature=False))),
+            (SIGNATURE_TYPE_BODY, utils.filter_oauth_params(
+                signature.collect_parameters(body=body,
+                exclude_oauth_signature=False))),
+            (SIGNATURE_TYPE_QUERY, utils.filter_oauth_params(
+                signature.collect_parameters(uri_query=uri_query,
+                exclude_oauth_signature=False))),
+        ))
+
+        if len(signature_types_with_params) > 1:
+            raise ValueError('oauth_ params must come from only 1 signature type but were found in %s' % ', '.join(
+                [s[0] for s in signature_types_with_params])
+        try:
+            signature_type, params = signature_types_with_params[0]
+        except IndexError:
+            raise ValueError('oauth_ params are missing. Could not determine signature type.')
+
+        return signature_type, dict(params)
+
     def check_client_key(self, client_key):
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -176,34 +199,7 @@ class OAuth1aServer(object):
         signature_type = None
         uri_query = urlparse.urlparse(uri).query
 
-        # the client may supply oauth parameters in one and only one of
-        # authorization header, request uri or request body. section 3.5
-
-        # "OAuth" must come first but is case insensitive, 3.5.1
-        if u'Authorization' in headers and 
-            headers[u'Authorization'].lower().startswith("oauth"):
-                signature_type = SIGNATURE_TYPE_AUTH_HEADER
-        
-        # checking against signature since that must always be present
-        if u'oauth_signature' in body:
-            if signature_type:
-                raise ValueError("OAuth parameters may not supplied twice.")
-            else:
-                signature_type = SIGNATURE_TYPE_BODY
-
-        if u'oauth_signature' in uri_query:
-            if signature_type:
-                raise ValueError("OAuth parameters may not supplied twice.")
-            else:
-                signature_type = SIGNATURE_TYPE_QUERY
-
-        if not signature_type:
-            raise ValueError("OAuth parameters missing.")
-
-        # extract parameters
-        params = signature.collect_parameters(uri_query=uri_query,
-            headers=headers, body=body,
-            exclude_oauth_signature=False)
+        signature_type, params = self.get_signature_type_and_params(uri_query, headers, body)
 
         # the parameters may not include duplicate oauth entries
         filtered_params = utils.filter_oauth_params(params)
