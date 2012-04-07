@@ -4,7 +4,8 @@ import os
 
 from os.path import dirname, join
 from setuptools import setup, find_packages, Command
-# Hack because logging in setuptools sucks.
+
+# Hack because logging + setuptools sucks.
 import multiprocessing
 
 
