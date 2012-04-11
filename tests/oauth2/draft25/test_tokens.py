@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from ..unittest import TestCase
+from ...unittest import TestCase
 
 from oauthlib.oauth2.draft25.tokens import *
 

@@ -16,7 +16,7 @@ UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
 
 def add_params_to_qs(query, params):
     """Extend a query with a list of two-tuples.
-    
+
     :param query: Query string.
     :param params: List of two-tuples.
     :return: extended query
@@ -24,7 +24,7 @@ def add_params_to_qs(query, params):
     queryparams = parse_qsl(query, keep_blank_values=True)
     queryparams.extend(params)
     return urlencode(queryparams)
-    
+
 
 def add_params_to_uri(uri, params):
     """Add a list of two-tuples to the uri query components.
