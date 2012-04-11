@@ -13,6 +13,7 @@ This module contains methods related to `section 3.5`_ of the OAuth 1.0a spec.
 from urlparse import urlparse, urlunparse, parse_qsl
 from . import utils
 
+
 def order_params(target):
     """Decorator which reorders params contents to start with oauth_* params
 
@@ -76,11 +77,13 @@ def prepare_headers(params, headers, realm=None):
     full_headers['Authorization'] = authorization_header
     return full_headers
 
+
 def _add_params_to_qs(query, params):
     queryparams = parse_qsl(query, True)
     queryparams.extend(params)
     queryparams.sort(key=lambda i: i[0].startswith('oauth_'))
     return utils.urlencode(queryparams)
+
 
 @order_params
 def prepare_form_encoded_body(params, body):
@@ -113,4 +116,3 @@ def prepare_request_uri_query(params, uri):
     sch, net, path, par, query, fra = urlparse(uri)
     query = _add_params_to_qs(query, params)
     return urlunparse((sch, net, path, par, query, fra))
-

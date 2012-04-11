@@ -100,6 +100,7 @@ def escape(u):
         raise ValueError('Only unicode objects are escapable.')
     return urllib.quote(u.encode('utf-8'), safe='~')
 
+
 def unescape(s):
     if not isinstance(s, str):
         raise ValueError('Only string objects are unescapable.')

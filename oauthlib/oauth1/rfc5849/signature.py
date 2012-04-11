@@ -90,7 +90,7 @@ def collect_parameters(uri_query='', body='', headers=None,
 
     if headers:
         # look for an authorization header (case-insensitive)
-        headers_lower = dict((k.lower(), v) for k,v in headers.items())
+        headers_lower = dict((k.lower(), v) for k, v in headers.items())
         authorization_header = headers_lower.get('authorization')
         if authorization_header is not None:
             params.extend(utils.parse_authorization_header(
@@ -126,6 +126,7 @@ def collect_parameters(uri_query='', body='', headers=None,
         exclude_params.append(u'oauth_signature')
 
     return filter(lambda i: i[0] not in exclude_params, unicode_params)
+
 
 def normalize_parameters(params):
     """Normalize querystring parameters for use in constructing a base string.
@@ -188,4 +189,3 @@ def sign_plaintext(client_secret, resource_owner_secret):
     """
     return u'&'.join((utils.escape(client_secret),
         utils.escape(resource_owner_secret)))
-

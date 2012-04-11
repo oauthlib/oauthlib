@@ -258,7 +258,7 @@ class Server(object):
             client_secret = self.get_client_secret(client_key)
             resource_owner_secret = self.get_resource_owner_secret(
                 resource_owner_key)
-            oauth_client = Client(client_key, 
+            oauth_client = Client(client_key,
                 client_secret=client_secret,
                 resource_owner_key=resource_owner_key,
                 resource_owner_secret=resource_owner_secret,
