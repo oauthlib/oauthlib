@@ -18,7 +18,7 @@ tests_require = ['nose', 'unittest2', 'pycrypto']
 setup(
     name = 'oauthlib',
     version = '0.0.1',
-    description = 'Python implementation of OAuth 1.0a',
+    description = 'A generic, spec-compliant, thorough implementation of the OAuth request-signing logic',
     long_description = fread('README.rst'),
     author = '',
     author_email = '',

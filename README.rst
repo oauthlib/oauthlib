@@ -1,5 +1,8 @@
-OAuthLib: a generic library for signing OAuth requests
-======================================================
+OAuthLib
+========
+
+*A generic, spec-compliant, thorough implementation of the OAuth request-signing
+logic.* 
 
 .. image:: https://secure.travis-ci.org/idangazit/oauthlib.png?branch=master
 
@@ -16,6 +19,13 @@ OAuthLib is a generic utility which implements the logic of OAuth without
 assuming a specific HTTP request object. Use it to graft OAuth support onto your
 favorite HTTP library. If you're a maintainer of such a library, write a thin
 veneer on top of OAuthLib and get OAuth support for very little effort.
+
+
+Current Status
+--------------
+
+OAuthLib is in active development, with most of OAuth1 complete and OAuth2
+already in the works.
 
 
 License
