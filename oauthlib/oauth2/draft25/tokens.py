@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 """
-oauthlib.oauth2_draft25.tokens
+oauthlib.oauth2.draft25.tokens
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This module contains methods for adding two types of access tokens to requests.
@@ -12,17 +12,17 @@ This module contains methods for adding two types of access tokens to requests.
 from binascii import b2a_base64
 import hashlib
 import hmac
-import time
 from urlparse import urlparse
 
 from . import utils
 
-def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None, 
+
+def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
         body=None, ext=u'', hash_algorithm=u'hmac-sha-1'):
-    """Add an `MAC Access Authentication`_ signature to headers. 
-    
-    Unlike OAuth 1, this HMAC signature does not require inclusion of the request 
-    payload/body, neither does it use a combination of client_secret and 
+    """Add an `MAC Access Authentication`_ signature to headers.
+
+    Unlike OAuth 1, this HMAC signature does not require inclusion of the request
+    payload/body, neither does it use a combination of client_secret and
     token_secret but rather a mac_key provided together with the access token.
 
     Currently two algorithms are supported, "hmac-sha-1" and "hmac-sha-256",
@@ -36,7 +36,7 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
 
     .. _`MAC Access Authentication`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
     .. _`extension algorithms`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-7.1
-    
+
     :param uri: Request URI.
     :param headers: Request headers as a dictionary.
     :param http_method: HTTP Request method.
@@ -54,7 +54,7 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
 
     nonce = nonce or u'{}:{}'.format(utils.generate_nonce(), utils.generate_timestamp())
     sch, net, path, par, query, fra = urlparse(uri)
-    
+
     if query:
         request_uri = path + u'?' + query
     else:
@@ -86,35 +86,40 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
     header = []
     header.append(u'MAC id="%s"' % token)
     header.append(u'nonce="%s"' % nonce)
-    if bodyhash: header.append(u'bodyhash="%s"' % bodyhash)
-    if ext: header.append(u'ext="%s"' % ext)
-    header.append(u'mac="%s"' % sign) 
+    if bodyhash:
+        header.append(u'bodyhash="%s"' % bodyhash)
+    if ext:
+        header.append(u'ext="%s"' % ext)
+    header.append(u'mac="%s"' % sign)
 
     headers = headers or {}
     headers[u'Authorization'] = u', '.join(header)
     return headers
+
 
 def prepare_bearer_uri(token, uri):
     """Add a `Bearer Token`_ to the request URI.
     Not recommended, use only if client can't use authorization header or body.
 
     http://www.example.com/path?access_token=h480djs93hd8
-    
+
     .. _`Bearer Token`: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
     """
     return utils.add_params_to_uri(uri, [((u'access_token', token))])
+
 
 def prepare_bearer_headers(token, headers=None):
     """Add a `Bearer Token`_ to the request URI.
     Recommended method of passing bearer tokens.
 
     Authorization: Bearer h480djs93hd8
-    
+
     .. _`Bearer Token`: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
     """
     headers = headers or {}
     headers[u'Authorization'] = u'Bearer %s' % token
     return headers
+
 
 def prepare_bearer_body(token, body=u''):
     """Add a `Bearer Token`_ to the request body.
