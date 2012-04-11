@@ -2,11 +2,11 @@
 from __future__ import absolute_import
 
 """
-oauthlib.oauth
+oauthlib.oauth1.rfc5849
 ~~~~~~~~~~~~~~
 
-This module is a generic implementation of various logic needed
-for signing OAuth requests.
+This module is an implementation of various logic needed
+for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 
 import urlparse
@@ -16,16 +16,20 @@ from . import parameters, signature, utils
 SIGNATURE_HMAC = u"HMAC-SHA1"
 SIGNATURE_RSA = u"RSA-SHA1"
 SIGNATURE_PLAINTEXT = u"PLAINTEXT"
+SIGNATURE_METHODS = (SIGNATURE_HMAC, SIGNATURE_RSA, SIGNATURE_PLAINTEXT)
 
 SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = u'QUERY'
 SIGNATURE_TYPE_BODY = u'BODY'
 
 
-class OAuth1aClient(object):
-    """A client used to sign OAuth 1.0a requests"""
-    def __init__(self, client_key, client_secret,
-            resource_owner_key, resource_owner_secret, callback_uri=None,
+class Client(object):
+    """A client used to sign OAuth 1.0 RFC 5849 requests"""
+    def __init__(self, client_key,
+            client_secret=None,
+            resource_owner_key=None,
+            resource_owner_secret=None,
+            callback_uri=None,
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None):
@@ -78,8 +82,9 @@ class OAuth1aClient(object):
             (u'oauth_version', u'1.0'),
             (u'oauth_signature_method', self.signature_method),
             (u'oauth_consumer_key', self.client_key),
-            (u'oauth_token', self.resource_owner_key),
         ]
+        if self.resource_owner_key:
+            params.append((u'oauth_token', self.resource_owner_key))
         if self.callback_uri:
             params.append((u'oauth_callback', self.callback_uri))
         if self.verifier:
@@ -134,8 +139,8 @@ class OAuth1aClient(object):
         return self._contribute_parameters(uri, params)
 
 
-class OAuth1aServer(object):
-    """A server used to verify OAuth 1.0a requests"""
+class Server(object):
+    """A server used to verify OAuth 1.0 RFC 5849 requests"""
     def __init__(self, signature_method=SIGNATURE_HMAC, rsa_key=None):
         self.signature_method = signature_method
         self.rsa_key = rsa_key
@@ -146,6 +151,35 @@ class OAuth1aServer(object):
     def get_resource_owner_secret(self, resource_owner_key):
         raise NotImplementedError("Subclasses must implement this function.")
 
+    def get_signature_type_and_params(self, uri_query, headers, body):
+        signature_types_with_oauth_params = filter(lambda s: s[1], (
+            (SIGNATURE_TYPE_AUTH_HEADER, utils.filter_oauth_params(
+                signature.collect_parameters(header=header,
+                exclude_oauth_signature=False))),
+            (SIGNATURE_TYPE_BODY, utils.filter_oauth_params(
+                signature.collect_parameters(body=body,
+                exclude_oauth_signature=False))),
+            (SIGNATURE_TYPE_QUERY, utils.filter_oauth_params(
+                signature.collect_parameters(uri_query=uri_query,
+                exclude_oauth_signature=False))),
+        ))
+
+        if len(signature_types_with_params) > 1:
+            raise ValueError('oauth_ params must come from only 1 signature type but were found in %s' % ', '.join(
+                [s[0] for s in signature_types_with_params]))
+        try:
+            signature_type, params = signature_types_with_params[0]
+        except IndexError:
+            raise ValueError('oauth_ params are missing. Could not determine signature type.')
+
+        return signature_type, dict(params)
+
+    def check_client_key(self, client_key):
+        raise NotImplementedError("Subclasses must implement this function.")
+
+    def check_resource_owner_key(self, client_key, resource_owner_key):
+        raise NotImplementedError("Subclasses must implement this function.")
+
     def check_timestamp_and_nonce(self, timestamp, nonce):
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -154,19 +188,26 @@ class OAuth1aServer(object):
         """Check a request's supplied signature to make sure the request is
         valid.
 
+        Servers should return HTTP status 400 if a ValueError exception
+        is raised and HTTP status 401 on return value False.
+
         Per `section 3.2`_ of the spec.
 
         .. _`section 3.2`: http://tools.ietf.org/html/rfc5849#section-3.2
         """
         headers = headers or {}
-
-        # extract parameters
+        signature_type = None
         uri_query = urlparse.urlparse(uri).query
-        params = dict(signature.collect_parameters(uri_query=uri_query,
-            headers=headers, body=body,
-            exclude_oauth_signature=False))
 
-        # ensure required parameters exist
+        signature_type, params = self.get_signature_type_and_params(uri_query,
+            headers, body)
+
+        # the parameters may not include duplicate oauth entries
+        filtered_params = utils.filter_oauth_params(params)
+        if len(filtered_params) != len(params):
+            raise ValueError("Duplicate OAuth entries.")
+
+        params = dict(params)
         request_signature = params.get(u'oauth_signature')
         client_key = params.get(u'oauth_consumer_key')
         resource_owner_key = params.get(u'oauth_token')
@@ -174,34 +215,61 @@ class OAuth1aServer(object):
         timestamp = params.get(u'oauth_timestamp')
         callback_uri = params.get(u'oauth_callback')
         verifier = params.get(u'oauth_verifier')
-        if not all((signature, client_key, resource_owner_key, nonce,
-                timestamp)):
-            return False
+        signature_method = params.get(u'oauth_signature')
+
+        # ensure all mandatory parameters are present
+        if not all((request_signature, client_key, nonce,
+                    timestamp, signature_method)):
+            raise ValueError("Missing OAuth parameters.")
 
         # if version is supplied, it must be "1.0"
         if u'oauth_version' in params and params[u'oauth_version'] != u'1.0':
+            raise ValueError("Invalid OAuth version.")
+
+        # signature method must be valid
+        if not signature_method in SIGNATURE_METHODS:
+            raise ValueError("Invalid signature method.")
+
+        # ensure client key is valid
+        if not self.check_client_key(client_key):
+            return False
+
+        # ensure resource owner key is valid and not expired
+        if not self.check_resource_owner_key(client_key, resource_owner_key):
             return False
 
         # ensure the nonce and timestamp haven't been used before
         if not self.check_timestamp_and_nonce(timestamp, nonce):
             return False
 
-        client_secret = self.get_client_secret(client_key)
-        resource_owner_secret = self.get_resource_owner_secret(
-            resource_owner_key)
-        # FIXME: check for body signature type
-        if headers: # FIXME: check for oauth scheme in authorization header
-            signature_type = SIGNATURE_TYPE_AUTH_HEADER
-        else:
-            signature_type = SIGNATURE_TYPE_QUERY
+        # FIXME: extract realm, then self.check_realm
 
-        oauth_client = OAuth1aClient(client_key, client_secret,
-            resource_owner_key, resource_owner_secret,
-            callback_uri=callback_uri,
-            signature_method=self.signature_method,
-            signature_type=signature_type,
-            rsa_key=self.rsa_key, verifier=verifier)
+        # oauth_client parameters depend on client chosen signature method
+        # which may vary for each request, section 3.4
+        # HMAC-SHA1 and PLAINTEXT share parameters
+        if signature_method == RSA_SHA1:
+            oauth_client = Client(client_key,
+                resource_owner_key=resource_owner_key,
+                callback_uri=callback_uri,
+                signature_method=signature_method,
+                signature_type=signature_type,
+                rsa_key=self.rsa_key, verifier=verifier)
+        else:
+            client_secret = self.get_client_secret(client_key)
+            resource_owner_secret = self.get_resource_owner_secret(
+                resource_owner_key)
+            oauth_client = Client(client_key, 
+                client_secret=client_secret,
+                resource_owner_key=resource_owner_key,
+                resource_owner_secret=resource_owner_secret,
+                callback_uri=callback_uri,
+                signature_method=signature_method,
+                signature_type=signature_type,
+                verifier=verifier)
+
         client_signature = oauth_client.get_oauth_signature(uri,
             body=body, headers=headers)
+
+        # FIXME: use near constant time string compare to avoid timing attacks
         return client_signature == request_signature
 

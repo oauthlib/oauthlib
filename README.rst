@@ -1,6 +1,8 @@
 OAuthLib: a generic library for signing OAuth requests
 ======================================================
 
+.. image:: https://secure.travis-ci.org/idangazit/oauthlib.png?branch=master
+
 OAuth often seems complicated and difficult-to-implement. There are several
 prominent libraries for signing OAuth requests, but they all suffer from one or
 both of the following:

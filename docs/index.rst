@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
    
    contributing
+   server
 
 Indices and tables
 ==================

@@ -59,9 +59,13 @@ def normalize_base_string_uri(uri):
     netloc = netloc.lower()
 
     # strip port 80 from host if expliticly present (3.4.1.2 #3)
+    default_ports = (
+        (u'http', u'80'),
+        (u'https', u'443'),
+    )
     if u':' in netloc:
         host, port = netloc.split(u':', 1)
-        if port == u'80':
+        if (scheme, port) in default_ports:
             netloc = host
 
     return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
@@ -82,7 +86,7 @@ def collect_parameters(uri_query='', body='', headers=None,
     params = []
 
     if uri_query:
-        params.extend(urlparse.parse_qsl(uri_query))
+        params.extend(urlparse.parse_qsl(uri_query, keep_blank_values=True))
 
     if headers:
         # look for an authorization header (case-insensitive)
@@ -92,8 +96,15 @@ def collect_parameters(uri_query='', body='', headers=None,
             params.extend(utils.parse_authorization_header(
                 authorization_header))
 
-    if body:
-        params.extend(urlparse.parse_qsl(body))
+    if isinstance(body, (str, unicode)):
+        params.extend(urlparse.parse_qsl(body, keep_blank_values=True))
+    elif isinstance(body, dict):
+        params.extend(body.items())
+    else:
+        try:
+            params.extend(body)
+        except TypeError:
+            raise ValueError("Body must be a string, dict, or iterable")
 
     # ensure all paramters are unicode and not escaped
     unicode_params = []

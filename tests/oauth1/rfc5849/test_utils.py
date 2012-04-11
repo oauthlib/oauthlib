@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
-
-from .unittest import TestCase
-
-from oauthlib.utils import *
-
+from oauthlib.oauth1.rfc5849.utils import *
+from ...unittest import TestCase
 
 class UtilsTests(TestCase):
 
@@ -118,7 +114,7 @@ class UtilsTests(TestCase):
         for i in range(50):
             self.assertTrue(nonce != generate_nonce())
 
-    def generate_token(self):
+    def test_generate_token(self):
         token = generate_token()
         self.assertEqual(len(token), 20)
 
@@ -127,7 +123,7 @@ class UtilsTests(TestCase):
 
         token = generate_token(length=6, chars="python")
         self.assertEqual(len(token), 6)
-        self.assertTrue("a" in token)
+        self.assertFalse("a" in token)
 
     def test_escape(self):
         self.assertRaises(ValueError, escape, "I am a string type. Not a unicode type.")
