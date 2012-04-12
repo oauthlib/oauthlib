@@ -33,6 +33,8 @@ class Client(object):
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None):
+        # XXX why is client secret not required?
+        # XXX why is callback_uri required?
         self.client_key = client_key
         self.client_secret = client_secret
         self.resource_owner_key = resource_owner_key
@@ -115,7 +117,7 @@ class Client(object):
 
         return complete_uri, body, headers
 
-    def sign_request(self, uri, http_method=u'GET', body='', headers=None):
+    def sign(self, uri, http_method=u'GET', body='', headers=None):
         """Get the signed uri and authorization header.
         Authorization header will be None if signature type is "query".
         """
