@@ -89,7 +89,7 @@ def generate_token(length=20, chars=UNICODE_ASCII_CHARACTER_SET):
 
 
 def escape(u):
-    """Escape a string in an OAuth-compatible fashion.
+    """Escape a unicode string in an OAuth-compatible fashion.
 
     Per `section 3.6`_ of the spec.
 
