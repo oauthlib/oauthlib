@@ -17,24 +17,24 @@ class ParameterTests(TestCase):
     auth_and_data.append((u'data_param_foo', u'foo'))
     auth_and_data.append((u'data_param_1', u'1'))
     realm = u'testrealm'
-    norealm_authorization_header = ' '.join((
-        'OAuth',
-        'oauth_consumer_key="9djdj82h48djs9d2",',
-        'oauth_token="kkk9d7dh3k39sjv7",',
-        'oauth_signature_method="HMAC-SHA1",',
-        'oauth_timestamp="137131201",',
-        'oauth_nonce="7d8f3e4a",',
-        'oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"',
+    norealm_authorization_header = u' '.join((
+        u'OAuth',
+        u'oauth_consumer_key="9djdj82h48djs9d2",',
+        u'oauth_token="kkk9d7dh3k39sjv7",',
+        u'oauth_signature_method="HMAC-SHA1",',
+        u'oauth_timestamp="137131201",',
+        u'oauth_nonce="7d8f3e4a",',
+        u'oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"',
     ))
-    withrealm_authorization_header = ' '.join((
-        'OAuth',
-        'realm="testrealm",',
-        'oauth_consumer_key="9djdj82h48djs9d2",',
-        'oauth_token="kkk9d7dh3k39sjv7",',
-        'oauth_signature_method="HMAC-SHA1",',
-        'oauth_timestamp="137131201",',
-        'oauth_nonce="7d8f3e4a",',
-        'oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"',
+    withrealm_authorization_header = u' '.join((
+        u'OAuth',
+        u'realm="testrealm",',
+        u'oauth_consumer_key="9djdj82h48djs9d2",',
+        u'oauth_token="kkk9d7dh3k39sjv7",',
+        u'oauth_signature_method="HMAC-SHA1",',
+        u'oauth_timestamp="137131201",',
+        u'oauth_nonce="7d8f3e4a",',
+        u'oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"',
     ))
 
     def test_order_oauth_parameters(self):
@@ -53,18 +53,18 @@ class ParameterTests(TestCase):
     def test_prepare_headers(self):
         self.assertEqual(
             prepare_headers(self.auth_only_params, {}),
-            {'Authorization': self.norealm_authorization_header})
+            {u'Authorization': self.norealm_authorization_header})
         self.assertEqual(
             prepare_headers(self.auth_only_params, {}, realm=self.realm),
-            {'Authorization': self.withrealm_authorization_header})
+            {u'Authorization': self.withrealm_authorization_header})
 
     def test_prepare_headers_ignore_data(self):
         self.assertEqual(
             prepare_headers(self.auth_and_data, {}),
-            {'Authorization': self.norealm_authorization_header})
+            {u'Authorization': self.norealm_authorization_header})
         self.assertEqual(
             prepare_headers(self.auth_and_data, {}, realm=self.realm),
-            {'Authorization': self.withrealm_authorization_header})
+            {u'Authorization': self.withrealm_authorization_header})
 
     def test_prepare_form_encoded_body(self):
         existing_body = u''
