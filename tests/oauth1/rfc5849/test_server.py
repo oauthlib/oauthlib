@@ -40,11 +40,25 @@ class ServerTests(TestCase):
 
         uri, body, headers = c.sign(u'http://server.example.com:80/init')
 
-        str_headers = {}
-        for k, v in headers.iteritems():
-            str_headers[str(k)] = str(v)
+        headers = dict([(str(k), str(v)) for k, v in headers.iteritems()])
 
         s = self.TestServer()
-        r = s.check_request_signature(uri, body=body, headers=str_headers)
+        self.assertTrue(s.check_request_signature(uri, body=body,
+            headers=headers))
 
-        self.assertTrue(r)
+    def test_server_callback_request(self):
+        c = Client(self.CLIENT_KEY,
+            client_secret=self.CLIENT_SECRET,
+            resource_owner_key=self.RESOURCE_OWNER_KEY,
+            resource_owner_secret=self.RESOURCE_OWNER_SECRET,
+            callback_uri=u'http://client.example.com/callback'
+        )
+
+        uri, body, headers = c.sign(u'http://server.example.com:80/init')
+
+        headers = dict([(str(k), str(v)) for k, v in headers.iteritems()])
+
+        s = self.TestServer()
+        self.assertTrue(s.check_request_signature(uri, body=body,
+            headers=headers))
+
