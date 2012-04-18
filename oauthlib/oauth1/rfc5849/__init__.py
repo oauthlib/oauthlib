@@ -156,7 +156,7 @@ class Server(object):
     def get_signature_type_and_params(self, uri_query, headers, body):
         signature_types_with_oauth_params = filter(lambda s: s[1], (
             (SIGNATURE_TYPE_AUTH_HEADER, utils.filter_oauth_params(
-                signature.collect_parameters(header=header,
+                signature.collect_parameters(headers=headers,
                 exclude_oauth_signature=False))),
             (SIGNATURE_TYPE_BODY, utils.filter_oauth_params(
                 signature.collect_parameters(body=body,
@@ -166,11 +166,11 @@ class Server(object):
                 exclude_oauth_signature=False))),
         ))
 
-        if len(signature_types_with_params) > 1:
+        if len(signature_types_with_oauth_params) > 1:
             raise ValueError('oauth_ params must come from only 1 signature type but were found in %s' % ', '.join(
-                [s[0] for s in signature_types_with_params]))
+                [s[0] for s in signature_types_with_oauth_params]))
         try:
-            signature_type, params = signature_types_with_params[0]
+            signature_type, params = signature_types_with_oauth_params[0]
         except IndexError:
             raise ValueError('oauth_ params are missing. Could not determine signature type.')
 
@@ -249,7 +249,7 @@ class Server(object):
         # oauth_client parameters depend on client chosen signature method
         # which may vary for each request, section 3.4
         # HMAC-SHA1 and PLAINTEXT share parameters
-        if signature_method == RSA_SHA1:
+        if signature_method == SIGNATURE_RSA:
             oauth_client = Client(client_key,
                 resource_owner_key=resource_owner_key,
                 callback_uri=callback_uri,
