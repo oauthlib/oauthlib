@@ -104,7 +104,7 @@ def escape(u):
 def unescape(s):
     if not isinstance(s, str):
         raise ValueError('Only string objects are unescapable.')
-    return urllib.unquote(s, safe='~').decode('utf-8')
+    return urllib.unquote(s).decode('utf-8')
 
 
 def urlencode(query):
