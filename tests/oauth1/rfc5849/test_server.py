@@ -31,22 +31,21 @@ class ServerTests(TestCase):
         def check_timestamp_and_nonce(self, timestamp, nonce):
             return True
 
-    def test_basic_server_request(self):
-        c = Client(self.CLIENT_KEY,
+    def setUp(self):
+        self.server = self.TestServer()
+        self.client = Client(self.CLIENT_KEY,
             client_secret=self.CLIENT_SECRET,
             resource_owner_key=self.RESOURCE_OWNER_KEY,
             resource_owner_secret=self.RESOURCE_OWNER_SECRET,
         )
 
-        uri, body, headers = c.sign(u'http://server.example.com:80/init')
-
+    def test_basic_request(self):
+        uri, body, headers = self.client.sign(u'http://server.example.com:80/init')
         headers = dict([(str(k), str(v)) for k, v in headers.iteritems()])
-
-        s = self.TestServer()
-        self.assertTrue(s.check_request_signature(uri, body=body,
+        self.assertTrue(self.server.check_request_signature(uri, body=body,
             headers=headers))
 
-    def test_server_callback_request(self):
+    def test_callback_request(self):
         c = Client(self.CLIENT_KEY,
             client_secret=self.CLIENT_SECRET,
             resource_owner_key=self.RESOURCE_OWNER_KEY,
@@ -55,10 +54,30 @@ class ServerTests(TestCase):
         )
 
         uri, body, headers = c.sign(u'http://server.example.com:80/init')
-
         headers = dict([(str(k), str(v)) for k, v in headers.iteritems()])
-
-        s = self.TestServer()
-        self.assertTrue(s.check_request_signature(uri, body=body,
+        self.assertTrue(self.server.check_request_signature(uri, body=body,
             headers=headers))
 
+    def test_multipart_body_request(self):
+        headers = {
+            u'Content-Type': u'multipart/form-data; boundary=BoUnDaRyStRiNg'
+        }
+        body = u"--BoUnDaRyStRiNg--\n\n"
+
+        uri, body, headers = self.client.sign(u'http://server.example.com:80/resource',
+            body=body, headers=headers)
+
+        headers = dict([(str(k), str(v)) for k, v in headers.iteritems()])
+        self.assertTrue(self.server.check_request_signature(uri, body=body,
+            headers=headers))
+
+    def test_urlencoded_body_request(self):
+        headers = { u'Content-Type': u'application/x-www-form-urlencoded' }
+        body = u"key=value"
+
+        uri, body, headers = self.client.sign(u'http://server.example.com:80/resource',
+            body=body, headers=headers)
+
+        headers = dict([(str(k), str(v)) for k, v in headers.iteritems()])
+        self.assertTrue(self.server.check_request_signature(uri, body=body,
+            headers=headers))
