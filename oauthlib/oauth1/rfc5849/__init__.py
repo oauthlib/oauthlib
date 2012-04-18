@@ -138,7 +138,7 @@ class Client(object):
 
         # take the new OAuth params with signature and contribute the
         # now-complete parameters to the uri or authorization header
-        return self._contribute_parameters(uri, params)
+        return self._contribute_parameters(uri, params, body=body, headers=headers)
 
 
 class Server(object):
