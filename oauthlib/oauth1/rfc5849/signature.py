@@ -112,7 +112,7 @@ def collect_parameters(uri_query='', body='', headers=None,
         if isinstance(k, str):
             k = k.decode('utf-8')
         if isinstance(v, str):
-            if v.startswith('oauth_'):
+            if k.startswith('oauth_'):
                 v = utils.unescape(v)
             else:
                 v = v.decode('utf-8')
