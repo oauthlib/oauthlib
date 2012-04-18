@@ -217,7 +217,7 @@ class Server(object):
         timestamp = params.get(u'oauth_timestamp')
         callback_uri = params.get(u'oauth_callback')
         verifier = params.get(u'oauth_verifier')
-        signature_method = params.get(u'oauth_signature')
+        signature_method = params.get(u'oauth_signature_method')
 
         # ensure all mandatory parameters are present
         if not all((request_signature, client_key, nonce,
