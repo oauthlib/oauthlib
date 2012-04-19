@@ -49,7 +49,7 @@ class Client(object):
             raise ValueError('rsa_key is required when using RSA signature method.')
 
     def get_oauth_signature(self, uri, http_method=u'GET', body='',
-            headers=None):
+            headers=None, content_type=u'application/x-www-form-urlencoded'):
         """Get an OAuth signature to be used in signing a request"""
         headers = headers or {}
 
@@ -61,7 +61,7 @@ class Client(object):
         headers = headers or {}
         query = urlparse.urlparse(uri).query
         params = signature.collect_parameters(uri_query=query,
-            body=body, headers=headers)
+            body=body, headers=headers, content_type=content_type)
         normalized_params = signature.normalize_parameters(params)
         normalized_uri = signature.normalize_base_string_uri(uri)
         base_string = signature.construct_base_string(http_method,
@@ -117,7 +117,8 @@ class Client(object):
 
         return complete_uri, body, headers
 
-    def sign(self, uri, http_method=u'GET', body='', headers=None):
+    def sign(self, uri, http_method=u'GET', body='', headers=None,
+            content_type=u'application/x-www-form-urlencoded'):
         """Get the signed uri and authorization header.
         Authorization header will be None if signature type is "query".
         """
@@ -133,7 +134,7 @@ class Client(object):
         # contribute that signature to the OAuth parameters
         oauth_signature = self.get_oauth_signature(complete_uri,
             http_method=http_method, body=body,
-            headers=headers)
+            headers=headers, content_type=content_type)
         params.append((u'oauth_signature', oauth_signature))
 
         # take the new OAuth params with signature and contribute the
@@ -153,14 +154,15 @@ class Server(object):
     def get_resource_owner_secret(self, resource_owner_key):
         raise NotImplementedError("Subclasses must implement this function.")
 
-    def get_signature_type_and_params(self, uri_query, headers, body):
+    def get_signature_type_and_params(self, uri_query, headers, body,
+            content_type):
         signature_types_with_oauth_params = filter(lambda s: s[1], (
             (SIGNATURE_TYPE_AUTH_HEADER, utils.filter_oauth_params(
                 signature.collect_parameters(headers=headers,
                 exclude_oauth_signature=False))),
             (SIGNATURE_TYPE_BODY, utils.filter_oauth_params(
                 signature.collect_parameters(body=body,
-                exclude_oauth_signature=False))),
+                content_type=content_type, exclude_oauth_signature=False))),
             (SIGNATURE_TYPE_QUERY, utils.filter_oauth_params(
                 signature.collect_parameters(uri_query=uri_query,
                 exclude_oauth_signature=False))),
@@ -186,7 +188,7 @@ class Server(object):
         raise NotImplementedError("Subclasses must implement this function.")
 
     def check_request_signature(self, uri, http_method=u'GET', body='',
-            headers=None):
+            headers=None, content_type=u'application/x-www-form-urlencoded'):
         """Check a request's supplied signature to make sure the request is
         valid.
 
@@ -202,7 +204,7 @@ class Server(object):
         uri_query = urlparse.urlparse(uri).query
 
         signature_type, params = self.get_signature_type_and_params(uri_query,
-            headers, body)
+            headers, body, content_type)
 
         # the parameters may not include duplicate oauth entries
         filtered_params = utils.filter_oauth_params(params)
@@ -270,7 +272,8 @@ class Server(object):
                 verifier=verifier)
 
         client_signature = oauth_client.get_oauth_signature(uri,
-            http_method=http_method, body=body, headers=headers)
+            http_method=http_method, body=body, headers=headers,
+            content_type=content_type)
 
         # FIXME: use near constant time string compare to avoid timing attacks
         return client_signature == request_signature
