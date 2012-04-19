@@ -27,6 +27,8 @@ import hmac
 import urlparse
 from . import utils
 
+VALID_BODY_CONTENT_TYPE = u'application/x-www-form-urlencoded'
+
 
 def construct_base_string(http_method, base_string_uri,
         normalized_encoded_request_parameters):
@@ -72,6 +74,7 @@ def normalize_base_string_uri(uri):
 
 
 def collect_parameters(uri_query='', body='', headers=None,
+        content_type=u'application/x-www-form-urlencoded',
         exclude_oauth_signature=True):
     """Collect parameters from the uri query, authorization header, and request
     body.
@@ -96,15 +99,17 @@ def collect_parameters(uri_query='', body='', headers=None,
             params.extend(utils.parse_authorization_header(
                 authorization_header))
 
-    if isinstance(body, (str, unicode)):
-        params.extend(urlparse.parse_qsl(body, keep_blank_values=True))
-    elif isinstance(body, dict):
-        params.extend(body.items())
-    else:
-        try:
-            params.extend(body)
-        except TypeError:
-            raise ValueError("Body must be a string, dict, or iterable")
+    # Only include the body if it is the correct content-type
+    if content_type.lower() == u'application/x-www-form-urlencoded':
+        if isinstance(body, (str, unicode)):
+            params.extend(urlparse.parse_qsl(body, keep_blank_values=True))
+        elif isinstance(body, dict):
+            params.extend(body.items())
+        else:
+            try:
+                params.extend(body)
+            except TypeError:
+                raise ValueError("Body must be a string, dict, or iterable")
 
     # ensure all paramters are unicode and not escaped
     unicode_params = []
