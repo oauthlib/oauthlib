@@ -84,7 +84,6 @@ def collect_parameters(uri_query='', body='', headers=None,
     """
     headers = headers or {}
     params = []
-    content_type = 'application/x-www-form-urlencoded'
 
     if uri_query:
         params.extend(urlparse.parse_qsl(uri_query, keep_blank_values=True))
@@ -97,18 +96,15 @@ def collect_parameters(uri_query='', body='', headers=None,
             params.extend(utils.parse_authorization_header(
                 authorization_header))
 
-        content_type = headers_lower.get('content-type', content_type)
-
-    if content_type.lower().startswith('application/x-www-form-urlencoded'):
-        if isinstance(body, (str, unicode)):
-            params.extend(urlparse.parse_qsl(body, keep_blank_values=True))
-        elif isinstance(body, dict):
-            params.extend(body.items())
-        else:
-            try:
-                params.extend(body)
-            except TypeError:
-                raise ValueError("Body must be a string, dict, or iterable")
+    if isinstance(body, (str, unicode)):
+        params.extend(urlparse.parse_qsl(body, keep_blank_values=True))
+    elif isinstance(body, dict):
+        params.extend(body.items())
+    else:
+        try:
+            params.extend(body)
+        except TypeError:
+            raise ValueError("Body must be a string, dict, or iterable")
 
     # ensure all paramters are unicode and not escaped
     unicode_params = []
