@@ -131,7 +131,6 @@ class UtilsTests(TestCase):
         self.assertIsInstance(escape(u"I am a unicode type."), str)
 
     def test_unescape(self):
-        self.assertRaises(ValueError, unescape, u"I am a unicode type. Not a string type.")
         self.assertEqual(unescape("I%20am%20a%20unicode%20type."), u'I am a unicode type.')
         self.assertIsInstance(unescape("I%20am%20a%20unicode%20type."), unicode)
 
