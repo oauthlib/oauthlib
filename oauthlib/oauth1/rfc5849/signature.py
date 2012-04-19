@@ -112,7 +112,7 @@ def collect_parameters(uri_query='', body='', headers=None,
         if isinstance(k, str):
             k = k.decode('utf-8')
         if isinstance(v, str):
-            if v.startswith('oauth_'):
+            if k.startswith('oauth_'):
                 v = utils.unescape(v)
             else:
                 v = v.decode('utf-8')
@@ -153,8 +153,9 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
     """
 
-    key = '&'.join((utils.escape(client_secret),
-        utils.escape(resource_owner_secret)))
+    key = '&'.join((utils.escape(client_secret or u''),
+        utils.escape(resource_owner_secret or u'')))
+
     signature = hmac.new(key, base_string, hashlib.sha1)
     return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
 
