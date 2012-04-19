@@ -112,10 +112,9 @@ def collect_parameters(uri_query='', body='', headers=None,
         if isinstance(k, str):
             k = k.decode('utf-8')
         if isinstance(v, str):
-            if k.startswith('oauth_'):
-                v = utils.unescape(v)
-            else:
-                v = v.decode('utf-8')
+            v = v.decode('utf-8')
+        if k.startswith('oauth_'):
+            v = utils.unescape(v)
         unicode_params.append((k, v))
 
     # exclude particular parameters according to the spec

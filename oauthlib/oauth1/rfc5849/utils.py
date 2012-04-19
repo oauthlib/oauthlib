@@ -104,8 +104,11 @@ def escape(u):
 
 
 def unescape(s):
-    if not isinstance(s, str):
-        raise ValueError('Only string objects are unescapable.')
+    """Unescapes any type of string
+
+    Returns an unescaped unicode string.
+
+    """
     return urllib.unquote(s).decode('utf-8')
 
 
