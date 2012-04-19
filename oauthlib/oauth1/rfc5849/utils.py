@@ -98,6 +98,8 @@ def escape(u):
     """
     if not isinstance(u, unicode):
         raise ValueError('Only unicode objects are escapable.')
+    # Letters, digits, and the characters '_.-' are already treated as safe
+    # by urllib.quote(). We need to add '~' to fully support rfc5849.
     return urllib.quote(u.encode('utf-8'), safe='~')
 
 
