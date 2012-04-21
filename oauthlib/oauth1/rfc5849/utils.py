@@ -41,14 +41,6 @@ def filter_oauth_params(params):
         return filter(is_oauth, params)
 
 
-def utf8_str(s):
-    """Convert unicode to utf-8."""
-    if isinstance(s, unicode):
-        return s.encode("utf-8")
-    else:
-        return str(s)
-
-
 def generate_timestamp():
     """Get seconds since epoch (UTC).
 
