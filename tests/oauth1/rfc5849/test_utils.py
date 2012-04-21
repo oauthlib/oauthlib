@@ -128,12 +128,12 @@ class UtilsTests(TestCase):
     def test_escape(self):
         self.assertRaises(ValueError, escape, "I am a string type. Not a unicode type.")
         self.assertEqual(escape(u"I am a unicode type."), u"I%20am%20a%20unicode%20type.")
-        self.assertIsInstance(escape(u"I am a unicode type."), str)
+        self.assertIsInstance(escape(u"I am a unicode type."), unicode)
 
     def test_unescape(self):
-        self.assertRaises(ValueError, unescape, u"I am a unicode type. Not a string type.")
-        self.assertEqual(unescape("I%20am%20a%20unicode%20type."), u'I am a unicode type.')
-        self.assertIsInstance(unescape("I%20am%20a%20unicode%20type."), unicode)
+        self.assertRaises(ValueError, unescape, "I am a string type. Not a unicode type.")
+        self.assertEqual(unescape(u"I%20am%20a%20unicode%20type."), u'I am a unicode type.')
+        self.assertIsInstance(unescape(u"I%20am%20a%20unicode%20type."), unicode)
 
     def test_urlencode(self):
 
@@ -152,16 +152,16 @@ class UtilsTests(TestCase):
         for header in authorization_headers:
             self.assertTrue(isinstance(header, tuple))
 
-        # are the internal components of each tuple strings?
+        # are the internal components of each tuple unicode?
         for k,v in authorization_headers:
-            self.assertTrue(isinstance(k, str))
-            self.assertTrue(isinstance(v, str))
+            self.assertTrue(isinstance(k, unicode))
+            self.assertTrue(isinstance(v, unicode))
 
         # let's check some of the parsed headers created
-        self.assertEquals(authorization_headers[1][0], "oauth_nonce")
-        self.assertEquals(authorization_headers[1][1], "7d8f3e4a")
-        self.assertEquals(authorization_headers[2][0], "oauth_timestamp")
-        self.assertEquals(authorization_headers[2][1], "137131201")
-        self.assertEquals(authorization_headers[3][0], "oauth_consumer_key")
-        self.assertEquals(authorization_headers[3][1], "9djdj82h48djs9d2")
+        self.assertEquals(authorization_headers[1][0], u"oauth_nonce")
+        self.assertEquals(authorization_headers[1][1], u"7d8f3e4a")
+        self.assertEquals(authorization_headers[2][0], u"oauth_timestamp")
+        self.assertEquals(authorization_headers[2][1], u"137131201")
+        self.assertEquals(authorization_headers[3][0], u"oauth_consumer_key")
+        self.assertEquals(authorization_headers[3][1], u"9djdj82h48djs9d2")
 

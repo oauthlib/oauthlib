@@ -36,7 +36,7 @@ def construct_base_string(http_method, base_string_uri,
     .. _`section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.1
     """
 
-    return '&'.join((
+    return u'&'.join((
         utils.escape(http_method.upper()),
         utils.escape(base_string_uri),
         utils.escape(normalized_encoded_request_parameters),
@@ -68,10 +68,10 @@ def normalize_base_string_uri(uri):
         if (scheme, port) in default_ports:
             netloc = host
 
-    return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
+    return urlparse.urlunparse((scheme, netloc, path, u'', u'', u''))
 
 
-def collect_parameters(uri_query='', body='', headers=None,
+def collect_parameters(uri_query=u'', body=u'', headers=None,
         exclude_oauth_signature=True):
     """Collect parameters from the uri query, authorization header, and request
     body.
@@ -91,7 +91,7 @@ def collect_parameters(uri_query='', body='', headers=None,
     if headers:
         # look for an authorization header (case-insensitive)
         headers_lower = dict((k.lower(), v) for k, v in headers.items())
-        authorization_header = headers_lower.get('authorization')
+        authorization_header = headers_lower.get(u'authorization')
         if authorization_header is not None:
             params.extend(utils.parse_authorization_header(
                 authorization_header))
@@ -106,17 +106,12 @@ def collect_parameters(uri_query='', body='', headers=None,
         except TypeError:
             raise ValueError("Body must be a string, dict, or iterable")
 
-    # ensure all paramters are unicode and not escaped
-    unicode_params = []
+    # ensure all oauth params are unescaped
+    unescaped_params = []
     for k, v in params:
-        if isinstance(k, str):
-            k = k.decode('utf-8')
-        if isinstance(v, str):
-            if k.startswith('oauth_'):
-                v = utils.unescape(v)
-            else:
-                v = v.decode('utf-8')
-        unicode_params.append((k, v))
+        if k.startswith(u'oauth_'):
+            v = utils.unescape(v)
+        unescaped_params.append((k, v))
 
     # exclude particular parameters according to the spec
     exclude_params = [
@@ -125,7 +120,7 @@ def collect_parameters(uri_query='', body='', headers=None,
     if exclude_oauth_signature:
         exclude_params.append(u'oauth_signature')
 
-    return filter(lambda i: i[0] not in exclude_params, unicode_params)
+    return filter(lambda i: i[0] not in exclude_params, unescaped_params)
 
 
 def normalize_parameters(params):
@@ -153,10 +148,14 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
     """
 
-    key = '&'.join((utils.escape(client_secret or u''),
+    key = u'&'.join((utils.escape(client_secret or u''),
         utils.escape(resource_owner_secret or u'')))
 
-    signature = hmac.new(key, base_string, hashlib.sha1)
+    # FIXME: HMAC does not support unicode!
+    key_utf8 = key.encode('utf-8')
+    base_string_utf8 = base_string.encode('utf-8')
+
+    signature = hmac.new(key_utf8, base_string_utf8, hashlib.sha1)
     return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
 
 

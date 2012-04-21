@@ -121,9 +121,12 @@ def prepare_headers(params, headers=None, realm=None):
 
 
 def _add_params_to_qs(query, params):
+    """Add params (2-tuple of key-value pairs) to the provided query string.
+    Return a new query string with params added.
+    """
     queryparams = parse_qsl(query, True)
     queryparams.extend(params)
-    queryparams.sort(key=lambda i: i[0].startswith('oauth_'))
+    queryparams.sort(key=lambda i: i[0].startswith(u'oauth_'))
     return utils.urlencode(queryparams)
 
 

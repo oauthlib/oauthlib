@@ -40,8 +40,6 @@ class ServerTests(TestCase):
 
         uri, body, headers = c.sign(u'http://server.example.com:80/init')
 
-        headers = dict([(str(k), str(v)) for k, v in headers.iteritems()])
-
         s = self.TestServer()
         self.assertTrue(s.check_request_signature(uri, body=body,
             headers=headers))
@@ -55,8 +53,6 @@ class ServerTests(TestCase):
         )
 
         uri, body, headers = c.sign(u'http://server.example.com:80/init')
-
-        headers = dict([(str(k), str(v)) for k, v in headers.iteritems()])
 
         s = self.TestServer()
         self.assertTrue(s.check_request_signature(uri, body=body,

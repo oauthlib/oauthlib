@@ -48,7 +48,7 @@ class Client(object):
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
 
-    def get_oauth_signature(self, uri, http_method=u'GET', body='',
+    def get_oauth_signature(self, uri, http_method=u'GET', body=u'',
             headers=None):
         """Get an OAuth signature to be used in signing a request"""
         headers = headers or {}
@@ -117,7 +117,7 @@ class Client(object):
 
         return complete_uri, body, headers
 
-    def sign(self, uri, http_method=u'GET', body='', headers=None):
+    def sign(self, uri, http_method=u'GET', body=u'', headers=None):
         """Get the signed uri and authorization header.
         Authorization header will be None if signature type is "query".
         """
@@ -199,6 +199,7 @@ class Server(object):
         """
         headers = headers or {}
         signature_type = None
+        # FIXME: urlparse does not return unicode!
         uri_query = urlparse.urlparse(uri).query
 
         signature_type, params = self.get_signature_type_and_params(uri_query,
