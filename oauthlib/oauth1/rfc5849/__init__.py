@@ -35,8 +35,6 @@ class Client(object):
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None):
-        # TODO why is client secret not required?
-        # TODO why is callback_uri required?
         self.client_key = client_key
         self.client_secret = client_secret
         self.resource_owner_key = resource_owner_key
@@ -103,7 +101,6 @@ class Client(object):
         If the formencode argument is True and the body contains parameters, it
         is escaped and returned as a valid formencoded string.
         """
-
         # TODO what if there are body params on a header-type auth?
         # TODO what if there are query params on a body-type auth?
 

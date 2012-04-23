@@ -36,7 +36,6 @@ def construct_base_string(http_method, base_string_uri,
 
     .. _`section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.1
     """
-
     return u'&'.join((
         utils.escape(http_method.upper()),
         utils.escape(base_string_uri),
@@ -127,7 +126,6 @@ def normalize_parameters(params):
 
     .. _`section 3.4.1.3.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
     """
-
     # Escape key values before sorting
     key_values = [(utils.escape(k), utils.escape(v)) for k, v in params]
 
@@ -145,7 +143,6 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
 
     .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
     """
-
     key = u'&'.join((utils.escape(client_secret or u''),
         utils.escape(resource_owner_secret or u'')))
 

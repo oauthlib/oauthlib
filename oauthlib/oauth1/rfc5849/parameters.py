@@ -42,7 +42,6 @@ def prepare_headers(oauth_params, headers=None, realm=None):
     .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
     .. _`RFC2617`: http://tools.ietf.org/html/rfc2617
     """
-
     headers = headers or {}
 
     # Protocol parameters SHALL be included in the "Authorization" header
@@ -110,7 +109,6 @@ def _append_params(oauth_params, params):
     return merged
 
 
-# @order_params
 def prepare_form_encoded_body(oauth_params, body):
     """Prepare the Form-Encoded Body.
 
@@ -123,7 +121,6 @@ def prepare_form_encoded_body(oauth_params, body):
     return _append_params(oauth_params, body)
 
 
-# @order_params
 def prepare_request_uri_query(oauth_params, uri):
     """Prepare the Request URI Query.
 
