@@ -26,6 +26,7 @@ import hashlib
 import hmac
 import urlparse
 from . import utils
+from oauthlib.common import extract_params
 
 
 def construct_base_string(http_method, base_string_uri,
@@ -71,13 +72,17 @@ def normalize_base_string_uri(uri):
     return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
 
 
-def collect_parameters(uri_query='', body='', headers=None,
+def collect_parameters(uri_query='', body=[], headers=None,
         exclude_oauth_signature=True):
     """Collect parameters from the uri query, authorization header, and request
     body.
 
     String paramters will be decoded into unicode using utf-8.
     Parameters starting with `oauth_` will be unescaped.
+
+    Body parameters must be supplied as a dict, a list of 2-tuples, or a
+    formencoded query string.
+
     Per `section 3.4.1.3.1`_ of the spec.
 
     .. _`section 3.4.1.3.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
@@ -96,15 +101,8 @@ def collect_parameters(uri_query='', body='', headers=None,
             params.extend(utils.parse_authorization_header(
                 authorization_header))
 
-    if isinstance(body, (str, unicode)):
-        params.extend(urlparse.parse_qsl(body, keep_blank_values=True))
-    elif isinstance(body, dict):
-        params.extend(body.items())
-    else:
-        try:
-            params.extend(body)
-        except TypeError:
-            raise ValueError("Body must be a string, dict, or iterable")
+    bodyparams = extract_params(body) or []
+    params.extend(bodyparams)
 
     # ensure all paramters are unicode and not escaped
     unicode_params = []

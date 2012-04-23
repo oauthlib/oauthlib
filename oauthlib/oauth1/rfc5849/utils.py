@@ -110,7 +110,7 @@ def unescape(s):
 def urlencode(query):
     """Encode a sequence of two-element tuples or dictionary into a URL query string.
 
-    Operates using an OAuth-safe escape() method, in contrast to urllib.urlenocde.
+    Operates using an OAuth-safe escape() method, in contrast to urllib.urlencode.
     """
     # Convert dictionaries to list of tuples
     if isinstance(query, dict):
