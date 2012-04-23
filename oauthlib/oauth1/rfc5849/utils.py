@@ -41,14 +41,6 @@ def filter_oauth_params(params):
         return filter(is_oauth, params)
 
 
-def utf8_str(s):
-    """Convert unicode to utf-8."""
-    if isinstance(s, unicode):
-        return s.encode("utf-8")
-    else:
-        return str(s)
-
-
 def generate_timestamp():
     """Get seconds since epoch (UTC).
 
@@ -88,6 +80,55 @@ def generate_token(length=20, chars=UNICODE_ASCII_CHARACTER_SET):
     return u''.join(choice(chars) for x in range(length))
 
 
+always_safe = (u'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+               u'abcdefghijklmnopqrstuvwxyz'
+               u'0123456789' u'_.-')
+_safe_map = {}
+for i, c in zip(xrange(256), str(bytearray(xrange(256)))):
+    _safe_map[c] = (c if (i < 128 and c in always_safe) else \
+        '%{:02X}'.format(i)).decode('utf-8')
+_safe_quoters = {}
+
+def quote(s, safe=u'/'):
+    """A unicode-safe version of urllib.quote"""
+    # fastpath
+    if not s:
+        if s is None:
+            raise TypeError('None object cannot be quoted')
+        return s
+    cachekey = (safe, always_safe)
+    try:
+        (quoter, safe) = _safe_quoters[cachekey]
+    except KeyError:
+        safe_map = _safe_map.copy()
+        safe_map.update([(c, c) for c in safe])
+        quoter = safe_map.__getitem__
+        safe = always_safe + safe
+        _safe_quoters[cachekey] = (quoter, safe)
+    if not s.rstrip(safe):
+        return s
+    return u''.join(map(quoter, s))
+
+_hexdig = u'0123456789ABCDEFabcdef'
+_hextochr = dict((a + b, unichr(int(a + b, 16)))
+                 for a in _hexdig for b in _hexdig)
+
+def unquote(s):
+    """A unicode-safe version of urllib.unquote"""
+    res = s.split('%')
+    # fastpath
+    if len(res) == 1:
+        return s
+    s = res[0]
+    for item in res[1:]:
+        try:
+            s += _hextochr[item[:2]] + item[2:]
+        except KeyError:
+            s += u'%' + item
+        except UnicodeDecodeError:
+            s += unichr(int(item[:2], 16)) + item[2:]
+    return s
+
 def escape(u):
     """Escape a unicode string in an OAuth-compatible fashion.
 
@@ -98,14 +139,14 @@ def escape(u):
     """
     if not isinstance(u, unicode):
         raise ValueError('Only unicode objects are escapable.')
-    return urllib.quote(u.encode('utf-8'), safe='~')
+    # Letters, digits, and the characters '_.-' are already treated as safe
+    # by urllib.quote(). We need to add '~' to fully support rfc5849.
+    return quote(u, safe='~')
 
-
-def unescape(s):
-    if not isinstance(s, str):
-        raise ValueError('Only string objects are unescapable.')
-    return urllib.unquote(s, safe='~').decode('utf-8')
-
+def unescape(u):
+    if not isinstance(u, unicode):
+        raise ValueError('Only unicode objects are unescapable.')
+    return unquote(u)
 
 def urlencode(query):
     """Encode a sequence of two-element tuples or dictionary into a URL query string.
@@ -115,16 +156,62 @@ def urlencode(query):
     # Convert dictionaries to list of tuples
     if isinstance(query, dict):
         query = query.items()
-    return "&".join(['='.join([escape(k), escape(v)]) for k, v in query])
+    return u"&".join([u'='.join([escape(k), escape(v)]) for k, v in query])
 
+def parse_keqv_list(l):
+    """A unicode-safe version of urllib2.parse_keqv_list"""
+    parsed = {}
+    for elt in l:
+        k, v = elt.split(u'=', 1)
+        if v[0] == u'"' and v[-1] == u'"':
+            v = v[1:-1]
+        parsed[k] = v
+    return parsed
+
+def parse_http_list(s):
+    """A unicode-safe version of urllib2.parse_http_list"""
+    res = []
+    part = u''
+
+    escape = quote = False
+    for cur in s:
+        if escape:
+            part += cur
+            escape = False
+            continue
+        if quote:
+            if cur == u'\\':
+                escape = True
+                continue
+            elif cur == u'"':
+                quote = False
+            part += cur
+            continue
+
+        if cur == u',':
+            res.append(part)
+            part = u''
+            continue
+
+        if cur == u'"':
+            quote = True
+
+        part += cur
+
+    # append last part
+    if part:
+        res.append(part)
+
+    return [part.strip() for part in res]
 
 def parse_authorization_header(authorization_header):
     """Parse an OAuth authorization header into a list of 2-tuples"""
-    auth_scheme = 'OAuth '
+    auth_scheme = u'OAuth '
     if authorization_header.startswith(auth_scheme):
-        authorization_header = authorization_header.replace(auth_scheme, '', 1)
-    items = urllib2.parse_http_list(authorization_header)
+        authorization_header = authorization_header.replace(auth_scheme, u'', 1)
+    items = parse_http_list(authorization_header)
     try:
-        return urllib2.parse_keqv_list(items).items()
+        return parse_keqv_list(items).items()
     except ValueError:
         raise ValueError('Malformed authorization header')
+

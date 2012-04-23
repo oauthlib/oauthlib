@@ -39,7 +39,7 @@ class UtilsTests(TestCase):
     oauth_signature_method="HMAC-SHA1",
     oauth_timestamp="137131201",
     oauth_nonce="7d8f3e4a",
-    oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()            
+    oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
 
 
     def test_filter_params(self):
@@ -73,7 +73,7 @@ class UtilsTests(TestCase):
         #   should not be present in the filtered params
         filtered_params = filter_oauth_params(self.sample_params_list)
         self.assertEqual(len(filtered_params), 2)
-        
+
         self.assertTrue(filtered_params[0][0].startswith('oauth'))
         self.assertTrue(filtered_params[1][0].startswith('oauth'))
 
@@ -86,19 +86,9 @@ class UtilsTests(TestCase):
         #   should not be present in the filtered params
         filtered_params = filter_oauth_params(self.sample_params_dict)
         self.assertEqual(len(filtered_params), 2)
-        
+
         self.assertTrue(filtered_params[0][0].startswith('oauth'))
         self.assertTrue(filtered_params[1][0].startswith('oauth'))
-
-    def test_utf8_str(self):
-
-        # check against crazy string
-        crazy_string = "àçéghîłñôßûÿž♬♨♧"
-        self.assertTrue(isinstance(utf8_str(crazy_string), str))
-        
-        # check against crazy unicode
-        crazy_unicode = utf8_str(u"àçéghîłñôßûÿž♬♨♧")
-        self.assertTrue(isinstance(crazy_unicode, str))
 
     def test_generate_timestamp(self):
         """ TODO: Better test here """
@@ -128,6 +118,12 @@ class UtilsTests(TestCase):
     def test_escape(self):
         self.assertRaises(ValueError, escape, "I am a string type. Not a unicode type.")
         self.assertEqual(escape(u"I am a unicode type."), u"I%20am%20a%20unicode%20type.")
+        self.assertIsInstance(escape(u"I am a unicode type."), unicode)
+
+    def test_unescape(self):
+        self.assertRaises(ValueError, unescape, "I am a string type. Not a unicode type.")
+        self.assertEqual(unescape(u"I%20am%20a%20unicode%20type."), u'I am a unicode type.')
+        self.assertIsInstance(unescape(u"I%20am%20a%20unicode%20type."), unicode)
 
     def test_urlencode(self):
 
@@ -146,16 +142,16 @@ class UtilsTests(TestCase):
         for header in authorization_headers:
             self.assertTrue(isinstance(header, tuple))
 
-        # are the internal components of each tuple strings?
+        # are the internal components of each tuple unicode?
         for k,v in authorization_headers:
-            self.assertTrue(isinstance(k, str))
-            self.assertTrue(isinstance(v, str))
+            self.assertTrue(isinstance(k, unicode))
+            self.assertTrue(isinstance(v, unicode))
 
         # let's check some of the parsed headers created
-        self.assertEquals(authorization_headers[1][0], "oauth_nonce")
-        self.assertEquals(authorization_headers[1][1], "7d8f3e4a")
-        self.assertEquals(authorization_headers[2][0], "oauth_timestamp")
-        self.assertEquals(authorization_headers[2][1], "137131201")
-        self.assertEquals(authorization_headers[3][0], "oauth_consumer_key")
-        self.assertEquals(authorization_headers[3][1], "9djdj82h48djs9d2")
+        self.assertEquals(authorization_headers[1][0], u"oauth_nonce")
+        self.assertEquals(authorization_headers[1][1], u"7d8f3e4a")
+        self.assertEquals(authorization_headers[2][0], u"oauth_timestamp")
+        self.assertEquals(authorization_headers[2][1], u"137131201")
+        self.assertEquals(authorization_headers[3][0], u"oauth_consumer_key")
+        self.assertEquals(authorization_headers[3][1], u"9djdj82h48djs9d2")
 
