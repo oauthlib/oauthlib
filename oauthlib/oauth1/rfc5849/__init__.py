@@ -10,7 +10,9 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 
 import urlparse
+from urllib import urlencode
 
+from oauthlib.common import Request
 from . import parameters, signature, utils
 
 SIGNATURE_HMAC = u"HMAC-SHA1"
@@ -33,8 +35,8 @@ class Client(object):
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None):
-        # XXX why is client secret not required?
-        # XXX why is callback_uri required?
+        # TODO why is client secret not required?
+        # TODO why is callback_uri required?
         self.client_key = client_key
         self.client_secret = client_secret
         self.resource_owner_key = resource_owner_key
@@ -48,24 +50,23 @@ class Client(object):
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
 
-    def get_oauth_signature(self, uri, http_method=u'GET', body='',
-            headers=None):
-        """Get an OAuth signature to be used in signing a request"""
-        headers = headers or {}
-
+    def get_oauth_signature(self, request):
+        """Get an OAuth signature to be used in signing a request
+        """
         if self.signature_method == SIGNATURE_PLAINTEXT:
             # fast-path
             return signature.sign_plaintext(self.client_secret,
                 self.resource_owner_secret)
 
-        headers = headers or {}
-        query = urlparse.urlparse(uri).query
-        params = signature.collect_parameters(uri_query=query,
-            body=body, headers=headers)
-        normalized_params = signature.normalize_parameters(params)
-        normalized_uri = signature.normalize_base_string_uri(uri)
-        base_string = signature.construct_base_string(http_method,
+        collected_params = signature.collect_parameters(
+            uri_query=request.uri_query,
+            body=request.body if request.body_has_params else [],
+            headers=request.headers)
+        normalized_params = signature.normalize_parameters(collected_params)
+        normalized_uri = signature.normalize_base_string_uri(request.uri)
+        base_string = signature.construct_base_string(request.http_method,
             normalized_uri, normalized_params)
+
         if self.signature_method == SIGNATURE_HMAC:
             return signature.sign_hmac_sha1(base_string, self.client_secret,
                 self.resource_owner_secret)
@@ -94,51 +95,80 @@ class Client(object):
 
         return params
 
-    def _contribute_parameters(self, uri, params, body='', headers=None):
-        if self.signature_type not in (SIGNATURE_TYPE_BODY,
-                                       SIGNATURE_TYPE_QUERY,
-                                       SIGNATURE_TYPE_AUTH_HEADER):
-            raise ValueError('Unknown signature type used.')
+    def _render(self, request, formencode=False):
+        """Render a signed request according to signature type
 
-        # defaults
-        headers = headers or {}
-        complete_uri = uri
+        Returns a 3-tuple containing the request URI, headers, and body.
 
-        # Sign with the specified signature type
+        If the formencode argument is True and the body contains parameters, it
+        is escaped and returned as a valid formencoded string.
+        """
+
+        # TODO what if there are body params on a header-type auth?
+        # TODO what if there are query params on a body-type auth?
+
+        uri, headers, body = request.uri, request.headers, request.body
+
+        # TODO: right now these prepare_* methods are very narrow in scope--they
+        # only affect their little thing. In some cases (for example, with
+        # header auth) it might be advantageous to allow these methods to touch
+        # other parts of the request, like the headers—so the prepare_headers
+        # method could also set the Content-Type header to x-www-url-formencoded
+        # like the spec requires. This would be a fundamental change though, and
+        # I'm not sure how I feel about it.
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
-            headers = parameters.prepare_headers(
-                params, headers)
+            headers = parameters.prepare_headers(request.oauth_params, request.headers)
+        elif self.signature_type == SIGNATURE_TYPE_BODY and request.body_has_params:
+            body = parameters.prepare_form_encoded_body(request.oauth_params, request.body)
+            headers['Content-Type'] = u'application/x-www-url-formencoded'
+        elif self.signature_type == SIGNATURE_TYPE_QUERY:
+            uri = parameters.prepare_request_uri_query(request.oauth_params, request.uri)
+        else:
+            raise ValueError('Unknown signature type specified.')
 
-        if self.signature_type == SIGNATURE_TYPE_BODY:
-            body = parameters.prepare_form_encoded_body(params, body)
-
-        if self.signature_type == SIGNATURE_TYPE_QUERY:
-            complete_uri = parameters.prepare_request_uri_query(params, uri)
-
-        return complete_uri, body, headers
+        if formencode and request.body_has_params:
+            body = urlencode(body)
+        return uri, headers, body
 
     def sign(self, uri, http_method=u'GET', body='', headers=None):
-        """Get the signed uri and authorization header.
-        Authorization header will be None if signature type is "query".
+        """Sign a request
+
+        Signs an HTTP request with the specified parts.
+
+        Returns a 3-tuple of the signed request's URI, headers, and body.
+        Note that http_method is not returned as it is unaffected by the OAuth
+        signing process.
+
+        The body argument may be a dict, a list of 2-tuples, or a formencoded
+        string. If the body argument is not a formencoded string and/or the
+        Content-Type header is not 'x-www-url-formencoded', it will be
+        returned verbatim as it is unaffected by the OAuth signing process.
+        Attempting to sign a request with non-formencoded data using the
+        OAuth body signature type is invalid and will raise an exception.
+
+        If the body does contain parameters, it will be returned as a properly-
+        formatted formencoded string.
+
+        All string data MUST be unicode. This includes strings inside body
+        dicts, for example.
         """
-        headers = headers or {}
+        # normalize request data
+        request = Request(uri, http_method, body, headers)
 
-        # get the OAuth params and contribute them to either the uri or
-        # authorization header
-        params = self.get_oauth_params()
-        complete_uri, body, headers = self._contribute_parameters(uri,
-            params, body=body, headers=headers)
+        # sanity check
+        content_type = request.headers.get('Content-Type', None)
+        if content_type == 'application/x-www-url-formencoded' and not request.body_has_params:
+            raise ValueError("Headers indicate a formencoded body but body was not decodable.")
 
-        # use the new uri and authorization header to generate a signature and
-        # contribute that signature to the OAuth parameters
-        oauth_signature = self.get_oauth_signature(complete_uri,
-            http_method=http_method, body=body,
-            headers=headers)
-        params.append((u'oauth_signature', oauth_signature))
+        # generate the basic OAuth parameters
+        request.oauth_params = self.get_oauth_params()
 
-        # take the new OAuth params with signature and contribute the
-        # now-complete parameters to the uri or authorization header
-        return self._contribute_parameters(uri, params)
+        # generate the signature
+        request.oauth_params.append((u'oauth_signature', self.get_oauth_signature(request)))
+
+        # render the signed request and return it
+        return self._render(request)
+
 
 
 class Server(object):
@@ -274,4 +304,3 @@ class Server(object):
 
         # FIXME: use near constant time string compare to avoid timing attacks
         return client_signature == request_signature
-
