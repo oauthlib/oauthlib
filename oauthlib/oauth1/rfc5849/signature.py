@@ -82,6 +82,8 @@ def collect_parameters(uri_query='', body=[], headers=None,
     Body parameters must be supplied as a dict, a list of 2-tuples, or a
     formencoded query string.
 
+    Headers must be supplied as a dict.
+
     Per `section 3.4.1.3.1`_ of the spec.
 
     .. _`section 3.4.1.3.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
