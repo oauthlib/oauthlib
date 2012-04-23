@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from oauthlib.oauth1.rfc5849.parameters import *
+from urllib import urlencode
+from oauthlib.oauth1.rfc5849.parameters import (_append_params, prepare_headers,
+    prepare_form_encoded_body, prepare_request_uri_query)
 from ...unittest import TestCase
 
 
@@ -37,18 +39,23 @@ class ParameterTests(TestCase):
         u'oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"',
     ))
 
-    def test_order_oauth_parameters(self):
-        unordered = {
-            'oauth_foo': 'foo',
-            'oauth_bar': 'bar',
-            'lala': 123,
-            'oauth_baz': 'baz', }
-        expected = [
-            ('oauth_bar', 'bar'),
-            ('oauth_baz', 'baz'),
+    def test_append_params(self):
+        unordered_1 = [
             ('oauth_foo', 'foo'),
-            ('lala', 123)]
-        self.assertEqual(order_oauth_parameters(unordered), expected)
+            ('lala', 123),
+            ('oauth_baz', 'baz'),
+            ('oauth_bar', 'bar'), ]
+        unordered_2 = [
+            ('teehee', 456),
+            ('oauth_quux', 'quux'), ]
+        expected = [
+            ('teehee', 456),
+            ('lala', 123),
+            ('oauth_quux', 'quux'),
+            ('oauth_foo', 'foo'),
+            ('oauth_baz', 'baz'),
+            ('oauth_bar', 'bar'), ]
+        self.assertEqual(_append_params(unordered_1, unordered_2), expected)
 
     def test_prepare_headers(self):
         self.assertEqual(
@@ -70,7 +77,7 @@ class ParameterTests(TestCase):
         existing_body = u''
         form_encoded_body = 'data_param_foo=foo&data_param_1=1&oauth_signature=bYT5CMsGcbgUdFHObYMEfcx6bsw%3D&oauth_nonce=7d8f3e4a&oauth_timestamp=137131201&oauth_signature_method=HMAC-SHA1&oauth_token=kkk9d7dh3k39sjv7&oauth_consumer_key=9djdj82h48djs9d2'
         self.assertEqual(
-            prepare_form_encoded_body(self.auth_and_data, existing_body),
+            urlencode(prepare_form_encoded_body(self.auth_and_data, existing_body)),
             form_encoded_body)
 
     def test_prepare_request_uri_query(self):
