@@ -24,8 +24,11 @@ def extract_params(raw):
         if len(raw) == 0:
             params = []  # short-circuit, strict parsing chokes on blank
         else:
+            # FIXME how do we handle partly invalid param strings like "c2&a3=2+q"?
+            # With strict_parsing it's all or nothing. :(
             try:
-                params = parse_qsl(raw, keep_blank_values=True, strict_parsing=True)
+                # params = parse_qsl(raw, keep_blank_values=True, strict_parsing=True)
+                params = parse_qsl(raw, keep_blank_values=True)
             except ValueError:
                 params = None  # No parameters to see here, move along.
     elif hasattr(raw, '__iter__'):
