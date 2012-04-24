@@ -29,6 +29,12 @@ def extract_params(raw):
             try:
                 # params = parse_qsl(raw, keep_blank_values=True, strict_parsing=True)
                 params = parse_qsl(raw, keep_blank_values=True)
+
+                # Prevent the degenerate case where strict_parsing=False allows
+                # any string as a valid, valueless parameter. This means that an
+                # input like u'foo bar' will not result in [(u'foo bar', u'')].
+                if len(params) == 1 and params[0][1] == '':
+                    raise ValueError
             except ValueError:
                 params = None  # No parameters to see here, move along.
     elif hasattr(raw, '__iter__'):
