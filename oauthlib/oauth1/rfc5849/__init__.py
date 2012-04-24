@@ -56,10 +56,14 @@ class Client(object):
             return signature.sign_plaintext(self.client_secret,
                 self.resource_owner_secret)
 
+        # XXX hack to make sure oauth params are included in the info
+        # passed to collect_parameters below. Is there a cleaner way?
+        uri, headers, body = self._render(request)
+
         collected_params = signature.collect_parameters(
-            uri_query=request.uri_query,
-            body=request.body if request.body_has_params else [],
-            headers=request.headers)
+            uri_query=urlparse.urlparse(uri).query,
+            body=body,
+            headers=headers)
         normalized_params = signature.normalize_parameters(collected_params)
         normalized_uri = signature.normalize_base_string_uri(request.uri)
         base_string = signature.construct_base_string(request.http_method,
