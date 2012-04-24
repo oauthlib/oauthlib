@@ -28,6 +28,7 @@ import hashlib
 import hmac
 import urlparse
 from . import utils
+from oauthlib.common import extract_params
 
 
 def construct_base_string(http_method, base_string_uri,
@@ -64,7 +65,6 @@ def construct_base_string(http_method, base_string_uri,
 
     # The signature base string is constructed by concatenating together,
     # in order, the following HTTP request elements:
-    #
     return u'&'.join((
         # 1.  The HTTP request method in uppercase.  For example: "HEAD",
         #     "GET", "POST", etc.  If the request uses a custom HTTP method, it
@@ -155,9 +155,16 @@ def normalize_base_string_uri(uri):
 #
 #    .. _`section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
-def collect_parameters(uri_query=u'', body=u'', headers=None,
+def collect_parameters(uri_query='', body=[], headers=None,
         exclude_oauth_signature=True):
     """**Parameter Sources**
+
+    Parameters starting with `oauth_` will be unescaped.
+
+    Body parameters must be supplied as a dict, a list of 2-tuples, or a
+    formencoded query string.
+
+    Headers must be supplied as a dict.
 
     Per `section 3.4.1.3.1`_ of the spec.
 
@@ -252,15 +259,8 @@ def collect_parameters(uri_query=u'', body=u'', headers=None,
     # .._`W3C.REC-html40-19980424`: http://tools.ietf.org/html/rfc5849#ref-W3C.REC-html40-19980424
 
     # TODO: enforce header param inclusion conditions
-    if isinstance(body, (str, unicode)):
-        params.extend(urlparse.parse_qsl(body, keep_blank_values=True))
-    elif isinstance(body, dict):
-        params.extend(body.items())
-    else:
-        try:
-            params.extend(body)
-        except TypeError:
-            raise ValueError("Body must be a string, dict, or iterable")
+    bodyparams = extract_params(body) or []
+    params.extend(bodyparams)
 
     # ensure all oauth params are unescaped
     unescaped_params = []

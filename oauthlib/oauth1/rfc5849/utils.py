@@ -10,8 +10,6 @@ spec.
 
 import string
 import time
-import urllib
-import urllib2
 from random import getrandbits, choice
 
 UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
@@ -89,6 +87,7 @@ for i, c in zip(xrange(256), str(bytearray(xrange(256)))):
         '%{:02X}'.format(i)).decode('utf-8')
 _safe_quoters = {}
 
+
 def quote(s, safe=u'/'):
     """A unicode-safe version of urllib.quote"""
     # fastpath
@@ -113,6 +112,7 @@ _hexdig = u'0123456789ABCDEFabcdef'
 _hextochr = dict((a + b, unichr(int(a + b, 16)))
                  for a in _hexdig for b in _hexdig)
 
+
 def unquote(s):
     """A unicode-safe version of urllib.unquote"""
     res = s.split('%')
@@ -129,6 +129,7 @@ def unquote(s):
             s += unichr(int(item[:2], 16)) + item[2:]
     return s
 
+
 def escape(u):
     """Escape a unicode string in an OAuth-compatible fashion.
 
@@ -143,20 +144,23 @@ def escape(u):
     # by urllib.quote(). We need to add '~' to fully support rfc5849.
     return quote(u, safe='~')
 
+
 def unescape(u):
     if not isinstance(u, unicode):
         raise ValueError('Only unicode objects are unescapable.')
     return unquote(u)
 
+
 def urlencode(query):
     """Encode a sequence of two-element tuples or dictionary into a URL query string.
 
-    Operates using an OAuth-safe escape() method, in contrast to urllib.urlenocde.
+    Operates using an OAuth-safe escape() method, in contrast to urllib.urlencode.
     """
     # Convert dictionaries to list of tuples
     if isinstance(query, dict):
         query = query.items()
     return u"&".join([u'='.join([escape(k), escape(v)]) for k, v in query])
+
 
 def parse_keqv_list(l):
     """A unicode-safe version of urllib2.parse_keqv_list"""
@@ -167,6 +171,7 @@ def parse_keqv_list(l):
             v = v[1:-1]
         parsed[k] = v
     return parsed
+
 
 def parse_http_list(s):
     """A unicode-safe version of urllib2.parse_http_list"""
@@ -204,6 +209,7 @@ def parse_http_list(s):
 
     return [part.strip() for part in res]
 
+
 def parse_authorization_header(authorization_header):
     """Parse an OAuth authorization header into a list of 2-tuples"""
     auth_scheme = u'OAuth '
@@ -214,4 +220,3 @@ def parse_authorization_header(authorization_header):
         return parse_keqv_list(items).items()
     except ValueError:
         raise ValueError('Malformed authorization header')
-
