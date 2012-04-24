@@ -115,16 +115,16 @@ class Client(object):
         # I'm not sure how I feel about it.
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
             headers = parameters.prepare_headers(request.oauth_params, request.headers)
-        elif self.signature_type == SIGNATURE_TYPE_BODY and request.body_has_params:
+        elif self.signature_type == SIGNATURE_TYPE_BODY and (body == [] or request.body_has_params):
             body = parameters.prepare_form_encoded_body(request.oauth_params, request.body)
+            if formencode:
+                body = urlencode(body)
             headers['Content-Type'] = u'application/x-www-url-formencoded'
         elif self.signature_type == SIGNATURE_TYPE_QUERY:
             uri = parameters.prepare_request_uri_query(request.oauth_params, request.uri)
         else:
             raise ValueError('Unknown signature type specified.')
 
-        if formencode and request.body_has_params:
-            body = urlencode(body)
         return uri, headers, body
 
     def sign(self, uri, http_method=u'GET', body='', headers=None):
