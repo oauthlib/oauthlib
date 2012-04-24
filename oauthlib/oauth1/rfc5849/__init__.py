@@ -176,7 +176,7 @@ class Client(object):
         request.oauth_params.append((u'oauth_signature', self.get_oauth_signature(request)))
 
         # render the signed request and return it
-        return self._render(request)
+        return self._render(request, formencode=True)
 
 
 class Server(object):
