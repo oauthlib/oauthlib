@@ -65,22 +65,35 @@ def construct_base_string(http_method, base_string_uri,
 
     # The signature base string is constructed by concatenating together,
     # in order, the following HTTP request elements:
-    return u'&'.join((
-        # 1.  The HTTP request method in uppercase.  For example: "HEAD",
-        #     "GET", "POST", etc.  If the request uses a custom HTTP method, it
-        #     MUST be encoded (`Section 3.6`_).
-        # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
-        utils.escape(http_method.upper()),
 
-        # 2.  An "&" character (ASCII code 38).
-        utils.escape(base_string_uri),
+    # 1.  The HTTP request method in uppercase.  For example: "HEAD",
+    #     "GET", "POST", etc.  If the request uses a custom HTTP method, it
+    #     MUST be encoded (`Section 3.6`_).
+    #
+    # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
+    base_string = utils.escape(http_method.upper())
 
-        # 3.  The base string URI from `Section 3.4.1.2`_, after being encoded
-        #     (`Section 3.6`_).
-        # .. _`section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
-        # .. _`Section 3.4.6`: http://tools.ietf.org/html/rfc5849#section-3.4.6
-        utils.escape(normalized_encoded_request_parameters),
-    ))
+    # 2.  An "&" character (ASCII code 38).
+    base_string += u'&'
+
+    # 3.  The base string URI from `Section 3.4.1.2`_, after being encoded
+    #     (`Section 3.6`_).
+    #
+    # .. _`Section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
+    # .. _`Section 3.4.6`: http://tools.ietf.org/html/rfc5849#section-3.4.6
+    base_string += utils.escape(base_string_uri),
+
+    # 4.  An "&" character (ASCII code 38).
+    base_string += u'&'
+
+    # 5.  The request parameters as normalized in `Section 3.4.1.3.2`_, after
+    #     being encoded (`Section 3.6`).
+    #
+    # .. _`Section 3.4.1.3.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
+    # .. _`Section 3.4.6`: http://tools.ietf.org/html/rfc5849#section-3.4.6
+    base_string += utils.escape(normalized_encoded_request_parameters)
+
+    return base_string
 
 
 def normalize_base_string_uri(uri):
