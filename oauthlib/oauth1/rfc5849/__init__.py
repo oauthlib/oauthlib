@@ -122,7 +122,7 @@ class Client(object):
         # only affect their little thing. In some cases (for example, with
         # header auth) it might be advantageous to allow these methods to touch
         # other parts of the request, like the headers—so the prepare_headers
-        # method could also set the Content-Type header to x-www-url-formencoded
+        # method could also set the Content-Type header to x-www-form-urlencoded
         # like the spec requires. This would be a fundamental change though, and
         # I'm not sure how I feel about it.
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
@@ -131,7 +131,7 @@ class Client(object):
             body = parameters.prepare_form_encoded_body(request.oauth_params, request.body)
             if formencode:
                 body = urlencode(body)
-            headers['Content-Type'] = u'application/x-www-url-formencoded'
+            headers['Content-Type'] = u'application/x-www-form-urlencoded'
         elif self.signature_type == SIGNATURE_TYPE_QUERY:
             uri = parameters.prepare_request_uri_query(request.oauth_params, request.uri)
         else:
@@ -150,7 +150,7 @@ class Client(object):
 
         The body argument may be a dict, a list of 2-tuples, or a formencoded
         string. If the body argument is not a formencoded string and/or the
-        Content-Type header is not 'x-www-url-formencoded', it will be
+        Content-Type header is not 'x-www-form-urlencoded', it will be
         returned verbatim as it is unaffected by the OAuth signing process.
         Attempting to sign a request with non-formencoded data using the
         OAuth body signature type is invalid and will raise an exception.
@@ -166,7 +166,7 @@ class Client(object):
 
         # sanity check
         content_type = request.headers.get('Content-Type', None)
-        if content_type == 'application/x-www-url-formencoded' and not request.body_has_params:
+        if content_type == 'application/x-www-form-urlencoded' and not request.body_has_params:
             raise ValueError("Headers indicate a formencoded body but body was not decodable.")
 
         # generate the basic OAuth parameters
