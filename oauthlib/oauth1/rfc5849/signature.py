@@ -22,7 +22,6 @@ Steps for signing a request:
 
 .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
 """
-
 import binascii
 import hashlib
 import hmac
@@ -81,7 +80,7 @@ def construct_base_string(http_method, base_string_uri,
     #
     # .. _`Section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
     # .. _`Section 3.4.6`: http://tools.ietf.org/html/rfc5849#section-3.4.6
-    base_string += utils.escape(base_string_uri),
+    base_string += utils.escape(base_string_uri)
 
     # 4.  An "&" character (ASCII code 38).
     base_string += u'&'
