@@ -38,7 +38,7 @@ class ServerTests(TestCase):
             resource_owner_secret=self.RESOURCE_OWNER_SECRET,
         )
 
-        uri, body, headers = c.sign(u'http://server.example.com:80/init')
+        uri, headers, body  = c.sign(u'http://server.example.com:80/init')
 
         s = self.TestServer()
         self.assertTrue(s.check_request_signature(uri, body=body,
@@ -52,7 +52,7 @@ class ServerTests(TestCase):
             callback_uri=u'http://client.example.com/callback'
         )
 
-        uri, body, headers = c.sign(u'http://server.example.com:80/init')
+        uri, headers, body = c.sign(u'http://server.example.com:80/init')
 
         s = self.TestServer()
         self.assertTrue(s.check_request_signature(uri, body=body,
