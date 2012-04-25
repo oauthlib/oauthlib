@@ -308,8 +308,10 @@ class Server(object):
                 signature_type=signature_type,
                 verifier=verifier)
 
-        client_signature = oauth_client.get_oauth_signature(uri,
-            http_method=http_method, body=body, headers=headers)
+        request = Request(uri, http_method, body, headers)
+        request.oauth_params = params
+
+        client_signature = oauth_client.get_oauth_signature(request)
 
         # FIXME: use near constant time string compare to avoid timing attacks
         return client_signature == request_signature
