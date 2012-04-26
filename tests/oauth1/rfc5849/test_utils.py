@@ -143,9 +143,10 @@ class UtilsTests(TestCase):
         
         self.assertRaises(ValueError, urldecode, u'foo bar')
         self.assertRaises(ValueError, urldecode, u'?')
-        self.assertRaises(ValueError, urldecode, u'%?A')
-        self.assertRaises(ValueError, urldecode, u'%A?')
-        self.assertRaises(ValueError, urldecode, u'%??')
+        self.assertRaises(ValueError, urldecode, u'%R')
+        self.assertRaises(ValueError, urldecode, u'%RA')
+        self.assertRaises(ValueError, urldecode, u'%AR')
+        self.assertRaises(ValueError, urldecode, u'%RR')
 
     def test_parse_authorization_header(self):
 

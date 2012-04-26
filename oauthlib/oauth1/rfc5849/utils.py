@@ -182,7 +182,7 @@ def urldecode(query):
     # correct = %00, %A0, %0A, %FF
     # invalid = %G0, %5H, %PO
     import re
-    first_invalid = u'%[^0-9A-Fa-f][0-9A-Fa-f]'
+    first_invalid = u'%[^0-9A-Fa-f]'
     last_invalid = '%[0-9A-Fa-f][^0-9A-Fa-f]'
     both_invalid = u'%[^0-9A-Fa-f][^0-9A-Fa-f]'
     invalid_hex = u'|'.join((first_invalid, last_invalid, both_invalid))
