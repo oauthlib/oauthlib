@@ -130,6 +130,24 @@ class UtilsTests(TestCase):
         self.assertEqual(urlencode(self.sample_params_unicode_list), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
         self.assertEqual(urlencode(self.sample_params_unicode_dict), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
 
+    def test_urldecode(self):
+        
+        self.assertEqual(urldecode(u''), [])
+        self.assertEqual(urldecode(u'='), [(u'', u'')])
+        self.assertEqual(urldecode(u'%20'), [(u' ', u'')])
+        self.assertEqual(urldecode(u'+'), [(u' ', u'')])
+        self.assertEqual(urldecode(u'c2'), [(u'c2', u'')])
+        self.assertEqual(urldecode(u'c2='), [(u'c2', u'')])
+        self.assertEqual(urldecode(u'foo=bar'), [(u'foo', u'bar')])
+        self.assertEqual(urldecode(u'foo_%20~=.bar-'), [(u'foo_ ~', u'.bar-')])
+        
+        self.assertRaises(ValueError, urldecode, u'foo bar')
+        self.assertRaises(ValueError, urldecode, u'?')
+        self.assertRaises(ValueError, urldecode, u'%R')
+        self.assertRaises(ValueError, urldecode, u'%RA')
+        self.assertRaises(ValueError, urldecode, u'%AR')
+        self.assertRaises(ValueError, urldecode, u'%RR')
+
     def test_parse_authorization_header(self):
 
         # make us some headers

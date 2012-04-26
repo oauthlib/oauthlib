@@ -11,6 +11,8 @@ spec.
 import string
 import time
 from random import getrandbits, choice
+import re
+import urlparse
 
 UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
     string.digits.decode('ascii'))
@@ -161,7 +163,34 @@ def urlencode(query):
         query = query.items()
     return u"&".join([u'='.join([escape(k), escape(v)]) for k, v in query])
 
+urlencoded = set(always_safe) | set(u'=&;%+~')
 
+def urldecode(query):
+    """Decode a query string in x-www-form-urlencoded format into a sequence
+    of two-element tuples. 
+
+    Unlike urlparse.parse_qsl(..., strict_parsing=True) urldecode will enforce
+    correct formatting of the query string by validation. If validation fails
+    a ValueError will be raised. urllib.parse_qsl will only raise errors if
+    any of name-value pairs omits the equals sign. 
+    """
+    # Check if query contains invalid characters
+    if query and not set(query) <= urlencoded:
+        raise ValueError('Invalid characters in query string.')
+
+    # Check for correctly hex encoded values using a regular expression
+    # All encoded values begin with % followed by two hex characters
+    # correct = %00, %A0, %0A, %FF
+    # invalid = %G0, %5H, %PO
+    invalid_hex = u'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]'
+    if len(re.findall(invalid_hex, query)):
+        raise ValueError('Invalid hex encoding in query string.')
+
+    # We want to allow queries such as "c2" whereas urlparse.parse_qsl
+    # with the strict_parsing flag will not.  
+    return urlparse.parse_qsl(query, keep_blank_values=True) 
+
+    
 def parse_keqv_list(l):
     """A unicode-safe version of urllib2.parse_keqv_list"""
     parsed = {}
