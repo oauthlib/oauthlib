@@ -11,7 +11,6 @@ spec.
 import string
 import time
 from random import getrandbits, choice
-import re
 import urlparse
 
 UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
@@ -182,6 +181,7 @@ def urldecode(query):
     # All encoded values begin with % followed by two hex characters
     # correct = %00, %A0, %0A, %FF
     # invalid = %G0, %5H, %PO
+    import re
     invalid_hex = u'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]'
     if len(re.findall(invalid_hex, query)):
         raise ValueError('Invalid hex encoding in query string.')
