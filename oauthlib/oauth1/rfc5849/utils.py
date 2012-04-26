@@ -171,7 +171,7 @@ def urldecode(query):
     Unlike urlparse.parse_qsl(..., strict_parsing=True) urldecode will enforce
     correct formatting of the query string by validation. If validation fails
     a ValueError will be raised. urllib.parse_qsl will only raise errors if
-    name-value pairs include contains a name and omits the equals sign. 
+    any of name-value pairs omits the equals sign. 
     """
     # Check if query contains invalid characters
     if query and not set(query) <= urlencoded:
