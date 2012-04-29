@@ -65,17 +65,17 @@ class Client(object):
             uri_query=urlparse.urlparse(uri).query,
             body=body,
             headers=headers)
-        logging.debug("Collected params: {}".format(collected_params))
+        logging.debug("Collected params: {0}".format(collected_params))
 
         normalized_params = signature.normalize_parameters(collected_params)
         normalized_uri = signature.normalize_base_string_uri(request.uri)
-        logging.debug("Normalized params: {}".format(normalized_params))
-        logging.debug("Normalized URI: {}".format(normalized_uri))
+        logging.debug("Normalized params: {0}".format(normalized_params))
+        logging.debug("Normalized URI: {0}".format(normalized_uri))
 
         base_string = signature.construct_base_string(request.http_method,
             normalized_uri, normalized_params)
 
-        logging.debug("Base signing string: {}".format(base_string))
+        logging.debug("Base signing string: {0}".format(base_string))
 
         if self.signature_method == SIGNATURE_HMAC:
             return signature.sign_hmac_sha1(base_string, self.client_secret,

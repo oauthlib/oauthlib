@@ -52,7 +52,7 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
     else:
         h = hashlib.sha256
 
-    nonce = nonce or u'{}:{}'.format(utils.generate_nonce(), utils.generate_timestamp())
+    nonce = nonce or u'{0}:{1}'.format(utils.generate_nonce(), utils.generate_timestamp())
     sch, net, path, par, query, fra = urlparse(uri)
 
     if query:
