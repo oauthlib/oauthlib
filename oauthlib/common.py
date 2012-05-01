@@ -10,6 +10,7 @@ to all implementations of OAuth.
 """
 
 import re
+import urllib
 import urlparse
 
 
@@ -24,45 +25,14 @@ _safe_quoters = {}
 
 
 def quote(s, safe=u'/'):
-    """A unicode-safe version of urllib.quote"""
-    # fastpath
-    if not s:
-        if s is None:
-            raise TypeError('None object cannot be quoted')
-        return s
-    cachekey = (safe, always_safe)
-    try:
-        (quoter, safe) = _safe_quoters[cachekey]
-    except KeyError:
-        safe_map = _safe_map.copy()
-        safe_map.update([(c, c) for c in safe])
-        quoter = safe_map.__getitem__
-        safe = always_safe + safe
-        _safe_quoters[cachekey] = (quoter, safe)
-    if not s.rstrip(safe):
-        return s
-    return u''.join(map(quoter, s))
-
-_hexdig = u'0123456789ABCDEFabcdef'
-_hextochr = dict((a + b, unichr(int(a + b, 16)))
-                 for a in _hexdig for b in _hexdig)
+    encoded = s.encode("utf-8")
+    # @@@ Does this actually need to return unicode? The tests say yes.
+    return unicode(urllib.quote(encoded, safe))
 
 
 def unquote(s):
-    """A unicode-safe version of urllib.unquote"""
-    res = s.split('%')
-    # fastpath
-    if len(res) == 1:
-        return s
-    s = res[0]
-    for item in res[1:]:
-        try:
-            s += _hextochr[item[:2]] + item[2:]
-        except KeyError:
-            s += u'%' + item
-        except UnicodeDecodeError:
-            s += unichr(int(item[:2], 16)) + item[2:]
-    return s
+    unquoted = urllib.unquote(s)
+    return unquoted.decode("utf-8")
 
 
 def unicode_params(params):
