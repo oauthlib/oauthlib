@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from oauthlib.oauth1.rfc5849.utils import *
 from ...unittest import TestCase
 
+
 class UtilsTests(TestCase):
 
     sample_params_list = [
@@ -13,10 +14,10 @@ class UtilsTests(TestCase):
         ]
 
     sample_params_dict = {
-            "notoauth":"shouldnotbehere",
-            "oauth_consumer_key":"9djdj82h48djs9d2",
-            "oauth_token":"kkk9d7dh3k39sjv7",
-            "notoautheither":"shouldnotbehere"
+            "notoauth": "shouldnotbehere",
+            "oauth_consumer_key": "9djdj82h48djs9d2",
+            "oauth_token": "kkk9d7dh3k39sjv7",
+            "notoautheither": "shouldnotbehere"
         }
 
     sample_params_unicode_list = [
@@ -27,10 +28,10 @@ class UtilsTests(TestCase):
         ]
 
     sample_params_unicode_dict = {
-            u"notoauth":u"shouldnotbehere",
-            u"oauth_consumer_key":u"9djdj82h48djs9d2",
-            u"oauth_token":u"kkk9d7dh3k39sjv7",
-            u"notoautheither":u"shouldnotbehere"
+            u"notoauth": u"shouldnotbehere",
+            u"oauth_consumer_key": u"9djdj82h48djs9d2",
+            u"oauth_token": u"kkk9d7dh3k39sjv7",
+            u"notoautheither": u"shouldnotbehere"
         }
 
     authorization_header = """OAuth realm="Example",
@@ -40,7 +41,6 @@ class UtilsTests(TestCase):
     oauth_timestamp="137131201",
     oauth_nonce="7d8f3e4a",
     oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
-
 
     def test_filter_params(self):
 
@@ -95,7 +95,7 @@ class UtilsTests(TestCase):
         timestamp = generate_timestamp()
         self.assertTrue(isinstance(timestamp, unicode))
         self.assertTrue(int(timestamp))
-        self.assertTrue(int(timestamp) > 1331672335) # is this increasing?
+        self.assertTrue(int(timestamp) > 1331672335)  # is this increasing?
 
     def test_generate_nonce(self):
         """ TODO: better test here """
@@ -126,30 +126,10 @@ class UtilsTests(TestCase):
         self.assertIsInstance(unescape(u"I%20am%20a%20unicode%20type."), unicode)
 
     def test_urlencode(self):
-
         self.assertEqual(urlencode(self.sample_params_unicode_list), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
         self.assertEqual(urlencode(self.sample_params_unicode_dict), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
 
-    def test_urldecode(self):
-        
-        self.assertEqual(urldecode(u''), [])
-        self.assertEqual(urldecode(u'='), [(u'', u'')])
-        self.assertEqual(urldecode(u'%20'), [(u' ', u'')])
-        self.assertEqual(urldecode(u'+'), [(u' ', u'')])
-        self.assertEqual(urldecode(u'c2'), [(u'c2', u'')])
-        self.assertEqual(urldecode(u'c2='), [(u'c2', u'')])
-        self.assertEqual(urldecode(u'foo=bar'), [(u'foo', u'bar')])
-        self.assertEqual(urldecode(u'foo_%20~=.bar-'), [(u'foo_ ~', u'.bar-')])
-        
-        self.assertRaises(ValueError, urldecode, u'foo bar')
-        self.assertRaises(ValueError, urldecode, u'?')
-        self.assertRaises(ValueError, urldecode, u'%R')
-        self.assertRaises(ValueError, urldecode, u'%RA')
-        self.assertRaises(ValueError, urldecode, u'%AR')
-        self.assertRaises(ValueError, urldecode, u'%RR')
-
     def test_parse_authorization_header(self):
-
         # make us some headers
         authorization_headers = parse_authorization_header(self.authorization_header)
 
@@ -161,7 +141,7 @@ class UtilsTests(TestCase):
             self.assertTrue(isinstance(header, tuple))
 
         # are the internal components of each tuple unicode?
-        for k,v in authorization_headers:
+        for k, v in authorization_headers:
             self.assertTrue(isinstance(k, unicode))
             self.assertTrue(isinstance(v, unicode))
 
@@ -172,4 +152,3 @@ class UtilsTests(TestCase):
         self.assertEquals(authorization_headers[2][1], u"137131201")
         self.assertEquals(authorization_headers[3][0], u"oauth_consumer_key")
         self.assertEquals(authorization_headers[3][1], u"9djdj82h48djs9d2")
-

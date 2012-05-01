@@ -9,7 +9,89 @@ This module provides data structures and utilities common
 to all implementations of OAuth.
 """
 
-from urlparse import parse_qsl, urlparse
+import re
+import urlparse
+
+
+always_safe = (u'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+               u'abcdefghijklmnopqrstuvwxyz'
+               u'0123456789' u'_.-')
+_safe_map = {}
+for i, c in zip(xrange(256), str(bytearray(xrange(256)))):
+    _safe_map[c] = (c if (i < 128 and c in always_safe) else \
+        '%{0:02X}'.format(i)).decode('utf-8')
+_safe_quoters = {}
+
+
+def quote(s, safe=u'/'):
+    """A unicode-safe version of urllib.quote"""
+    # fastpath
+    if not s:
+        if s is None:
+            raise TypeError('None object cannot be quoted')
+        return s
+    cachekey = (safe, always_safe)
+    try:
+        (quoter, safe) = _safe_quoters[cachekey]
+    except KeyError:
+        safe_map = _safe_map.copy()
+        safe_map.update([(c, c) for c in safe])
+        quoter = safe_map.__getitem__
+        safe = always_safe + safe
+        _safe_quoters[cachekey] = (quoter, safe)
+    if not s.rstrip(safe):
+        return s
+    return u''.join(map(quoter, s))
+
+_hexdig = u'0123456789ABCDEFabcdef'
+_hextochr = dict((a + b, unichr(int(a + b, 16)))
+                 for a in _hexdig for b in _hexdig)
+
+
+def unquote(s):
+    """A unicode-safe version of urllib.unquote"""
+    res = s.split('%')
+    # fastpath
+    if len(res) == 1:
+        return s
+    s = res[0]
+    for item in res[1:]:
+        try:
+            s += _hextochr[item[:2]] + item[2:]
+        except KeyError:
+            s += u'%' + item
+        except UnicodeDecodeError:
+            s += unichr(int(item[:2], 16)) + item[2:]
+    return s
+
+
+urlencoded = set(always_safe) | set(u'=&;%+~')
+
+
+def urldecode(query):
+    """Decode a query string in x-www-form-urlencoded format into a sequence
+    of two-element tuples.
+
+    Unlike urlparse.parse_qsl(..., strict_parsing=True) urldecode will enforce
+    correct formatting of the query string by validation. If validation fails
+    a ValueError will be raised. urllib.parse_qsl will only raise errors if
+    any of name-value pairs omits the equals sign.
+    """
+    # Check if query contains invalid characters
+    if query and not set(query) <= urlencoded:
+        raise ValueError('Invalid characters in query string.')
+
+    # Check for correctly hex encoded values using a regular expression
+    # All encoded values begin with % followed by two hex characters
+    # correct = %00, %A0, %0A, %FF
+    # invalid = %G0, %5H, %PO
+    invalid_hex = u'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]'
+    if len(re.findall(invalid_hex, query)):
+        raise ValueError('Invalid hex encoding in query string.')
+
+    # We want to allow queries such as "c2" whereas urlparse.parse_qsl
+    # with the strict_parsing flag will not.
+    return urlparse.parse_qsl(query, keep_blank_values=True)
 
 
 def extract_params(raw):
@@ -21,22 +103,10 @@ def extract_params(raw):
     value of None.
     """
     if isinstance(raw, basestring):
-        if len(raw) == 0:
-            params = []  # short-circuit, strict parsing chokes on blank
-        else:
-            # FIXME how do we handle partly invalid param strings like "c2&a3=2+q"?
-            # With strict_parsing it's all or nothing. :(
-            try:
-                # params = parse_qsl(raw, keep_blank_values=True, strict_parsing=True)
-                params = parse_qsl(raw, keep_blank_values=True)
-
-                # Prevent the degenerate case where strict_parsing=False allows
-                # any string as a valid, valueless parameter. This means that an
-                # input like u'foo bar' will not result in [(u'foo bar', u'')].
-                if len(params) == 1 and params[0][1] == '':
-                    raise ValueError
-            except ValueError:
-                params = None  # No parameters to see here, move along.
+        try:
+            params = urldecode(raw)
+        except ValueError:
+            params = None
     elif hasattr(raw, '__iter__'):
         try:
             dict(raw)
@@ -70,21 +140,15 @@ class Request(object):
         self.uri = uri
         self.http_method = http_method
         self.headers = headers or {}
-        self.body = extract_params(body or [])
-        if self.body == None:
-            self.body = body
-            self.body_has_params = False
-        elif self.body == []:
-            self.body_has_params = False
-        else:
-            self.body_has_params = True
+        self.body = body
+        self.decoded_body = extract_params(body)
         self.oauth_params = []
 
     @property
     def uri_query(self):
-        return urlparse(self.uri).query
+        return urlparse.urlparse(self.uri).query
 
     @property
     def uri_query_params(self):
-        return parse_qsl(self.uri_query, keep_blank_values=True,
+        return urlparse.parse_qsl(self.uri_query, keep_blank_values=True,
                                   strict_parsing=True)

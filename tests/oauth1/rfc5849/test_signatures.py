@@ -16,7 +16,7 @@ class SignatureTests(TestCase):
     oauth_timestamp="137131201",
     oauth_nonce="7d8f3e4a",
     oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
-    body = "content=This is being the body of things"
+    body = "content=This+is+being+the+body+of+things"
     http_method = "post"
     base_string_url = urllib.quote("http://example.com/request?b5=%3D%253D&a3=a&c%40=&a2=r%20b")
     normalized_encoded_request_parameters = urllib.quote("""OAuth realm="Example",oauth_consumer_key="9djdj82h48djs9d2",oauth_token="kkk9d7dh3k39sjv7",oauth_signature_method="HMAC-SHA1",oauth_timestamp="137131201",oauth_nonce="7d8f3e4a",oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D" """.strip())

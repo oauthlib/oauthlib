@@ -25,6 +25,8 @@ SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = u'QUERY'
 SIGNATURE_TYPE_BODY = u'BODY'
 
+CONTENT_TYPE_FORM_URLENCODED = u'application/x-www-form-urlencoded'
+
 
 class Client(object):
     """A client used to sign OAuth 1.0 RFC 5849 requests"""
@@ -127,8 +129,8 @@ class Client(object):
         # I'm not sure how I feel about it.
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
             headers = parameters.prepare_headers(request.oauth_params, request.headers)
-        elif self.signature_type == SIGNATURE_TYPE_BODY and (body == [] or request.body_has_params):
-            body = parameters.prepare_form_encoded_body(request.oauth_params, request.body)
+        elif self.signature_type == SIGNATURE_TYPE_BODY and request.decoded_body is not None:
+            body = parameters.prepare_form_encoded_body(request.oauth_params, request.decoded_body)
             if formencode:
                 body = urlencode(body)
             headers['Content-Type'] = u'application/x-www-form-urlencoded'
@@ -139,7 +141,7 @@ class Client(object):
 
         return uri, headers, body
 
-    def sign(self, uri, http_method=u'GET', body='', headers=None):
+    def sign(self, uri, http_method=u'GET', body=None, headers=None):
         """Sign a request
 
         Signs an HTTP request with the specified parts.
@@ -149,11 +151,13 @@ class Client(object):
         signing process.
 
         The body argument may be a dict, a list of 2-tuples, or a formencoded
-        string. If the body argument is not a formencoded string and/or the
-        Content-Type header is not 'x-www-form-urlencoded', it will be
-        returned verbatim as it is unaffected by the OAuth signing process.
-        Attempting to sign a request with non-formencoded data using the
-        OAuth body signature type is invalid and will raise an exception.
+        string. The Content-Type header must be 'application/x-www-form-urlencoded'
+        if it is present.
+
+        If the body argument is not one of the above, it will be returned
+        verbatim as it is unaffected by the OAuth signing process. Attempting to
+        sign a request with non-formencoded data using the OAuth body signature
+        type is invalid and will raise an exception.
 
         If the body does contain parameters, it will be returned as a properly-
         formatted formencoded string.
@@ -166,8 +170,37 @@ class Client(object):
 
         # sanity check
         content_type = request.headers.get('Content-Type', None)
-        if content_type == 'application/x-www-form-urlencoded' and not request.body_has_params:
+        multipart = content_type and content_type.startswith('multipart/')
+        should_have_params = content_type == CONTENT_TYPE_FORM_URLENCODED
+        has_params = request.decoded_body is not None
+        # 3.4.1.3.1.  Parameter Sources
+        # [Parameters are collected from the HTTP request entity-body, but only
+        # if [...]:
+        #    *  The entity-body is single-part.
+        if multipart and has_params:
+            raise ValueError("Headers indicate a multipart body but body contains parameters.")
+        #    *  The entity-body follows the encoding requirements of the
+        #       "application/x-www-form-urlencoded" content-type as defined by
+        #       [W3C.REC-html40-19980424].
+        elif should_have_params and not has_params:
             raise ValueError("Headers indicate a formencoded body but body was not decodable.")
+        #    *  The HTTP request entity-header includes the "Content-Type"
+        #       header field set to "application/x-www-form-urlencoded".
+        elif not should_have_params and has_params:
+            raise ValueError("Body contains parameters but Content-Type header was not set.")
+
+        # 3.5.2.  Form-Encoded Body
+        # Protocol parameters can be transmitted in the HTTP request entity-
+        # body, but only if the following REQUIRED conditions are met:
+        # o  The entity-body is single-part.
+        # o  The entity-body follows the encoding requirements of the
+        #    "application/x-www-form-urlencoded" content-type as defined by
+        #    [W3C.REC-html40-19980424].
+        # o  The HTTP request entity-header includes the "Content-Type" header
+        #    field set to "application/x-www-form-urlencoded".
+        elif self.signature_type == SIGNATURE_TYPE_BODY and not (
+                should_have_params and has_params and not multipart):
+            raise ValueError('Body signatures may only be used with form-urlencoded content')
 
         # generate the basic OAuth parameters
         request.oauth_params = self.get_oauth_params()

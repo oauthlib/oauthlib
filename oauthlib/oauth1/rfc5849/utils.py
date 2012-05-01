@@ -11,8 +11,8 @@ spec.
 import string
 import time
 from random import getrandbits, choice
-import re
-import urlparse
+
+from oauthlib.common import quote, unquote
 
 UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
     string.digits.decode('ascii'))
@@ -80,58 +80,6 @@ def generate_token(length=20, chars=UNICODE_ASCII_CHARACTER_SET):
     return u''.join(choice(chars) for x in range(length))
 
 
-always_safe = (u'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-               u'abcdefghijklmnopqrstuvwxyz'
-               u'0123456789' u'_.-')
-_safe_map = {}
-for i, c in zip(xrange(256), str(bytearray(xrange(256)))):
-    _safe_map[c] = (c if (i < 128 and c in always_safe) else \
-        '%{0:02X}'.format(i)).decode('utf-8')
-_safe_quoters = {}
-
-
-def quote(s, safe=u'/'):
-    """A unicode-safe version of urllib.quote"""
-    # fastpath
-    if not s:
-        if s is None:
-            raise TypeError('None object cannot be quoted')
-        return s
-    cachekey = (safe, always_safe)
-    try:
-        (quoter, safe) = _safe_quoters[cachekey]
-    except KeyError:
-        safe_map = _safe_map.copy()
-        safe_map.update([(c, c) for c in safe])
-        quoter = safe_map.__getitem__
-        safe = always_safe + safe
-        _safe_quoters[cachekey] = (quoter, safe)
-    if not s.rstrip(safe):
-        return s
-    return u''.join(map(quoter, s))
-
-_hexdig = u'0123456789ABCDEFabcdef'
-_hextochr = dict((a + b, unichr(int(a + b, 16)))
-                 for a in _hexdig for b in _hexdig)
-
-
-def unquote(s):
-    """A unicode-safe version of urllib.unquote"""
-    res = s.split('%')
-    # fastpath
-    if len(res) == 1:
-        return s
-    s = res[0]
-    for item in res[1:]:
-        try:
-            s += _hextochr[item[:2]] + item[2:]
-        except KeyError:
-            s += u'%' + item
-        except UnicodeDecodeError:
-            s += unichr(int(item[:2], 16)) + item[2:]
-    return s
-
-
 def escape(u):
     """Escape a unicode string in an OAuth-compatible fashion.
 
@@ -163,34 +111,7 @@ def urlencode(query):
         query = query.items()
     return u"&".join([u'='.join([escape(k), escape(v)]) for k, v in query])
 
-urlencoded = set(always_safe) | set(u'=&;%+~')
 
-def urldecode(query):
-    """Decode a query string in x-www-form-urlencoded format into a sequence
-    of two-element tuples. 
-
-    Unlike urlparse.parse_qsl(..., strict_parsing=True) urldecode will enforce
-    correct formatting of the query string by validation. If validation fails
-    a ValueError will be raised. urllib.parse_qsl will only raise errors if
-    any of name-value pairs omits the equals sign. 
-    """
-    # Check if query contains invalid characters
-    if query and not set(query) <= urlencoded:
-        raise ValueError('Invalid characters in query string.')
-
-    # Check for correctly hex encoded values using a regular expression
-    # All encoded values begin with % followed by two hex characters
-    # correct = %00, %A0, %0A, %FF
-    # invalid = %G0, %5H, %PO
-    invalid_hex = u'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]'
-    if len(re.findall(invalid_hex, query)):
-        raise ValueError('Invalid hex encoding in query string.')
-
-    # We want to allow queries such as "c2" whereas urlparse.parse_qsl
-    # with the strict_parsing flag will not.  
-    return urlparse.parse_qsl(query, keep_blank_values=True) 
-
-    
 def parse_keqv_list(l):
     """A unicode-safe version of urllib2.parse_keqv_list"""
     parsed = {}
