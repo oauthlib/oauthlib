@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from oauthlib.oauth1.rfc5849 import *
-from oauthlib.oauth1.rfc5849 import utils
 from ...unittest import TestCase
 
 
