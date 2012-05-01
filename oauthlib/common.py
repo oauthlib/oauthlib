@@ -65,6 +65,16 @@ def unquote(s):
     return s
 
 
+def unicode_params(params):
+    """Ensures that all parameters in a list of 2-element tuples are unicode"""
+    clean = []
+    for k, v in params:
+        clean.append((
+            unicode(k, 'utf-8') if isinstance(k, str) else k,
+            unicode(v, 'utf-8') if isinstance(v, str) else v))
+    return clean
+
+
 urlencoded = set(always_safe) | set(u'=&;%+~')
 
 
@@ -91,7 +101,10 @@ def urldecode(query):
 
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
-    return urlparse.parse_qsl(query, keep_blank_values=True)
+    params = urlparse.parse_qsl(query, keep_blank_values=True)
+
+    # unicode all the things
+    return unicode_params(params)
 
 
 def extract_params(raw):
@@ -116,6 +129,7 @@ def extract_params(raw):
             params = None
         else:
             params = list(raw.items() if isinstance(raw, dict) else raw)
+            params = unicode_params(params)
     else:
         params = None
 
