@@ -4,8 +4,6 @@ from oauthlib.oauth1.rfc5849 import utils
 from ...unittest import TestCase
 
 
-
-
 class ServerTests(TestCase):
 
     CLIENT_KEY = u'dpf43f3p2l4k3l03'
@@ -38,7 +36,7 @@ class ServerTests(TestCase):
             resource_owner_secret=self.RESOURCE_OWNER_SECRET,
         )
 
-        uri, headers, body  = c.sign(u'http://server.example.com:80/init')
+        uri, headers, body = c.sign(u'http://server.example.com:80/init')
 
         s = self.TestServer()
         self.assertTrue(s.check_request_signature(uri, body=body,
@@ -57,4 +55,3 @@ class ServerTests(TestCase):
         s = self.TestServer()
         self.assertTrue(s.check_request_signature(uri, body=body,
             headers=headers))
-
