@@ -11,9 +11,8 @@ This module contains methods related to `section 3.5`_ of the OAuth 1.0a spec.
 """
 
 from urlparse import urlparse, urlunparse
-from urllib import urlencode
 from . import utils
-from oauthlib.common import extract_params
+from oauthlib.common import extract_params, urlencode
 
 
 # TODO: do we need filter_params now that oauth_params are handled by Request?

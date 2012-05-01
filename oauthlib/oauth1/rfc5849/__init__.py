@@ -11,9 +11,8 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 
 import logging
 import urlparse
-from urllib import urlencode
 
-from oauthlib.common import Request
+from oauthlib.common import Request, urlencode
 from . import parameters, signature, utils
 
 SIGNATURE_HMAC = u"HMAC-SHA1"

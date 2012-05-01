@@ -10,6 +10,7 @@ to all implementations of OAuth.
 """
 
 import re
+import urllib
 import urlparse
 
 
@@ -24,55 +25,45 @@ _safe_quoters = {}
 
 
 def quote(s, safe=u'/'):
-    """A unicode-safe version of urllib.quote"""
-    # fastpath
-    if not s:
-        if s is None:
-            raise TypeError('None object cannot be quoted')
-        return s
-    cachekey = (safe, always_safe)
-    try:
-        (quoter, safe) = _safe_quoters[cachekey]
-    except KeyError:
-        safe_map = _safe_map.copy()
-        safe_map.update([(c, c) for c in safe])
-        quoter = safe_map.__getitem__
-        safe = always_safe + safe
-        _safe_quoters[cachekey] = (quoter, safe)
-    if not s.rstrip(safe):
-        return s
-    return u''.join(map(quoter, s))
-
-_hexdig = u'0123456789ABCDEFabcdef'
-_hextochr = dict((a + b, unichr(int(a + b, 16)))
-                 for a in _hexdig for b in _hexdig)
+    encoded = s.encode("utf-8")
+    quoted = urllib.quote(encoded, safe)
+    return quoted.decode("utf-8")
 
 
 def unquote(s):
-    """A unicode-safe version of urllib.unquote"""
-    res = s.split('%')
-    # fastpath
-    if len(res) == 1:
-        return s
-    s = res[0]
-    for item in res[1:]:
-        try:
-            s += _hextochr[item[:2]] + item[2:]
-        except KeyError:
-            s += u'%' + item
-        except UnicodeDecodeError:
-            s += unichr(int(item[:2], 16)) + item[2:]
-    return s
+    encoded = s.encode("utf-8")
+    unquoted = urllib.unquote(encoded)
+    return unquoted.decode("utf-8")
 
 
-def unicode_params(params):
-    """Ensures that all parameters in a list of 2-element tuples are unicode"""
-    clean = []
+def urlencode(params):
+    utf8_params = encode_params_utf8(params)
+    urlencoded = urllib.urlencode(utf8_params)
+    return urlencoded.decode("utf-8")
+
+
+def encode_params_utf8(params):
+    """Ensures that all parameters in a list of 2-element tuples are encoded to
+    bytestrings using UTF-8
+    """
+    encoded = []
     for k, v in params:
-        clean.append((
-            unicode(k, 'utf-8') if isinstance(k, str) else k,
-            unicode(v, 'utf-8') if isinstance(v, str) else v))
-    return clean
+        encoded.append((
+            k.encode('utf-8') if isinstance(k, unicode) else k,
+            v.encode('utf-8') if isinstance(v, unicode) else v))
+    return encoded
+
+
+def decode_params_utf8(params):
+    """Ensures that all parameters in a list of 2-element tuples are decoded to
+    unicode using UTF-8.
+    """
+    decoded = []
+    for k, v in params:
+        decoded.append((
+            k.decode('utf-8') if isinstance(k, str) else k,
+            v.decode('utf-8') if isinstance(v, str) else v))
+    return decoded
 
 
 urlencoded = set(always_safe) | set(u'=&;%+~')
@@ -104,7 +95,7 @@ def urldecode(query):
     params = urlparse.parse_qsl(query, keep_blank_values=True)
 
     # unicode all the things
-    return unicode_params(params)
+    return decode_params_utf8(params)
 
 
 def extract_params(raw):
@@ -129,7 +120,7 @@ def extract_params(raw):
             params = None
         else:
             params = list(raw.items() if isinstance(raw, dict) else raw)
-            params = unicode_params(params)
+            params = decode_params_utf8(params)
     else:
         params = None
 
