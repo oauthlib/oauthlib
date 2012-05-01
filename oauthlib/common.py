@@ -17,11 +17,6 @@ import urlparse
 always_safe = (u'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                u'abcdefghijklmnopqrstuvwxyz'
                u'0123456789' u'_.-')
-_safe_map = {}
-for i, c in zip(xrange(256), str(bytearray(xrange(256)))):
-    _safe_map[c] = (c if (i < 128 and c in always_safe) else \
-        '%{0:02X}'.format(i)).decode('utf-8')
-_safe_quoters = {}
 
 
 def quote(s, safe=u'/'):
