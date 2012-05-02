@@ -2,7 +2,7 @@ OAuthLib
 ========
 
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
-logic.* 
+logic.*
 
 .. image:: https://secure.travis-ci.org/idangazit/oauthlib.png?branch=master
 
@@ -21,15 +21,20 @@ favorite HTTP library. If you're a maintainer of such a library, write a thin
 veneer on top of OAuthLib and get OAuth support for very little effort.
 
 
-Current Status
---------------
-
-OAuthLib is in active development, with most of OAuth1 complete and OAuth2
-already in the works.
-
-
 License
 -------
 
 OAuthLib is yours to use and abuse according to the terms of the BSD license.
 Check the LICENSE file for full details.
+
+
+
+Changelog
+---------
+
+*OAuthLib is in active development, with most of OAuth1 complete and OAuth2
+already in the works.*
+
+0.1.0: OAuth 1 client functionality seems to be working. Hooray!
+
+0.0.x: In the beginning, there was the word.
