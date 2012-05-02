@@ -1,0 +1,3 @@
+docutils
+python-creole
+-e git+https://github.com/ternstor/pycco.git#egg=pycco
