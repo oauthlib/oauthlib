@@ -10,6 +10,7 @@ spec.
 
 import string
 import time
+import urllib2
 from random import getrandbits, choice
 
 from oauthlib.common import quote, unquote
@@ -114,50 +115,17 @@ def urlencode(query):
 
 def parse_keqv_list(l):
     """A unicode-safe version of urllib2.parse_keqv_list"""
-    parsed = {}
-    for elt in l:
-        k, v = elt.split(u'=', 1)
-        if v[0] == u'"' and v[-1] == u'"':
-            v = v[1:-1]
-        parsed[k] = v
-    return parsed
+    encoded_list = [u.encode('utf-8') for u in l]
+    encoded_parsed = urllib2.parse_keqv_list(encoded_list)
+    return dict((k.decode('utf-8'),
+        v.decode('utf-8')) for k,v in encoded_parsed.items())
 
 
-def parse_http_list(s):
+def parse_http_list(u):
     """A unicode-safe version of urllib2.parse_http_list"""
-    res = []
-    part = u''
-
-    escape = quote = False
-    for cur in s:
-        if escape:
-            part += cur
-            escape = False
-            continue
-        if quote:
-            if cur == u'\\':
-                escape = True
-                continue
-            elif cur == u'"':
-                quote = False
-            part += cur
-            continue
-
-        if cur == u',':
-            res.append(part)
-            part = u''
-            continue
-
-        if cur == u'"':
-            quote = True
-
-        part += cur
-
-    # append last part
-    if part:
-        res.append(part)
-
-    return [part.strip() for part in res]
+    encoded_str = u.encode('utf-8')
+    encoded_list = urllib2.parse_http_list(encoded_str)
+    return [s.decode('utf-8') for s in encoded_list]
 
 
 def parse_authorization_header(authorization_header):
@@ -170,3 +138,4 @@ def parse_authorization_header(authorization_header):
         return parse_keqv_list(items).items()
     except ValueError:
         raise ValueError('Malformed authorization header')
+
