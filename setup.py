@@ -15,6 +15,8 @@ def fread(fn):
 
 tests_require = ['nose', 'unittest2', 'pycrypto']
 
+requires = ['pycrypto']
+
 setup(
     name='oauthlib',
     version='0.1.0',
