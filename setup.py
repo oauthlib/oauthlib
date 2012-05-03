@@ -19,7 +19,7 @@ requires = ['pycrypto']
 
 setup(
     name='oauthlib',
-    version='0.1.1',
+    version='0.1.2',
     description='A generic, spec-compliant, thorough implementation of the OAuth request-signing logic',
     long_description=fread('README.rst'),
     author='Idan Gazit',
