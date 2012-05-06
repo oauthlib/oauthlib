@@ -13,9 +13,9 @@ def fread(fn):
     with open(join(dirname(__file__), fn), 'r') as f:
         return f.read()
 
-tests_require = ['nose', 'unittest2', 'pycrypto']
+tests_require = ['nose', 'unittest2', 'rsa']
 
-requires = ['pycrypto']
+requires = ['rsa']
 
 setup(
     name='oauthlib',
