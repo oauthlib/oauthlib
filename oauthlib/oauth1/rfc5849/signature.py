@@ -27,7 +27,7 @@ import hashlib
 import hmac
 import urlparse
 from . import utils
-from oauthlib.common import extract_params
+from oauthlib.common import extract_params, safe_compare
 
 
 def construct_base_string(http_method, base_string_uri,
@@ -458,11 +458,14 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     """
 
     # TODO: finish RSA documentation
-
-    import rsa
-    key = rsa.PrivateKey.load_pkcs1(rsa_private_key)
-    sig = rsa.sign(base_string, key, 'SHA-1')
-    return binascii.b2a_base64(sig)[:-1]
+    from Crypto.PublicKey import RSA
+    from Crypto.Signature import PKCS1_v1_5
+    from Crypto.Hash import SHA
+    key = RSA.importKey(rsa_private_key)
+    h = SHA.new(base_string)  
+    p = PKCS1_v1_5.new(key)
+    sig = binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
+    return sig
 
 
 def sign_plaintext(client_secret, resource_owner_secret):
@@ -499,3 +502,55 @@ def sign_plaintext(client_secret, resource_owner_secret):
 
     return signature
 
+def verify_hmac_sha1(request, client_secret=None, 
+    resource_owner_secret=None):
+    """Verify a HMAC-SHA1 signature.
+
+    Per `section 3.4`_ of the spec.
+
+    .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
+    """
+    norm_params = normalize_parameters(request.params)
+    uri = normalize_base_string_uri(request.uri)
+    base_string = construct_base_string(request.http_method, uri, norm_params)
+    signature = sign_hmac_sha1(base_string, client_secret,
+        resource_owner_secret)
+    return safe_compare(signature, request.signature)
+
+def verify_rsa_sha1(request, rsa_public_key):
+    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
+
+    Per `section 3.4.3`_ of the spec.
+
+    Note this method requires the PyCrypto library.
+
+    :param method: The HTTP request method.
+    :param uri: The request URI (may contain query parameters).
+    :param params: OAuth parameters and data (i.e. POST data).
+    :param public_rsa: Public RSA key (string).
+    :return: True or False.
+
+    .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
+
+    """
+    from Crypto.PublicKey import RSA
+    from Crypto.Signature import PKCS1_v1_5
+    from Crypto.Hash import SHA
+    key = RSA.importKey(rsa_public_key)
+    norm_params = normalize_parameters(request.params)
+    uri = normalize_base_string_uri(request.uri)
+    message = construct_base_string(request.http_method, uri, norm_params)
+    h = SHA.new(message)
+    p = PKCS1_v1_5.new(key)
+    sig = binascii.a2b_base64(request.signature)
+    return p.verify(h, sig)
+
+def verify_plaintext(request, client_secret=None, resource_owner_secret=None):
+    """Verify a PLAINTEXT signature.
+
+    Per `section 3.4`_ of the spec.
+
+    .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
+    """
+    signature = sign_plaintext(client_secret, resource_owner_secret)
+    return safe_compare(signature, request.signature)
