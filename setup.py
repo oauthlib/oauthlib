@@ -13,9 +13,9 @@ def fread(fn):
     with open(join(dirname(__file__), fn), 'r') as f:
         return f.read()
 
-tests_require = ['nose', 'unittest2', 'rsa']
-
-requires = ['rsa']
+tests_require = ['nose', 'unittest2', 'pycrypto']
+rsa_require = ['pycrypto']
+requires = []
 
 setup(
     name='oauthlib',
@@ -29,6 +29,6 @@ setup(
     packages=find_packages(exclude=('tests', 'docs')),
     test_suite='nose.collector',
     tests_require=tests_require,
-    extras_require={'test': tests_require},
+    extras_require={'test': tests_require, 'rsa': rsa_require},
     install_requires=requires,
 )
