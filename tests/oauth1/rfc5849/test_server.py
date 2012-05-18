@@ -58,6 +58,9 @@ class ServerTests(TestCase):
         def validate_verifier(self, client_key, resource_owner_key, verifier):
             return True
 
+        def validate_redirect_uri(self, client_key, redirect_uri):
+            return True
+
     class ClientServer(Server):
         clients = [u'foo']
         nonces = [(u'foo', u'once', u'1234567891', u'fez')]
@@ -117,6 +120,9 @@ class ServerTests(TestCase):
             return ((client_key, resource_owner_key) in self.verifiers and
                      safe_compare(verifier, self.verifiers.get(
                         (client_key, resource_owner_key))))
+
+        def validate_redirect_uri(self, client_key, redirect_uri):
+            return True
 
         def get_client_secret(self, client_key):
             return u'super secret'

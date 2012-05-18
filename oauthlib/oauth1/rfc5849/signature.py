@@ -524,12 +524,6 @@ def verify_rsa_sha1(request, rsa_public_key):
 
     Note this method requires the PyCrypto library.
 
-    :param method: The HTTP request method.
-    :param uri: The request URI (may contain query parameters).
-    :param params: OAuth parameters and data (i.e. POST data).
-    :param public_rsa: Public RSA key (string).
-    :return: True or False.
-
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
 
     """

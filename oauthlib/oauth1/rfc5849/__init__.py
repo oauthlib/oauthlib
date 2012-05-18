@@ -699,6 +699,10 @@ class Server(object):
         if not valid_client: 
             client_key = self.dummy_client
 
+
+        # Ensure a valid redirection uri is used
+        valid_redirect = self.validate_redirect_uri(client_key, callback_uri)
+
         # The server SHOULD return a 401 (Unauthorized) status code when
         # receiving a request with invalid or expired token.
         # Note: This is postponed in order to avoid timing attacks, instead
@@ -784,4 +788,4 @@ class Server(object):
         # have been supplied. This ensures near constant time execution and 
         # prevents malicious users from guessing sensitive information.
         return all((valid_client, valid_resource_owner, valid_realm, 
-                    valid_verifier, valid_signature))
+                    valid_redirect, valid_verifier, valid_signature))
