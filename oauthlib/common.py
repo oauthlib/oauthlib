@@ -122,6 +122,16 @@ def extract_params(raw):
 
     return params
 
+def safe_compare(a, b):
+    """ Near-constant time string comparison. """
+    if len(a) != len(b):
+        return False
+
+    result = 0
+    for x, y in zip(a, b):
+        result |= ord(x) ^ ord(y)
+    return result == 0
+    
 
 class Request(object):
     """A malleable representation of a signable HTTP request.

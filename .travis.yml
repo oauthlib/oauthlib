@@ -3,6 +3,9 @@ python:
   - 2.6
   - 2.7
 script: make test
+install:
+  - pip install -i https://restricted.crate.io/ .
+  - pip install -i https://restricted.crate.io/ nose unittest2
 branches:
   only:
     - master
