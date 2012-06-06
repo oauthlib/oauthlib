@@ -95,14 +95,13 @@ class SignatureTests(TestCase):
         # Check against uri_query
 
         parameters = collect_parameters(uri_query=self.uri_query)
-
-        self.assertEquals(len(parameters), 6)
-        self.assertEquals(parameters[0], ('b5', '=%3D'))
-        self.assertEquals(parameters[1], ('a3', 'a'))
-        self.assertEquals(parameters[2], ('c@', ''))
-        self.assertEquals(parameters[3], ('a2', 'r b'))
-        self.assertEquals(parameters[4], ('c2', ''))
-        self.assertEquals(parameters[5], ('a3', '2 q'))
+        correct_parameters = [('b5', '=%3D'),
+                              ('a3', 'a'),
+                              ('c@', ''),
+                              ('a2', 'r b'),
+                              ('c2', ''),
+                              ('a3', '2 q')]
+        self.assertItemsEqual(parameters, correct_parameters)
 
         # check against authorization header as well
         # check against authorization header as well
@@ -111,20 +110,14 @@ class SignatureTests(TestCase):
         parameters = collect_parameters(uri_query=self.uri_query, headers={
             'Authorization': self.authorization_header,
         })
-
         # Redo the checks against all the parameters. Duplicated code but better safety
-        self.assertEquals(len(parameters), 11)
-        self.assertEquals(parameters[0], ('b5', '=%3D'))
-        self.assertEquals(parameters[1], ('a3', 'a'))
-        self.assertEquals(parameters[2], ('c@', ''))
-        self.assertEquals(parameters[3], ('a2', 'r b'))
-        self.assertEquals(parameters[4], ('c2', ''))
-        self.assertEquals(parameters[5], ('a3', '2 q'))
-        self.assertEquals(parameters[6], ('oauth_nonce', '7d8f3e4a'))
-        self.assertEquals(parameters[7], ('oauth_timestamp', '137131201'))
-        self.assertEquals(parameters[8], ('oauth_consumer_key', '9djdj82h48djs9d2'))
-        self.assertEquals(parameters[9], ('oauth_signature_method', 'HMAC-SHA1'))
-        self.assertEquals(parameters[10], ('oauth_token', 'kkk9d7dh3k39sjv7'))
+        correct_parameters += [
+            ('oauth_nonce', '7d8f3e4a'),
+            ('oauth_timestamp', '137131201'),
+            ('oauth_consumer_key', '9djdj82h48djs9d2'),
+            ('oauth_signature_method', 'HMAC-SHA1'),
+            ('oauth_token', 'kkk9d7dh3k39sjv7')]
+        self.assertItemsEqual(parameters, correct_parameters)
 
         # Add in the body.
         # TODO - add more valid content for the body. Daniel Greenfeld 2012/03/12
@@ -133,19 +126,9 @@ class SignatureTests(TestCase):
             body=self.body, headers={
                 'Authorization': self.authorization_header,
             })
-        self.assertEquals(len(parameters), 12)
-        self.assertEquals(parameters[0], ('b5', '=%3D'))
-        self.assertEquals(parameters[1], ('a3', 'a'))
-        self.assertEquals(parameters[2], ('c@', ''))
-        self.assertEquals(parameters[3], ('a2', 'r b'))
-        self.assertEquals(parameters[4], ('c2', ''))
-        self.assertEquals(parameters[5], ('a3', '2 q'))
-        self.assertEquals(parameters[6], ('oauth_nonce', '7d8f3e4a'))
-        self.assertEquals(parameters[7], ('oauth_timestamp', '137131201'))
-        self.assertEquals(parameters[8], ('oauth_consumer_key', '9djdj82h48djs9d2'))
-        self.assertEquals(parameters[9], ('oauth_signature_method', 'HMAC-SHA1'))
-        self.assertEquals(parameters[10], ('oauth_token', 'kkk9d7dh3k39sjv7'))
-        self.assertEquals(parameters[11], ('content', 'This is being the body of things'))
+        correct_parameters += [
+            ('content', 'This is being the body of things')]
+        self.assertItemsEqual(parameters, correct_parameters)
 
     def test_normalize_parameters(self):
         """ We copy some of the variables from the test method above."""

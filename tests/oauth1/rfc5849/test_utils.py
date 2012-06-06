@@ -145,10 +145,13 @@ class UtilsTests(TestCase):
             self.assertTrue(isinstance(k, unicode))
             self.assertTrue(isinstance(v, unicode))
 
-        # let's check some of the parsed headers created
-        self.assertEquals(authorization_headers[1][0], u"oauth_nonce")
-        self.assertEquals(authorization_headers[1][1], u"7d8f3e4a")
-        self.assertEquals(authorization_headers[2][0], u"oauth_timestamp")
-        self.assertEquals(authorization_headers[2][1], u"137131201")
-        self.assertEquals(authorization_headers[3][0], u"oauth_consumer_key")
-        self.assertEquals(authorization_headers[3][1], u"9djdj82h48djs9d2")
+        # let's check the parsed headers created
+        correct_headers = [
+            (u"oauth_nonce", u"7d8f3e4a"),
+            (u"oauth_timestamp", u"137131201"),
+            (u"oauth_consumer_key", u"9djdj82h48djs9d2"),
+            (u'oauth_signature', u'djosJKDKJSD8743243%2Fjdk33klY%3D'),
+            (u'oauth_signature_method', u'HMAC-SHA1'),
+            (u'oauth_token', u'kkk9d7dh3k39sjv7'),
+            (u'realm', u'Example')]
+        self.assertItemsEqual(authorization_headers, correct_headers)
