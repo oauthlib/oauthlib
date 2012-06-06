@@ -57,10 +57,10 @@ class UtilsTests(TestCase):
         #   Any param that does not start with 'oauth'
         #   should not be present in the filtered params
         filtered_params = special_test_function(self.sample_params_list)
-        self.assertFalse("notoauth" in filtered_params)
-        self.assertTrue("oauth_consumer_key" in filtered_params)
-        self.assertTrue("oauth_token" in filtered_params)
-        self.assertFalse("notoautheither" in filtered_params)
+        self.assertNotIn("notoauth", filtered_params)
+        self.assertIn("oauth_consumer_key", filtered_params)
+        self.assertIn("oauth_token", filtered_params)
+        self.assertNotIn("notoautheither", filtered_params)
 
     def test_filter_oauth_params(self):
 
@@ -93,16 +93,16 @@ class UtilsTests(TestCase):
     def test_generate_timestamp(self):
         """ TODO: Better test here """
         timestamp = generate_timestamp()
-        self.assertTrue(isinstance(timestamp, unicode))
+        self.assertIsInstance(timestamp, unicode)
         self.assertTrue(int(timestamp))
-        self.assertTrue(int(timestamp) > 1331672335)  # is this increasing?
+        self.assertGreater(int(timestamp), 1331672335)  # is this increasing?
 
     def test_generate_nonce(self):
         """ TODO: better test here """
 
         nonce = generate_nonce()
         for i in range(50):
-            self.assertTrue(nonce != generate_nonce())
+            self.assertNotEqual(nonce, generate_nonce())
 
     def test_generate_token(self):
         token = generate_token()
@@ -113,7 +113,7 @@ class UtilsTests(TestCase):
 
         token = generate_token(length=6, chars="python")
         self.assertEqual(len(token), 6)
-        self.assertFalse("a" in token)
+        self.assertNotIn("a", token)
 
     def test_escape(self):
         self.assertRaises(ValueError, escape, "I am a string type. Not a unicode type.")
@@ -134,16 +134,16 @@ class UtilsTests(TestCase):
         authorization_headers = parse_authorization_header(self.authorization_header)
 
         # is it a list?
-        self.assertTrue(isinstance(authorization_headers, list))
+        self.assertIsInstance(authorization_headers, list)
 
         # are the internal items tuples?
         for header in authorization_headers:
-            self.assertTrue(isinstance(header, tuple))
+            self.assertIsInstance(header, tuple)
 
         # are the internal components of each tuple unicode?
         for k, v in authorization_headers:
-            self.assertTrue(isinstance(k, unicode))
-            self.assertTrue(isinstance(v, unicode))
+            self.assertIsInstance(k, unicode)
+            self.assertIsInstance(v, unicode)
 
         # let's check the parsed headers created
         correct_headers = [

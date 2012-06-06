@@ -141,14 +141,14 @@ class SignatureTests(TestCase):
         normalized = normalize_parameters(parameters)
 
         # check the parameters type
-        self.assertTrue(isinstance(normalized, unicode))
+        self.assertIsInstance(normalized, unicode)
 
         # Lets see if things are in order
         # check to see that querystring keys come in alphanumeric order:
         querystring_keys = ['a2', 'a3', 'b5', 'content', 'oauth_consumer_key', 'oauth_nonce', 'oauth_signature_method', 'oauth_timestamp', 'oauth_token']
         index = -1  # start at -1 because the 'a2' key starts at index 0
         for key in querystring_keys:
-            self.assertTrue(normalized.index(key) > index)
+            self.assertGreater(normalized.index, index)
             index = normalized.index(key)
 
     def test_sign_hmac_sha1(self):
