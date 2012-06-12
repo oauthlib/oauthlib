@@ -32,8 +32,8 @@ OAuthLib supports the 'RSA-SHA1' signature but does not install the PyCrypto dep
 
 Windows users will have to jump through a few hoops. The following links may be helpful:
 
-* `Voidspace Python prebuilt binaries for PyCrypto`: http://www.voidspace.org.uk/python/modules.shtml#pycrypto
+* `Voidspace Python prebuilt binaries for PyCrypto <http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_
 
-* `Can I install Python Windows packages into virtualenvs`: http://stackoverflow.com/questions/3271590/can-i-install-python-windows-packages-into-virtualenvs
+* `Can I install Python Windows packages into virtualenvs <http://stackoverflow.com/questions/3271590/can-i-install-python-windows-packages-into-virtualenvs>`_
 
-* `Compiling pycrypto on Windows 7 (64bit)`: http://yorickdowne.wordpress.com/2010/12/22/compiling-pycrypto-on-win7-64/
+* `Compiling pycrypto on Windows 7 (64bit) <http://yorickdowne.wordpress.com/2010/12/22/compiling-pycrypto-on-win7-64/>`_
