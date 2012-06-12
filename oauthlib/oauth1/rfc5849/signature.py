@@ -456,13 +456,14 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     .. _`RFC3447, Section 8.2`: http://tools.ietf.org/html/rfc3447#section-8.2
 
     """
-
     # TODO: finish RSA documentation
-
-    import rsa
-    key = rsa.PrivateKey.load_pkcs1(rsa_private_key)
-    sig = rsa.sign(base_string, key, 'SHA-1')
-    return binascii.b2a_base64(sig)[:-1]
+    from Crypto.PublicKey import RSA
+    from Crypto.Signature import PKCS1_v1_5
+    from Crypto.Hash import SHA
+    key = RSA.importKey(rsa_private_key)
+    h = SHA.new(base_string)
+    p = PKCS1_v1_5.new(key)
+    return binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
 
 
 def sign_plaintext(client_secret, resource_owner_secret):
@@ -498,4 +499,3 @@ def sign_plaintext(client_secret, resource_owner_secret):
     signature += utils.escape(resource_owner_secret or u'')
 
     return signature
-
