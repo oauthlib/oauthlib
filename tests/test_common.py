@@ -80,3 +80,28 @@ class CommonTests(TestCase):
     def test_dict_body(self):
         r = Request(self.uri, body=self.params_dict)
         self.assertEqual(r.decoded_body, self.params_twotuple)
+
+    def test_generate_timestamp(self):
+        """ TODO: Better test here """
+        timestamp = generate_timestamp()
+        self.assertIsInstance(timestamp, unicode)
+        self.assertTrue(int(timestamp))
+        self.assertGreater(int(timestamp), 1331672335)  # is this increasing?
+
+    def test_generate_nonce(self):
+        """ TODO: better test here """
+
+        nonce = generate_nonce()
+        for i in range(50):
+            self.assertNotEqual(nonce, generate_nonce())
+
+    def test_generate_token(self):
+        token = generate_token()
+        self.assertEqual(len(token), 30)
+
+        token = generate_token(length=44)
+        self.assertEqual(len(token), 44)
+
+        token = generate_token(length=6, chars="python")
+        self.assertEqual(len(token), 6)
+        self.assertNotIn("a", token)

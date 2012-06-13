@@ -9,10 +9,15 @@ This module provides data structures and utilities common
 to all implementations of OAuth.
 """
 
+import random
 import re
+import string
+import time
 import urllib
 import urlparse
 
+UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
+    string.digits.decode('ascii'))
 
 always_safe = (u'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                u'abcdefghijklmnopqrstuvwxyz'
@@ -121,6 +126,59 @@ def extract_params(raw):
         params = None
 
     return params
+
+
+def generate_nonce():
+    """Generate pseudorandom nonce that is unlikely to repeat.
+
+    Per `section 3.3`_ of the OAuth 1 RFC 5849 spec.
+    Per `section 3.2.1`_ of the MAC Access Authentication spec.
+
+    A random 64-bit number is appended to the epoch timestamp for both
+    randomness and to decrease the likelihood of collisions.
+
+    .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
+    .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+    """
+    return unicode(unicode(random.getrandbits(64)) + generate_timestamp())
+
+
+def generate_timestamp():
+    """Get seconds since epoch (UTC).
+
+    Per `section 3.3`_ of the OAuth 1 RFC 5849 spec.
+    Per `section 3.2.1`_ of the MAC Access Authentication spec.
+
+    .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
+    .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+    """
+    return unicode(int(time.time()))
+
+
+def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
+    """Generates a non-guessable OAuth token
+
+    OAuth (1 and 2) does not specify the format of tokens except that they
+    should be strings of random characters. Tokens should not be guessable
+    and entropy when generating the random characters is important. Which is
+    why SystemRandom is used instead of the default random.choice method.
+    """
+    rand = random.SystemRandom()
+    return u''.join(rand.choice(chars) for x in range(length))
+
+
+def add_params_to_qs(query, params):
+    """Extend a query with a list of two-tuples."""
+    queryparams = urlparse.parse_qsl(query, keep_blank_values=True)
+    queryparams.extend(params)
+    return urlencode(queryparams)
+
+
+def add_params_to_uri(uri, params):
+    """Add a list of two-tuples to the uri query components."""
+    sch, net, path, par, query, fra = urlparse.urlparse(uri)
+    query = add_params_to_qs(query, params)
+    return urlparse.urlunparse((sch, net, path, par, query, fra))
 
 
 class Request(object):

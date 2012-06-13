@@ -14,6 +14,7 @@ import hashlib
 import hmac
 from urlparse import urlparse
 
+from oauthlib.common import add_params_to_uri, add_params_to_qs
 from . import utils
 
 
@@ -105,7 +106,7 @@ def prepare_bearer_uri(token, uri):
 
     .. _`Bearer Token`: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
     """
-    return utils.add_params_to_uri(uri, [((u'access_token', token))])
+    return add_params_to_uri(uri, [((u'access_token', token))])
 
 
 def prepare_bearer_headers(token, headers=None):
@@ -128,4 +129,4 @@ def prepare_bearer_body(token, body=u''):
 
     .. _`Bearer Token`: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
     """
-    return utils.add_params_to_qs(body, [((u'access_token', token))])
+    return add_params_to_qs(body, [((u'access_token', token))])

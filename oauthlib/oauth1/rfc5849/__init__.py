@@ -12,7 +12,8 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 import logging
 import urlparse
 
-from oauthlib.common import Request, urlencode
+from oauthlib.common import Request, urlencode, generate_nonce
+from oauthlib.common import generate_timestamp
 from . import parameters, signature, utils
 
 SIGNATURE_HMAC = u"HMAC-SHA1"
@@ -92,8 +93,8 @@ class Client(object):
         """Get the basic OAuth parameters to be used in generating a signature.
         """
         params = [
-            (u'oauth_nonce', utils.generate_nonce()),
-            (u'oauth_timestamp', utils.generate_timestamp()),
+            (u'oauth_nonce', generate_nonce()),
+            (u'oauth_timestamp', generate_timestamp()),
             (u'oauth_version', u'1.0'),
             (u'oauth_signature_method', self.signature_method),
             (u'oauth_consumer_key', self.client_key),

@@ -90,31 +90,6 @@ class UtilsTests(TestCase):
         self.assertTrue(filtered_params[0][0].startswith('oauth'))
         self.assertTrue(filtered_params[1][0].startswith('oauth'))
 
-    def test_generate_timestamp(self):
-        """ TODO: Better test here """
-        timestamp = generate_timestamp()
-        self.assertIsInstance(timestamp, unicode)
-        self.assertTrue(int(timestamp))
-        self.assertGreater(int(timestamp), 1331672335)  # is this increasing?
-
-    def test_generate_nonce(self):
-        """ TODO: better test here """
-
-        nonce = generate_nonce()
-        for i in range(50):
-            self.assertNotEqual(nonce, generate_nonce())
-
-    def test_generate_token(self):
-        token = generate_token()
-        self.assertEqual(len(token), 20)
-
-        token = generate_token(length=44)
-        self.assertEqual(len(token), 44)
-
-        token = generate_token(length=6, chars="python")
-        self.assertEqual(len(token), 6)
-        self.assertNotIn("a", token)
-
     def test_escape(self):
         self.assertRaises(ValueError, escape, "I am a string type. Not a unicode type.")
         self.assertEqual(escape(u"I am a unicode type."), u"I%20am%20a%20unicode%20type.")
@@ -124,10 +99,6 @@ class UtilsTests(TestCase):
         self.assertRaises(ValueError, unescape, "I am a string type. Not a unicode type.")
         self.assertEqual(unescape(u"I%20am%20a%20unicode%20type."), u'I am a unicode type.')
         self.assertIsInstance(unescape(u"I%20am%20a%20unicode%20type."), unicode)
-
-    def test_urlencode(self):
-        self.assertEqual(urlencode(self.sample_params_unicode_list), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
-        self.assertEqual(urlencode(self.sample_params_unicode_dict), "notoauth=shouldnotbehere&oauth_consumer_key=9djdj82h48djs9d2&oauth_token=kkk9d7dh3k39sjv7&notoautheither=shouldnotbehere")
 
     def test_parse_authorization_header(self):
         # make us some headers
