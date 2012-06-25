@@ -35,6 +35,8 @@ Changelog
 *OAuthLib is in active development, with most of OAuth1 complete and OAuth2
 already in the works.*
 
+0.1.4: soft dependency on PyCrypto  
+
 0.1.3: use python-rsa instead of pycrypto.
 
 0.1.1 / 0.1.2: Fix installation of pycrypto dependency.
