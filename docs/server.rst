@@ -23,48 +23,54 @@ Methods that must be overloaded
 
 Example implementations have been provided, note that the database used is a simple dictionary and serves only an illustrative purpose. Use whichever database suits your project and how to access it is entirely up to you. The methods are introduced in an order which should make understanding their use more straightforward and as such it could be worth reading what follows in chronological order.
 
-#. ``validate_timestamp_and_nonce(self, client_key, timestamp, nonce, resource_owner_key=None)``
+#. ``validate_timestamp_and_nonce(self, client_key, timestamp, nonce, request_token=None, access_token=None)``
 #. ``validate_client_key(self, client_key)``
-#. ``validate_resource_owner_key(self, client_key, resource_owner_key)``
+#. ``validate_request_token(self, client_key, request_token)``
+#. ``validate_access_token(self, client_key, access_token)``
 #. ``dummy_client(self)``
-#. ``dummy_resource_owner(self)``
+#. ``dummy_request_token(self)``
+#. ``dummy_access_token(self)``
 #. ``validate_redirect_uri(self, client_key, redirect_uri)``
-#. ``validate_realm(self, client_key, resource_owner_key, realm, uri)``
-#. ``validate_verifier(self, client_key, resource_owner_key, verifier)``
+#. ``validate_requested_realm(self, client_key, realm)``
+#. ``validate_realm(self, client_key, access_token, uri, required_realm=None)``
+#. ``validate_verifier(self, client_key, request_token, verifier)``
 #. ``get_client_secret(self, client_key)``
-#. ``get_resource_owner_secret(self, client_key, resource_owner_key)``
+#. ``get_request_token_secret(self, client_key, request_token)``
+#. ``get_access_token(self, client_key, access_token)``
 #. ``get_rsa_key(self, client_key)``
 
-``validate_timestamp_and_nonce(self, client_key, timestamp, nonce, resource_owner_key=None)``
+``validate_timestamp_and_nonce(self, client_key, timestamp, nonce, request_token=None, access_token=None)``
 
-    The first thing you want to do is check nonce and timestamp, which are associated with a client key and possibly also a resource owner key, and immediately fail the request if the nonce/timestamp pair has been used before. This prevents replay attacks and is an essential part of OAuth security. Note that this is done before checking the validity of the client and resource owner key.::
+The first thing you want to do is check nonce and timestamp, which are associated with a client key and possibly a token, and immediately fail the request if the nonce/timestamp pair has been used before. This prevents replay attacks and is an essential part of OAuth security. Note that this is done before checking the validity of the client and token.::
 
        nonces_and_timestamps_database = [
           (u'foo', 1234567890, u'rannoMstrInghere', u'bar') 
        ]
 
        def validate_timestamp_and_nonce(self, client_key, timestamp, nonce, 
-          resource_owner_key=None):
+          request_token=None, access_token=None):
 
-          return ((client_key, timestamp, nonce, resource_owner_key) in 
-                      self.nonces_and_timestamps_database)
+          return ((client_key, timestamp, nonce, request_token or access_token)
+                   in self.nonces_and_timestamps_database)
 
 ``validate_client_key(self, client_key)`` and 
-``validate_resource_owner_key(self, client_key, resource_owner_key)``
+``validate_request_token(self, client_key, request_token)``
+``validate_access_token(self, client_key, access_token)``
 
-     Validation of client keys simply ensure that the provided key is associated with a registered client. Same goes for the resource owner key::
+Validation of client keys simply ensure that the provided key is associated with a registered client. Same goes for the tokens::
 
         clients_database = [u'foo']
 
         def validate_client_key(self, client_key):
            return client_key in self.clients_database
 
-        resource_owners_database = [(u'foo', u'bar')]
-    
-        def validate_resource_owner_key(self, client_key, resource_owner_key):
-           return (client_key, resource_owner_key) in self.resource_owners_database
+        request_token_database = [(u'foo', u'bar')]
+        access_token_database = []
 
-     Note that your dummy client and dummy resource owner must validate to false and do so without affecting the execution time of the client validation. **Avoid doing this**::
+        def validate_request_token(self, client_key, request_token):
+           return (client_key, request_token) in self.request_token_database
+
+Note that your dummy client and dummy tokens must validate to false and do so without affecting the execution time of the client validation. **Avoid doing this**::
 
         def validate_client_key(self, client_key):
            if client_key == dummy_client:
@@ -72,9 +78,9 @@ Example implementations have been provided, note that the database used is a sim
            return client_key in self.clients_database
 
 
-``dummy_client(self)`` and ``dummy_resource_owner(self)``
+``dummy_client(self)``, ``dummy_request_token(self)`` and ``dummy_access_token(self)``
 
-     These two properties might not be entirely obvious. Dummy values are used to enable the verification to execute in near constant time even if the client key or resource owner key is invalid. No early exits are taken during the verification and even a signature is calculated for the dummy client and/or resource owner. The use of these dummy values effectively eliminate the chance of an attacker guessing tokens and secrets by measuring the response time of request verification::
+Dummy values are used to enable the verification to execute in near constant time even if the client key or token is invalid. No early exits are taken during the verification and even a signature is calculated for the dummy client and/or token. The use of these dummy values effectively eliminate the chance of an attacker guessing tokens and secrets by measuring the response time of request verification::
 
         @property
         def dummy_client(self):
@@ -86,18 +92,18 @@ Example implementations have been provided, note that the database used is a sim
 
 ``validate_redirect_uri(self, client_key, redirect_uri)``
 
-    All redirection URIs (provided when obtaining request tokens) must be validated. If you require clients to register these URIs this is a trivial operation. It is worth considering a hash comparison of values since URIs could be hard to sanitize and thus not optimal to throw into a database query. The example below illustrates this using pythons builtin membership comparison::
+All redirection URIs (provided when obtaining request tokens) must be validated. If you require clients to register these URIs this is a trivial operation. It is worth considering a hash comparison of values since URIs could be hard to sanitize and thus not optimal to throw into a database query. The example below illustrates this using pythons builtin membership comparison::
 
        def validate_redirect_uri(self, client_key, redirect_uri):
            redirect_uris = db.get_all_redirect_uris_for_client(client_key)
            return redirect_uri in redirect_uris
 
-    As opposed to::
+As opposed to::
 
        def validate_redirect_uri(self, client_key, redirect_uri):
           return len(db.query_client_redirect_uris(uri=redirect_uri).result) == 1
 
-    Using our familiar example dict database::
+Using our familiar example dict database::
 
         redirect_uris = {
             u'foo' :  [u'https://some.fance.io/callback']
@@ -109,38 +115,39 @@ Example implementations have been provided, note that the database used is a sim
 
 ``validate_realm(self, client_key, resource_owner_key, realm, uri)``
 
-    Realms are useful when restricting scope. Scope could be a variety of things but commonly relates to privileges (read/write/both) or content categories (photos/private/code). Since realms are commonly associated not only with client keys and resources owners but also a resource URI the requested URI is an included argument as well::
+Realms are useful when restricting scope. Scope could be a variety of things but commonly relates to privileges (read/write) or content categories (photos/private/code). Since realms are commonly associated not only with client keys and tokens but also a resource URI the requested URI is an included argument as well::
 
          assigned_realms = {
-              (u'foo', u'bar') : [u'photos']
+              u'foo' : [u'photos']
          }
 
          realms = {
-              u'photos' : [u'list', u'of allowed uris']
+            (u'foo', u'bar') : u'photos'
          }
 
-         def validate_realm(self, client_key, resource_owner_key, realm, uri):
-             realms = self.assigned_realms.get((client_key, resource_owner_key))
-             valid = False
-             for associated_uris in realms:
-                 if uri in associated_uris:
-                     valid = True
-             return valid 
+         def validate_requested_realm(self, client_key, realm):
+            return realm in self.assigned_realms.get(client_key)
+
+         def validate_realm(self, client_key, access_token, uri=None, required_realm=None):
+            if required_realm:
+                return self.realms.get((client_key, access_token)) in required_realm
+            else:
+                # Use the URI to figure out if the associated realm is valid
              
 ``validate_verifier(self, client_key, resource_owner_key, verifier)``
 
-    Verifiers are assigned to a client after the resource owner (user) has authorized access. They will thus only be present (and valid) in access token request. Naturally they must be validated and it should be done in near constant time (to avoid verifier enumeration). To achieve this we need a constant time string comparison which is provided by OAuthLib in ``oauthlib.common.safe_cmp``::
+Verifiers are assigned to a client after the resource owner (user) has authorized access. They will thus only be present (and valid) in access token request. Naturally they must be validated and it should be done in near constant time (to avoid verifier enumeration). To achieve this we need a constant time string comparison which is provided by OAuthLib in ``oauthlib.common.safe_string_equals``::
 
        verifiers = {
-          (u'foo', u'resource_owner_key') : u'randomVerifierString'
+          (u'foo', u'request_token') : u'randomVerifierString'
        }
 
-       def validate_verifier(self, client_key, resource_owner_key, verifier):
-           return safe_cmp(verifier, self.verifiers.get((client_key, resource_owner_key))
+       def validate_verifier(self, client_key, request_token, verifier):
+           return safe_string_equals(verifier, self.verifiers.get((client_key, request_token))
 
 ``get_client_secret(self, client_key)``
 
-    Fetches the client secret associated with client key from your database. Note that your database should include a dummy key associated with your dummy user mentioned previously::
+Fetches the client secret associated with client key from your database. Note that your database should include a dummy key associated with your dummy user mentioned previously::
 
         client_secrets_database = {
            u'foo' : u'fooshizzle',
@@ -151,21 +158,22 @@ Example implementations have been provided, note that the database used is a sim
         def get_client_secret(self, client_key):
            return self.client_secrets_database.get(client_key)
 
-``get_resource_owner_secret(self, client_key, resource_owner_key)``
+``get_request_token_secret(self, client_key, request_token)``
+``get_access_token_secret(self, client_key, access_token)``
 
-    Fetches the resource owner secret associated with client key and resource_owner_key. Similar to ``get_client_secret`` the database should include a dummy resource owner secret::
+Fetches the resource owner secret associated with client key and token. Similar to ``get_client_secret`` the database should include a dummy resource owner secret::
 
-       resource_owner_secrets_database = {
+       request_token_secrets_database = {
           (u'foo', u'someResourceOwner') : u'seeeecret',
           (u'dummy_client', 'dummy_resource_owner') : u'dummy-owner-secret'
        }
        
-       def get_resource_owner_secret(client_key, resource_owner_key):
-          return self.resource_owner_secrets_database.get((client_key, resource_owner_key))
+       def get_request_token_secret(client_key, request_token):
+          return self.request_token_secrets.get((client_key, request_token))
 
 ``get_rsa_key(self, client_key)``
 
-     If RSA signatures are used the Server must fetch the **public key** associated with the client. There should be a dummy RSA public key associated with dummy clients. Keys have been cut in length for obvious reasons::
+ If RSA signatures are used the Server must fetch the **public key** associated with the client. There should be a dummy RSA public key associated with dummy clients. Keys have been cut in length for obvious reasons::
 
       rsa_public_keys = {
          u'foo' : u'-----BEGIN PUBLIC KEY-----MIGfMA0GCSqG....',
@@ -183,7 +191,8 @@ Request verification is provided through the ``Server.verify_request`` method wh
      verify_request(self, uri, http_method=u'GET', body=None, headers=None, 
                     require_resource_owner=True, 
                     require_verifier=False, 
-                    require_realm=False)
+                    require_realm=False,
+                    required_realm=None)
 
 There are three types of verifications you will want to perform, all which could be altered through the use of a realm parameter if you choose to allow/require this. Note that if verify_request returns false a HTTP 401Unauthorized should be returned. If a ValueError is raised a HTTP 400 Bad Request response should be returned. All request verifications will look similar to the following::
 
