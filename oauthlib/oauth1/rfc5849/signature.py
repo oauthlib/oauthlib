@@ -27,7 +27,7 @@ import hashlib
 import hmac
 import urlparse
 from . import utils
-from oauthlib.common import extract_params
+from oauthlib.common import extract_params, safe_string_equals
 
 
 def construct_base_string(http_method, base_string_uri,
@@ -499,3 +499,53 @@ def sign_plaintext(client_secret, resource_owner_secret):
     signature += utils.escape(resource_owner_secret or u'')
 
     return signature
+
+
+def verify_hmac_sha1(request, client_secret=None, 
+    resource_owner_secret=None):
+    """Verify a HMAC-SHA1 signature.
+
+    Per `section 3.4`_ of the spec.
+
+    .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
+    """
+    norm_params = normalize_parameters(request.params)
+    uri = normalize_base_string_uri(request.uri)
+    base_string = construct_base_string(request.http_method, uri, norm_params)
+    signature = sign_hmac_sha1(base_string, client_secret,
+        resource_owner_secret)
+    return safe_string_equals(signature, request.signature)
+
+
+def verify_rsa_sha1(request, rsa_public_key):
+    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
+
+    Per `section 3.4.3`_ of the spec.
+
+    Note this method requires the PyCrypto library.
+
+    .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
+
+    """
+    from Crypto.PublicKey import RSA
+    from Crypto.Signature import PKCS1_v1_5
+    from Crypto.Hash import SHA
+    key = RSA.importKey(rsa_public_key)
+    norm_params = normalize_parameters(request.params)
+    uri = normalize_base_string_uri(request.uri)
+    message = construct_base_string(request.http_method, uri, norm_params)
+    h = SHA.new(message)
+    p = PKCS1_v1_5.new(key)
+    sig = binascii.a2b_base64(request.signature)
+    return p.verify(h, sig)
+
+
+def verify_plaintext(request, client_secret=None, resource_owner_secret=None):
+    """Verify a PLAINTEXT signature.
+
+    Per `section 3.4`_ of the spec.
+
+    .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
+    """
+    signature = sign_plaintext(client_secret, resource_owner_secret)
+    return safe_string_equals(signature, request.signature)
