@@ -273,7 +273,7 @@ class Server(object):
     client key or resource owner key is invalid. Instead dummy values should
     be used during the remaining verification process. It is very important
     that the dummy client and token are valid input parameters to the methods
-    get_client_secret, get_rsa_key and get_(access/request)_token_secret and 
+    get_client_secret, get_rsa_key and get_(access/request)_token_secret and
     that the running time of those methods when given a dummy value remain
     equivalent to the running time when given a valid client/resource owner.
     The following properties must be implemented:
@@ -506,7 +506,7 @@ class Server(object):
     def validate_request_token(self, client_key, request_token):
         """Validates that supplied request token is registered and valid.
 
-        Note that if the dummy request_token is supplied it should validate in 
+        Note that if the dummy request_token is supplied it should validate in
         the same nearly the same amount of time as a valid one.
 
         Bad:
@@ -526,7 +526,7 @@ class Server(object):
     def validate_access_token(self, client_key, access_token):
         """Validates that supplied access token is registered and valid.
 
-        Note that if the dummy access token is supplied it should validate in 
+        Note that if the dummy access token is supplied it should validate in
         the same or nearly the same amount of time as a valid one.
 
         Bad:
@@ -586,7 +586,7 @@ class Server(object):
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
-    def validate_realm(self, client_key, access_token, uri=None, 
+    def validate_realm(self, client_key, access_token, uri=None,
             required_realm=None):
         """Validates access to the request realm.
 
@@ -595,7 +595,7 @@ class Server(object):
         of protected resources such as "photos".
 
         required_realm is a convenience parameter which can be used to provide
-        a per view method pre-defined list of allowed realms. 
+        a per view method pre-defined list of allowed realms.
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -642,7 +642,13 @@ class Server(object):
         .. _`Timing attacks`: http://rdist.root.org/2010/07/19/exploiting-remote-timing-attacks/
         .. _`enumeration attacks`: http://www.sans.edu/research/security-laboratory/article/attacks-browsing
         """
-        request = Request(uri, http_method, body, headers)
+        # Only include body data from x-www-form-urlencoded requests
+        headers = headers or {}
+        if (u"Content-Type" in headers and
+                headers[u"Content-Type"] == CONTENT_TYPE_FORM_URLENCODED):
+            request = Request(uri, http_method, body, headers)
+        else:
+            request = Request(uri, http_method, u'', headers)
 
         if self.enforce_ssl and not request.uri.lower().startswith("https://"):
             raise ValueError("Insecure transport, only HTTPS is allowed.")
@@ -796,14 +802,14 @@ class Server(object):
         #
         # The require_realm indicates this is the first step in the OAuth
         # workflow where a client requests access to a specific realm.
-        # 
+        #
         # Clients obtaining an access token will not supply a realm and it will
-        # not be checked. Instead the previously requested realm should be 
+        # not be checked. Instead the previously requested realm should be
         # transferred from the request token to the access token.
         #
         # Access to protected resources will always validate the realm but note
         # that the realm is now tied to the access token and not provided by
-        # the client. 
+        # the client.
         if require_realm and not resource_owner_key:
             valid_realm = self.validate_requested_realm(client_key, realm)
         elif require_verifier:
