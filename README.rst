@@ -35,6 +35,8 @@ Changelog
 *OAuthLib is in active development, with most of OAuth1 complete and OAuth2
 already in the works.*
 
+0.2.1: Exclude non urlencoded bodies during request verification
+
 0.2.0: OAuth provider support
 
 0.1.4: soft dependency on PyCrypto  
