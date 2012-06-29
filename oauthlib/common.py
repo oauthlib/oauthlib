@@ -169,7 +169,10 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 
 def add_params_to_qs(query, params):
     """Extend a query with a list of two-tuples."""
-    queryparams = urlparse.parse_qsl(query, keep_blank_values=True)
+    if isinstance(query, dict):
+        queryparams = query.items()
+    else:
+        queryparams = urlparse.parse_qsl(query, keep_blank_values=True)
     queryparams.extend(params)
     return urlencode(queryparams)
 
@@ -181,13 +184,13 @@ def add_params_to_uri(uri, params):
     return urlparse.urlunparse((sch, net, path, par, query, fra))
 
 def safe_string_equals(a, b):
-    """ Near-constant time string comparison. 
+    """ Near-constant time string comparison.
 
     Used in order to avoid timing attacks on sensitive information such
     as secret keys during request verification (`rootLabs`_).
 
     .. _`rootLabs`: http://rdist.root.org/2010/01/07/timing-independent-array-comparison/
-    
+
     """
     if len(a) != len(b):
         return False
