@@ -58,7 +58,8 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
         params.append((u'state', state))
 
     for k in kwargs:
-        params.append((unicode(k), kwargs[k]))
+        if kwargs[k]:
+            params.append((unicode(k), kwargs[k]))
 
     return add_params_to_uri(uri, params)
 
@@ -87,7 +88,8 @@ def prepare_token_request(grant_type, body=u'', **kwargs):
     """
     params = [(u'grant_type', grant_type)]
     for k in kwargs:
-        params.append((unicode(k), kwargs[k]))
+        if kwargs[k]:
+            params.append((unicode(k), kwargs[k]))
 
     return add_params_to_qs(body, params)
 
