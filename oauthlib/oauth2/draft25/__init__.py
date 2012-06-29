@@ -21,23 +21,34 @@ class Client(object):
 
     def __init__(self, client_id,
             default_redirect_uri=None,
-            token_type=None,
+            default_token_placement=AUTH_HEADER,
+            token_type=u'bearer',
             access_token=None,
-            refresh_token=None):
+            refresh_token=None,
+            code=None,
+            default_kwargs_uri=None,
+            default_kwargs_body=None):
         """Initialize a client with commonly used attributes."""
 
         self.client_id = client_id
         self.default_redirect_uri = default_redirect_uri
+        self.default_token_placement = default_token_placement
         self.token_type = token_type
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.token_types = {
+        self.code = code
+        self.default_kwargs_uri = default_kwargs_uri
+        self.default_kwargs_body = default_kwargs_body
+
+    @property
+    def token_types(self):
+        return {
             u'bearer': self._add_bearer_token,
             u'mac': self._add_mac_token
         }
 
     def add_token(self, uri, http_method=u'GET', body=None, headers=None,
-            token_placement=AUTH_HEADER):
+            token_placement=None):
         """Add token to the request uri, body or authorization header.
 
         The access token type provides the client with the information
@@ -67,6 +78,14 @@ class Client(object):
         .. _`I-D.ietf-oauth-v2-bearer`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-I-D.ietf-oauth-v2-bearer
         .. _`I-D.ietf-oauth-v2-http-mac`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-I-D.ietf-oauth-v2-http-mac
         """
+        token_placement = token_placement or self.default_token_placement
+
+        if not self.token_type in self.token_types:
+            raise ValueError("Unsupported token type: %s" % self.token_type)
+
+        if not self.access_token:
+            raise ValueError("Missing access token.")
+
         return self.token_types[self.token_type](uri, http_method, body,
                     headers, token_placement)
 
@@ -94,23 +113,25 @@ class Client(object):
                 refresh_token=refresh_token)
 
     def _add_bearer_token(self, uri, http_method=u'GET', body=None,
-            headers=None, token_placement=AUTH_HEADER):
+            headers=None, token_placement=None):
         """Add a bearer token to the request uri, body or authorization header."""
         if token_placement == AUTH_HEADER:
-            headers = prepare_bearer_headers(self.token, headers)
+            headers = prepare_bearer_headers(self.access_token, headers)
 
-        if token_placement == URI_QUERY:
-            uri = prepare_bearer_uri(self.token, uri)
+        elif token_placement == URI_QUERY:
+            uri = prepare_bearer_uri(self.access_token, uri)
 
-        if token_placement == BODY:
-            body = prepare_bearer_body(self.token, body)
+        elif token_placement == BODY:
+            body = prepare_bearer_body(self.access_token, body)
 
+        else:
+            raise ValueError("Invalid token placement.")
         return uri, headers, body
 
     def _add_mac_token(self, uri, http_method=u'GET', body=None,
             headers=None, token_placement=AUTH_HEADER):
         """Add a MAC token to the request authorization header."""
-        headers = prepare_mac_header(self.token, uri, self.key, http_method,
+        headers = prepare_mac_header(self.access_token, uri, self.key, http_method,
                         headers=headers, body=body, ext=self.ext,
                         hash_algorithm=self.hash_algorithm)
         return uri, headers, body
@@ -198,10 +219,11 @@ class WebApplicationClient(Client):
         .. _`Section 10.12`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-10.12
         """
         redirect_uri = redirect_uri or self.default_redirect_uri
+        kwargs = kwargs or self.default_kwargs_uri or {}
         return prepare_grant_uri(uri, self.client_id, u'code',
                 redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
 
-    def prepare_request_body(self, code, body=u'', redirect_uri=None, **kwargs):
+    def prepare_request_body(self, code=None, body=u'', redirect_uri=None, **kwargs):
         """Prepare the access token request body.
 
         The client makes a request to the token endpoint by adding the
@@ -221,9 +243,10 @@ class WebApplicationClient(Client):
         .. _`Section 4.1.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-4.1.1
         """
         redirect_uri = redirect_uri or self.default_redirect_uri
+        kwargs = kwargs or self.default_kwargs_body or {}
         code = code or self.code
         return prepare_token_request(u'authorization_code', code=code, body=body,
-                                         redirect_uri=redirect_uri, **kwargs)
+                                          redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
         """Parse the URI query for code and state.
