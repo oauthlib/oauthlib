@@ -25,7 +25,7 @@ setup(
     long_description=fread('README.rst'),
     author='Idan Gazit',
     author_email='idan@gazit.me',
-    url='https://github.com/idangazit/oauthlib',
+    url='https://github.com/idan/oauthlib',
     license=fread('LICENSE'),
     packages=find_packages(exclude=('tests', 'docs')),
     test_suite='nose.collector',
