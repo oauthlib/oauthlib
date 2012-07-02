@@ -26,6 +26,8 @@ class Client(object):
             access_token=None,
             refresh_token=None,
             code=None,
+            username=None,
+            password=None,
             default_kwargs_uri=None,
             default_kwargs_body=None):
         """Initialize a client with commonly used attributes."""
@@ -37,6 +39,8 @@ class Client(object):
         self.access_token = access_token
         self.refresh_token = refresh_token
         self.code = code
+        self.username = username
+        self.password = password
         self.default_kwargs_uri = default_kwargs_uri
         self.default_kwargs_body = default_kwargs_body
 
@@ -245,6 +249,7 @@ class WebApplicationClient(Client):
         redirect_uri = redirect_uri or self.default_redirect_uri
         kwargs = kwargs or self.default_kwargs_body or {}
         code = code or self.code
+        assert code is not None, "Authorization code is required."
         return prepare_token_request(u'authorization_code', code=code, body=body,
                                           redirect_uri=redirect_uri, **kwargs)
 
@@ -351,6 +356,7 @@ class UserAgentClient(Client):
                 cross-site request forgery as described in Section 10.12.
         """
         redirect_uri = redirect_uri or self.default_redirect_uri
+        kwargs = kwargs or self.default_kwargs_uri or {}
         return prepare_grant_uri(uri, self.client_id, u'token',
                 redirect_uri=redirect_uri, state=state, scope=scope, **kwargs)
 
@@ -390,20 +396,8 @@ class UserAgentClient(Client):
         return response
 
 
-class NativeApplicationClient(Client):
+class ClientCredentialsClient(Client):
     """A public client utilizing the client credentials grant workflow.
-
-    A native application is a public client installed and executed on
-    the device used by the resource owner.  Protocol data and
-    credentials are accessible to the resource owner.  It is assumed
-    that any client authentication credentials included in the
-    application can be extracted.  On the other hand, dynamically
-    issued credentials such as access tokens or refresh tokens can
-    receive an acceptable level of protection.  At a minimum, these
-    credentials are protected from hostile servers with which the
-    application may interact with.  On some platforms these
-    credentials might be protected from other applications residing on
-    the same device.
 
     The client can request an access token using only its client
     credentials (or other supported means of authentication) when the
@@ -434,6 +428,7 @@ class NativeApplicationClient(Client):
 
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         """
+        kwargs = kwargs or self.default_kwargs_body or {}
         return prepare_token_request(u'client_credentials', body=body,
                                      scope=scope, **kwargs)
 
@@ -476,7 +471,7 @@ class PasswordCredentialsClient(Client):
     MUST discard the credentials once an access token has been obtained.
     """
 
-    def prepare_request_body(self, username, password, body=u'', scope=None,
+    def prepare_request_body(self, username=None, password=None, body=u'', scope=None,
             **kwargs):
         """Add the resource owner password and username to the request body.
 
@@ -496,6 +491,11 @@ class PasswordCredentialsClient(Client):
 
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         """
+        username = username or self.username
+        password = password or self.password
+        assert username is not None, "Username is required."
+        assert password is not None, "Password is required."
+        kwargs = kwargs or self.default_kwargs_body or {}
         return prepare_token_request(u'password', body=body, username=username,
                 password=password, scope=scope, **kwargs)
 
