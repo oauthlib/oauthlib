@@ -208,6 +208,7 @@ class ServerTests(TestCase):
             None, None, None)
         self.assertRaises(NotImplementedError, s.validate_redirect_uri, None, None)
         self.assertRaises(NotImplementedError, s.validate_realm, None, None, None, None)
+        self.assertRaises(NotImplementedError, s.validate_requested_realm, None, None)
         self.assertRaises(NotImplementedError, s.validate_verifier, None, None, None)
 
     def test_enforce_ssl(self):
@@ -251,7 +252,8 @@ class ServerTests(TestCase):
         self.assertRaises(ValueError, s.verify_request, u'https://a.b/',
              body=(u'oauth_signature=a&oauth_consumer_key=b&oauth_nonce=c&'
                    u'oauth_timestamp=a&oauth_signature_method=RSA-SHA1&'
-                   u'oauth_version=2.0'))
+                   u'oauth_version=2.0'),
+             headers=self.URLENCODED)
 
     def test_oauth_timestamp(self):
         """Check for a valid UNIX timestamp."""
@@ -261,19 +263,22 @@ class ServerTests(TestCase):
         self.assertRaises(ValueError, s.verify_request, u'https://a.b/',
              body=(u'oauth_signature=a&oauth_consumer_key=b&oauth_nonce=c&'
                    u'oauth_version=1.0&oauth_signature_method=RSA-SHA1&'
-                   u'oauth_timestamp=123456789'))
+                   u'oauth_timestamp=123456789'),
+             headers=self.URLENCODED)
 
         # Invalid timestamp age, must be younger than 10 minutes
         self.assertRaises(ValueError, s.verify_request, u'https://a.b/',
              body=(u'oauth_signature=a&oauth_consumer_key=b&oauth_nonce=c&'
                    u'oauth_version=1.0&oauth_signature_method=RSA-SHA1&'
-                   u'oauth_timestamp=1234567890'))
+                   u'oauth_timestamp=1234567890'),
+             headers=self.URLENCODED)
 
         # Timestamp must be an integer
         self.assertRaises(ValueError, s.verify_request, u'https://a.b/',
              body=(u'oauth_signature=a&oauth_consumer_key=b&oauth_nonce=c&'
                    u'oauth_version=1.0&oauth_signature_method=RSA-SHA1&'
-                   u'oauth_timestamp=123456789a'))
+                   u'oauth_timestamp=123456789a'),
+             headers=self.URLENCODED)
 
     def test_signature_method_validation(self):
         """Ensure valid signature method is used."""
@@ -291,10 +296,10 @@ class ServerTests(TestCase):
                 return (SIGNATURE_HMAC,)
 
         s = HMACServer()
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'RSA-SHA1')
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'PLAINTEXT')
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'shibboleth')
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'')
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'RSA-SHA1', headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'PLAINTEXT', headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'shibboleth', headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'', headers=self.URLENCODED)
 
         class RSAServer(Server):
 
@@ -303,9 +308,9 @@ class ServerTests(TestCase):
                 return (SIGNATURE_RSA,)
 
         s = RSAServer()
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'HMAC-SHA1')
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'PLAINTEXT')
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'shibboleth')
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'HMAC-SHA1', headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'PLAINTEXT', headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'shibboleth', headers=self.URLENCODED)
 
         class PlainServer(Server):
 
@@ -314,9 +319,9 @@ class ServerTests(TestCase):
                 return (SIGNATURE_PLAINTEXT,)
 
         s = PlainServer()
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'HMAC-SHA1')
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'RSA-SHA1')
-        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'shibboleth')
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'HMAC-SHA1', headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'RSA-SHA1', headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=body % u'shibboleth', headers=self.URLENCODED)
 
     def test_check_methods(self):
         """Ensure values are correctly formatted.
@@ -357,44 +362,53 @@ class ServerTests(TestCase):
               u'oauth_token=abcdefghijklmnopqrstuvxyz&'
               u'oauth_verifier=%s')
 
+        noverifier=(u'oauth_signature=a&oauth_timestamp=%s&'
+              u'oauth_nonce=abcdefghijklmnopqrstuvwxyz&'
+              u'oauth_version=1.0&oauth_signature_method=HMAC-SHA1&'
+              u'oauth_consumer_key=abcdefghijklmnopqrstuvxyz&'
+              u'oauth_token=abcdefghijklmnopqrstuvxyz&')
+
         uri = u'https://example.com/'
         s = Server()
 
         # Invalid characters
         invalid = (ts, u'%C3%A5abcdefghijklmnopqrstuvwxyz')
-        self.assertRaises(ValueError, s.verify_request, uri, body=client % invalid)
-        self.assertRaises(ValueError, s.verify_request, uri, body=owner % invalid)
-        self.assertRaises(ValueError, s.verify_request, uri, body=nonce % invalid)
+        self.assertRaises(ValueError, s.verify_request, uri, body=client % invalid, headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=owner % invalid, headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=owner % invalid, headers=self.URLENCODED, require_verifier=True)
+        self.assertRaises(ValueError, s.verify_request, uri, body=nonce % invalid, headers=self.URLENCODED)
         self.assertRaises(ValueError, s.verify_request, uri, body=verifier % invalid,
-            require_verifier=True)
+            require_verifier=True, headers=self.URLENCODED)
 
         # Too short
         short = (ts, u'abcdefghi')
-        self.assertRaises(ValueError, s.verify_request, uri, body=client % short)
-        self.assertRaises(ValueError, s.verify_request, uri, body=owner % short)
-        self.assertRaises(ValueError, s.verify_request, uri, body=nonce % short)
+        self.assertRaises(ValueError, s.verify_request, uri, body=client % short, headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=owner % short, headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=owner % short, headers=self.URLENCODED, require_verifier=True)
+        self.assertRaises(ValueError, s.verify_request, uri, body=nonce % short, headers=self.URLENCODED)
         self.assertRaises(ValueError, s.verify_request, uri, body=verifier % short,
-            require_verifier=True)
+            require_verifier=True, headers=self.URLENCODED)
 
         # Too long
         loong = (ts, u'abcdefghijklmnopqrstuvwxyz123456789')
-        self.assertRaises(ValueError, s.verify_request, uri, body=client % loong)
-        self.assertRaises(ValueError, s.verify_request, uri, body=owner % loong)
-        self.assertRaises(ValueError, s.verify_request, uri, body=nonce % loong)
+        self.assertRaises(ValueError, s.verify_request, uri, body=client % loong, headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=owner % loong, headers=self.URLENCODED)
+        self.assertRaises(ValueError, s.verify_request, uri, body=owner % loong, headers=self.URLENCODED, require_verifier=True)
+        self.assertRaises(ValueError, s.verify_request, uri, body=nonce % loong, headers=self.URLENCODED)
         self.assertRaises(ValueError, s.verify_request, uri, body=verifier % loong,
-            require_verifier=True)
+            require_verifier=True, headers=self.URLENCODED)
 
         # By default no realms are allowed
         test = (ts, u'shibboleth')
         self.assertRaises(ValueError, s.verify_request, uri, body=realm % test,
-            require_realm=True)
+            require_realm=True, headers=self.URLENCODED)
 
         # Missing required owner
-        self.assertRaises(ValueError, s.verify_request, uri, body=owner % (ts, u''))
+        self.assertRaises(ValueError, s.verify_request, uri, body=owner % (ts, u''), headers=self.URLENCODED)
 
         # Missing required verifier
-        self.assertRaises(ValueError, s.verify_request, uri, body=realm % test,
-            require_verifier=True)
+        self.assertRaises(ValueError, s.verify_request, uri, body=noverifier % ts,
+            require_verifier=True, headers=self.URLENCODED)
 
     def test_client_validation(self):
         uri = u'https://example.com/'
@@ -406,6 +420,7 @@ class ServerTests(TestCase):
               u'oauth_consumer_key={0}')
 
         s = self.ClientServer()
+        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=client.format(u'bar')))
         self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=client.format(u'bar')))
         self.assertTrue(s.verify_request(uri, headers=self.URLENCODED, body=client.format(u'foo')))
 
@@ -431,8 +446,15 @@ class ServerTests(TestCase):
               u'oauth_token=invalid&'
               u'oauth_consumer_key=foo')
 
+        owner_optional = (u'oauth_signature=Caupx4p518D7HzA6ihWwV4kB93A%3D&'
+              u'oauth_timestamp=1234567890&'
+              u'oauth_nonce=abcdefghijklmnopqrstuvwxyz&'
+              u'oauth_version=1.0&oauth_signature_method=HMAC-SHA1&'
+              u'oauth_consumer_key=foo')
+
         s = self.ClientServer()
         self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=invalid_owner))
+        self.assertTrue(s.verify_request(uri, headers=self.URLENCODED, body=owner_optional, require_resource_owner=False))
 
     def test_signature_verification(self):
         uri = u'https://example.com/'

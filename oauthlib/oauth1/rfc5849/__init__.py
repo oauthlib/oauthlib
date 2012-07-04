@@ -802,6 +802,9 @@ class Server(object):
         #
         # The require_realm indicates this is the first step in the OAuth
         # workflow where a client requests access to a specific realm.
+        # This first step (obtaining request token) need not require a realm
+        # and can then be identified by checking the require_resource_owner
+        # flag and abscence of realm.
         #
         # Clients obtaining an access token will not supply a realm and it will
         # not be checked. Instead the previously requested realm should be
@@ -810,7 +813,8 @@ class Server(object):
         # Access to protected resources will always validate the realm but note
         # that the realm is now tied to the access token and not provided by
         # the client.
-        if require_realm and not resource_owner_key:
+        if ((require_realm and not resource_owner_key) or
+            (not require_resource_owner and not realm)):
             valid_realm = self.validate_requested_realm(client_key, realm)
         elif require_verifier:
             valid_realm = True
