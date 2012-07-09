@@ -18,37 +18,40 @@ BODY = u'body'
 
 
 class Client(object):
+    """Base OAuth2 client responsible for access tokens.
+
+    While this class can be used to simply append tokens onto requests
+    it is often more useful to use a client targeted at a specific workflow.
+    """
 
     def __init__(self, client_id,
-            default_redirect_uri=None,
             default_token_placement=AUTH_HEADER,
-            token_type=u'bearer',
+            token_type=u'Bearer',
             access_token=None,
             refresh_token=None,
-            code=None,
-            username=None,
-            password=None,
-            default_kwargs_uri=None,
-            default_kwargs_body=None):
+            **kwargs):
         """Initialize a client with commonly used attributes."""
 
         self.client_id = client_id
-        self.default_redirect_uri = default_redirect_uri
         self.default_token_placement = default_token_placement
         self.token_type = token_type
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.code = code
-        self.username = username
-        self.password = password
-        self.default_kwargs_uri = default_kwargs_uri
-        self.default_kwargs_body = default_kwargs_body
 
     @property
     def token_types(self):
+        """Supported token types and their respective methods
+
+        Additional tokens can be supported by extending this dictionary.
+
+        The Bearer token spec is stable and safe to use.
+
+        The MAC token spec is not yet stable and support for MAC tokens
+        is experimental and currently matching version 00 of the spec.
+        """
         return {
-            u'bearer': self._add_bearer_token,
-            u'mac': self._add_mac_token
+            u'Bearer': self._add_bearer_token,
+            u'MAC': self._add_mac_token
         }
 
     def add_token(self, uri, http_method=u'GET', body=None, headers=None,
@@ -134,7 +137,10 @@ class Client(object):
 
     def _add_mac_token(self, uri, http_method=u'GET', body=None,
             headers=None, token_placement=AUTH_HEADER):
-        """Add a MAC token to the request authorization header."""
+        """Add a MAC token to the request authorization header.
+
+        Warning: MAC token support is experimental as the spec is not yet stable.
+        """
         headers = prepare_mac_header(self.access_token, uri, self.key, http_method,
                         headers=headers, body=body, ext=self.ext,
                         hash_algorithm=self.hash_algorithm)
@@ -191,6 +197,11 @@ class WebApplicationClient(Client):
     from the authorization server.
     """
 
+    def __init__(self, client_id, code=None, **kwargs):
+        super(WebApplicationClient, self).__init__(client_id, **kwargs)
+        if code:
+            self.code = code
+
     def prepare_request_uri(self, uri, redirect_uri=None, scope=None,
             state=None, **kwargs):
         """Prepare the authorization code request URI
@@ -222,8 +233,6 @@ class WebApplicationClient(Client):
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         .. _`Section 10.12`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-10.12
         """
-        redirect_uri = redirect_uri or self.default_redirect_uri
-        kwargs = kwargs or self.default_kwargs_uri or {}
         return prepare_grant_uri(uri, self.client_id, u'code',
                 redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
 
@@ -246,10 +255,7 @@ class WebApplicationClient(Client):
 
         .. _`Section 4.1.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-4.1.1
         """
-        redirect_uri = redirect_uri or self.default_redirect_uri
-        kwargs = kwargs or self.default_kwargs_body or {}
         code = code or self.code
-        assert code is not None, "Authorization code is required."
         return prepare_token_request(u'authorization_code', code=code, body=body,
                                           redirect_uri=redirect_uri, **kwargs)
 
@@ -355,8 +361,6 @@ class UserAgentClient(Client):
                 to the client.  The parameter SHOULD be used for preventing
                 cross-site request forgery as described in Section 10.12.
         """
-        redirect_uri = redirect_uri or self.default_redirect_uri
-        kwargs = kwargs or self.default_kwargs_uri or {}
         return prepare_grant_uri(uri, self.client_id, u'token',
                 redirect_uri=redirect_uri, state=state, scope=scope, **kwargs)
 
@@ -428,7 +432,6 @@ class ClientCredentialsClient(Client):
 
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         """
-        kwargs = kwargs or self.default_kwargs_body or {}
         return prepare_token_request(u'client_credentials', body=body,
                                      scope=scope, **kwargs)
 
@@ -471,8 +474,12 @@ class PasswordCredentialsClient(Client):
     MUST discard the credentials once an access token has been obtained.
     """
 
-    def prepare_request_body(self, username=None, password=None, body=u'', scope=None,
-            **kwargs):
+    def __init__(self, client_id, username, password, **kwargs):
+        super(PasswordCredentialsClient, self).__init__(client_id, **kwargs)
+        self.username = username
+        self.password = password
+
+    def prepare_request_body(self, body=u'', scope=None, **kwargs):
         """Add the resource owner password and username to the request body.
 
         The client makes a request to the token endpoint by adding the
@@ -491,13 +498,8 @@ class PasswordCredentialsClient(Client):
 
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         """
-        username = username or self.username
-        password = password or self.password
-        assert username is not None, "Username is required."
-        assert password is not None, "Password is required."
-        kwargs = kwargs or self.default_kwargs_body or {}
-        return prepare_token_request(u'password', body=body, username=username,
-                password=password, scope=scope, **kwargs)
+        return prepare_token_request(u'password', body=body, username=self.username,
+                password=self.password, scope=scope, **kwargs)
 
     def parse_request_body_response(self, body, scope=None):
         """Parse the JSON response body.

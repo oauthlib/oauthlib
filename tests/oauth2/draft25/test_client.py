@@ -152,11 +152,6 @@ class WebApplicationClientTest(TestCase):
         uri = client.prepare_request_uri(self.uri, redirect_uri=self.redirect_uri)
         self.assertEqual(uri, self.uri_redirect)
 
-        rclient = WebApplicationClient(self.client_id,
-                default_redirect_uri=self.redirect_uri)
-        uri = rclient.prepare_request_uri(self.uri)
-        self.assertEqual(uri, self.uri_redirect)
-
         # With scope
         uri = client.prepare_request_uri(self.uri, scope=self.scope)
         self.assertEqual(uri, self.uri_scope)
@@ -167,10 +162,6 @@ class WebApplicationClientTest(TestCase):
 
         # With extra parameters through kwargs, checking using len since order
         # of dict items is undefined
-        rclient = WebApplicationClient(self.client_id,
-                default_kwargs_uri=self.kwargs)
-        uri = rclient.prepare_request_uri(self.uri)
-        self.assertEqual(len(uri), len(self.uri_kwargs))
         uri = client.prepare_request_uri(self.uri, **self.kwargs)
         self.assertEqual(len(uri), len(self.uri_kwargs))
 
@@ -189,19 +180,9 @@ class WebApplicationClientTest(TestCase):
         body = client.prepare_request_body(body=self.body, redirect_uri=self.redirect_uri)
         self.assertEqual(body, self.body_redirect)
 
-        rclient = WebApplicationClient(self.client_id, code=self.code,
-                default_redirect_uri=self.redirect_uri)
-        body = rclient.prepare_request_body(body=self.body)
-        self.assertEqual(body, self.body_redirect)
-
         # With extra parameters, checked using length since order of
         # dict items is undefined
         body = client.prepare_request_body(body=self.body, **self.kwargs)
-        self.assertEqual(len(body), len(self.body_kwargs))
-
-        rclient = WebApplicationClient(self.client_id, code=self.code,
-                default_kwargs_body=self.kwargs)
-        body = rclient.prepare_request_body(body=self.body)
         self.assertEqual(len(body), len(self.body_kwargs))
 
     def test_parse_grant_uri_response(self):
@@ -273,11 +254,6 @@ class UserAgentClientTest(TestCase):
         uri = client.prepare_request_uri(self.uri, redirect_uri=self.redirect_uri)
         self.assertEqual(uri, self.uri_redirect)
 
-        rclient = UserAgentClient(self.client_id,
-                default_redirect_uri=self.redirect_uri)
-        uri = rclient.prepare_request_uri(self.uri)
-        self.assertEqual(uri, self.uri_redirect)
-
         # With scope
         uri = client.prepare_request_uri(self.uri, scope=self.scope)
         self.assertEqual(uri, self.uri_scope)
@@ -288,10 +264,6 @@ class UserAgentClientTest(TestCase):
 
         # With extra parameters through kwargs, checking using len since order
         # of dict items is undefined
-        rclient = UserAgentClient(self.client_id,
-                default_kwargs_uri=self.kwargs)
-        uri = rclient.prepare_request_uri(self.uri)
-        self.assertEqual(len(uri), len(self.uri_kwargs))
         uri = client.prepare_request_uri(self.uri, **self.kwargs)
         self.assertEqual(len(uri), len(self.uri_kwargs))
 
@@ -341,15 +313,11 @@ class PasswordCredentialsClientTest(TestCase):
     }
 
     def test_request_body(self):
-        client = PasswordCredentialsClient(self.client_id,
-                username=self.username, password=self.password)
+        client = PasswordCredentialsClient(self.client_id, self.username,
+                    self.password)
 
         # Basic, no extra arguments
         body = client.prepare_request_body(body=self.body)
-        self.assertEqual(body, self.body_up)
-
-        rclient = PasswordCredentialsClient(self.client_id)
-        body = rclient.prepare_request_body(body=self.body, username=self.username, password=self.password)
         self.assertEqual(body, self.body_up)
 
         # With extra parameters, checked using length since order of
@@ -357,13 +325,9 @@ class PasswordCredentialsClientTest(TestCase):
         body = client.prepare_request_body(body=self.body, **self.kwargs)
         self.assertEqual(len(body), len(self.body_kwargs))
 
-        rclient = PasswordCredentialsClient(self.client_id, username=self.username,
-                password=self.password, default_kwargs_body=self.kwargs)
-        body = rclient.prepare_request_body(body=self.body)
-        self.assertEqual(len(body), len(self.body_kwargs))
-
     def test_parse_token_response(self):
-        client = PasswordCredentialsClient(self.client_id)
+        client = PasswordCredentialsClient(self.client_id, self.username,
+                self.password)
 
         # Parse code and state
         response = client.parse_request_body_response(self.token_json, scope=self.scope)
@@ -417,11 +381,6 @@ class ClientCredentialsClientTest(TestCase):
         # With extra parameters, checked using length since order of
         # dict items is undefined
         body = client.prepare_request_body(body=self.body, **self.kwargs)
-        self.assertEqual(len(body), len(self.body_kwargs))
-
-        rclient = ClientCredentialsClient(self.client_id,
-                default_kwargs_body=self.kwargs)
-        body = rclient.prepare_request_body(body=self.body)
         self.assertEqual(len(body), len(self.body_kwargs))
 
     def test_parse_token_response(self):
