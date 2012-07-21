@@ -106,7 +106,7 @@ class WebApplicationClientTest(TestCase):
     uri_id = uri + u"&response_type=code&client_id=" + client_id
     uri_redirect = uri_id + u"&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     redirect_uri = u"http://my.page.com/callback"
-    scope = u"/profile"
+    scope = [u"/profile"]
     state = u"xyz"
     uri_scope = uri_id + u"&scope=%2Fprofile"
     uri_state = uri_id + u"&state=" + state
@@ -136,7 +136,7 @@ class WebApplicationClientTest(TestCase):
         u"access_token": u"2YotnFZFEjr1zCsicMWpAA",
         u"token_type": u"example",
         u"expires_in": 3600,
-        u"scope": "/profile",
+        u"scope": scope,
         u"refresh_token": u"tGzv3JOkF0XG5Qx2TlKWIA",
         u"example_parameter": u"example_value"
     }
@@ -217,7 +217,7 @@ class UserAgentClientTest(TestCase):
     uri_id = uri + u"&response_type=token&client_id=" + client_id
     uri_redirect = uri_id + u"&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     redirect_uri = u"http://my.page.com/callback"
-    scope = u"/profile"
+    scope = [u"/profile"]
     state = u"xyz"
     uri_scope = uri_id + u"&scope=%2Fprofile"
     uri_state = uri_id + u"&state=" + state
@@ -239,7 +239,7 @@ class UserAgentClientTest(TestCase):
         u"access_token": u"2YotnFZFEjr1zCsicMWpAA",
         u"token_type": u"example",
         u"expires_in": u"3600",
-        u"scope": "/profile",
+        u"scope": scope,
         u"example_parameter": u"example_value"
     }
 
@@ -277,14 +277,14 @@ class UserAgentClientTest(TestCase):
         self.assertEqual(client.refresh_token, response.get(u"refresh_token"))
         self.assertEqual(client.token_type, response.get(u"token_type"))
 
-        # Mismatching state
+        # Mismatching scope
         self.assertRaises(Warning, client.parse_request_uri_response, self.response_uri, scope=u"invalid")
 
 
 class PasswordCredentialsClientTest(TestCase):
 
     client_id = u"someclientid"
-    scope = u"/profile"
+    scope = [u"/profile"]
     kwargs = {
         u"some": u"providers",
         u"require": u"extra arguments"
@@ -307,7 +307,7 @@ class PasswordCredentialsClientTest(TestCase):
         u"access_token": u"2YotnFZFEjr1zCsicMWpAA",
         u"token_type": u"example",
         u"expires_in": 3600,
-        u"scope": "/profile",
+        u"scope": scope,
         u"refresh_token": u"tGzv3JOkF0XG5Qx2TlKWIA",
         u"example_parameter": u"example_value"
     }
@@ -343,7 +343,7 @@ class PasswordCredentialsClientTest(TestCase):
 class ClientCredentialsClientTest(TestCase):
 
     client_id = u"someclientid"
-    scope = u"/profile"
+    scope = [u"/profile"]
     kwargs = {
         u"some": u"providers",
         u"require": u"extra arguments"
@@ -363,7 +363,7 @@ class ClientCredentialsClientTest(TestCase):
         u"access_token": u"2YotnFZFEjr1zCsicMWpAA",
         u"token_type": u"example",
         u"expires_in": 3600,
-        u"scope": "/profile",
+        u"scope": [u"/profile"],
         u"example_parameter": u"example_value"
     }
 

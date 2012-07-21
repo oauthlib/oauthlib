@@ -10,6 +10,7 @@ This module contains methods related to `Section 4`_ of the OAuth 2 draft.
 import json
 import urlparse
 from oauthlib.common import add_params_to_uri, add_params_to_qs
+from oauthlib.oauth2.draft25.utils import scope_to_string, scope_to_list
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
@@ -53,7 +54,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     if redirect_uri:
         params.append((u'redirect_uri', redirect_uri))
     if scope:
-        params.append((u'scope', scope))
+        params.append((u'scope', scope_to_string(scope)))
     if state:
         params.append((u'state', state))
 
@@ -87,6 +88,10 @@ def prepare_token_request(grant_type, body=u'', **kwargs):
     .. _`Section 4.1.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-4.1.1
     """
     params = [(u'grant_type', grant_type)]
+
+    if u'scope' in kwargs:
+        kwargs[u'scope'] = scope_to_string(kwargs[u'scope'])
+
     for k in kwargs:
         if kwargs[k]:
             params.append((unicode(k), kwargs[k]))
@@ -172,11 +177,14 @@ def parse_implicit_response(uri, state=None, scope=None):
     """
     fragment = urlparse.urlparse(uri).fragment
     params = dict(urlparse.parse_qsl(fragment, keep_blank_values=True))
-    validate_token_parameters(params, scope)
+
+    if u'scope' in params:
+        params[u'scope'] = scope_to_list(params[u'scope'])
 
     if state and params.get(u'state', None) != state:
         raise ValueError("Mismatching or missing state in params.")
 
+    validate_token_parameters(params, scope)
     return params
 
 
@@ -236,6 +244,10 @@ def parse_token_response(body, scope=None):
     .. _`RFC4627`: http://tools.ietf.org/html/rfc4627
     """
     params = json.loads(body)
+
+    if u'scope' in params:
+        params[u'scope'] = scope_to_list(params[u'scope'])
+
     validate_token_parameters(params, scope)
     return params
 
@@ -254,5 +266,6 @@ def validate_token_parameters(params, scope=None):
     # parameter to inform the client of the actual scope granted.
     # http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-3.3
     new_scope = params.get(u'scope', None)
-    if scope and new_scope and scope != new_scope:
+    scope = scope_to_list(scope)
+    if scope and new_scope and set(scope) != set(new_scope):
         raise Warning("Scope has changed to %s." % new_scope)

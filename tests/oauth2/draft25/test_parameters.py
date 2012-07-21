@@ -6,39 +6,50 @@ from oauthlib.oauth2.draft25.parameters import *
 
 class ParameterTests(TestCase):
 
-    auth_grant = {
+    state = u'xyz'
+    auth_base = {
         u'uri': u'http://server.example.com/authorize',
         u'client_id': u's6BhdRkqt3',
-        u'response_type': u'code',
         u'redirect_uri': u'https://client.example.com/cb',
-        u'scope': u'photos',
-        u'state': u'xyz'
+        u'state': state,
+        u'scope': u'photos'
     }
-    auth_grant_uri = (u'http://server.example.com/authorize?response_type=code'
-                      u'&client_id=s6BhdRkqt3&redirect_uri=https%3A%2F%2F'
-                      u'client.example.com%2Fcb&scope=photos&state=xyz')
+    list_scope = [u'list', u'of', u'scopes']
 
-    auth_implicit = {
-        u'uri': u'http://server.example.com/authorize',
-        u'client_id': u's6BhdRkqt3',
-        u'response_type': u'token',
-        u'redirect_uri': u'https://client.example.com/cb',
-        u'state': u'xyz',
-        u'extra': u'extra'
-    }
-    auth_implicit_uri = (u'http://server.example.com/authorize?'
-                         u'response_type=token&client_id=s6BhdRkqt3&'
-                         u'redirect_uri=https%3A%2F%2Fclient.example.com%2Fcb&'
-                         u'state=xyz&extra=extra')
+    auth_grant = {u'response_type': u'code'}
+    auth_grant_list_scope = {}
+    auth_implicit = {u'response_type': u'token', u'extra': u'extra'}
+    auth_implicit_list_scope = {}
+
+    def setUp(self):
+        self.auth_grant.update(self.auth_base)
+        self.auth_implicit.update(self.auth_base)
+        self.auth_grant_list_scope.update(self.auth_grant)
+        self.auth_grant_list_scope[u'scope'] = self.list_scope
+        self.auth_implicit_list_scope.update(self.auth_implicit)
+        self.auth_implicit_list_scope[u'scope'] = self.list_scope
+
+    auth_base_uri = (u'http://server.example.com/authorize?response_type={0}'
+                     u'&client_id=s6BhdRkqt3&redirect_uri=https%3A%2F%2F'
+                     u'client.example.com%2Fcb&scope={1}&state={2}{3}')
+
+    auth_grant_uri = auth_base_uri.format(u'code', u'photos', state, u'')
+    auth_grant_uri_list_scope = auth_base_uri.format(u'code', u'list+of+scopes', state, u'')
+    auth_implicit_uri = auth_base_uri.format(u'token', u'photos', state, u'&extra=extra')
+    auth_implicit_uri_list_scope = auth_base_uri.format(u'token', u'list+of+scopes', state, u'&extra=extra')
 
     grant_body = {
         u'grant_type': u'authorization_code',
         u'code': u'SplxlOBeZQQYbYS6WxSbIA',
         u'redirect_uri': u'https://client.example.com/cb'
     }
+    grant_body_scope = {u'scope': 'photos'}
+    grant_body_list_scope = {u'scope': list_scope}
     auth_grant_body = (u'grant_type=authorization_code&'
                        u'code=SplxlOBeZQQYbYS6WxSbIA&'
                        u'redirect_uri=https%3A%2F%2Fclient.example.com%2Fcb')
+    auth_grant_body_scope = auth_grant_body + u'&scope=photos'
+    auth_grant_body_list_scope = auth_grant_body + u'&scope=list+of+scopes'
 
     pwd_body = {
         u'grant_type': u'password',
@@ -47,41 +58,30 @@ class ParameterTests(TestCase):
     }
     password_body = u'grant_type=password&username=johndoe&password=A3ddj3w'
 
-    cred_grant = {
-        u'grant_type': u'client_credentials'
-    }
+    cred_grant = {u'grant_type': u'client_credentials'}
     cred_body = u'grant_type=client_credentials'
 
     grant_response = u'https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA&state=xyz'
-
-    grant_dict = {
-        u'code': u'SplxlOBeZQQYbYS6WxSbIA',
-        u'state': u'xyz'
-    }
+    grant_dict = {u'code': u'SplxlOBeZQQYbYS6WxSbIA', u'state': state}
 
     error_nocode = u'https://client.example.com/cb?state=xyz'
     error_nostate = u'https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA'
     error_wrongstate = u'https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA&state=abc'
     error_response = u'https://client.example.com/cb?error=access_denied&state=xyz'
 
-    state = u'xyz'
-
-    implicit_response = (u'http://example.com/cb#access_token=2YotnFZFEjr1zCsi'
-                         u'cMWpAA&state=xyz&token_type=example&expires_in=3600')
-    implicit_notoken = (u'http://example.com/cb#state=xyz&token_type=example&'
-                        u'expires_in=3600')
-    implicit_notype = (u'http://example.com/cb#access_token=2YotnFZFEjr1zCsicM'
-                       u'WpAA&state=xyz&expires_in=3600')
-    implicit_nostate = (u'http://example.com/cb#access_token=2YotnFZFEjr1zCsic'
-                        u'MWpAA&token_type=example&expires_in=3600')
-    implicit_wrongstate = (u'http://example.com/cb#access_token=2YotnFZFEjr1zC'
-                           u'sicMWpAA&state=abc&token_type=example&expires_in=3600')
+    implicit_base = u'http://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA&scope=abc&'
+    implicit_response = implicit_base + u'state={0}&token_type=example&expires_in=3600'.format(state)
+    implicit_notype = implicit_base + u'state={0}&expires_in=3600'.format(state)
+    implicit_wrongstate = implicit_base + u'state={0}&token_type=exampleexpires_in=3600'.format(u'invalid')
+    implicit_nostate = implicit_base + u'token_type=example&expires_in=3600'
+    implicit_notoken = u'http://example.com/cb#state=xyz&token_type=example&expires_in=3600'
 
     implicit_dict = {
         u'access_token': u'2YotnFZFEjr1zCsicMWpAA',
-        u'state': u'xyz',
+        u'state': state,
         u'token_type': 'example',
         u'expires_in': u'3600',
+        u'scope': [u'abc']
     }
 
     json_response = (u'{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
@@ -89,7 +89,7 @@ class ParameterTests(TestCase):
                      u'  "expires_in": 3600,'
                      u'  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                      u'  "example_parameter": "example_value",'
-                     u'  "scope":"abc"}')
+                     u'  "scope":"abc def"}')
 
     json_error = u'{ "error": "invalid_request" }'
 
@@ -109,13 +109,15 @@ class ParameterTests(TestCase):
        u'expires_in': 3600,
        u'refresh_token': u'tGzv3JOkF0XG5Qx2TlKWIA',
        u'example_parameter': u'example_value',
-       u'scope': u'abc'
+       u'scope': [u'abc', u'def']
     }
 
     def test_prepare_grant_uri(self):
         """Verify correct authorization URI construction."""
         self.assertEqual(prepare_grant_uri(**self.auth_grant), self.auth_grant_uri)
+        self.assertEqual(prepare_grant_uri(**self.auth_grant_list_scope), self.auth_grant_uri_list_scope)
         self.assertEqual(prepare_grant_uri(**self.auth_implicit), self.auth_implicit_uri)
+        self.assertEqual(prepare_grant_uri(**self.auth_implicit_list_scope), self.auth_implicit_uri_list_scope)
 
     def test_prepare_token_request(self):
         """Verify correct access token request body construction."""

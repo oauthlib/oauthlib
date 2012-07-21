@@ -9,6 +9,24 @@ import urllib
 import urlparse
 
 
+def scope_to_string(scope):
+    """Convert a list of scopes to a space separated string."""
+    if isinstance(scope, unicode) or scope is None:
+        return scope
+    elif isinstance(scope, list):
+        return " ".join(scope)
+    else:
+        raise ValueError("Invalid scope, must be string or list.")
+
+
+def scope_to_list(scope):
+    """Convert a space separated string to a list of scopes."""
+    if isinstance(scope, list) or scope is None:
+        return scope
+    else:
+        return scope.split(" ")
+
+
 def host_from_uri(uri):
     """Extract hostname and port from URI.
 
