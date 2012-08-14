@@ -75,7 +75,7 @@ It is critical that you pull upstream changes from master into your fork on a re
 
 To pull in upstream changes::
 
-    git remote add upstream https://github.com/idangazit/oauthlib.git
+    git remote add upstream https://github.com/idan/oauthlib.git
     git fetch upstream
 
 Check the log to be sure that you actually want the changes, before merging::
@@ -161,5 +161,5 @@ We finish with a non-fastforward merge (to preserve the branch history) and push
     git push upstream master
 
 .. _installation: install.html
-.. _GitHub project: https://github.com/idangazit/oauthlib
-.. _issue tracker: https://github.com/idangazit/oauthlib/issues
+.. _GitHub project: https://github.com/idan/oauthlib
+.. _issue tracker: https://github.com/idan/oauthlib/issues
