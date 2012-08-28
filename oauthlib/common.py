@@ -26,14 +26,18 @@ always_safe = (u'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 def check_quote_type(u):
     is_str = isinstance(u, str)
     is_unicode = isinstance(u, unicode)
+    is_utf8 = False
     if not is_str and not is_unicode:
-        u = str(u)
+        u = unicode(u)
+        is_unicode = True
     if is_unicode:
         u = u.encode("utf-8")
-    try:
-        u.decode("utf-8")
-    except UnicodeDecodeError:
-        raise ValueError('Only unicode objects or UTF-8 str objects are unescapable.')
+        is_utf8 = True
+    if not is_utf8:
+        try:
+            u.decode("utf-8")
+        except UnicodeDecodeError:
+            raise ValueError('Only unicode objects or UTF-8 str objects are unescapable.')
     return u
 
 
