@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 
 from os.path import dirname, join
 from setuptools import setup, find_packages, Command
