@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
+
 """
 oauthlib.oauth2.draft_25
 ~~~~~~~~~~~~~~
@@ -5,16 +8,16 @@ oauthlib.oauth2.draft_25
 This module is an implementation of various logic needed
 for signing and checking OAuth 2.0 draft 25 requests.
 """
-from tokens import prepare_bearer_uri, prepare_bearer_headers
-from tokens import prepare_bearer_body, prepare_mac_header
-from parameters import prepare_grant_uri, prepare_token_request
-from parameters import parse_authorization_code_response
-from parameters import parse_implicit_response, parse_token_response
+from .tokens import prepare_bearer_uri, prepare_bearer_headers
+from .tokens import prepare_bearer_body, prepare_mac_header
+from .parameters import prepare_grant_uri, prepare_token_request
+from .parameters import parse_authorization_code_response
+from .parameters import parse_implicit_response, parse_token_response
 
 
-AUTH_HEADER = u'auth_header'
-URI_QUERY = u'query'
-BODY = u'body'
+AUTH_HEADER = 'auth_header'
+URI_QUERY = 'query'
+BODY = 'body'
 
 
 class Client(object):
@@ -26,7 +29,7 @@ class Client(object):
 
     def __init__(self, client_id,
             default_token_placement=AUTH_HEADER,
-            token_type=u'Bearer',
+            token_type='Bearer',
             access_token=None,
             refresh_token=None,
             **kwargs):
@@ -50,11 +53,11 @@ class Client(object):
         is experimental and currently matching version 00 of the spec.
         """
         return {
-            u'Bearer': self._add_bearer_token,
-            u'MAC': self._add_mac_token
+            'Bearer': self._add_bearer_token,
+            'MAC': self._add_mac_token
         }
 
-    def add_token(self, uri, http_method=u'GET', body=None, headers=None,
+    def add_token(self, uri, http_method='GET', body=None, headers=None,
             token_placement=None):
         """Add token to the request uri, body or authorization header.
 
@@ -96,7 +99,7 @@ class Client(object):
         return self.token_types[self.token_type](uri, http_method, body,
                     headers, token_placement)
 
-    def prepare_refresh_body(self, body=u'', refresh_token=None, scope=None):
+    def prepare_refresh_body(self, body='', refresh_token=None, scope=None):
         """Prepare an access token request, using a refresh token.
 
         If the authorization server issued a refresh token to the client, the
@@ -116,10 +119,10 @@ class Client(object):
                 resource owner.
         """
         refresh_token = refresh_token or self.refresh_token
-        return prepare_token_request(u'refresh_token', body=body, scope=scope,
+        return prepare_token_request('refresh_token', body=body, scope=scope,
                 refresh_token=refresh_token)
 
-    def _add_bearer_token(self, uri, http_method=u'GET', body=None,
+    def _add_bearer_token(self, uri, http_method='GET', body=None,
             headers=None, token_placement=None):
         """Add a bearer token to the request uri, body or authorization header."""
         if token_placement == AUTH_HEADER:
@@ -135,7 +138,7 @@ class Client(object):
             raise ValueError("Invalid token placement.")
         return uri, headers, body
 
-    def _add_mac_token(self, uri, http_method=u'GET', body=None,
+    def _add_mac_token(self, uri, http_method='GET', body=None,
             headers=None, token_placement=AUTH_HEADER):
         """Add a MAC token to the request authorization header.
 
@@ -149,20 +152,20 @@ class Client(object):
     def _populate_attributes(self, response):
         """Add commonly used values such as access_token to self."""
 
-        if u'access_token' in response:
-            self.access_token = response.get(u'access_token')
+        if 'access_token' in response:
+            self.access_token = response.get('access_token')
 
-        if u'refresh_token' in response:
-            self.refresh_token = response.get(u'refresh_token')
+        if 'refresh_token' in response:
+            self.refresh_token = response.get('refresh_token')
 
-        if u'token_type' in response:
-            self.token_type = response.get(u'token_type')
+        if 'token_type' in response:
+            self.token_type = response.get('token_type')
 
-        if u'expires_in' in response:
-            self.expires_in = response.get(u'expires_in')
+        if 'expires_in' in response:
+            self.expires_in = response.get('expires_in')
 
-        if u'code' in response:
-            self.code = response.get(u'code')
+        if 'code' in response:
+            self.code = response.get('code')
 
     def prepare_request_uri(self, *args, **kwargs):
         """Abstract method used to create request URIs."""
@@ -233,10 +236,10 @@ class WebApplicationClient(Client):
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         .. _`Section 10.12`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-10.12
         """
-        return prepare_grant_uri(uri, self.client_id, u'code',
+        return prepare_grant_uri(uri, self.client_id, 'code',
                 redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
 
-    def prepare_request_body(self, code=None, body=u'', redirect_uri=None, **kwargs):
+    def prepare_request_body(self, code=None, body='', redirect_uri=None, **kwargs):
         """Prepare the access token request body.
 
         The client makes a request to the token endpoint by adding the
@@ -256,7 +259,7 @@ class WebApplicationClient(Client):
         .. _`Section 4.1.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-4.1.1
         """
         code = code or self.code
-        return prepare_token_request(u'authorization_code', code=code, body=body,
+        return prepare_token_request('authorization_code', code=code, body=body,
                                           redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
@@ -361,7 +364,7 @@ class UserAgentClient(Client):
                 to the client.  The parameter SHOULD be used for preventing
                 cross-site request forgery as described in Section 10.12.
         """
-        return prepare_grant_uri(uri, self.client_id, u'token',
+        return prepare_grant_uri(uri, self.client_id, 'token',
                 redirect_uri=redirect_uri, state=state, scope=scope, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None, scope=None):
@@ -417,7 +420,7 @@ class ClientCredentialsClient(Client):
     no additional authorization request is needed.
     """
 
-    def prepare_request_body(self, body=u'', scope=None, **kwargs):
+    def prepare_request_body(self, body='', scope=None, **kwargs):
         """Add the client credentials to the request body.
 
         The client makes a request to the token endpoint by adding the
@@ -432,7 +435,7 @@ class ClientCredentialsClient(Client):
 
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         """
-        return prepare_token_request(u'client_credentials', body=body,
+        return prepare_token_request('client_credentials', body=body,
                                      scope=scope, **kwargs)
 
     def parse_request_body_response(self, body, scope=None):
@@ -479,7 +482,7 @@ class PasswordCredentialsClient(Client):
         self.username = username
         self.password = password
 
-    def prepare_request_body(self, body=u'', scope=None, **kwargs):
+    def prepare_request_body(self, body='', scope=None, **kwargs):
         """Add the resource owner password and username to the request body.
 
         The client makes a request to the token endpoint by adding the
@@ -498,7 +501,7 @@ class PasswordCredentialsClient(Client):
 
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         """
-        return prepare_token_request(u'password', body=body, username=self.username,
+        return prepare_token_request('password', body=body, username=self.username,
                 password=self.password, scope=scope, **kwargs)
 
     def parse_request_body_response(self, body, scope=None):

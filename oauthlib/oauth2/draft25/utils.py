@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
+
 """
 oauthlib.utils
 ~~~~~~~~~~~~~~
@@ -5,13 +8,20 @@ oauthlib.utils
 This module contains utility methods used by various parts of the OAuth 2 spec.
 """
 
-import urllib
-import urlparse
+try:
+    from urllib import quote
+except ImportError:
+    from urllib.parse import quote
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
+from oauthlib.common import unicode_type
 
 
 def scope_to_string(scope):
     """Convert a list of scopes to a space separated string."""
-    if isinstance(scope, unicode) or scope is None:
+    if isinstance(scope, unicode_type) or scope is None:
         return scope
     elif isinstance(scope, list):
         return " ".join(scope)
@@ -33,13 +43,13 @@ def host_from_uri(uri):
     Will use default port for HTTP and HTTPS if none is present in the URI.
     """
     default_ports = {
-        u'HTTP': u'80',
-        u'HTTPS': u'443',
+        'HTTP': '80',
+        'HTTPS': '443',
     }
 
-    sch, netloc, path, par, query, fra = urlparse.urlparse(uri)
-    if u':' in netloc:
-        netloc, port = netloc.split(u':', 1)
+    sch, netloc, path, par, query, fra = urlparse(uri)
+    if ':' in netloc:
+        netloc, port = netloc.split(':', 1)
     else:
         port = default_ports.get(sch.upper())
 
@@ -52,6 +62,6 @@ def escape(u):
     TODO: verify whether this can in fact be used for OAuth 2
 
     """
-    if not isinstance(u, unicode):
+    if not isinstance(u, unicode_type):
         raise ValueError('Only unicode objects are escapable.')
-    return urllib.quote(u.encode('utf-8'), safe='~')
+    return quote(u.encode('utf-8'), safe='~')

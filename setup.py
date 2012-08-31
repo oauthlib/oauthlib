@@ -13,7 +13,10 @@ def fread(fn):
     with open(join(dirname(__file__), fn), 'r') as f:
         return f.read()
 
-tests_require = ['nose', 'unittest2', 'pycrypto']
+if sys.version_info[0] == 3:
+    tests_require = ['nose', 'pycrypto']
+else:
+    tests_require = ['nose', 'unittest2', 'pycrypto']
 rsa_require = ['pycrypto']
 
 requires = []

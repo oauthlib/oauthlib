@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 from oauthlib.common import *
 from .unittest import TestCase
 
 
 class CommonTests(TestCase):
-    params_dict = {u'foo': u'bar', u'baz': u'123', }
-    params_twotuple = [(u'foo', u'bar'), (u'baz', u'123')]
-    params_formencoded = u'foo=bar&baz=123'
-    uri = u'http://www.someuri.com'
+    params_dict = {'foo': 'bar', 'baz': '123', }
+    params_twotuple = [('foo', 'bar'), ('baz', '123')]
+    params_formencoded = 'foo=bar&baz=123'
+    uri = 'http://www.someuri.com'
 
     def test_urldecode(self):
-        self.assertEqual(urldecode(u''), [])
-        self.assertEqual(urldecode(u'='), [(u'', u'')])
-        self.assertEqual(urldecode(u'%20'), [(u' ', u'')])
-        self.assertEqual(urldecode(u'+'), [(u' ', u'')])
-        self.assertEqual(urldecode(u'c2'), [(u'c2', u'')])
-        self.assertEqual(urldecode(u'c2='), [(u'c2', u'')])
-        self.assertEqual(urldecode(u'foo=bar'), [(u'foo', u'bar')])
-        self.assertEqual(urldecode(u'foo_%20~=.bar-'), [(u'foo_ ~', u'.bar-')])
-        self.assertRaises(ValueError, urldecode, u'foo bar')
-        self.assertRaises(ValueError, urldecode, u'?')
-        self.assertRaises(ValueError, urldecode, u'%R')
-        self.assertRaises(ValueError, urldecode, u'%RA')
-        self.assertRaises(ValueError, urldecode, u'%AR')
-        self.assertRaises(ValueError, urldecode, u'%RR')
+        self.assertEqual(urldecode(''), [])
+        self.assertEqual(urldecode('='), [('', '')])
+        self.assertEqual(urldecode('%20'), [(' ', '')])
+        self.assertEqual(urldecode('+'), [(' ', '')])
+        self.assertEqual(urldecode('c2'), [('c2', '')])
+        self.assertEqual(urldecode('c2='), [('c2', '')])
+        self.assertEqual(urldecode('foo=bar'), [('foo', 'bar')])
+        self.assertEqual(urldecode('foo_%20~=.bar-'), [('foo_ ~', '.bar-')])
+        self.assertRaises(ValueError, urldecode, 'foo bar')
+        self.assertRaises(ValueError, urldecode, '?')
+        self.assertRaises(ValueError, urldecode, '%R')
+        self.assertRaises(ValueError, urldecode, '%RA')
+        self.assertRaises(ValueError, urldecode, '%AR')
+        self.assertRaises(ValueError, urldecode, '%RR')
 
     def test_extract_params_dict(self):
         self.assertEqual(extract_params(self.params_dict), self.params_twotuple)
@@ -84,7 +84,7 @@ class CommonTests(TestCase):
     def test_generate_timestamp(self):
         """ TODO: Better test here """
         timestamp = generate_timestamp()
-        self.assertIsInstance(timestamp, unicode)
+        self.assertIsInstance(timestamp, unicode_type)
         self.assertTrue(int(timestamp))
         self.assertGreater(int(timestamp), 1331672335)  # is this increasing?
 
