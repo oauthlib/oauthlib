@@ -64,4 +64,4 @@ def escape(u):
     """
     if not isinstance(u, unicode_type):
         raise ValueError('Only unicode objects are escapable.')
-    return quote(u.encode('utf-8'), safe='~')
+    return quote(u.encode('utf-8'), safe=b'~')

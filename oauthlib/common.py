@@ -44,20 +44,22 @@ else:
     unicode_type = unicode
     bytes_type = str
 
-def quote(s, safe='/'):
+
+# 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
+def quote(s, safe=b'/'):
+    s = _quote(s, safe)
     # PY3 always returns unicode.  PY2 may return either, depending on whether
     # it had to modify the string.
-    s = _quote(s, safe)
     if isinstance(s, bytes_type):
         s = s.decode('utf-8')
     return s
 
 
 def unquote(s):
+    s = _unquote(s)
     # PY3 always returns unicode.  PY2 seems to always return what you give it,
     # which differs from quote's behavior.  Just to be safe, make sure it is
     # unicode before we return.
-    s = _unquote(s)
     if isinstance(s, bytes_type):
         s = s.decode('utf-8')
     return s

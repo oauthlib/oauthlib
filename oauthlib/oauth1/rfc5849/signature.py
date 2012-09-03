@@ -170,7 +170,7 @@ def normalize_base_string_uri(uri):
 #
 #    .. _`section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
-def collect_parameters(uri_query=b'', body=[], headers=None,
+def collect_parameters(uri_query='', body=[], headers=None,
         exclude_oauth_signature=True):
     """**Parameter Sources**
 
