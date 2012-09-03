@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
+
 """
 oauthlib.oauth2_draft28.parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8,8 +11,11 @@ This module contains methods related to `Section 4`_ of the OAuth 2 draft.
 """
 
 import json
-import urlparse
-from oauthlib.common import add_params_to_uri, add_params_to_qs
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
+from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
 from oauthlib.oauth2.draft25.utils import scope_to_string, scope_to_list
 
 
@@ -48,24 +54,24 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
     .. _`section 10.12`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-10.12
     """
-    params = [((u'response_type', response_type)),
-              ((u'client_id', client_id))]
+    params = [(('response_type', response_type)),
+              (('client_id', client_id))]
 
     if redirect_uri:
-        params.append((u'redirect_uri', redirect_uri))
+        params.append(('redirect_uri', redirect_uri))
     if scope:
-        params.append((u'scope', scope_to_string(scope)))
+        params.append(('scope', scope_to_string(scope)))
     if state:
-        params.append((u'state', state))
+        params.append(('state', state))
 
     for k in kwargs:
         if kwargs[k]:
-            params.append((unicode(k), kwargs[k]))
+            params.append((unicode_type(k), kwargs[k]))
 
     return add_params_to_uri(uri, params)
 
 
-def prepare_token_request(grant_type, body=u'', **kwargs):
+def prepare_token_request(grant_type, body='', **kwargs):
     """Prepare the access token request.
 
     The client makes a request to the token endpoint by adding the
@@ -87,14 +93,14 @@ def prepare_token_request(grant_type, body=u'', **kwargs):
 
     .. _`Section 4.1.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-4.1.1
     """
-    params = [(u'grant_type', grant_type)]
+    params = [('grant_type', grant_type)]
 
-    if u'scope' in kwargs:
-        kwargs[u'scope'] = scope_to_string(kwargs[u'scope'])
+    if 'scope' in kwargs:
+        kwargs['scope'] = scope_to_string(kwargs['scope'])
 
     for k in kwargs:
         if kwargs[k]:
-            params.append((unicode(k), kwargs[k]))
+            params.append((unicode_type(k), kwargs[k]))
 
     return add_params_to_qs(body, params)
 
@@ -134,10 +140,10 @@ def parse_authorization_code_response(uri, state=None):
     query = urlparse.urlparse(uri).query
     params = dict(urlparse.parse_qsl(query))
 
-    if not u'code' in params:
+    if not 'code' in params:
         raise KeyError("Missing code parameter in response.")
 
-    if state and params.get(u'state', None) != state:
+    if state and params.get('state', None) != state:
         raise ValueError("Mismatching or missing state in response.")
 
     return params
@@ -178,10 +184,10 @@ def parse_implicit_response(uri, state=None, scope=None):
     fragment = urlparse.urlparse(uri).fragment
     params = dict(urlparse.parse_qsl(fragment, keep_blank_values=True))
 
-    if u'scope' in params:
-        params[u'scope'] = scope_to_list(params[u'scope'])
+    if 'scope' in params:
+        params['scope'] = scope_to_list(params['scope'])
 
-    if state and params.get(u'state', None) != state:
+    if state and params.get('state', None) != state:
         raise ValueError("Mismatching or missing state in params.")
 
     validate_token_parameters(params, scope)
@@ -245,8 +251,8 @@ def parse_token_response(body, scope=None):
     """
     params = json.loads(body)
 
-    if u'scope' in params:
-        params[u'scope'] = scope_to_list(params[u'scope'])
+    if 'scope' in params:
+        params['scope'] = scope_to_list(params['scope'])
 
     validate_token_parameters(params, scope)
     return params
@@ -255,17 +261,17 @@ def parse_token_response(body, scope=None):
 def validate_token_parameters(params, scope=None):
     """Ensures token precence, token type, expiration and scope in params."""
 
-    if not u'access_token' in params:
+    if not 'access_token' in params:
         raise KeyError("Missing access token parameter.")
 
-    if not u'token_type' in params:
+    if not 'token_type' in params:
         raise KeyError("Missing token type parameter.")
 
     # If the issued access token scope is different from the one requested by
     # the client, the authorization server MUST include the "scope" response
     # parameter to inform the client of the actual scope granted.
     # http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-3.3
-    new_scope = params.get(u'scope', None)
+    new_scope = params.get('scope', None)
     scope = scope_to_list(scope)
     if scope and new_scope and set(scope) != set(new_scope):
         raise Warning("Scope has changed to %s." % new_scope)

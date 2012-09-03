@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 from oauthlib.oauth1.rfc5849.utils import *
+from oauthlib.common import unicode_type
 from ...unittest import TestCase
 
 
@@ -21,17 +22,17 @@ class UtilsTests(TestCase):
         }
 
     sample_params_unicode_list = [
-            (u"notoauth", u"shouldnotbehere"),
-            (u"oauth_consumer_key", u"9djdj82h48djs9d2"),
-            (u"oauth_token", u"kkk9d7dh3k39sjv7"),
-            (u"notoautheither", u"shouldnotbehere")
+            ("notoauth", "shouldnotbehere"),
+            ("oauth_consumer_key", "9djdj82h48djs9d2"),
+            ("oauth_token", "kkk9d7dh3k39sjv7"),
+            ("notoautheither", "shouldnotbehere")
         ]
 
     sample_params_unicode_dict = {
-            u"notoauth": u"shouldnotbehere",
-            u"oauth_consumer_key": u"9djdj82h48djs9d2",
-            u"oauth_token": u"kkk9d7dh3k39sjv7",
-            u"notoautheither": u"shouldnotbehere"
+            "notoauth": "shouldnotbehere",
+            "oauth_consumer_key": "9djdj82h48djs9d2",
+            "oauth_token": "kkk9d7dh3k39sjv7",
+            "notoautheither": "shouldnotbehere"
         }
 
     authorization_header = """OAuth realm="Example",
@@ -91,14 +92,14 @@ class UtilsTests(TestCase):
         self.assertTrue(filtered_params[1][0].startswith('oauth'))
 
     def test_escape(self):
-        self.assertRaises(ValueError, escape, "I am a string type. Not a unicode type.")
-        self.assertEqual(escape(u"I am a unicode type."), u"I%20am%20a%20unicode%20type.")
-        self.assertIsInstance(escape(u"I am a unicode type."), unicode)
+        self.assertRaises(ValueError, escape, b"I am a string type. Not a unicode type.")
+        self.assertEqual(escape("I am a unicode type."), "I%20am%20a%20unicode%20type.")
+        self.assertIsInstance(escape("I am a unicode type."), unicode_type)
 
     def test_unescape(self):
-        self.assertRaises(ValueError, unescape, "I am a string type. Not a unicode type.")
-        self.assertEqual(unescape(u"I%20am%20a%20unicode%20type."), u'I am a unicode type.')
-        self.assertIsInstance(unescape(u"I%20am%20a%20unicode%20type."), unicode)
+        self.assertRaises(ValueError, unescape, b"I am a string type. Not a unicode type.")
+        self.assertEqual(unescape("I%20am%20a%20unicode%20type."), 'I am a unicode type.')
+        self.assertIsInstance(unescape("I%20am%20a%20unicode%20type."), unicode_type)
 
     def test_parse_authorization_header(self):
         # make us some headers
@@ -113,16 +114,16 @@ class UtilsTests(TestCase):
 
         # are the internal components of each tuple unicode?
         for k, v in authorization_headers:
-            self.assertIsInstance(k, unicode)
-            self.assertIsInstance(v, unicode)
+            self.assertIsInstance(k, unicode_type)
+            self.assertIsInstance(v, unicode_type)
 
         # let's check the parsed headers created
         correct_headers = [
-            (u"oauth_nonce", u"7d8f3e4a"),
-            (u"oauth_timestamp", u"137131201"),
-            (u"oauth_consumer_key", u"9djdj82h48djs9d2"),
-            (u'oauth_signature', u'djosJKDKJSD8743243%2Fjdk33klY%3D'),
-            (u'oauth_signature_method', u'HMAC-SHA1'),
-            (u'oauth_token', u'kkk9d7dh3k39sjv7'),
-            (u'realm', u'Example')]
-        self.assertItemsEqual(authorization_headers, correct_headers)
+            ("oauth_nonce", "7d8f3e4a"),
+            ("oauth_timestamp", "137131201"),
+            ("oauth_consumer_key", "9djdj82h48djs9d2"),
+            ('oauth_signature', 'djosJKDKJSD8743243%2Fjdk33klY%3D'),
+            ('oauth_signature_method', 'HMAC-SHA1'),
+            ('oauth_token', 'kkk9d7dh3k39sjv7'),
+            ('realm', 'Example')]
+        self.assertEqual(sorted(authorization_headers), sorted(correct_headers))
