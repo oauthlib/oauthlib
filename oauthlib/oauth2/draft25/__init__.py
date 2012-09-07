@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
 """
 oauthlib.oauth2.draft_25
 ~~~~~~~~~~~~~~
@@ -5,11 +7,13 @@ oauthlib.oauth2.draft_25
 This module is an implementation of various logic needed
 for signing and checking OAuth 2.0 draft 25 requests.
 """
-from tokens import prepare_bearer_uri, prepare_bearer_headers
-from tokens import prepare_bearer_body, prepare_mac_header
-from parameters import prepare_grant_uri, prepare_token_request
-from parameters import parse_authorization_code_response
-from parameters import parse_implicit_response, parse_token_response
+from .tokens import prepare_bearer_uri, prepare_bearer_headers
+from .tokens import prepare_bearer_body, prepare_mac_header
+from .parameters import prepare_grant_uri, prepare_token_request
+from .parameters import parse_authorization_code_response
+from .parameters import parse_implicit_response, parse_token_response
+from .exceptions import (InvalidClientIdentifier, MissingRedirectURI,
+                         InvalidRedirectURI)
 
 
 AUTH_HEADER = u'auth_header'
@@ -517,6 +521,10 @@ class PasswordCredentialsClient(Client):
         self._populate_attributes(response)
         return response
 
+class AuthorizationServer(object):
+    def client_redirect_uris(self, client_identifier):
+        raise NotImplementedError("Must be implemented by inheriting classes.")
 
-class Server(object):
-    pass
+    def redirect_uri(client_identifier, redirect_uri=None):
+        raise NotImplementedError("TODO")
+
