@@ -38,7 +38,7 @@ class Client(object):
             callback_uri=None,
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
-            rsa_key=None, verifier=None):
+            rsa_key=None, verifier=None, realm=None):
         self.client_key = client_key
         self.client_secret = client_secret
         self.resource_owner_key = resource_owner_key
@@ -48,6 +48,7 @@ class Client(object):
         self.callback_uri = callback_uri
         self.rsa_key = rsa_key
         self.verifier = verifier
+        self.realm = realm
 
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
@@ -99,6 +100,7 @@ class Client(object):
             (u'oauth_version', u'1.0'),
             (u'oauth_signature_method', self.signature_method),
             (u'oauth_consumer_key', self.client_key),
+            (u'realm', self.realm),
         ]
         if self.resource_owner_key:
             params.append((u'oauth_token', self.resource_owner_key))
