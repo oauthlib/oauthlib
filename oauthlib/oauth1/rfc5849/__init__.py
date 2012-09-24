@@ -100,7 +100,6 @@ class Client(object):
             (u'oauth_version', u'1.0'),
             (u'oauth_signature_method', self.signature_method),
             (u'oauth_consumer_key', self.client_key),
-            (u'realm', self.realm),
         ]
         if self.resource_owner_key:
             params.append((u'oauth_token', self.resource_owner_key))
@@ -132,7 +131,7 @@ class Client(object):
         # like the spec requires. This would be a fundamental change though, and
         # I'm not sure how I feel about it.
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
-            headers = parameters.prepare_headers(request.oauth_params, request.headers)
+            headers = parameters.prepare_headers(request.oauth_params, request.headers, self.realm)
         elif self.signature_type == SIGNATURE_TYPE_BODY and request.decoded_body is not None:
             body = parameters.prepare_form_encoded_body(request.oauth_params, request.decoded_body)
             if formencode:
