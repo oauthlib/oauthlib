@@ -12,9 +12,7 @@ from .tokens import prepare_bearer_body, prepare_mac_header
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
-from .exceptions import (InvalidClientIdentifier, MissingRedirectURI,
-                         InvalidRedirectURI)
-from .utils import valid_redirect_uri, compare_uris
+from .server import AuthorizationServer
 
 
 AUTH_HEADER = u'auth_header'
@@ -521,29 +519,3 @@ class PasswordCredentialsClient(Client):
         response = parse_token_response(body, scope=scope)
         self._populate_attributes(response)
         return response
-
-
-class AuthorizationServer(object):
-    def client_redirect_uris(self, client_identifier):
-        raise NotImplementedError("Must be implemented by inheriting classes.")
-
-    def redirect_uri(self, client_identifier, redirect_uri=None):
-        redirect_uris = self.client_redirect_uris(client_identifier)
-
-        # If multiple redirection URIs have been registered, if only part of
-        # the redirection URI has been registered, or if no redirection URI has
-        # been registered, the client MUST include a redirection URI.
-        if not redirect_uri and len(redirect_uris) != 1:
-            raise MissingRedirectURI()
-
-        # If an redirect_uri is given then check that it is valid and is one
-        # of the optionally URI's returned by `client_redirect_uris`.
-        if redirect_uri:
-            if not valid_redirect_uri(redirect_uri):
-                raise InvalidRedirectURI()
-            if redirect_uris:
-                if not compare_uris(redirect_uri, redirect_uris):
-                    raise InvalidRedirectURI()
-
-            return redirect_uri
-        return redirect_uris[0]

@@ -4,7 +4,7 @@ import urllib
 
 from ...unittest import TestCase
 
-from oauthlib.oauth2.draft25 import AuthorizationServer
+from oauthlib.oauth2.draft25.server import AuthorizationServer
 from oauthlib.oauth2.draft25.exceptions import (InvalidClientIdentifier,
     MissingRedirectURI, InvalidRedirectURI)
 
