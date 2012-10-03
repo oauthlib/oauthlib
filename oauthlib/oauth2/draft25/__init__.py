@@ -14,7 +14,7 @@ from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
 from .exceptions import (InvalidClientIdentifier, MissingRedirectURI,
                          InvalidRedirectURI)
-from .utils import valid_redirect_uri, normalize_uri, compare_uris
+from .utils import valid_redirect_uri, compare_uris
 
 
 AUTH_HEADER = u'auth_header'
@@ -536,16 +536,14 @@ class AuthorizationServer(object):
         if not redirect_uri and len(redirect_uris) != 1:
             raise MissingRedirectURI()
 
-        # If an redirect_uri is given then validate it
+        # If an redirect_uri is given then check that it is valid and is one
+        # of the optionally URI's returned by `client_redirect_uris`.
         if redirect_uri:
             if not valid_redirect_uri(redirect_uri):
                 raise InvalidRedirectURI()
-
             if redirect_uris:
                 if not compare_uris(redirect_uri, redirect_uris):
                     raise InvalidRedirectURI()
 
             return redirect_uri
-
-        else:
-            return redirect_uris[0]
+        return redirect_uris[0]
