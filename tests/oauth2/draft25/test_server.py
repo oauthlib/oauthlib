@@ -15,7 +15,7 @@ class AuthorizationEndpointTestCase(TestCase):
     def test_redirection_uri_invalid_client_identifier(self):
         class Server(AuthorizationServer):
             def client_redirect_uris(self, client_identifier):
-                raise InvalidClientIdentifier(client_identifer)
+                raise InvalidClientIdentifier(client_identifier)
         server = Server()
 
         # http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-4.1.2.1
@@ -49,7 +49,8 @@ class AuthorizationEndpointTestCase(TestCase):
         # The endpoint URI MAY include an "application/x-www-form-urlencoded"
         # formatted query component
         request_redirect_uri = 'http://example.com/?foo=bar'
-        redirect_uri = server.redirect_uri('client_identifier', redirect_uri)
+        redirect_uri = server.redirect_uri('client_identifier',
+                                           request_redirect_uri)
         self.assertEqual(request_redirect_uri, redirect_uri)
 
         # http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-3.1.2
@@ -99,7 +100,7 @@ class AuthorizationEndpointTestCase(TestCase):
                 'http://example.com/another/path/to/redirect/',
             )
             def client_redirect_uris(self, client_identifier):
-                return uris
+                return self.uris
         server = Server()
 
         # http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-3.1.2.3
