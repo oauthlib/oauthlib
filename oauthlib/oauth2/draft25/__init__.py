@@ -12,8 +12,7 @@ from .tokens import prepare_bearer_body, prepare_mac_header
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
-from .exceptions import (InvalidClientIdentifier, MissingRedirectURI,
-                         InvalidRedirectURI)
+from .server import AuthorizationServer
 
 
 AUTH_HEADER = u'auth_header'
@@ -520,11 +519,3 @@ class PasswordCredentialsClient(Client):
         response = parse_token_response(body, scope=scope)
         self._populate_attributes(response)
         return response
-
-class AuthorizationServer(object):
-    def client_redirect_uris(self, client_identifier):
-        raise NotImplementedError("Must be implemented by inheriting classes.")
-
-    def redirect_uri(client_identifier, redirect_uri=None):
-        raise NotImplementedError("TODO")
-
