@@ -23,17 +23,22 @@ always_safe = (u'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                u'abcdefghijklmnopqrstuvwxyz'
                u'0123456789' u'_.-')
 
-
-def quote(s, safe=u'/'):
-    encoded = s.encode("utf-8")
-    quoted = urllib.quote(encoded, safe)
-    return quoted.decode("utf-8")
-
-
-def unquote(s):
-    encoded = s.encode("utf-8")
-    unquoted = urllib.unquote(encoded)
-    return unquoted.decode("utf-8")
+def check_quote_type(u):
+    is_str = isinstance(u, str)
+    is_unicode = isinstance(u, unicode)
+    is_utf8 = False
+    if not is_str and not is_unicode:
+        u = unicode(u)
+        is_unicode = True
+    if is_unicode:
+        u = u.encode("utf-8")
+        is_utf8 = True
+    if not is_utf8:
+        try:
+            u.decode("utf-8")
+        except UnicodeDecodeError:
+            raise ValueError('Only unicode objects or UTF-8 str objects are unescapable.')
+    return u
 
 
 def urlencode(params):
