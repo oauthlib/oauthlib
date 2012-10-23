@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 """
 oauthlib.parameters
@@ -10,7 +10,10 @@ This module contains methods related to `section 3.5`_ of the OAuth 1.0a spec.
 .. _`section 3.5`: http://tools.ietf.org/html/rfc5849#section-3.5
 """
 
-from urlparse import urlparse, urlunparse
+try:
+    from urlparse import urlparse, urlunparse
+except ImportError:
+    from urllib.parse import urlparse, urlunparse
 from . import utils
 from oauthlib.common import extract_params, urlencode
 
@@ -57,7 +60,7 @@ def prepare_headers(oauth_params, headers=None, realm=None):
         # 2.  Each parameter's name is immediately followed by an "=" character
         #     (ASCII code 61), a """ character (ASCII code 34), the parameter
         #     value (MAY be empty), and another """ character (ASCII code 34).
-        part = u'{0}="{1}"'.format(escaped_name, escaped_value)
+        part = '{0}="{1}"'.format(escaped_name, escaped_value)
 
         authorization_header_parameters_parts.append(part)
 
@@ -74,16 +77,16 @@ def prepare_headers(oauth_params, headers=None, realm=None):
     # .. _`RFC2617 section 1.2`: http://tools.ietf.org/html/rfc2617#section-1.2
     if realm:
         # NOTE: realm should *not* be escaped
-        authorization_header_parameters = (u'realm="%s", ' % realm +
+        authorization_header_parameters = ('realm="%s", ' % realm +
             authorization_header_parameters)
 
     # the auth-scheme name set to "OAuth" (case insensitive).
-    authorization_header = u'OAuth %s' % authorization_header_parameters
+    authorization_header = 'OAuth %s' % authorization_header_parameters
 
     # contribute the Authorization header to the given headers
     full_headers = {}
     full_headers.update(headers)
-    full_headers[u'Authorization'] = authorization_header
+    full_headers['Authorization'] = authorization_header
     return full_headers
 
 

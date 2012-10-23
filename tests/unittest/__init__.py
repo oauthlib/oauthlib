@@ -9,3 +9,6 @@ except ImportError:
         from unittest import *
     else:
         raise
+
+if sys.version_info.minor == 1:
+    TestCase.assertIsInstance = lambda self, obj, cls: self.assertTrue(isinstance(obj, cls))
