@@ -20,6 +20,15 @@ assuming a specific HTTP request object. Use it to graft OAuth support onto your
 favorite HTTP library. If you're a maintainer of such a library, write a thin
 veneer on top of OAuthLib and get OAuth support for very little effort.
 
+Interested in making OAuth requests?
+------------------------------------
+
+Then you might be more interested in using `requests` which has OAuthLib 
+powered OAuth support built-in. See the `requests OAuth examples` for
+how you can get started.
+
+.. _`requests`: https://github.com/kennethreitz/requests
+.. _`requests OAuth examples`: http://docs.python-requests.org/en/latest/user/quickstart/#oauth-authentication 
 
 License
 -------
