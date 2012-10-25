@@ -23,8 +23,8 @@ veneer on top of OAuthLib and get OAuth support for very little effort.
 Interested in making OAuth requests?
 ------------------------------------
 
-Then you might be more interested in using `requests` which has OAuthLib 
-powered OAuth support built-in. See the `requests OAuth examples` for
+Then you might be more interested in using `requests`_ which has OAuthLib 
+powered OAuth support built-in. See the `requests OAuth examples`_ for
 how you can get started.
 
 .. _`requests`: https://github.com/kennethreitz/requests
