@@ -31,7 +31,7 @@ setup(
     author_email='idan@gazit.me',
     url='https://github.com/idan/oauthlib',
     license=fread('LICENSE'),
-    packages=find_packages(exclude=('tests', 'docs')),
+    packages=find_packages(exclude=('docs')),
     test_suite='nose.collector',
     tests_require=tests_require,
     extras_require={'test': tests_require, 'rsa': rsa_require},
