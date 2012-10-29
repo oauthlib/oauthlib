@@ -294,7 +294,7 @@ class PasswordCredentialsClientTest(TestCase):
     password = "bar"
     body = "not=empty"
 
-    body_up = "not=empty&grant_type=password&username=%s&password=%s" % (username, password)
+    body_up = "not=empty&grant_type=password&password=%s&username=%s" % (password, username)
     body_kwargs = body_up + "&some=providers&require=extra+arguments"
 
     token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'

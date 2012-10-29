@@ -56,7 +56,7 @@ class ParameterTests(TestCase):
         'username': 'johndoe',
         'password': 'A3ddj3w'
     }
-    password_body = 'grant_type=password&username=johndoe&password=A3ddj3w'
+    password_body = 'grant_type=password&password=A3ddj3w&username=johndoe'
 
     cred_grant = {'grant_type': 'client_credentials'}
     cred_body = 'grant_type=client_credentials'
