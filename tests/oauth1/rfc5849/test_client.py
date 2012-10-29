@@ -25,4 +25,5 @@ class ClientRealmTests(TestCase):
         uri, header, body = client.sign(u"example-uri", realm=u"baa-realm")
         self.assertTrue(
             header["Authorization"].startswith('OAuth realm="baa-realm",'))
-
+        # make sure sign() does not override the default realm
+        self.assertEqual(client.realm, u"moo-realm")
