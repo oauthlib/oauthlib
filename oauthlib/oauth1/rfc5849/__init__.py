@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 """
 oauthlib.oauth1.rfc5849
@@ -11,22 +11,25 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 
 import logging
 import time
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 from oauthlib.common import Request, urlencode, generate_nonce
 from oauthlib.common import generate_timestamp
 from . import parameters, signature, utils
 
-SIGNATURE_HMAC = u"HMAC-SHA1"
-SIGNATURE_RSA = u"RSA-SHA1"
-SIGNATURE_PLAINTEXT = u"PLAINTEXT"
+SIGNATURE_HMAC = "HMAC-SHA1"
+SIGNATURE_RSA = "RSA-SHA1"
+SIGNATURE_PLAINTEXT = "PLAINTEXT"
 SIGNATURE_METHODS = (SIGNATURE_HMAC, SIGNATURE_RSA, SIGNATURE_PLAINTEXT)
 
-SIGNATURE_TYPE_AUTH_HEADER = u'AUTH_HEADER'
-SIGNATURE_TYPE_QUERY = u'QUERY'
-SIGNATURE_TYPE_BODY = u'BODY'
+SIGNATURE_TYPE_AUTH_HEADER = 'AUTH_HEADER'
+SIGNATURE_TYPE_QUERY = 'QUERY'
+SIGNATURE_TYPE_BODY = 'BODY'
 
-CONTENT_TYPE_FORM_URLENCODED = u'application/x-www-form-urlencoded'
+CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 
 
 class Client(object):
@@ -95,18 +98,18 @@ class Client(object):
         """Get the basic OAuth parameters to be used in generating a signature.
         """
         params = [
-            (u'oauth_nonce', generate_nonce()),
-            (u'oauth_timestamp', generate_timestamp()),
-            (u'oauth_version', u'1.0'),
-            (u'oauth_signature_method', self.signature_method),
-            (u'oauth_consumer_key', self.client_key),
+            ('oauth_nonce', generate_nonce()),
+            ('oauth_timestamp', generate_timestamp()),
+            ('oauth_version', '1.0'),
+            ('oauth_signature_method', self.signature_method),
+            ('oauth_consumer_key', self.client_key),
         ]
         if self.resource_owner_key:
-            params.append((u'oauth_token', self.resource_owner_key))
+            params.append(('oauth_token', self.resource_owner_key))
         if self.callback_uri:
-            params.append((u'oauth_callback', self.callback_uri))
+            params.append(('oauth_callback', self.callback_uri))
         if self.verifier:
-            params.append((u'oauth_verifier', self.verifier))
+            params.append(('oauth_verifier', self.verifier))
 
         return params
 
@@ -136,7 +139,7 @@ class Client(object):
             body = parameters.prepare_form_encoded_body(request.oauth_params, request.decoded_body)
             if formencode:
                 body = urlencode(body)
-            headers['Content-Type'] = u'application/x-www-form-urlencoded'
+            headers['Content-Type'] = 'application/x-www-form-urlencoded'
         elif self.signature_type == SIGNATURE_TYPE_QUERY:
             uri = parameters.prepare_request_uri_query(request.oauth_params, request.uri)
         else:
@@ -144,7 +147,7 @@ class Client(object):
 
         return uri, headers, body
 
-    def sign(self, uri, http_method=u'GET', body=None, headers=None, realm=None):
+    def sign(self, uri, http_method='GET', body=None, headers=None, realm=None):
         """Sign a request
 
         Signs an HTTP request with the specified parts.
@@ -209,7 +212,7 @@ class Client(object):
         request.oauth_params = self.get_oauth_params()
 
         # generate the signature
-        request.oauth_params.append((u'oauth_signature', self.get_oauth_signature(request)))
+        request.oauth_params.append(('oauth_signature', self.get_oauth_signature(request)))
 
         # render the signed request and return it
         return self._render(request, formencode=True,
@@ -467,14 +470,14 @@ class Server(object):
         params.extend(header_params)
         params.extend(body_params)
         params.extend(query_params)
-        signature_types_with_oauth_params = filter(lambda s: s[2], (
+        signature_types_with_oauth_params = list(filter(lambda s: s[2], (
             (SIGNATURE_TYPE_AUTH_HEADER, params,
                 utils.filter_oauth_params(header_params)),
             (SIGNATURE_TYPE_BODY, params,
                 utils.filter_oauth_params(body_params)),
             (SIGNATURE_TYPE_QUERY, params,
                 utils.filter_oauth_params(query_params))
-        ))
+        )))
 
         if len(signature_types_with_oauth_params) > 1:
             raise ValueError('oauth_ params must come from only 1 signature type but were found in %s' % ', '.join(
@@ -612,7 +615,7 @@ class Server(object):
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
-    def verify_request(self, uri, http_method=u'GET', body=None,
+    def verify_request(self, uri, http_method='GET', body=None,
             headers=None, require_resource_owner=True, require_verifier=False,
             require_realm=False, required_realm=None):
         """Verifies a request ensuring that the following is true:
@@ -646,11 +649,11 @@ class Server(object):
         """
         # Only include body data from x-www-form-urlencoded requests
         headers = headers or {}
-        if (u"Content-Type" in headers and
-                headers[u"Content-Type"] == CONTENT_TYPE_FORM_URLENCODED):
+        if ("Content-Type" in headers and
+                headers["Content-Type"] == CONTENT_TYPE_FORM_URLENCODED):
             request = Request(uri, http_method, body, headers)
         else:
-            request = Request(uri, http_method, u'', headers)
+            request = Request(uri, http_method, '', headers)
 
         if self.enforce_ssl and not request.uri.lower().startswith("https://"):
             raise ValueError("Insecure transport, only HTTPS is allowed.")
@@ -663,15 +666,15 @@ class Server(object):
             raise ValueError("Duplicate OAuth entries.")
 
         oauth_params = dict(oauth_params)
-        request_signature = oauth_params.get(u'oauth_signature')
-        client_key = oauth_params.get(u'oauth_consumer_key')
-        resource_owner_key = oauth_params.get(u'oauth_token')
-        nonce = oauth_params.get(u'oauth_nonce')
-        timestamp = oauth_params.get(u'oauth_timestamp')
-        callback_uri = oauth_params.get(u'oauth_callback')
-        verifier = oauth_params.get(u'oauth_verifier')
-        signature_method = oauth_params.get(u'oauth_signature_method')
-        realm = dict(params).get(u'realm')
+        request_signature = oauth_params.get('oauth_signature')
+        client_key = oauth_params.get('oauth_consumer_key')
+        resource_owner_key = oauth_params.get('oauth_token')
+        nonce = oauth_params.get('oauth_nonce')
+        timestamp = oauth_params.get('oauth_timestamp')
+        callback_uri = oauth_params.get('oauth_callback')
+        verifier = oauth_params.get('oauth_verifier')
+        signature_method = oauth_params.get('oauth_signature_method')
+        realm = dict(params).get('realm')
 
         # The server SHOULD return a 400 (Bad Request) status code when
         # receiving a request with missing parameters.
@@ -693,7 +696,7 @@ class Server(object):
         # Servers receiving an authenticated request MUST validate it by:
         #   If the "oauth_version" parameter is present, ensuring its value is
         #   "1.0".
-        if u'oauth_version' in oauth_params and oauth_params[u'oauth_version'] != u'1.0':
+        if 'oauth_version' in oauth_params and oauth_params['oauth_version'] != '1.0':
             raise ValueError("Invalid OAuth version.")
 
         # The timestamp value MUST be a positive integer. Unless otherwise

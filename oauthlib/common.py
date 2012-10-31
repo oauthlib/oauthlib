@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 """
 oauthlib.common
@@ -11,35 +11,67 @@ to all implementations of OAuth.
 
 import random
 import re
-import string
+import sys
 import time
-import urllib
-import urlparse
+try:
+    from urllib import quote as _quote
+    from urllib import unquote as _unquote
+    from urllib import urlencode as _urlencode
+except ImportError:
+    from urllib.parse import quote as _quote
+    from urllib.parse import unquote as _unquote
+    from urllib.parse import urlencode as _urlencode
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
-UNICODE_ASCII_CHARACTER_SET = (string.ascii_letters.decode('ascii') +
-    string.digits.decode('ascii'))
+UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
+                               'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                               '0123456789')
 
-always_safe = (u'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-               u'abcdefghijklmnopqrstuvwxyz'
-               u'0123456789' u'_.-')
+always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+               'abcdefghijklmnopqrstuvwxyz'
+               '0123456789' '_.-')
+
+PY3 = sys.version_info[0] == 3
 
 
-def quote(s, safe=u'/'):
-    encoded = s.encode("utf-8")
-    quoted = urllib.quote(encoded, safe)
-    return quoted.decode("utf-8")
+if PY3:
+    unicode_type = str
+    bytes_type = bytes
+else:
+    unicode_type = unicode
+    bytes_type = str
+
+
+# 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
+def quote(s, safe=b'/'):
+    s = _quote(s, safe)
+    # PY3 always returns unicode.  PY2 may return either, depending on whether
+    # it had to modify the string.
+    if isinstance(s, bytes_type):
+        s = s.decode('utf-8')
+    return s
 
 
 def unquote(s):
-    encoded = s.encode("utf-8")
-    unquoted = urllib.unquote(encoded)
-    return unquoted.decode("utf-8")
+    s = _unquote(s)
+    # PY3 always returns unicode.  PY2 seems to always return what you give it,
+    # which differs from quote's behavior.  Just to be safe, make sure it is
+    # unicode before we return.
+    if isinstance(s, bytes_type):
+        s = s.decode('utf-8')
+    return s
 
 
 def urlencode(params):
     utf8_params = encode_params_utf8(params)
-    urlencoded = urllib.urlencode(utf8_params)
-    return urlencoded.decode("utf-8")
+    urlencoded = _urlencode(utf8_params)
+    if isinstance(urlencoded, unicode_type):  # PY3 returns unicode
+        return urlencoded
+    else:
+        return urlencoded.decode("utf-8")
 
 
 def encode_params_utf8(params):
@@ -49,8 +81,8 @@ def encode_params_utf8(params):
     encoded = []
     for k, v in params:
         encoded.append((
-            k.encode('utf-8') if isinstance(k, unicode) else k,
-            v.encode('utf-8') if isinstance(v, unicode) else v))
+            k.encode('utf-8') if isinstance(k, unicode_type) else k,
+            v.encode('utf-8') if isinstance(v, unicode_type) else v))
     return encoded
 
 
@@ -61,12 +93,12 @@ def decode_params_utf8(params):
     decoded = []
     for k, v in params:
         decoded.append((
-            k.decode('utf-8') if isinstance(k, str) else k,
-            v.decode('utf-8') if isinstance(v, str) else v))
+            k.decode('utf-8') if isinstance(k, bytes_type) else k,
+            v.decode('utf-8') if isinstance(v, bytes_type) else v))
     return decoded
 
 
-urlencoded = set(always_safe) | set(u'=&;%+~')
+urlencoded = set(always_safe) | set('=&;%+~')
 
 
 def urldecode(query):
@@ -86,11 +118,11 @@ def urldecode(query):
     # All encoded values begin with % followed by two hex characters
     # correct = %00, %A0, %0A, %FF
     # invalid = %G0, %5H, %PO
-    invalid_hex = u'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]'
+    invalid_hex = '%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]'
     if len(re.findall(invalid_hex, query)):
         raise ValueError('Invalid hex encoding in query string.')
 
-    query = query.decode('utf-8') if isinstance(query, str) else query
+    query = query.decode('utf-8') if isinstance(query, bytes_type) else query
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
     params = urlparse.parse_qsl(query, keep_blank_values=True)
@@ -107,7 +139,7 @@ def extract_params(raw):
     empty list of parameters. Any other input will result in a return
     value of None.
     """
-    if isinstance(raw, basestring):
+    if isinstance(raw, bytes_type) or isinstance(raw, unicode_type):
         try:
             params = urldecode(raw)
         except ValueError:
@@ -140,7 +172,7 @@ def generate_nonce():
     .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode(unicode(random.getrandbits(64)) + generate_timestamp())
+    return unicode_type(unicode_type(random.getrandbits(64)) + generate_timestamp())
 
 
 def generate_timestamp():
@@ -152,7 +184,7 @@ def generate_timestamp():
     .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode(int(time.time()))
+    return unicode_type(int(time.time()))
 
 
 def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
@@ -164,7 +196,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     why SystemRandom is used instead of the default random.choice method.
     """
     rand = random.SystemRandom()
-    return u''.join(rand.choice(chars) for x in range(length))
+    return ''.join(rand.choice(chars) for x in range(length))
 
 
 def add_params_to_qs(query, params):
@@ -214,7 +246,7 @@ class Request(object):
     unmolested.
     """
 
-    def __init__(self, uri, http_method=u'GET', body=None, headers=None):
+    def __init__(self, uri, http_method='GET', body=None, headers=None):
         self.uri = uri
         self.http_method = http_method
         self.headers = headers or {}

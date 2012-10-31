@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 from ...unittest import TestCase
 
 from oauthlib.oauth2.draft25 import Client, PasswordCredentialsClient
@@ -10,15 +10,15 @@ from oauthlib.oauth2.draft25 import AUTH_HEADER, URI_QUERY, BODY
 
 class ClientTest(TestCase):
 
-    client_id = u"someclientid"
-    uri = u"http://example.com/path?query=world"
-    body = u"not=empty"
+    client_id = "someclientid"
+    uri = "http://example.com/path?query=world"
+    body = "not=empty"
     headers = {}
-    access_token = u"token"
+    access_token = "token"
 
-    bearer_query = uri + u"&access_token=" + access_token
+    bearer_query = uri + "&access_token=" + access_token
     bearer_header = {
-        u"Authorization": "Bearer " + access_token
+        "Authorization": "Bearer " + access_token
     }
     bearer_body = body + "&access_token=" + access_token
 
@@ -26,7 +26,7 @@ class ClientTest(TestCase):
         """Test a number of bearer token placements"""
 
         # Invalid token type
-        client = Client(self.client_id, token_type=u"invalid")
+        client = Client(self.client_id, token_type="invalid")
         self.assertRaises(ValueError, client.add_token, self.uri)
 
         # Missing access token
@@ -91,54 +91,54 @@ class ClientTest(TestCase):
         # Invalid token placement
         client = Client(self.client_id, access_token=self.access_token)
         self.assertRaises(ValueError, client.add_token, self.uri, body=self.body,
-                headers=self.headers, token_placement=u"invalid")
+                headers=self.headers, token_placement="invalid")
 
         client = Client(self.client_id, access_token=self.access_token,
-                default_token_placement=u"invalid")
+                default_token_placement="invalid")
         self.assertRaises(ValueError, client.add_token, self.uri, body=self.body,
                 headers=self.headers)
 
 
 class WebApplicationClientTest(TestCase):
 
-    client_id = u"someclientid"
-    uri = u"http://example.com/path?query=world"
-    uri_id = uri + u"&response_type=code&client_id=" + client_id
-    uri_redirect = uri_id + u"&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
-    redirect_uri = u"http://my.page.com/callback"
-    scope = [u"/profile"]
-    state = u"xyz"
-    uri_scope = uri_id + u"&scope=%2Fprofile"
-    uri_state = uri_id + u"&state=" + state
+    client_id = "someclientid"
+    uri = "http://example.com/path?query=world"
+    uri_id = uri + "&response_type=code&client_id=" + client_id
+    uri_redirect = uri_id + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
+    redirect_uri = "http://my.page.com/callback"
+    scope = ["/profile"]
+    state = "xyz"
+    uri_scope = uri_id + "&scope=%2Fprofile"
+    uri_state = uri_id + "&state=" + state
     kwargs = {
-        u"some": u"providers",
-        u"require": u"extra arguments"
+        "some": "providers",
+        "require": "extra arguments"
     }
-    uri_kwargs = uri_id + u"&some=providers&require=extra+arguments"
+    uri_kwargs = uri_id + "&some=providers&require=extra+arguments"
 
-    code = u"zzzzaaaa"
-    body = u"not=empty"
+    code = "zzzzaaaa"
+    body = "not=empty"
 
-    body_code = u"not=empty&grant_type=authorization_code&code=" + code
+    body_code = "not=empty&grant_type=authorization_code&code=" + code
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
-    body_kwargs = body_code + u"&some=providers&require=extra+arguments"
+    body_kwargs = body_code + "&some=providers&require=extra+arguments"
 
-    response_uri = u"https://client.example.com/cb?code=zzzzaaaa&state=xyz"
-    response = {u"code": u"zzzzaaaa", u"state": u"xyz"}
+    response_uri = "https://client.example.com/cb?code=zzzzaaaa&state=xyz"
+    response = {"code": "zzzzaaaa", "state": "xyz"}
 
-    token_json = (u'{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
-                  u'    "token_type":"example",'
-                  u'    "expires_in":3600,'
-                  u'    "scope":"/profile",'
-                  u'    "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA",'
-                  u'    "example_parameter":"example_value"}')
+    token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
+                  '    "token_type":"example",'
+                  '    "expires_in":3600,'
+                  '    "scope":"/profile",'
+                  '    "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA",'
+                  '    "example_parameter":"example_value"}')
     token = {
-        u"access_token": u"2YotnFZFEjr1zCsicMWpAA",
-        u"token_type": u"example",
-        u"expires_in": 3600,
-        u"scope": scope,
-        u"refresh_token": u"tGzv3JOkF0XG5Qx2TlKWIA",
-        u"example_parameter": u"example_value"
+        "access_token": "2YotnFZFEjr1zCsicMWpAA",
+        "token_type": "example",
+        "expires_in": 3600,
+        "scope": scope,
+        "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",
+        "example_parameter": "example_value"
     }
 
     def test_auth_grant_uri(self):
@@ -194,7 +194,7 @@ class WebApplicationClientTest(TestCase):
         self.assertEqual(client.code, self.code)
 
         # Mismatching state
-        self.assertRaises(ValueError, client.parse_request_uri_response, self.response_uri, state=u"invalid")
+        self.assertRaises(ValueError, client.parse_request_uri_response, self.response_uri, state="invalid")
 
     def test_parse_token_response(self):
         client = WebApplicationClient(self.client_id)
@@ -202,45 +202,45 @@ class WebApplicationClientTest(TestCase):
         # Parse code and state
         response = client.parse_request_body_response(self.token_json, scope=self.scope)
         self.assertEqual(response, self.token)
-        self.assertEqual(client.access_token, response.get(u"access_token"))
-        self.assertEqual(client.refresh_token, response.get(u"refresh_token"))
-        self.assertEqual(client.token_type, response.get(u"token_type"))
+        self.assertEqual(client.access_token, response.get("access_token"))
+        self.assertEqual(client.refresh_token, response.get("refresh_token"))
+        self.assertEqual(client.token_type, response.get("token_type"))
 
         # Mismatching state
-        self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope=u"invalid")
+        self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope="invalid")
 
 
 class UserAgentClientTest(TestCase):
 
-    client_id = u"someclientid"
-    uri = u"http://example.com/path?query=world"
-    uri_id = uri + u"&response_type=token&client_id=" + client_id
-    uri_redirect = uri_id + u"&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
-    redirect_uri = u"http://my.page.com/callback"
-    scope = [u"/profile"]
-    state = u"xyz"
-    uri_scope = uri_id + u"&scope=%2Fprofile"
-    uri_state = uri_id + u"&state=" + state
+    client_id = "someclientid"
+    uri = "http://example.com/path?query=world"
+    uri_id = uri + "&response_type=token&client_id=" + client_id
+    uri_redirect = uri_id + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
+    redirect_uri = "http://my.page.com/callback"
+    scope = ["/profile"]
+    state = "xyz"
+    uri_scope = uri_id + "&scope=%2Fprofile"
+    uri_state = uri_id + "&state=" + state
     kwargs = {
-        u"some": u"providers",
-        u"require": u"extra arguments"
+        "some": "providers",
+        "require": "extra arguments"
     }
-    uri_kwargs = uri_id + u"&some=providers&require=extra+arguments"
+    uri_kwargs = uri_id + "&some=providers&require=extra+arguments"
 
-    code = u"zzzzaaaa"
+    code = "zzzzaaaa"
 
-    response_uri = (u'https://client.example.com/cb?#'
-                    u'access_token=2YotnFZFEjr1zCsicMWpAA&'
-                    u'token_type=example&'
-                    u'expires_in=3600&'
-                    u'scope=%2Fprofile&'
-                    u'example_parameter=example_value')
+    response_uri = ('https://client.example.com/cb?#'
+                    'access_token=2YotnFZFEjr1zCsicMWpAA&'
+                    'token_type=example&'
+                    'expires_in=3600&'
+                    'scope=%2Fprofile&'
+                    'example_parameter=example_value')
     token = {
-        u"access_token": u"2YotnFZFEjr1zCsicMWpAA",
-        u"token_type": u"example",
-        u"expires_in": u"3600",
-        u"scope": scope,
-        u"example_parameter": u"example_value"
+        "access_token": "2YotnFZFEjr1zCsicMWpAA",
+        "token_type": "example",
+        "expires_in": "3600",
+        "scope": scope,
+        "example_parameter": "example_value"
     }
 
     def test_implicit_token_uri(self):
@@ -273,43 +273,43 @@ class UserAgentClientTest(TestCase):
         # Parse code and state
         response = client.parse_request_uri_response(self.response_uri, scope=self.scope)
         self.assertEqual(response, self.token)
-        self.assertEqual(client.access_token, response.get(u"access_token"))
-        self.assertEqual(client.refresh_token, response.get(u"refresh_token"))
-        self.assertEqual(client.token_type, response.get(u"token_type"))
+        self.assertEqual(client.access_token, response.get("access_token"))
+        self.assertEqual(client.refresh_token, response.get("refresh_token"))
+        self.assertEqual(client.token_type, response.get("token_type"))
 
         # Mismatching scope
-        self.assertRaises(Warning, client.parse_request_uri_response, self.response_uri, scope=u"invalid")
+        self.assertRaises(Warning, client.parse_request_uri_response, self.response_uri, scope="invalid")
 
 
 class PasswordCredentialsClientTest(TestCase):
 
-    client_id = u"someclientid"
-    scope = [u"/profile"]
+    client_id = "someclientid"
+    scope = ["/profile"]
     kwargs = {
-        u"some": u"providers",
-        u"require": u"extra arguments"
+        "some": "providers",
+        "require": "extra arguments"
     }
 
-    username = u"foo"
-    password = u"bar"
-    body = u"not=empty"
+    username = "foo"
+    password = "bar"
+    body = "not=empty"
 
-    body_up = u"not=empty&grant_type=password&username=%s&password=%s" % (username, password)
-    body_kwargs = body_up + u"&some=providers&require=extra+arguments"
+    body_up = "not=empty&grant_type=password&username=%s&password=%s" % (username, password)
+    body_kwargs = body_up + "&some=providers&require=extra+arguments"
 
-    token_json = (u'{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
-                  u'    "token_type":"example",'
-                  u'    "expires_in":3600,'
-                  u'    "scope":"/profile",'
-                  u'    "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA",'
-                  u'    "example_parameter":"example_value"}')
+    token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
+                  '    "token_type":"example",'
+                  '    "expires_in":3600,'
+                  '    "scope":"/profile",'
+                  '    "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA",'
+                  '    "example_parameter":"example_value"}')
     token = {
-        u"access_token": u"2YotnFZFEjr1zCsicMWpAA",
-        u"token_type": u"example",
-        u"expires_in": 3600,
-        u"scope": scope,
-        u"refresh_token": u"tGzv3JOkF0XG5Qx2TlKWIA",
-        u"example_parameter": u"example_value"
+        "access_token": "2YotnFZFEjr1zCsicMWpAA",
+        "token_type": "example",
+        "expires_in": 3600,
+        "scope": scope,
+        "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",
+        "example_parameter": "example_value"
     }
 
     def test_request_body(self):
@@ -332,39 +332,39 @@ class PasswordCredentialsClientTest(TestCase):
         # Parse code and state
         response = client.parse_request_body_response(self.token_json, scope=self.scope)
         self.assertEqual(response, self.token)
-        self.assertEqual(client.access_token, response.get(u"access_token"))
-        self.assertEqual(client.refresh_token, response.get(u"refresh_token"))
-        self.assertEqual(client.token_type, response.get(u"token_type"))
+        self.assertEqual(client.access_token, response.get("access_token"))
+        self.assertEqual(client.refresh_token, response.get("refresh_token"))
+        self.assertEqual(client.token_type, response.get("token_type"))
 
         # Mismatching state
-        self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope=u"invalid")
+        self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope="invalid")
 
 
 class ClientCredentialsClientTest(TestCase):
 
-    client_id = u"someclientid"
-    scope = [u"/profile"]
+    client_id = "someclientid"
+    scope = ["/profile"]
     kwargs = {
-        u"some": u"providers",
-        u"require": u"extra arguments"
+        "some": "providers",
+        "require": "extra arguments"
     }
 
-    body = u"not=empty"
+    body = "not=empty"
 
-    body_up = u"not=empty&grant_type=client_credentials"
-    body_kwargs = body_up + u"&some=providers&require=extra+arguments"
+    body_up = "not=empty&grant_type=client_credentials"
+    body_kwargs = body_up + "&some=providers&require=extra+arguments"
 
-    token_json = (u'{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
-                  u'    "token_type":"example",'
-                  u'    "expires_in":3600,'
-                  u'    "scope":"/profile",'
-                  u'    "example_parameter":"example_value"}')
+    token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
+                  '    "token_type":"example",'
+                  '    "expires_in":3600,'
+                  '    "scope":"/profile",'
+                  '    "example_parameter":"example_value"}')
     token = {
-        u"access_token": u"2YotnFZFEjr1zCsicMWpAA",
-        u"token_type": u"example",
-        u"expires_in": 3600,
-        u"scope": [u"/profile"],
-        u"example_parameter": u"example_value"
+        "access_token": "2YotnFZFEjr1zCsicMWpAA",
+        "token_type": "example",
+        "expires_in": 3600,
+        "scope": ["/profile"],
+        "example_parameter": "example_value"
     }
 
     def test_request_body(self):
@@ -389,9 +389,9 @@ class ClientCredentialsClientTest(TestCase):
         # Parse code and state
         response = client.parse_request_body_response(self.token_json, scope=self.scope)
         self.assertEqual(response, self.token)
-        self.assertEqual(client.access_token, response.get(u"access_token"))
-        self.assertEqual(client.refresh_token, response.get(u"refresh_token"))
-        self.assertEqual(client.token_type, response.get(u"token_type"))
+        self.assertEqual(client.access_token, response.get("access_token"))
+        self.assertEqual(client.refresh_token, response.get("refresh_token"))
+        self.assertEqual(client.token_type, response.get("token_type"))
 
         # Mismatching state
-        self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope=u"invalid")
+        self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope="invalid")
