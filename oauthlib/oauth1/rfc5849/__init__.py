@@ -41,7 +41,7 @@ class Client(object):
             callback_uri=None,
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
-            rsa_key=None, verifier=None):
+            rsa_key=None, verifier=None, realm=None):
         self.client_key = client_key
         self.client_secret = client_secret
         self.resource_owner_key = resource_owner_key
@@ -51,6 +51,7 @@ class Client(object):
         self.callback_uri = callback_uri
         self.rsa_key = rsa_key
         self.verifier = verifier
+        self.realm = realm
 
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
@@ -112,7 +113,7 @@ class Client(object):
 
         return params
 
-    def _render(self, request, formencode=False):
+    def _render(self, request, formencode=False, realm=None):
         """Render a signed request according to signature type
 
         Returns a 3-tuple containing the request URI, headers, and body.
@@ -133,7 +134,7 @@ class Client(object):
         # like the spec requires. This would be a fundamental change though, and
         # I'm not sure how I feel about it.
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
-            headers = parameters.prepare_headers(request.oauth_params, request.headers)
+            headers = parameters.prepare_headers(request.oauth_params, request.headers, realm=realm)
         elif self.signature_type == SIGNATURE_TYPE_BODY and request.decoded_body is not None:
             body = parameters.prepare_form_encoded_body(request.oauth_params, request.decoded_body)
             if formencode:
@@ -146,7 +147,7 @@ class Client(object):
 
         return uri, headers, body
 
-    def sign(self, uri, http_method='GET', body=None, headers=None):
+    def sign(self, uri, http_method='GET', body=None, headers=None, realm=None):
         """Sign a request
 
         Signs an HTTP request with the specified parts.
@@ -214,7 +215,8 @@ class Client(object):
         request.oauth_params.append(('oauth_signature', self.get_oauth_signature(request)))
 
         # render the signed request and return it
-        return self._render(request, formencode=True)
+        return self._render(request, formencode=True,
+                            realm=(realm or self.realm))
 
 
 class Server(object):
