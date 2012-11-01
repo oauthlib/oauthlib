@@ -10,5 +10,5 @@ except ImportError:
     else:
         raise
 
-if sys.version_info.minor == 1:
+if sys.version_info[1] == 1:
     TestCase.assertIsInstance = lambda self, obj, cls: self.assertTrue(isinstance(obj, cls))
