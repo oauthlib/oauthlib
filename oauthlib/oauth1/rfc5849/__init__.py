@@ -863,12 +863,14 @@ class Server(object):
             #   client via the "oauth_signature" parameter.
             # .. _`Section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
             client_secret = self.get_client_secret(client_key)
-            if require_verifier:
-                resource_owner_secret = self.get_request_token_secret(
-                    client_key, resource_owner_key)
-            else:
-                resource_owner_secret = self.get_access_token_secret(
-                    client_key, resource_owner_key)
+            resource_owner_secret = None
+            if require_resource_owner:
+                if require_verifier:
+                    resource_owner_secret = self.get_request_token_secret(
+                        client_key, resource_owner_key)
+                else:
+                    resource_owner_secret = self.get_access_token_secret(
+                        client_key, resource_owner_key)
 
             if signature_method == SIGNATURE_HMAC:
                 valid_signature = signature.verify_hmac_sha1(request,
