@@ -64,7 +64,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     if state:
         params.append(('state', state))
 
-    for k in kwargs:
+    for k in sorted(kwargs):
         if kwargs[k]:
             params.append((unicode_type(k), kwargs[k]))
 
@@ -98,7 +98,7 @@ def prepare_token_request(grant_type, body='', **kwargs):
     if 'scope' in kwargs:
         kwargs['scope'] = scope_to_string(kwargs['scope'])
 
-    for k in kwargs:
+    for k in sorted(kwargs):
         if kwargs[k]:
             params.append((unicode_type(k), kwargs[k]))
 

@@ -6,7 +6,7 @@ from .unittest import TestCase
 
 class CommonTests(TestCase):
     params_dict = {'foo': 'bar', 'baz': '123', }
-    params_twotuple = [('foo', 'bar'), ('baz', '123')]
+    params_twotuple = [('baz', '123'), ('foo', 'bar')]
     params_formencoded = 'foo=bar&baz=123'
     uri = 'http://www.someuri.com'
 
@@ -27,13 +27,13 @@ class CommonTests(TestCase):
         self.assertRaises(ValueError, urldecode, '%RR')
 
     def test_extract_params_dict(self):
-        self.assertEqual(extract_params(self.params_dict), self.params_twotuple)
+        self.assertEqual(sorted(extract_params(self.params_dict)), self.params_twotuple)
 
     def test_extract_params_twotuple(self):
         self.assertEqual(extract_params(self.params_twotuple), self.params_twotuple)
 
     def test_extract_params_formencoded(self):
-        self.assertEqual(extract_params(self.params_formencoded), self.params_twotuple)
+        self.assertEqual(sorted(extract_params(self.params_formencoded)), self.params_twotuple)
 
     def test_extract_params_blank_string(self):
         self.assertEqual(extract_params(''), [])
@@ -79,7 +79,7 @@ class CommonTests(TestCase):
 
     def test_dict_body(self):
         r = Request(self.uri, body=self.params_dict)
-        self.assertEqual(r.decoded_body, self.params_twotuple)
+        self.assertEqual(sorted(r.decoded_body), self.params_twotuple)
 
     def test_generate_timestamp(self):
         """ TODO: Better test here """
