@@ -581,7 +581,6 @@ class Server(object):
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
-
     def validate_requested_realm(self, client_key, realm):
         """Validates that the client may request access to the realm.
 
@@ -666,20 +665,21 @@ class Server(object):
             raise ValueError("Duplicate OAuth entries.")
 
         oauth_params = dict(oauth_params)
-        request_signature = oauth_params.get('oauth_signature')
-        client_key = oauth_params.get('oauth_consumer_key')
-        resource_owner_key = oauth_params.get('oauth_token')
-        nonce = oauth_params.get('oauth_nonce')
-        timestamp = oauth_params.get('oauth_timestamp')
-        callback_uri = oauth_params.get('oauth_callback')
-        verifier = oauth_params.get('oauth_verifier')
-        signature_method = oauth_params.get('oauth_signature_method')
-        realm = dict(params).get('realm')
+        request.signature = oauth_params.get('oauth_signature')
+        request.client_key = oauth_params.get('oauth_consumer_key')
+        request.resource_owner_key = oauth_params.get('oauth_token')
+        request.nonce = oauth_params.get('oauth_nonce')
+        request.timestamp = oauth_params.get('oauth_timestamp')
+        request.callback_uri = oauth_params.get('oauth_callback')
+        request.verifier = oauth_params.get('oauth_verifier')
+        request.signature_method = oauth_params.get('oauth_signature_method')
+        request.realm = dict(params).get('realm')
 
         # The server SHOULD return a 400 (Bad Request) status code when
         # receiving a request with missing parameters.
-        if not all((request_signature, client_key, nonce,
-                    timestamp, signature_method)):
+        if not all((request.signature, request.client_key,
+                    request.nonce, request.timestamp,
+                    request.signature_method)):
             raise ValueError("Missing OAuth parameters.")
 
         # OAuth does not mandate a particular signature method, as each
@@ -690,22 +690,23 @@ class Server(object):
         # Considerations section (`Section 4`_) before deciding on which
         # method to support.
         # .. _`Section 4`: http://tools.ietf.org/html/rfc5849#section-4
-        if not signature_method in self.allowed_signature_methods:
+        if not request.signature_method in self.allowed_signature_methods:
             raise ValueError("Invalid signature method.")
 
         # Servers receiving an authenticated request MUST validate it by:
         #   If the "oauth_version" parameter is present, ensuring its value is
         #   "1.0".
-        if 'oauth_version' in oauth_params and oauth_params['oauth_version'] != '1.0':
+        if ('oauth_version' in request.oauth_params and
+            request.oauth_params['oauth_version'] != '1.0'):
             raise ValueError("Invalid OAuth version.")
 
         # The timestamp value MUST be a positive integer. Unless otherwise
         # specified by the server's documentation, the timestamp is expressed
         # in the number of seconds since January 1, 1970 00:00:00 GMT.
-        if len(timestamp) != 10:
+        if len(request.timestamp) != 10:
             raise ValueError("Invalid timestamp size")
         try:
-            ts = int(timestamp)
+            ts = int(request.timestamp)
 
         except ValueError:
             raise ValueError("Timestamp must be an integer")
@@ -719,30 +720,30 @@ class Server(object):
 
         # Provider specific validation of parameters, used to enforce
         # restrictions such as character set and length.
-        if not self.check_client_key(client_key):
+        if not self.check_client_key(request.client_key):
             raise ValueError("Invalid client key.")
 
-        if not resource_owner_key and require_resource_owner:
+        if not request.resource_owner_key and require_resource_owner:
             raise ValueError("Missing resource owner.")
 
         if (require_resource_owner and not require_verifier and
-            not self.check_access_token(resource_owner_key)):
+            not self.check_access_token(request.resource_owner_key)):
             raise ValueError("Invalid resource owner key.")
 
         if (require_resource_owner and require_verifier and
-            not self.check_request_token(resource_owner_key)):
+            not self.check_request_token(request.resource_owner_key)):
             raise ValueError("Invalid resource owner key.")
 
-        if not self.check_nonce(nonce):
+        if not self.check_nonce(request.nonce):
             raise ValueError("Invalid nonce.")
 
-        if realm and not self.check_realm(realm):
+        if request.realm and not self.check_realm(request.realm):
             raise ValueError("Invalid realm. Allowed are %s" % self.realms)
 
-        if not verifier and require_verifier:
+        if not request.verifier and require_verifier:
             raise ValueError("Missing verifier.")
 
-        if require_verifier and not self.check_verifier(verifier):
+        if require_verifier and not self.check_verifier(request.verifier):
             raise ValueError("Invalid verifier.")
 
         # Servers receiving an authenticated request MUST validate it by:
@@ -756,11 +757,11 @@ class Server(object):
         # We check this before validating client and resource owner for
         # increased security and performance, both gained by doing less work.
         if require_verifier:
-            token = {"request_token": resource_owner_key}
+            token = {"request_token": request.resource_owner_key}
         else:
-            token = {"access_token": resource_owner_key}
-        if not self.validate_timestamp_and_nonce(client_key, timestamp,
-                nonce, **token):
+            token = {"access_token": request.resource_owner_key}
+        if not self.validate_timestamp_and_nonce(request.client_key,
+                request.timestamp, request.nonce, **token):
                 return False
 
         # The server SHOULD return a 401 (Unauthorized) status code when
@@ -770,12 +771,13 @@ class Server(object):
         # time request verification.
         #
         # Note that early exit would enable client enumeration
-        valid_client = self.validate_client_key(client_key)
+        valid_client = self.validate_client_key(request.client_key)
         if not valid_client:
             client_key = self.dummy_client
 
         # Ensure a valid redirection uri is used
-        valid_redirect = self.validate_redirect_uri(client_key, callback_uri)
+        valid_redirect = self.validate_redirect_uri(request.client_key,
+                request.callback_uri)
 
         # The server SHOULD return a 401 (Unauthorized) status code when
         # receiving a request with invalid or expired token.
@@ -784,13 +786,13 @@ class Server(object):
         # time request verification.
         #
         # Note that early exit would enable resource owner enumeration
-        if resource_owner_key:
+        if request.resource_owner_key:
             if require_verifier:
                 valid_resource_owner = self.validate_request_token(
-                    client_key, resource_owner_key)
+                    request.client_key, request.resource_owner_key)
             else:
                 valid_resource_owner = self.validate_access_token(
-                    client_key, resource_owner_key)
+                    request.client_key, request.resource_owner_key)
             if not valid_resource_owner:
                 resource_owner_key = self.dummy_resource_owner
         else:
@@ -818,14 +820,16 @@ class Server(object):
         # Access to protected resources will always validate the realm but note
         # that the realm is now tied to the access token and not provided by
         # the client.
-        if ((require_realm and not resource_owner_key) or
-            (not require_resource_owner and not realm)):
-            valid_realm = self.validate_requested_realm(client_key, realm)
+        if ((require_realm and not request.resource_owner_key) or
+            (not require_resource_owner and not request.realm)):
+            valid_realm = self.validate_requested_realm(request.client_key,
+                    request.realm)
         elif require_verifier:
             valid_realm = True
         else:
-            valid_realm = self.validate_realm(client_key, resource_owner_key,
-                    uri=request.uri, required_realm=required_realm)
+            valid_realm = self.validate_realm(request.client_key,
+                    request.resource_owner_key, uri=request.uri,
+                    required_realm=required_realm)
 
         # The server MUST verify (Section 3.2) the validity of the request,
         # ensure that the resource owner has authorized the provisioning of
@@ -836,9 +840,9 @@ class Server(object):
         #
         # Note that early exit would enable resource owner authorization
         # verifier enumertion.
-        if verifier:
-            valid_verifier = self.validate_verifier(client_key,
-                resource_owner_key, verifier)
+        if request.verifier:
+            valid_verifier = self.validate_verifier(request.client_key,
+                request.resource_owner_key, request.verifier)
         else:
             valid_verifier = True
 
@@ -846,13 +850,12 @@ class Server(object):
         # for each request. Note that HMAC-SHA1 and PLAINTEXT share parameters
 
         request.params = filter(lambda x: x[0] != "oauth_signature", params)
-        request.signature = request_signature
 
         # ---- RSA Signature verification ----
-        if signature_method == SIGNATURE_RSA:
+        if request.signature_method == SIGNATURE_RSA:
             # The server verifies the signature per `[RFC3447] section 8.2.2`_
             # .. _`[RFC3447] section 8.2.2`: http://tools.ietf.org/html/rfc3447#section-8.2.1
-            rsa_key = self.get_rsa_key(client_key)
+            rsa_key = self.get_rsa_key(request.client_key)
             valid_signature = signature.verify_rsa_sha1(request, rsa_key)
 
         # ---- HMAC or Plaintext Signature verification ----
@@ -862,17 +865,17 @@ class Server(object):
             #   `Section 3.4`_ and comparing it to the value received from the
             #   client via the "oauth_signature" parameter.
             # .. _`Section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
-            client_secret = self.get_client_secret(client_key)
+            client_secret = self.get_client_secret(request.client_key)
             resource_owner_secret = None
             if require_resource_owner:
                 if require_verifier:
                     resource_owner_secret = self.get_request_token_secret(
-                        client_key, resource_owner_key)
+                        request.client_key, request.resource_owner_key)
                 else:
                     resource_owner_secret = self.get_access_token_secret(
-                        client_key, resource_owner_key)
+                        request.client_key, request.resource_owner_key)
 
-            if signature_method == SIGNATURE_HMAC:
+            if request.signature_method == SIGNATURE_HMAC:
                 valid_signature = signature.verify_hmac_sha1(request,
                     client_secret, resource_owner_secret)
             else:
@@ -895,4 +898,4 @@ class Server(object):
             logger.info("Valid callback:\t%s" % valid_redirect)
             logger.info("Valid verifier:\t%s\t(Required: %s)" % (valid_verifier, require_verifier))
             logger.info("Valid signature:\t%s" % valid_signature)
-        return v
+        return v, request

@@ -420,9 +420,9 @@ class ServerTests(TestCase):
               'oauth_consumer_key={0}')
 
         s = self.ClientServer()
-        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=client.format('bar')))
-        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=client.format('bar')))
-        self.assertTrue(s.verify_request(uri, headers=self.URLENCODED, body=client.format('foo')))
+        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=client.format('bar'))[0])
+        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=client.format('bar'))[0])
+        self.assertTrue(s.verify_request(uri, headers=self.URLENCODED, body=client.format('foo'))[0])
 
     def test_nonce_and_timestamp_validation(self):
         uri = 'https://example.com/'
@@ -453,8 +453,10 @@ class ServerTests(TestCase):
               'oauth_consumer_key=foo')
 
         s = self.ClientServer()
-        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=invalid_owner))
-        self.assertTrue(s.verify_request(uri, headers=self.URLENCODED, body=owner_optional, require_resource_owner=False))
+        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED,
+            body=invalid_owner)[0])
+        self.assertTrue(s.verify_request(uri, headers=self.URLENCODED,
+            body=owner_optional, require_resource_owner=False)[0])
 
     def test_signature_verification(self):
         uri = 'https://example.com/'
@@ -473,8 +475,8 @@ class ServerTests(TestCase):
               'oauth_consumer_key=foo')
 
         s = self.ClientServer()
-        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=short_sig))
-        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=plain))
+        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=short_sig)[0])
+        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=plain)[0])
 
     def test_realm_validation(self):
         uri = 'https://example.com/'
