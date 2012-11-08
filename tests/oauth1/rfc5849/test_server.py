@@ -446,7 +446,7 @@ class ServerTests(TestCase):
               'oauth_token=invalid&'
               'oauth_consumer_key=foo')
 
-        owner_optional = ('oauth_signature=Caupx4p518D7HzA6ihWwV4kB93A%3D&'
+        owner_optional = ('oauth_signature=GTmmjtDdyqhDYHL5dDWjVIDx%2BTo%3D&'
               'oauth_timestamp=1234567890&'
               'oauth_nonce=abcdefghijklmnopqrstuvwxyz&'
               'oauth_version=1.0&oauth_signature_method=HMAC-SHA1&'
