@@ -114,16 +114,16 @@ class ParameterTests(TestCase):
 
     def test_prepare_grant_uri(self):
         """Verify correct authorization URI construction."""
-        self.assertEqual(prepare_grant_uri(**self.auth_grant), self.auth_grant_uri)
-        self.assertEqual(prepare_grant_uri(**self.auth_grant_list_scope), self.auth_grant_uri_list_scope)
-        self.assertEqual(prepare_grant_uri(**self.auth_implicit), self.auth_implicit_uri)
-        self.assertEqual(prepare_grant_uri(**self.auth_implicit_list_scope), self.auth_implicit_uri_list_scope)
+        self.assertURLEqual(prepare_grant_uri(**self.auth_grant), self.auth_grant_uri)
+        self.assertURLEqual(prepare_grant_uri(**self.auth_grant_list_scope), self.auth_grant_uri_list_scope)
+        self.assertURLEqual(prepare_grant_uri(**self.auth_implicit), self.auth_implicit_uri)
+        self.assertURLEqual(prepare_grant_uri(**self.auth_implicit_list_scope), self.auth_implicit_uri_list_scope)
 
     def test_prepare_token_request(self):
         """Verify correct access token request body construction."""
-        self.assertEqual(prepare_token_request(**self.grant_body), self.auth_grant_body)
-        self.assertEqual(prepare_token_request(**self.pwd_body), self.password_body)
-        self.assertEqual(prepare_token_request(**self.cred_grant), self.cred_body)
+        self.assertFormBodyEqual(prepare_token_request(**self.grant_body), self.auth_grant_body)
+        self.assertFormBodyEqual(prepare_token_request(**self.pwd_body), self.password_body)
+        self.assertFormBodyEqual(prepare_token_request(**self.cred_grant), self.cred_body)
 
     def test_grant_response(self):
         """Verify correct parameter parsing and validation for auth code responses."""

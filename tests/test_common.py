@@ -11,14 +11,14 @@ class CommonTests(TestCase):
     uri = 'http://www.someuri.com'
 
     def test_urldecode(self):
-        self.assertEqual(urldecode(''), [])
-        self.assertEqual(urldecode('='), [('', '')])
-        self.assertEqual(urldecode('%20'), [(' ', '')])
-        self.assertEqual(urldecode('+'), [(' ', '')])
-        self.assertEqual(urldecode('c2'), [('c2', '')])
-        self.assertEqual(urldecode('c2='), [('c2', '')])
-        self.assertEqual(urldecode('foo=bar'), [('foo', 'bar')])
-        self.assertEqual(urldecode('foo_%20~=.bar-'), [('foo_ ~', '.bar-')])
+        self.assertItemsEqual(urldecode(''), [])
+        self.assertItemsEqual(urldecode('='), [('', '')])
+        self.assertItemsEqual(urldecode('%20'), [(' ', '')])
+        self.assertItemsEqual(urldecode('+'), [(' ', '')])
+        self.assertItemsEqual(urldecode('c2'), [('c2', '')])
+        self.assertItemsEqual(urldecode('c2='), [('c2', '')])
+        self.assertItemsEqual(urldecode('foo=bar'), [('foo', 'bar')])
+        self.assertItemsEqual(urldecode('foo_%20~=.bar-'), [('foo_ ~', '.bar-')])
         self.assertRaises(ValueError, urldecode, 'foo bar')
         self.assertRaises(ValueError, urldecode, '?')
         self.assertRaises(ValueError, urldecode, '%R')
@@ -27,19 +27,19 @@ class CommonTests(TestCase):
         self.assertRaises(ValueError, urldecode, '%RR')
 
     def test_extract_params_dict(self):
-        self.assertEqual(extract_params(self.params_dict), self.params_twotuple)
+        self.assertItemsEqual(extract_params(self.params_dict), self.params_twotuple)
 
     def test_extract_params_twotuple(self):
-        self.assertEqual(extract_params(self.params_twotuple), self.params_twotuple)
+        self.assertItemsEqual(extract_params(self.params_twotuple), self.params_twotuple)
 
     def test_extract_params_formencoded(self):
-        self.assertEqual(extract_params(self.params_formencoded), self.params_twotuple)
+        self.assertItemsEqual(extract_params(self.params_formencoded), self.params_twotuple)
 
     def test_extract_params_blank_string(self):
-        self.assertEqual(extract_params(''), [])
+        self.assertItemsEqual(extract_params(''), [])
 
     def test_extract_params_empty_list(self):
-        self.assertEqual(extract_params([]), [])
+        self.assertItemsEqual(extract_params([]), [])
 
     def test_extract_non_formencoded_string(self):
         self.assertEqual(extract_params('not a formencoded string'), None)
@@ -75,11 +75,11 @@ class CommonTests(TestCase):
 
     def test_list_body(self):
         r = Request(self.uri, body=self.params_twotuple)
-        self.assertEqual(r.decoded_body, self.params_twotuple)
+        self.assertItemsEqual(r.decoded_body, self.params_twotuple)
 
     def test_dict_body(self):
         r = Request(self.uri, body=self.params_dict)
-        self.assertEqual(r.decoded_body, self.params_twotuple)
+        self.assertItemsEqual(r.decoded_body, self.params_twotuple)
 
     def test_generate_timestamp(self):
         """ TODO: Better test here """
