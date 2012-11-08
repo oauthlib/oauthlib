@@ -44,6 +44,8 @@ Changelog
 *OAuthLib is in active development, with most of OAuth1 complete and OAuth2
 already in the works.*
 
+0.3.2: Fixed #62, all Python 3 tests pass.
+
 0.3.1: Python 3.1, 3.2, 3.3 support (experimental)
 
 0.3.0: Initial OAuth 2 client support
