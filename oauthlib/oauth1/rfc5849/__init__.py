@@ -459,8 +459,9 @@ class Server(object):
         """Extracts parameters from query, headers and body. Signature type
         is set to the source in which parameters were found.
         """
+        # Per RFC5849, only the Authorization header may contain the 'realm' optional parameter.
         header_params = signature.collect_parameters(headers=request.headers,
-                exclude_oauth_signature=False)
+                exclude_oauth_signature=False, with_realm=True)
         body_params = signature.collect_parameters(body=request.body,
                 exclude_oauth_signature=False)
         query_params = signature.collect_parameters(uri_query=request.uri_query,
@@ -849,7 +850,7 @@ class Server(object):
         # Parameters to Client depend on signature method which may vary
         # for each request. Note that HMAC-SHA1 and PLAINTEXT share parameters
 
-        request.params = filter(lambda x: x[0] != "oauth_signature", params)
+        request.params = filter(lambda x: x[0] not in ("oauth_signature", "realm"), params)
 
         # ---- RSA Signature verification ----
         if request.signature_method == SIGNATURE_RSA:
