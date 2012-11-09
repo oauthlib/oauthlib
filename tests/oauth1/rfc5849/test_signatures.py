@@ -115,6 +115,9 @@ class SignatureTests(TestCase):
         parameters = collect_parameters(uri_query=self.uri_query, headers={
             'Authorization': self.authorization_header,
         })
+        parameters_with_realm = collect_parameters(uri_query=self.uri_query, headers={
+            'Authorization': self.authorization_header,
+        }, with_realm=True)
         # Redo the checks against all the parameters. Duplicated code but better safety
         correct_parameters += [
             ('oauth_nonce', '7d8f3e4a'),
@@ -122,7 +125,9 @@ class SignatureTests(TestCase):
             ('oauth_consumer_key', '9djdj82h48djs9d2'),
             ('oauth_signature_method', 'HMAC-SHA1'),
             ('oauth_token', 'kkk9d7dh3k39sjv7')]
+        correct_parameters_with_realm = correct_parameters + [('realm', 'Example')]
         self.assertEqual(sorted(parameters), sorted(correct_parameters))
+        self.assertEqual(sorted(parameters_with_realm), sorted(correct_parameters_with_realm))
 
         # Add in the body.
         # TODO - add more valid content for the body. Daniel Greenfeld 2012/03/12
@@ -175,7 +180,7 @@ class SignatureTests(TestCase):
 
     def test_sign_rsa_sha1(self):
         """ Verify correct RSA-SHA1 signature against one created by openssl."""
-        
+
         base_string = b"POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D%25253D%2525253D%2526a3%253Da%2526c%252540%253D%2526a2%253Dr%252520b&OAuth%2520realm%253D%2522Example%2522%252Coauth_consumer_key%253D%25229djdj82h48djs9d2%2522%252Coauth_token%253D%2522kkk9d7dh3k39sjv7%2522%252Coauth_signature_method%253D%2522HMAC-SHA1%2522%252Coauth_timestamp%253D%2522137131201%2522%252Coauth_nonce%253D%25227d8f3e4a%2522%252Coauth_signature%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522"
 
         # Generated using: $ openssl genrsa -out <key>.pem 1024
