@@ -459,12 +459,13 @@ class Server(object):
         """Extracts parameters from query, headers and body. Signature type
         is set to the source in which parameters were found.
         """
+        # Per RFC5849, only the Authorization header may contain the 'realm' optional parameter.
         header_params = signature.collect_parameters(headers=request.headers,
                 exclude_oauth_signature=False, with_realm=True)
         body_params = signature.collect_parameters(body=request.body,
-                exclude_oauth_signature=False, with_realm=True)
+                exclude_oauth_signature=False)
         query_params = signature.collect_parameters(uri_query=request.uri_query,
-                exclude_oauth_signature=False, with_realm=True)
+                exclude_oauth_signature=False)
 
         params = []
         params.extend(header_params)
