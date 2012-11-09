@@ -171,7 +171,7 @@ def normalize_base_string_uri(uri):
 #    .. _`section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
 def collect_parameters(uri_query='', body=[], headers=None,
-        exclude_oauth_signature=True):
+        exclude_oauth_signature=True, with_realm=True):
     """**Parameter Sources**
 
     Parameters starting with `oauth_` will be unescaped.
@@ -258,7 +258,7 @@ def collect_parameters(uri_query='', body=[], headers=None,
         authorization_header = headers_lower.get('authorization')
         if authorization_header is not None:
             params.extend([i for i in utils.parse_authorization_header(
-                authorization_header) if i[0] != 'realm'])
+                authorization_header) if with_realm or i[0] != 'realm'])
 
     # *  The HTTP request entity-body, but only if all of the following
     #    conditions are met:
@@ -506,7 +506,7 @@ def sign_plaintext(client_secret, resource_owner_secret):
     return signature
 
 
-def verify_hmac_sha1(request, client_secret=None, 
+def verify_hmac_sha1(request, client_secret=None,
     resource_owner_secret=None):
     """Verify a HMAC-SHA1 signature.
 

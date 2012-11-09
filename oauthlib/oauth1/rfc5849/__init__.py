@@ -460,11 +460,11 @@ class Server(object):
         is set to the source in which parameters were found.
         """
         header_params = signature.collect_parameters(headers=request.headers,
-                exclude_oauth_signature=False)
+                exclude_oauth_signature=False, with_realm=True)
         body_params = signature.collect_parameters(body=request.body,
-                exclude_oauth_signature=False)
+                exclude_oauth_signature=False, with_realm=True)
         query_params = signature.collect_parameters(uri_query=request.uri_query,
-                exclude_oauth_signature=False)
+                exclude_oauth_signature=False, with_realm=True)
 
         params = []
         params.extend(header_params)
@@ -849,7 +849,7 @@ class Server(object):
         # Parameters to Client depend on signature method which may vary
         # for each request. Note that HMAC-SHA1 and PLAINTEXT share parameters
 
-        request.params = filter(lambda x: x[0] != "oauth_signature", params)
+        request.params = filter(lambda x: x[0] not in ("oauth_signature", "realm"), params)
 
         # ---- RSA Signature verification ----
         if request.signature_method == SIGNATURE_RSA:
