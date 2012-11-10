@@ -8,6 +8,7 @@ oauthlib.utils
 This module contains utility methods used by various parts of the OAuth 2 spec.
 """
 
+import datetime
 try:
     from urllib import quote
 except ImportError:
@@ -65,3 +66,11 @@ def escape(u):
     if not isinstance(u, unicode_type):
         raise ValueError('Only unicode objects are escapable.')
     return quote(u.encode('utf-8'), safe=b'~')
+
+
+def generate_age(issue_time):
+    """Generate a age parameter for MAC authentication draft 00."""
+    td = datetime.datetime.now() - issue_time
+    age = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
+    return unicode_type(age)
+
