@@ -2,6 +2,8 @@
 from __future__ import absolute_import, unicode_literals
 from ...unittest import TestCase
 
+import datetime
+from oauthlib import common
 from oauthlib.oauth2.draft25 import Client, PasswordCredentialsClient
 from oauthlib.oauth2.draft25 import UserAgentClient, WebApplicationClient
 from oauthlib.oauth2.draft25 import ClientCredentialsClient
@@ -15,12 +17,23 @@ class ClientTest(TestCase):
     body = "not=empty"
     headers = {}
     access_token = "token"
+    mac_key = "secret"
 
     bearer_query = uri + "&access_token=" + access_token
     bearer_header = {
         "Authorization": "Bearer " + access_token
     }
     bearer_body = body + "&access_token=" + access_token
+
+    mac_00_header = {
+        "Authorization": 'MAC id="' + access_token + '", nonce="0:abc123",' +
+                         ' bodyhash="Yqyso8r3hR5Nm1ZFv+6AvNHrxjE=",' +
+                         ' mac="khWygG6wFPnWeJteDP7aLOPgzZM="'
+    }
+    mac_01_header = {
+        "Authorization": 'MAC id="' + access_token + '", ts="123456789",' +
+                          ' nonce="abc123", mac="CoHLzBGb8zVNdLZQDA2tiO6mryk="'
+    }
 
     def test_add_bearer_token(self):
         """Test a number of bearer token placements"""
@@ -97,6 +110,44 @@ class ClientTest(TestCase):
                 default_token_placement="invalid")
         self.assertRaises(ValueError, client.add_token, self.uri, body=self.body,
                 headers=self.headers)
+
+    def test_add_mac_token(self):
+        # Missing access token
+        client = Client(self.client_id, token_type="MAC")
+        self.assertRaises(ValueError, client.add_token, self.uri)
+
+        # Invalid hash algorithm
+        client = Client(self.client_id, token_type="MAC",
+                access_token=self.access_token, mac_key=self.mac_key,
+                mac_algorithm="hmac-sha-2")
+        self.assertRaises(ValueError, client.add_token, self.uri)
+
+        orig_generate_timestamp = common.generate_timestamp
+        orig_generate_nonce = common.generate_nonce
+        self.addCleanup(setattr, common, 'generage_timestamp', orig_generate_timestamp)
+        self.addCleanup(setattr, common, 'generage_nonce', orig_generate_nonce)
+        common.generate_timestamp = lambda: '123456789'
+        common.generate_nonce = lambda: 'abc123'
+
+        # Add the Authorization header (draft 00)
+        client = Client(self.client_id, token_type="MAC",
+                access_token=self.access_token, mac_key=self.mac_key,
+                mac_algorithm="hmac-sha-1")
+        uri, headers, body = client.add_token(self.uri, body=self.body,
+                headers=self.headers, issue_time=datetime.datetime.now())
+        self.assertEqual(uri, self.uri)
+        self.assertEqual(body, self.body)
+        self.assertEqual(headers, self.mac_00_header)
+
+        # Add the Authorization header (draft 00)
+        client = Client(self.client_id, token_type="MAC",
+                access_token=self.access_token, mac_key=self.mac_key,
+                mac_algorithm="hmac-sha-1")
+        uri, headers, body = client.add_token(self.uri, body=self.body,
+                headers=self.headers, draft=1)
+        self.assertEqual(uri, self.uri)
+        self.assertEqual(body, self.body)
+        self.assertEqual(headers, self.mac_01_header)
 
 
 class WebApplicationClientTest(TestCase):

@@ -10,6 +10,7 @@ This module contains methods for adding two types of access tokens to requests.
 
 """
 from binascii import b2a_base64
+import datetime
 import hashlib
 import hmac
 try:
@@ -18,11 +19,13 @@ except ImportError:
     from urllib.parse import urlparse
 
 from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
+from oauthlib import common
 from . import utils
 
 
 def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
-        body=None, ext='', hash_algorithm='hmac-sha-1'):
+        body=None, ext='', hash_algorithm='hmac-sha-1', issue_time=None,
+        draft=0):
     """Add an `MAC Access Authentication`_ signature to headers.
 
     Unlike OAuth 1, this HMAC signature does not require inclusion of the request
@@ -46,6 +49,8 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
     :param http_method: HTTP Request method.
     :param key: MAC given provided by token endpoint.
     :param algorithm: HMAC algorithm provided by token endpoint.
+    :param issue_time: Time when the MAC credentials were issues as a datetime object.
+    :param draft: MAC authentication specification version.
     :return: headers dictionary with the authorization field added.
     """
     http_method = http_method.upper()
@@ -53,10 +58,18 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
 
     if hash_algorithm.lower() == 'hmac-sha-1':
         h = hashlib.sha1
-    else:
+    elif hash_algorithm.lower() == 'hmac-sha-256':
         h = hashlib.sha256
+    else:
+        raise ValueError('unknown hash algorithm')
 
-    nonce = nonce or '{0}:{1}'.format(utils.generate_nonce(), utils.generate_timestamp())
+    if draft == 0:
+        nonce = nonce or '{0}:{1}'.format(utils.generate_age(issue_time),
+                                          common.generate_nonce())
+    else:
+        ts = common.generate_timestamp()
+        nonce = common.generate_nonce()
+
     sch, net, path, par, query, fra = urlparse(uri)
 
     if query:
@@ -65,20 +78,25 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
         request_uri = path
 
     # Hash the body/payload
-    if body is not None:
+    if body is not None and draft == 0:
         bodyhash = b2a_base64(h(body.encode('utf-8')).digest())[:-1].decode('utf-8')
     else:
         bodyhash = ''
 
     # Create the normalized base string
     base = []
-    base.append(nonce)
+    if draft == 0:
+        base.append(nonce)
+    else:
+        base.append(ts)
+        base.append(nonce)
     base.append(http_method.upper())
     base.append(request_uri)
     base.append(host)
     base.append(port)
-    base.append(bodyhash)
-    base.append(ext)
+    if draft == 0:
+        base.append(bodyhash)
+    base.append(ext or '')
     base_string = '\n'.join(base) + '\n'
 
     # hmac struggles with unicode strings - http://bugs.python.org/issue5285
@@ -89,6 +107,8 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
 
     header = []
     header.append('MAC id="%s"' % token)
+    if draft != 0:
+        header.append('ts="%s"' % ts)
     header.append('nonce="%s"' % nonce)
     if bodyhash:
         header.append('bodyhash="%s"' % bodyhash)

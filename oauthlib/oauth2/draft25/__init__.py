@@ -32,6 +32,8 @@ class Client(object):
             token_type='Bearer',
             access_token=None,
             refresh_token=None,
+            mac_key=None,
+            mac_algorithm=None,
             **kwargs):
         """Initialize a client with commonly used attributes."""
 
@@ -40,6 +42,8 @@ class Client(object):
         self.token_type = token_type
         self.access_token = access_token
         self.refresh_token = refresh_token
+        self.mac_key = mac_key
+        self.mac_algorithm = mac_algorithm
 
     @property
     def token_types(self):
@@ -58,7 +62,7 @@ class Client(object):
         }
 
     def add_token(self, uri, http_method='GET', body=None, headers=None,
-            token_placement=None):
+            token_placement=None, **kwargs):
         """Add token to the request uri, body or authorization header.
 
         The access token type provides the client with the information
@@ -97,7 +101,7 @@ class Client(object):
             raise ValueError("Missing access token.")
 
         return self.token_types[self.token_type](uri, http_method, body,
-                    headers, token_placement)
+                    headers, token_placement, **kwargs)
 
     def prepare_refresh_body(self, body='', refresh_token=None, scope=None):
         """Prepare an access token request, using a refresh token.
@@ -139,14 +143,14 @@ class Client(object):
         return uri, headers, body
 
     def _add_mac_token(self, uri, http_method='GET', body=None,
-            headers=None, token_placement=AUTH_HEADER):
+            headers=None, token_placement=AUTH_HEADER, ext=None, **kwargs):
         """Add a MAC token to the request authorization header.
 
         Warning: MAC token support is experimental as the spec is not yet stable.
         """
-        headers = prepare_mac_header(self.access_token, uri, self.key, http_method,
-                        headers=headers, body=body, ext=self.ext,
-                        hash_algorithm=self.hash_algorithm)
+        headers = prepare_mac_header(self.access_token, uri, self.mac_key, http_method,
+                        headers=headers, body=body, ext=ext,
+                        hash_algorithm=self.mac_algorithm, **kwargs)
         return uri, headers, body
 
     def _populate_attributes(self, response):
@@ -166,6 +170,12 @@ class Client(object):
 
         if 'code' in response:
             self.code = response.get('code')
+
+        if 'mac_key' in response:
+            self.mac_key = response.get('mac_key')
+
+        if 'mac_algorithm' in response:
+            self.mac_algorithm = response.get('mac_algorithm')
 
     def prepare_request_uri(self, *args, **kwargs):
         """Abstract method used to create request URIs."""
