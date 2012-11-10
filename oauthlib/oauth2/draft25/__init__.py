@@ -99,7 +99,7 @@ class Client(object):
         return self.token_types[self.token_type](uri, http_method, body,
                     headers, token_placement)
 
-    def prepare_refresh_body(self, body='', refresh_token=None, scope=None):
+    def prepare_refresh_body(self, body='', refresh_token=None, scope=None, **kwargs):
         """Prepare an access token request, using a refresh token.
 
         If the authorization server issued a refresh token to the client, the
@@ -120,7 +120,7 @@ class Client(object):
         """
         refresh_token = refresh_token or self.refresh_token
         return prepare_token_request('refresh_token', body=body, scope=scope,
-                refresh_token=refresh_token)
+                refresh_token=refresh_token, **kwargs)
 
     def _add_bearer_token(self, uri, http_method='GET', body=None,
             headers=None, token_placement=None):
