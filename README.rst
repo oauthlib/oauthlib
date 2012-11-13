@@ -20,6 +20,13 @@ assuming a specific HTTP request object. Use it to graft OAuth support onto your
 favorite HTTP library. If you're a maintainer of such a library, write a thin
 veneer on top of OAuthLib and get OAuth support for very little effort.
 
+Documentation
+-------------
+
+Full documentation is available on `readthedocs`_.
+
+.. _`readthedocs`: https://oauthlib.readthedocs.org/en/latest/index.html
+
 Interested in making OAuth requests?
 ------------------------------------
 
