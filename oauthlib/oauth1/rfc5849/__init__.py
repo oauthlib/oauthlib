@@ -763,7 +763,7 @@ class Server(object):
             token = {"access_token": request.resource_owner_key}
         if not self.validate_timestamp_and_nonce(request.client_key,
                 request.timestamp, request.nonce, **token):
-                return False
+                return False, request
 
         # The server SHOULD return a 401 (Unauthorized) status code when
         # receiving a request with invalid client credentials.
