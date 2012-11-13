@@ -174,10 +174,10 @@ class ServerTests(TestCase):
         s = self.TestServer()
 
         uri, headers, body = c.sign('http://server.example.com:80/init')
-        self.assertTrue(s.verify_request(uri, body=body, headers=headers))
+        self.assertTrue(s.verify_request(uri, body=body, headers=headers)[0])
 
         uri, headers, body = d.sign('http://server.example.com:80/init')
-        self.assertTrue(s.verify_request(uri, body=body, headers=headers))
+        self.assertTrue(s.verify_request(uri, body=body, headers=headers)[0])
 
     def test_server_callback_request(self):
         c = Client(self.CLIENT_KEY,
@@ -190,7 +190,7 @@ class ServerTests(TestCase):
         uri, headers, body = c.sign('http://server.example.com:80/init')
 
         s = self.TestServer()
-        self.assertTrue(s.verify_request(uri, body=body, headers=headers))
+        self.assertTrue(s.verify_request(uri, body=body, headers=headers)[0])
 
     def test_not_implemented(self):
         s = Server()
@@ -434,7 +434,7 @@ class ServerTests(TestCase):
               'oauth_consumer_key=foo')
 
         s = self.ClientServer()
-        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=replay))
+        self.assertFalse(s.verify_request(uri, headers=self.URLENCODED, body=replay)[0])
 
     def test_resource_owner_validation(self):
         uri = 'https://example.com/'
@@ -488,7 +488,7 @@ class ServerTests(TestCase):
               'oauth_consumer_key=foo&realm=photos')
 
         s = self.ClientServer()
-        self.assertTrue(s.verify_request(uri, headers=self.URLENCODED, body=realm))
+        self.assertTrue(s.verify_request(uri, headers=self.URLENCODED, body=realm)[0])
 
     def test_verifier_validation(self):
         uri = 'https://example.com/'
@@ -501,7 +501,7 @@ class ServerTests(TestCase):
 
         s = self.ClientServer()
         self.assertTrue(s.verify_request(uri, body=verifier,
-            headers=self.URLENCODED, require_verifier=True))
+            headers=self.URLENCODED, require_verifier=True)[0])
 
     def test_timing_attack(self):
         """Ensure near constant time verification."""
