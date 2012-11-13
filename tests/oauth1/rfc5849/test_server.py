@@ -480,7 +480,7 @@ class ServerTests(TestCase):
 
     def test_realm_validation(self):
         uri = 'https://example.com/'
-        realm = ('oauth_signature=I7UW598kxMqCMgzVY6%2FOScwErHE%3D&'
+        realm = ('oauth_signature=fmrXnTF4lO4o%2BD0%2FlZaJHP%2FXqEY%3D&'
               'oauth_timestamp=1234567890&'
               'oauth_nonce=abcdefghijklmnopqrstuvwxyz&'
               'oauth_version=1.0&oauth_signature_method=HMAC-SHA1&'
