@@ -25,7 +25,7 @@ Documentation
 
 Full documentation is available on `Read the Docs`_.
 
-.. _`readthedocs`: https://oauthlib.readthedocs.org/en/latest/index.html
+.. _`Read the Docs`: https://oauthlib.readthedocs.org/en/latest/index.html
 
 Interested in making OAuth requests?
 ------------------------------------
