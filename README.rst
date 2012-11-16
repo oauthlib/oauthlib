@@ -23,7 +23,7 @@ veneer on top of OAuthLib and get OAuth support for very little effort.
 Documentation
 -------------
 
-Full documentation is available on `readthedocs`_.
+Full documentation is available on `Read the Docs`_.
 
 .. _`readthedocs`: https://oauthlib.readthedocs.org/en/latest/index.html
 
