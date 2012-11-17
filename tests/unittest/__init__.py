@@ -1,3 +1,4 @@
+import collections
 import sys
 try:
     import urlparse
@@ -18,18 +19,22 @@ except ImportError:
 if sys.version_info[1] == 1:
     TestCase.assertIsInstance = lambda self, obj, cls: self.assertTrue(isinstance(obj, cls))
 
-# Python 3 does not provide assertItemsEqual
-# TODO (ib-lundgren): Find out why and what their recommended alternative is
-if sys.version_info[0] == 3:
-    TestCase.assertItemsEqual = lambda self, a, b: self.assertEqual(sorted(a), sorted(b))
+# Somewhat consistent itemsequal between all python versions
+if sys.version_info[1] == 3:
+    TestCase.assertItemsEqual = TestCase.assertCountEqual
+elif sys.version_info[0] == 2 and sys.version_info[1] == 6:
+    pass
+else:
+    TestCase.assertItemsEqual = lambda self, a, b: self.assertEqual(
+            collections.Counter(list(a)), collections.Counter(list(b)))
 
 
 # URL comparison where query param order is insignifcant
 def url_equals(self, a, b, parse_fragment=False):
-    parsed_a = urlparse.urlparse(a)
-    parsed_b = urlparse.urlparse(b)
-    query_a = urlparse.parse_qsl(a)
-    query_b = urlparse.parse_qsl(b)
+    parsed_a = urlparse.urlparse(a, allow_fragments=parse_fragment)
+    parsed_b = urlparse.urlparse(b, allow_fragments=parse_fragment)
+    query_a = urlparse.parse_qsl(parsed_a.query)
+    query_b = urlparse.parse_qsl(parsed_b.query)
     if parse_fragment:
         fragment_a = urlparse.parse_qsl(parsed_a.fragment)
         fragment_b = urlparse.parse_qsl(parsed_b.fragment)
