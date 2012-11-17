@@ -4,7 +4,7 @@ python:
   - 2.7
 install:
   - pip install -i https://restricted.crate.io/ .
-  - pip install -i https://restricted.crate.io/ nose unittest2 pycrypto
+  - pip install -i https://restricted.crate.io/ nose unittest2 pycrypto mock
 script: make test
 branches:
   only:

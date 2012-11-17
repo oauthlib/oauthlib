@@ -17,7 +17,7 @@ def fread(fn):
 if sys.version_info[0] == 3:
     tests_require = ['nose', 'pycrypto']
 else:
-    tests_require = ['nose', 'unittest2', 'pycrypto']
+    tests_require = ['nose', 'unittest2', 'pycrypto', 'mock']
 rsa_require = ['pycrypto']
 
 requires = []
