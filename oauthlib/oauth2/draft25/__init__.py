@@ -530,10 +530,132 @@ class PasswordCredentialsClient(Client):
         self._populate_attributes(response)
         return response
 
-class AuthorizationServer(object):
-    def client_redirect_uris(self, client_identifier):
-        raise NotImplementedError("Must be implemented by inheriting classes.")
+class AuthorizationEndpoint(object):
+    """Authorization endpoint - used by the client to obtain authorization
+    from the resource owner via user-agent redirection.
 
-    def redirect_uri(client_identifier, redirect_uri=None):
-        raise NotImplementedError("TODO")
+    The authorization endpoint is used to interact with the resource
+    owner and obtain an authorization grant.  The authorization server
+    MUST first verify the identity of the resource owner.  The way in
+    which the authorization server authenticates the resource owner (e.g.
+    username and password login, session cookies) is beyond the scope of
+    this specification.
 
+    The endpoint URI MAY include an "application/x-www-form-urlencoded"
+    formatted (per Appendix B) query component ([RFC3986] section 3.4),
+    which MUST be retained when adding additional query parameters.  The
+    endpoint URI MUST NOT include a fragment component.
+
+    Since requests to the authorization endpoint result in user
+    authentication and the transmission of clear-text credentials (in the
+    HTTP response), the authorization server MUST require the use of TLS
+    as described in Section 1.6 when sending requests to the
+    authorization endpoint.
+
+    The authorization server MUST support the use of the HTTP "GET"
+    method [RFC2616] for the authorization endpoint, and MAY support the
+    use of the "POST" method as well.
+
+    Parameters sent without a value MUST be treated as if they were
+    omitted from the request.  The authorization server MUST ignore
+    unrecognized request parameters.  Request and response parameters
+    MUST NOT be included more than once.
+    """
+
+    def __init__(self, response_types=None):
+        self._response_types = response_types or {}
+
+    @property
+    def response_types(self):
+        return self._response_types
+
+    @response_types.setter
+    def response_types(self, response_types):
+        self._response_types = response_types
+
+    @property
+    def default_token(self):
+        return BearerToken()
+
+    def create_authorization_response(self, uri, authorized_scopes,
+            http_method=u'GET', body=None, headers=None):
+        request = Request(uri, http_method=http_method, body=body, headers=headers)
+        request.params = params_from_uri(self.request.uri)
+        request.client_id = self.request.params.get(u'client_id', None)
+        request.scopes = self.request.params.get(u'scope', None)
+        request.redirect_uri = self.request.params.get(u'redirect_uri', None)
+        request.response_type = self.request.params.get(u'response_type')
+        request.state = self.request.params.get(u'state')
+        request.scopes = authorized_scopes
+
+        if not request.response_type in self.response_type_handlers:
+            raise AuthorizationEndpoint.UnsupportedResponseTypeError(
+                    state=request.state, description=u'Invalid response type')
+
+        return self.response_types.get(request.response_type)(request,
+                self.default_token)
+
+
+class TokenEndpoint(object):
+
+    def __init__(self, grant_types=None):
+        self._grant_types = grant_types or {}
+
+    @property
+    def grant_types(self):
+        return self._grant_types
+
+    @grant_types.setter
+    def grant_types(self, handlers):
+        self._grant_types = handlers
+
+    @property
+    def default_token(self):
+        return BearerToken()
+
+    def create_token_response(self, body, http_method=u'GET', uri=None, headers=None):
+        """Validate client, code etc, return body + headers"""
+        request = Request(uri, http_method, body, headers)
+        request.params = dict(self.request.decoded_body)
+        if not u'grant_type' in request.params:
+            raise TokenEndpoint.InvalidRequestError(
+                    description=u'Missing grant_type parameter.')
+
+        request.grant_type = request.params.get(u'grant_type')
+        if not request.grant_type in self.grant_type_handlers:
+            raise TokenEndpoint.UnsupportedGrantTypeError()
+
+        # TODO: authenticate client here and populate request.client
+
+        return self.grant_types.get(request.grant_type)(request,
+                self.default_token)
+
+
+class ResourceEndpoint(object):
+
+    @property
+    def tokens(self):
+        return {
+            u'Bearer': BearerToken(),
+        }
+
+    def verify_request(self, uri, http_method=u'GET', body=None, headers=None):
+        """Validate client, code etc, return body + headers"""
+        request = Request(uri, http_method, body, headers)
+        request.token_type = self.find_token_type(request)
+
+        if not request.token_type:
+            raise ValueError(u'Could not determine the token type.')
+
+        if not request.token_type in self.tokens:
+            raise ValueError(u'Unsupported token type.')
+
+        return self.tokens.get(request.token_type).validate_request(request)
+
+    def find_token_type(self, request):
+        estimates = sorted((t.estimate_type(request) for t in self.tokens))
+        return estimates[0] if len(estimates) else None
+
+
+class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
+    pass

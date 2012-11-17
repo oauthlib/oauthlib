@@ -9,5 +9,6 @@ This module is a wrapper for the most recent implementation of OAuth 2.0 Client
 and Server classes.
 """
 
-from .draft25 import Client, AuthorizationServer
+from .draft25 import Client, Server
+from .draft25 import AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint
 
