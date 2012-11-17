@@ -209,11 +209,15 @@ def add_params_to_qs(query, params):
     return urlencode(queryparams)
 
 
-def add_params_to_uri(uri, params):
+def add_params_to_uri(uri, params, fragment=False):
     """Add a list of two-tuples to the uri query components."""
     sch, net, path, par, query, fra = urlparse.urlparse(uri)
-    query = add_params_to_qs(query, params)
+    if fragment:
+        fra = add_params_to_qs(query, params)
+    else:
+        query = add_params_to_qs(query, params)
     return urlparse.urlunparse((sch, net, path, par, query, fra))
+
 
 def safe_string_equals(a, b):
     """ Near-constant time string comparison.
