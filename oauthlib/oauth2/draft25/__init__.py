@@ -578,19 +578,19 @@ class AuthorizationEndpoint(object):
         return BearerToken()
 
     def create_authorization_response(self, uri, authorized_scopes,
-            http_method=u'GET', body=None, headers=None):
+            http_method='GET', body=None, headers=None):
         request = Request(uri, http_method=http_method, body=body, headers=headers)
         request.params = params_from_uri(self.request.uri)
-        request.client_id = self.request.params.get(u'client_id', None)
-        request.scopes = self.request.params.get(u'scope', None)
-        request.redirect_uri = self.request.params.get(u'redirect_uri', None)
-        request.response_type = self.request.params.get(u'response_type')
-        request.state = self.request.params.get(u'state')
+        request.client_id = self.request.params.get('client_id', None)
+        request.scopes = self.request.params.get('scope', None)
+        request.redirect_uri = self.request.params.get('redirect_uri', None)
+        request.response_type = self.request.params.get('response_type')
+        request.state = self.request.params.get('state')
         request.scopes = authorized_scopes
 
         if not request.response_type in self.response_type_handlers:
             raise AuthorizationEndpoint.UnsupportedResponseTypeError(
-                    state=request.state, description=u'Invalid response type')
+                    state=request.state, description='Invalid response type')
 
         return self.response_types.get(request.response_type)(request,
                 self.default_token)
@@ -613,15 +613,15 @@ class TokenEndpoint(object):
     def default_token(self):
         return BearerToken()
 
-    def create_token_response(self, body, http_method=u'GET', uri=None, headers=None):
+    def create_token_response(self, body, http_method='GET', uri=None, headers=None):
         """Validate client, code etc, return body + headers"""
         request = Request(uri, http_method, body, headers)
         request.params = dict(self.request.decoded_body)
-        if not u'grant_type' in request.params:
+        if not 'grant_type' in request.params:
             raise TokenEndpoint.InvalidRequestError(
-                    description=u'Missing grant_type parameter.')
+                    description='Missing grant_type parameter.')
 
-        request.grant_type = request.params.get(u'grant_type')
+        request.grant_type = request.params.get('grant_type')
         if not request.grant_type in self.grant_type_handlers:
             raise TokenEndpoint.UnsupportedGrantTypeError()
 
@@ -636,19 +636,19 @@ class ResourceEndpoint(object):
     @property
     def tokens(self):
         return {
-            u'Bearer': BearerToken(),
+            'Bearer': BearerToken(),
         }
 
-    def verify_request(self, uri, http_method=u'GET', body=None, headers=None):
+    def verify_request(self, uri, http_method='GET', body=None, headers=None):
         """Validate client, code etc, return body + headers"""
         request = Request(uri, http_method, body, headers)
         request.token_type = self.find_token_type(request)
 
         if not request.token_type:
-            raise ValueError(u'Could not determine the token type.')
+            raise ValueError('Could not determine the token type.')
 
         if not request.token_type in self.tokens:
-            raise ValueError(u'Unsupported token type.')
+            raise ValueError('Unsupported token type.')
 
         return self.tokens.get(request.token_type).validate_request(request)
 

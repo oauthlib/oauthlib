@@ -4,8 +4,8 @@ oauthlib.oauth2.draft_25.grant_types
 """
 from __future__ import unicode_literals
 import json
-import errors
 from oauthlib.common import generate_token, add_params_to_uri
+from oauthlib.oauth2.draft25 import errors
 from oauthlib.uri_validate import is_absolute_uri
 
 

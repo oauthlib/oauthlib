@@ -2,8 +2,9 @@
 oauthlib.oauth2.draft_25.errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from oauthlib.common import urlencode
+from __future__ import unicode_literals
 import json
+from oauthlib.common import urlencode
 
 
 class OAuth2Error(Exception):
@@ -15,14 +16,14 @@ class OAuth2Error(Exception):
                         developer in understanding the error that occurred.
                         Values for the "error_description" parameter MUST NOT
                         include characters outside the set
-                        %x20-21 / %x23-5B / %x5D-7E.
+                        x20-21 / x23-5B / x5D-7E.
 
         uri:    A URI identifying a human-readable web page with information
                 about the error, used to provide the client developer with
                 additional information about the error.  Values for the
                 "error_uri" parameter MUST conform to the URI- Reference
                 syntax, and thus MUST NOT include characters outside the set
-                %x21 / %x23-5B / %x5D-7E.
+                x21 / x23-5B / x5D-7E.
 
         state:  A CSRF protection value received from the client.
         """
@@ -32,13 +33,13 @@ class OAuth2Error(Exception):
 
     @property
     def twotuples(self):
-        error = [(u'error', self.error)]
+        error = [('error', self.error)]
         if self.description:
-            error.append((u'error_description', self.description))
+            error.append(('error_description', self.description))
         if self.uri:
-            error.append((u'error_uri', self.uri))
+            error.append(('error_uri', self.uri))
         if self.state:
-            error.append((u'state', self.state))
+            error.append(('state', self.state))
         return error
 
     @property
@@ -55,31 +56,31 @@ class InvalidRequestError(OAuth2Error):
     parameter value, includes a parameter more than once, or is
     otherwise malformed.
     """
-    error = u'invalid_request'
+    error = 'invalid_request'
 
 
 class UnauthorizedClientError(OAuth2Error):
     """The client is not authorized to request an authorization code using
     this method.
     """
-error = u'unauthorized_client'
+error = 'unauthorized_client'
 
 
 class AccessDeniedError(OAuth2Error):
     """The resource owner or authorization server denied the request."""
-    error = u'access_denied'
+    error = 'access_denied'
 
 
 class UnsupportedResponseTypeError(OAuth2Error):
     """The authorization server does not support obtaining an authorization
     code using this method.
     """
-    error = u'unsupported_response_type'
+    error = 'unsupported_response_type'
 
 
 class InvalidScopeError(OAuth2Error):
     """The requested scope is invalid, unknown, or malformed."""
-    error = u'invalid_scope'
+    error = 'invalid_scope'
 
 
 class ServerError(OAuth2Error):
@@ -88,7 +89,7 @@ class ServerError(OAuth2Error):
     because a 500 Internal Server Error HTTP status code cannot be returned
     to the client via a HTTP redirect.)
     """
-    error = u'server_error'
+    error = 'server_error'
 
 
 class TemporarilyUnvailableError(OAuth2Error):
@@ -97,7 +98,7 @@ class TemporarilyUnvailableError(OAuth2Error):
     (This error code is needed because a 503 Service Unavailable HTTP
     status code cannot be returned to the client via a HTTP redirect.)
     """
-    error = u'temporarily_unavailable'
+    error = 'temporarily_unavailable'
 
 
 class InvalidClientError(OAuth2Error):
@@ -111,7 +112,7 @@ class InvalidClientError(OAuth2Error):
     response header field matching the authentication scheme used by the
     client.
     """
-    error = u'invalid_client'
+    error = 'invalid_client'
 
 
 class InvalidGrantError(OAuth2Error):
@@ -120,25 +121,25 @@ class InvalidGrantError(OAuth2Error):
     not match the redirection URI used in the authorization request, or was
     issued to another client.
     """
-    error = u'invalid_grant'
+    error = 'invalid_grant'
 
 
 class UnauthorizedClientError(OAuth2Error):
     """The authenticated client is not authorized to use this authorization
     grant type.
     """
-    error = u'unauthorized_client'
+    error = 'unauthorized_client'
 
 
 class UnsupportedGrantTypeError(OAuth2Error):
     """The authorization grant type is not supported by the authorization
     server.
     """
-    error = u'unsupported_grant_type'
+    error = 'unsupported_grant_type'
 
 
 class InvalidScopeError(OAuth2Error):
     """The requested scope is invalid, unknown, malformed, or exceeds the
     scope granted by the resource owner.
     """
-    error = u'invalid_scope'
+    error = 'invalid_scope'
