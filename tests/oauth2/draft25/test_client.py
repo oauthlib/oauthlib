@@ -4,6 +4,7 @@ from ...unittest import TestCase
 
 import datetime
 from oauthlib import common
+from oauthlib.oauth2.draft25 import utils
 from oauthlib.oauth2.draft25 import Client, PasswordCredentialsClient
 from oauthlib.oauth2.draft25 import UserAgentClient, WebApplicationClient
 from oauthlib.oauth2.draft25 import ClientCredentialsClient
@@ -124,10 +125,13 @@ class ClientTest(TestCase):
 
         orig_generate_timestamp = common.generate_timestamp
         orig_generate_nonce = common.generate_nonce
+        orig_generate_age = utils.generate_age
         self.addCleanup(setattr, common, 'generage_timestamp', orig_generate_timestamp)
         self.addCleanup(setattr, common, 'generage_nonce', orig_generate_nonce)
+        self.addCleanup(setattr, utils, 'generate_age', orig_generate_age)
         common.generate_timestamp = lambda: '123456789'
         common.generate_nonce = lambda: 'abc123'
+        utils.generate_age = lambda *args: 0
 
         # Add the Authorization header (draft 00)
         client = Client(self.client_id, token_type="MAC",
