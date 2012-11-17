@@ -153,3 +153,48 @@ def prepare_bearer_body(token, body=''):
     .. _`Bearer Token`: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
     """
     return add_params_to_qs(body, [(('access_token', token))])
+
+
+class TokenBase(object):
+
+    def __call__(self, request, refresh_token=False):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_request(self, request):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def estimate_type(self, request):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+
+class BearerToken(TokenBase):
+
+    @property
+    def expires_in(self):
+        return 3600
+
+    def save_token(self, request, token):
+        """Saves authorization codes for later use by the token endpoint."""
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def __call__(self, request, refresh_token=False):
+        token = {
+            'access_token': common.generate_token(),
+            'expires_in': self.expires_in,
+            'scope': ' '.join(request.scopes),
+            'token_type': 'Bearer',
+        }
+        if getattr(request, 'state', None):
+            token['state'] = request.state
+
+        if refresh_token:
+            token['refresh_token'] = common.generate_token()
+
+        self.save_token(request, token)
+        return token
+
+    def validate_request(self, request):
+        pass
+
+    def estimate_type(self, request):
+        pass
