@@ -17,7 +17,7 @@ try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
-from oauthlib.common import unicode_type
+from oauthlib.common import unicode_type, urldecode
 
 
 def scope_to_string(scope):
@@ -36,6 +36,13 @@ def scope_to_list(scope):
         return scope
     else:
         return scope.split(" ")
+
+
+def params_from_uri(uri):
+    params = dict(urldecode(urlparse(uri).query))
+    if 'scope' in params:
+        params['scope'] = scope_to_list(params['scope'])
+    return params
 
 
 def host_from_uri(uri):
