@@ -8,11 +8,15 @@ oauthlib.oauth2.draft_25
 This module is an implementation of various logic needed
 for signing and checking OAuth 2.0 draft 25 requests.
 """
+from oauthlib.common import Request
+from oauthlib.oauth2.draft25 import errors
 from .tokens import prepare_bearer_uri, prepare_bearer_headers
 from .tokens import prepare_bearer_body, prepare_mac_header
+from .tokens import BearerToken
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
+from .utils import params_from_uri
 
 
 AUTH_HEADER = 'auth_header'
@@ -530,6 +534,7 @@ class PasswordCredentialsClient(Client):
         self._populate_attributes(response)
         return response
 
+
 class AuthorizationEndpoint(object):
     """Authorization endpoint - used by the client to obtain authorization
     from the resource owner via user-agent redirection.
@@ -562,88 +567,102 @@ class AuthorizationEndpoint(object):
     MUST NOT be included more than once.
     """
 
-    def __init__(self, response_types=None):
+    def __init__(self, default_token=None, response_types=None):
         self._response_types = response_types or {}
+        self._default_token = default_token or BearerToken()
 
     @property
     def response_types(self):
         return self._response_types
 
-    @response_types.setter
-    def response_types(self, response_types):
-        self._response_types = response_types
-
     @property
     def default_token(self):
-        return BearerToken()
+        return self._default_token
 
-    def create_authorization_response(self, uri, authorized_scopes,
-            http_method='GET', body=None, headers=None):
+    def create_authorization_response(self, uri, http_method='GET', body=None,
+            headers=None):
+        """Extract response_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        request.params = params_from_uri(self.request.uri)
-        request.client_id = self.request.params.get('client_id', None)
-        request.scopes = self.request.params.get('scope', None)
-        request.redirect_uri = self.request.params.get('redirect_uri', None)
-        request.response_type = self.request.params.get('response_type')
-        request.state = self.request.params.get('state')
-        request.scopes = authorized_scopes
+        query_params = params_from_uri(self.request.uri)
+        body_params = self.request.decoded_body
 
-        if not request.response_type in self.response_type_handlers:
-            raise AuthorizationEndpoint.UnsupportedResponseTypeError(
-                    state=request.state, description='Invalid response type')
+        # Prioritize response_type defined as query param over those in body.
+        # Chosen because the two core grant types utilizing the response type
+        # parameter both supply it in the uri. However it is not specified
+        # explicitely in RFC 6748.
+        if 'response_type' in query_params:
+            request.response_type = query_params.get('response_type')
+        elif 'response_type' in body_params:
+            request.response_type = body_params.get('response_type')
+        else:
+            raise errors.InvalidRequestError(
+                description='The response_type parameter is missing.')
 
-        return self.response_types.get(request.response_type)(request,
-                self.default_token)
+        if not request.response_type in self.response_types:
+            raise errors.UnsupportedResponseTypeError(
+                description='Invalid response type')
+
+        return self.response_types.get(
+                request.response_type).create_authorization_response(
+                        request, self.default_token)
 
 
 class TokenEndpoint(object):
 
-    def __init__(self, grant_types=None):
+    def __init__(self, default_token=None, grant_types=None):
         self._grant_types = grant_types or {}
+        self._default_token = default_token or BearerToken()
 
     @property
     def grant_types(self):
         return self._grant_types
 
-    @grant_types.setter
-    def grant_types(self, handlers):
-        self._grant_types = handlers
-
     @property
     def default_token(self):
-        return BearerToken()
+        return self._default_token
 
-    def create_token_response(self, body, http_method='GET', uri=None, headers=None):
-        """Validate client, code etc, return body + headers"""
-        request = Request(uri, http_method, body, headers)
-        request.params = dict(self.request.decoded_body)
-        if not 'grant_type' in request.params:
-            raise TokenEndpoint.InvalidRequestError(
-                    description='Missing grant_type parameter.')
+    def create_token_response(self, uri, http_method='GET', body=None, headers=None):
+        """Extract grant_type and route to the designated handler."""
+        request = Request(uri, http_method=http_method, body=body, headers=headers)
+        query_params = params_from_uri(self.request.uri)
+        body_params = self.request.decoded_body
 
-        request.grant_type = request.params.get('grant_type')
-        if not request.grant_type in self.grant_type_handlers:
-            raise TokenEndpoint.UnsupportedGrantTypeError()
+        # Prioritize grant_type defined as body param over those in uri.
+        # Chosen because all three core grant types supply this parameter
+        # in the body. However it is not specified explicitely in RFC 6748.
+        if 'grant_type' in body_params:
+            request.grant_type = query_params.get('grant_type')
+        elif 'grant_type' in query_params:
+            request.grant_type = body_params.get('grant_type')
+        else:
+            raise errors.InvalidRequestError(
+                description='The grant_type parameter is missing.')
 
-        # TODO: authenticate client here and populate request.client
+        if not request.grant_type in self.grant_types:
+            raise errors.UnsupportedGrantTypeError(
+                description='Invalid response type')
 
-        return self.grant_types.get(request.grant_type)(request,
-                self.default_token)
+        return self.grant_types.get(
+                request.grant_type).create_token_response(
+                        request, self.default_token)
 
 
 class ResourceEndpoint(object):
 
+    def __init__(self, tokens=None):
+        self._tokens = tokens or {'Bearer': BearerToken()}
+
     @property
     def tokens(self):
-        return {
-            'Bearer': BearerToken(),
-        }
+        return self._tokens
 
     def verify_request(self, uri, http_method='GET', body=None, headers=None):
         """Validate client, code etc, return body + headers"""
         request = Request(uri, http_method, body, headers)
         request.token_type = self.find_token_type(request)
 
+        # TODO(ib-lundgren): How to return errors is not strictly defined and
+        # should allow for customization.
         if not request.token_type:
             raise ValueError('Could not determine the token type.')
 
@@ -653,6 +672,13 @@ class ResourceEndpoint(object):
         return self.tokens.get(request.token_type).validate_request(request)
 
     def find_token_type(self, request):
+        """Token type identification.
+
+        RFC 6749 does not provide a method for easily differentiating between
+        different token types during protected resource access. We estimate
+        the most likely token type (if any) by asking each known token type
+        to give an estimation based on the request.
+        """
         estimates = sorted((t.estimate_type(request) for t in self.tokens))
         return estimates[0] if len(estimates) else None
 
