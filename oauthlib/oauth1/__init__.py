@@ -10,4 +10,6 @@ and Server classes.
 """
 
 from .rfc5849 import Client, Server
-
+from .rfc5849 import SIGNATURE_HMAC, SIGNATURE_RSA, SIGNATURE_PLAINTEXT
+from .rfc5849 import SIGNATURE_TYPE_AUTH_HEADER, SIGNATURE_TYPE_QUERY
+from .rfc5849 import SIGNATURE_TYPE_BODY
