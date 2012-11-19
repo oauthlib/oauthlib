@@ -51,6 +51,8 @@ Changelog
 *OAuthLib is in active development, with most of OAuth1 complete and OAuth2
 already in the works.*
 
+0.3.4: A number of small features and bug fixes.
+
 0.3.3: OAuth 1 Provider verify now return useful params
 
 0.3.2: Fixed #62, all Python 3 tests pass.
