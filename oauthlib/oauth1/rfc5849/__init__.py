@@ -10,11 +10,17 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 
 import logging
+import sys
 import time
 try:
     import urlparse
 except ImportError:
     import urllib.parse as urlparse
+
+if sys.version_info[0] == 3:
+    bytes_type = bytes
+else:
+    bytes_type = str
 
 from oauthlib.common import Request, urlencode, generate_nonce
 from oauthlib.common import generate_timestamp
@@ -41,7 +47,30 @@ class Client(object):
             callback_uri=None,
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
-            rsa_key=None, verifier=None, realm=None):
+            rsa_key=None, verifier=None, realm=None,
+            convert_to_unicode=False, encoding='utf-8'):
+        if convert_to_unicode:
+            if isinstance(client_key, bytes_type):
+                client_key = client_key.decode(encoding)
+            if isinstance(client_secret, bytes_type):
+                client_secret = client_secret.decode(encoding)
+            if isinstance(resource_owner, bytes_type):
+                resource_owner = resource_owner.decode(encoding)
+            if isinstance(resource_owner_secret, bytes_type):
+                resource_owner_secret = resource_owner_secret.decode(encoding)
+            if isinstance(callback_uri, bytes_type):
+                callback_uri = callback_uri.decode(encoding)
+            if isinstance(signature_method, bytes_type):
+                signature_method = signature_method.decode(encoding)
+            if isinstance(signature_type, bytes_type):
+                signature_type = signature_type.decode(encoding)
+            if isinstance(rsa_key, bytes_type):
+                rsa_key = rsa_key.decode(encoding)
+            if isinstance(verifier, bytes_type):
+                verifier = verifier.decode(encoding)
+            if isinstance(realm, bytes_type):
+                realm = realm.decode(encoding)
+
         self.client_key = client_key
         self.client_secret = client_secret
         self.resource_owner_key = resource_owner_key
@@ -52,6 +81,8 @@ class Client(object):
         self.rsa_key = rsa_key
         self.verifier = verifier
         self.realm = realm
+        self.convert_to_unicode = convert_to_unicode
+        self.encoding = encoding
 
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
@@ -172,7 +203,9 @@ class Client(object):
         dicts, for example.
         """
         # normalize request data
-        request = Request(uri, http_method, body, headers)
+        request = Request(uri, http_method, body, headers,
+                          convert_to_unicode=self.convert_to_unicode,
+                          encoding=self.encoding)
 
         # sanity check
         content_type = request.headers.get('Content-Type', None)

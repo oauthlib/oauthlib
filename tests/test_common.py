@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import sys
 from oauthlib.common import *
 from .unittest import TestCase
 
+if sys.version_info[0] == 3:
+    bytes_type = bytes
+else:
+    bytes_type = lambda s, e: str(s)
 
 class CommonTests(TestCase):
     params_dict = {'foo': 'bar', 'baz': '123', }
@@ -46,6 +51,18 @@ class CommonTests(TestCase):
 
     def test_extract_invalid(self):
         self.assertEqual(extract_params(object()), None)
+
+    def test_non_unicode_params(self):
+        r = Request(bytes_type('http://a.b/path?query', 'utf-8'),
+                    http_method=bytes_type('GET', 'utf-8'),
+                    body=bytes_type('you=shall+pass', 'utf-8'),
+                    headers={bytes_type('a', 'utf-8'): bytes_type('b', 'utf-8')},
+                    convert_to_unicode=True)
+        self.assertEqual(r.uri, 'http://a.b/path?query')
+        self.assertEqual(r.http_method, 'GET')
+        self.assertEqual(r.body, 'you=shall+pass')
+        self.assertEqual(r.decoded_body, [('you', 'shall pass')])
+        self.assertEqual(r.headers, {'a': 'b'})
 
     def test_none_body(self):
         r = Request(self.uri)

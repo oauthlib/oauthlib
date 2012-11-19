@@ -236,6 +236,7 @@ def safe_string_equals(a, b):
         result |= ord(x) ^ ord(y)
     return result == 0
 
+
 class Request(object):
     """A malleable representation of a signable HTTP request.
 
@@ -250,7 +251,22 @@ class Request(object):
     unmolested.
     """
 
-    def __init__(self, uri, http_method='GET', body=None, headers=None):
+    def __init__(self, uri, http_method='GET', body=None, headers=None,
+            convert_to_unicode=False, encoding='utf-8'):
+        if convert_to_unicode:
+            if isinstance(uri, bytes_type):
+                uri = uri.decode(encoding)
+            if isinstance(http_method, bytes_type):
+                http_method = http_method.decode(encoding)
+            if isinstance(body, bytes_type):
+                body = body.decode(encoding)
+            unicode_headers = {}
+            for k, v in headers.items():
+                k = k.decode(encoding) if isinstance(k, bytes_type) else k
+                v = v.decode(encoding) if isinstance(v, bytes_type) else v
+                unicode_headers[k] = v
+            headers = unicode_headers
+
         self.uri = uri
         self.http_method = http_method
         self.headers = headers or {}
