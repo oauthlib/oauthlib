@@ -112,7 +112,7 @@ class ImplicitGrantTest(TestCase):
         bearer = BearerToken()
         bearer.save_token = mock.MagicMock()
         orig_generate_token = common.generate_token
-        self.addCleanup(setattr, common, 'generage_token', orig_generate_token)
+        self.addCleanup(setattr, common, 'generate_token', orig_generate_token)
         common.generate_token = lambda *args, **kwargs: '1234'
         uri, headers, body = self.auth.create_token_response(
                 self.request, bearer)

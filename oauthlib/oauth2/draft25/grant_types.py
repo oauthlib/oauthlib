@@ -78,7 +78,7 @@ class RequestValidator(object):
 
 class GrantTypeBase(object):
 
-    def create_authorization_response(self, request):
+    def create_authorization_response(self, request, token_handler):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def create_token_response(self, request, token_handler):
@@ -120,7 +120,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         grant = self.create_authorization_code(request)
         self.save_authorization_code(request.client_id, grant)
-        return add_params_to_uri(request.redirect_uri, grant.items())
+        return add_params_to_uri(request.redirect_uri, grant.items()), None, None
 
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.
@@ -222,6 +222,9 @@ class ImplicitGrant(GrantTypeBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+
+    def create_authorization_response(self, request, token_handler):
+        return self.create_token_response(request, token_handler)
 
     def create_token_response(self, request, token_handler):
         """Return token or error embedded in the URI fragment.

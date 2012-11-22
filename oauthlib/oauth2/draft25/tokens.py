@@ -10,7 +10,6 @@ This module contains methods for adding two types of access tokens to requests.
 
 """
 from binascii import b2a_base64
-import datetime
 import hashlib
 import hmac
 try:
@@ -181,10 +180,12 @@ class BearerToken(TokenBase):
         token = {
             'access_token': common.generate_token(),
             'expires_in': self.expires_in,
-            'scope': ' '.join(request.scopes),
             'token_type': 'Bearer',
         }
-        if getattr(request, 'state', None):
+        if request.scopes is not None:
+            token['scope'] = ' '.join(request.scopes)
+
+        if request.state is not None:
             token['state'] = request.state
 
         if refresh_token:

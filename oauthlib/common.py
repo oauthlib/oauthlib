@@ -274,6 +274,14 @@ class Request(object):
         self.decoded_body = extract_params(body)
         self.oauth_params = []
 
+        self._params = {}
+        self._params.update(dict(urldecode(self.uri_query)))
+        self._params.update(dict(self.decoded_body or []))
+        self._params.update(self.headers)
+
+    def __getattr__(self, name):
+        return self._params.get(name, None)
+
     @property
     def uri_query(self):
         return urlparse.urlparse(self.uri).query

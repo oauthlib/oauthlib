@@ -9,10 +9,7 @@ This module is an implementation of various logic needed
 for signing and checking OAuth 2.0 draft 25 requests.
 """
 from oauthlib.common import Request
-from oauthlib.oauth2.draft25 import errors
-from .tokens import prepare_bearer_uri, prepare_bearer_headers
-from .tokens import prepare_bearer_body, prepare_mac_header
-from .tokens import BearerToken
+from oauthlib.oauth2.draft25 import errors, tokens
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
@@ -134,13 +131,13 @@ class Client(object):
             headers=None, token_placement=None):
         """Add a bearer token to the request uri, body or authorization header."""
         if token_placement == AUTH_HEADER:
-            headers = prepare_bearer_headers(self.access_token, headers)
+            headers = tokens.prepare_bearer_headers(self.access_token, headers)
 
         elif token_placement == URI_QUERY:
-            uri = prepare_bearer_uri(self.access_token, uri)
+            uri = tokens.prepare_bearer_uri(self.access_token, uri)
 
         elif token_placement == BODY:
-            body = prepare_bearer_body(self.access_token, body)
+            body = tokens.prepare_bearer_body(self.access_token, body)
 
         else:
             raise ValueError("Invalid token placement.")
@@ -152,9 +149,9 @@ class Client(object):
 
         Warning: MAC token support is experimental as the spec is not yet stable.
         """
-        headers = prepare_mac_header(self.access_token, uri, self.mac_key, http_method,
-                        headers=headers, body=body, ext=ext,
-                        hash_algorithm=self.mac_algorithm, **kwargs)
+        headers = tokens.prepare_mac_header(self.access_token, uri,
+                self.mac_key, http_method, headers=headers, body=body, ext=ext,
+                hash_algorithm=self.mac_algorithm, **kwargs)
         return uri, headers, body
 
     def _populate_attributes(self, response):
@@ -569,7 +566,7 @@ class AuthorizationEndpoint(object):
 
     def __init__(self, default_token=None, response_types=None):
         self._response_types = response_types or {}
-        self._default_token = default_token or BearerToken()
+        self._default_token = default_token or tokens.BearerToken()
 
     @property
     def response_types(self):
@@ -583,8 +580,8 @@ class AuthorizationEndpoint(object):
             headers=None):
         """Extract response_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        query_params = params_from_uri(self.request.uri)
-        body_params = self.request.decoded_body
+        query_params = params_from_uri(request.uri)
+        body_params = request.decoded_body
 
         # Prioritize response_type defined as query param over those in body.
         # Chosen because the two core grant types utilizing the response type
@@ -611,7 +608,7 @@ class TokenEndpoint(object):
 
     def __init__(self, default_token=None, grant_types=None):
         self._grant_types = grant_types or {}
-        self._default_token = default_token or BearerToken()
+        self._default_token = default_token or tokens.BearerToken()
 
     @property
     def grant_types(self):
@@ -649,8 +646,8 @@ class TokenEndpoint(object):
 
 class ResourceEndpoint(object):
 
-    def __init__(self, tokens=None):
-        self._tokens = tokens or {'Bearer': BearerToken()}
+    def __init__(self, token_types=None):
+        self._tokens = token_types or {'Bearer': tokens.BearerToken()}
 
     @property
     def tokens(self):
