@@ -158,6 +158,53 @@ class AuthorizationCodeGrant(GrantTypeBase):
     # TODO: validate scopes
 
 
+class RefreshTokenGrant(GrantTypeBase):
+
+    @property
+    def scopes(self):
+        return ('default',)
+
+    @property
+    def error_uri(self):
+        return '/oauth_error'
+
+    def __init__(self, request_validator=None):
+        self.request_validator = request_validator or RequestValidator()
+
+    def create_token_response(self, request, token_handler):
+        """
+        Validate the refresh token grant and the actual refresh token.
+
+        The client MUST use the refresh token provided on issue of the
+        access token. If a redirect uri was provided on the orginal AuthorisationEndPoint
+        request then this same redirect uri must be present in the refresh request.
+        """
+        try:
+            self.validate_token_request(request)
+        except errors.OAuth2Error as e:
+            return e.json
+        return json.dumps(token_handler(request, refresh_token=True))
+
+    def validate_token_request(self, request):
+
+        if getattr(request, 'grant_type', '') != 'refresh_token':
+            raise errors.UnsupportedGrantTypeError()
+
+        if not getattr(request, 'refresh_token', None):
+            raise errors.InvalidRequestError(
+                    description='Missing refresh token parameter.')
+
+        # TODO: document diff client & client_id, former is authenticated
+        # outside spec, i.e. http basic
+        if (not hasattr(request, 'client') or
+            not self.request_validator.validate_client(request.client, request.grant_type)):
+            raise errors.UnauthorizedClientError()
+
+        # validate_refresh_token must be provided by the subclass request_validator.
+        if not self.request_validator.validate_refresh_token(request.client, request.refresh_token):
+            raise errors.InvalidRefreshTokenError()
+
+
 class ImplicitGrant(GrantTypeBase):
     """`Implicit Grant`_
 
