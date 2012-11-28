@@ -202,7 +202,7 @@ class RefreshTokenGrant(GrantTypeBase):
 
         # validate_refresh_token must be provided by the subclass request_validator.
         if not self.request_validator.validate_refresh_token(request.client, request.refresh_token):
-            raise errors.InvalidRefreshTokenError()
+            raise errors.InvalidRequestError()
 
 
 class ImplicitGrant(GrantTypeBase):
