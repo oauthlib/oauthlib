@@ -204,6 +204,12 @@ class RefreshTokenGrant(GrantTypeBase):
         if not self.request_validator.validate_refresh_token(request.client, request.refresh_token):
             raise errors.InvalidRequestError()
 
+        # Check that the redirect uri is the same as the one passed in with
+        # Authorisation end point.
+        redirect_uri = getattr(request, 'refresh_token', None)
+        if not self.request_validator.validate_redirect_uri(request.client, redirect_uri):
+            raise errors.UnauthorizedClientError()
+
 
 class ImplicitGrant(GrantTypeBase):
     """`Implicit Grant`_
