@@ -155,6 +155,13 @@ class AuthorizationCodeGrant(GrantTypeBase):
         if not self.request_validator.validate_code(request.client, request.code):
             raise errors.InvalidGrantError()
 
+        # validate_redirect_uri must be provided by the
+        # subclass validator and Check that the redirect uri is the same
+        # as the one passed in with Authorisation end point.
+        redirect_uri = getattr(request, 'refresh_token', None)
+        if not self.request_validator.validate_redirect_uri(request.client, redirect_uri):
+            raise errors.UnauthorizedClientError()
+
     # TODO: validate scopes
 
 
@@ -176,8 +183,7 @@ class RefreshTokenGrant(GrantTypeBase):
         Validate the refresh token grant and the actual refresh token.
 
         The client MUST use the refresh token provided on issue of the
-        access token. If a redirect uri was provided on the orginal AuthorisationEndPoint
-        request then this same redirect uri must be present in the refresh request.
+        access token.
         """
         try:
             self.validate_token_request(request)
@@ -203,13 +209,6 @@ class RefreshTokenGrant(GrantTypeBase):
         # validate_refresh_token must be provided by the subclass request_validator.
         if not self.request_validator.validate_refresh_token(request.client, request.refresh_token):
             raise errors.InvalidRequestError()
-
-        # validate_redirect_uri must be provided by the
-        # subclass validator and Check that the redirect uri is the same
-        # as the one passed in with Authorisation end point.
-        redirect_uri = getattr(request, 'refresh_token', None)
-        if not self.request_validator.validate_redirect_uri(request.client, redirect_uri):
-            raise errors.UnauthorizedClientError()
 
 
 class ImplicitGrant(GrantTypeBase):
