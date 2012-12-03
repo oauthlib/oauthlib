@@ -158,9 +158,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # validate_redirect_uri must be provided by the
         # subclass validator and Check that the redirect uri is the same
         # as the one passed in with Authorisation end point.
-        redirect_uri = getattr(request, 'refresh_token', None)
+        redirect_uri = getattr(request, 'redirect_uri', None)
         if not self.request_validator.validate_redirect_uri(request.client, redirect_uri):
-            raise errors.UnauthorizedClientError()
+            raise errors.InvalidRequestError()
 
     # TODO: validate scopes
 
