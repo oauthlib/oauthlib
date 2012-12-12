@@ -182,8 +182,8 @@ class BearerToken(TokenBase):
             'expires_in': self.expires_in,
             'token_type': 'Bearer',
         }
-        if request.scopes is not None:
-            token['scope'] = ' '.join(request.scopes)
+        if request.scope is not None:
+            token['scope'] = ' '.join(request.scope)
 
         if request.state is not None:
             token['state'] = request.state

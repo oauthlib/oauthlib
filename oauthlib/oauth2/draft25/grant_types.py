@@ -33,7 +33,7 @@ class RequestValidator(object):
         if not request.response_type in response_types:
             raise errors.UnsupportedResponseTypeError(state=request.state)
 
-        self.validate_request_scopes(request)
+        self.validate_request_scope(request)
 
         if getattr(request, 'redirect_uri', None):
             if not is_absolute_uri(request.redirect_uri):
@@ -49,18 +49,18 @@ class RequestValidator(object):
 
         return True
 
-    def validate_request_scopes(self, request):
+    def validate_request_scope(self, request):
         request.state = getattr(request, 'state', None)
-        if request.scopes:
-            if not self.validate_scopes(request.client_id, request.scopes):
+        if request.scope:
+            if not self.validate_scope(request.client_id, request.scope):
                 raise errors.InvalidScopeError(state=request.state)
         else:
-            request.scopes = self.get_default_scopes(request.client_id)
+            request.scope = self.get_default_scope(request.client_id)
 
     def validate_client(self, client, *args, **kwargs):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_scopes(self, client, scopes):
+    def validate_scope(self, client, scope):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_user(self, username, password, client=None):
@@ -72,7 +72,7 @@ class RequestValidator(object):
     def get_default_redirect_uri(self, client):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_default_scopes(self, client):
+    def get_default_scope(self, client):
         raise NotImplementedError('Subclasses must implement this method.')
 
 
@@ -88,7 +88,7 @@ class GrantTypeBase(object):
 class AuthorizationCodeGrant(GrantTypeBase):
 
     @property
-    def scopes(self):
+    def scope(self):
         return ('default',)
 
     @property
@@ -168,7 +168,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 class RefreshTokenGrant(GrantTypeBase):
 
     @property
-    def scopes(self):
+    def scope(self):
         return ('default',)
 
     @property
@@ -427,7 +427,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
                 request.password, client=client):
             raise errors.InvalidGrantError('Invalid credentials given.')
 
-        self.request_validator.validate_request_scopes(request)
+        self.request_validator.validate_request_scope(request)
 
 
 class ClientCredentialsGrant(GrantTypeBase):
@@ -493,4 +493,4 @@ class ClientCredentialsGrant(GrantTypeBase):
         if not request.grant_type == 'client_credentials':
             raise errors.UnsupportedGrantTypeError()
 
-        self.request_validator.validate_request_scopes(request)
+        self.request_validator.validate_request_scope(request)
