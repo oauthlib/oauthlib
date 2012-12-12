@@ -2,7 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 from oauthlib.oauth1.rfc5849.utils import *
 from oauthlib.common import unicode_type
-from ...unittest import TestCase
+from ...unittestcase import TestCase
 
 
 class UtilsTests(TestCase):

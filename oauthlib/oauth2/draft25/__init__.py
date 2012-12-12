@@ -621,15 +621,14 @@ class TokenEndpoint(object):
     def create_token_response(self, uri, http_method='GET', body=None, headers=None):
         """Extract grant_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        query_params = params_from_uri(self.request.uri)
-        body_params = self.request.decoded_body
-
+        query_params = params_from_uri(request.uri)
+        body_params = request.decoded_body or {}
         # Prioritize grant_type defined as body param over those in uri.
         # Chosen because all three core grant types supply this parameter
         # in the body. However it is not specified explicitely in RFC 6748.
-        if 'grant_type' in body_params:
+        if 'grant_type' in query_params:
             request.grant_type = query_params.get('grant_type')
-        elif 'grant_type' in query_params:
+        elif 'grant_type' in body_params:
             request.grant_type = body_params.get('grant_type')
         else:
             raise errors.InvalidRequestError(
