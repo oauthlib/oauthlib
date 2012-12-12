@@ -8,7 +8,7 @@ except ImportError:
 
 from oauthlib.oauth1.rfc5849.signature import *
 from oauthlib.common import unicode_type
-from ...unittest import TestCase
+from ...unittestcase import TestCase
 
 
 class SignatureTests(TestCase):

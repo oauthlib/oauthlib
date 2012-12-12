@@ -2,7 +2,7 @@
 from __future__ import absolute_import, unicode_literals 
 
 from oauthlib.oauth1.rfc5849 import Client
-from ...unittest import TestCase
+from ...unittestcase import TestCase
 
 
 class ClientRealmTests(TestCase):

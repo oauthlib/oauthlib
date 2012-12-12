@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import time
 from oauthlib.common import safe_string_equals
 from oauthlib.oauth1.rfc5849 import *
-from ...unittest import TestCase
+from ...unittestcase import TestCase
 
 
 class ServerTests(TestCase):
