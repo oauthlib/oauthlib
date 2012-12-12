@@ -621,7 +621,7 @@ class TokenEndpoint(object):
     def create_token_response(self, uri, http_method='GET', body=None, headers=None):
         """Extract grant_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        query_params = params_from_uri(self.request.uri)
+        query_params = params_from_uri(request.uri)
         body_params = self.request.decoded_body
 
         # Prioritize grant_type defined as body param over those in uri.
