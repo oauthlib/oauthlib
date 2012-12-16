@@ -64,7 +64,7 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_create_token_response(self):
         bearer = BearerToken()
         bearer.save_token = mock.MagicMock()
-        token = self.auth.create_token_response(self.request, bearer)
+        u, h, token, s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertIn('access_token', token)
         self.assertIn('refresh_token', token)
@@ -114,7 +114,7 @@ class ImplicitGrantTest(TestCase):
         orig_generate_token = common.generate_token
         self.addCleanup(setattr, common, 'generate_token', orig_generate_token)
         common.generate_token = lambda *args, **kwargs: '1234'
-        uri, headers, body = self.auth.create_token_response(
+        uri, headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=3600&state=xyz&scope=hello+world'
         self.assertURLEqual(uri, correct_uri, parse_fragment=True)
@@ -139,7 +139,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
     def test_create_token_response(self):
         bearer = BearerToken()
         bearer.save_token = mock.MagicMock()
-        uri, headers, body = self.auth.create_token_response(
+        uri, headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertIn('access_token', token)
@@ -168,13 +168,12 @@ class ClientCredentialsGrantTest(TestCase):
     def test_create_token_response(self):
         bearer = BearerToken()
         bearer.save_token = mock.MagicMock()
-        uri, headers, body = self.auth.create_token_response(
+        uri, headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertIn('access_token', token)
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
-        self.assertIn('refresh_token', token)
 
     def test_error_response(self):
         pass

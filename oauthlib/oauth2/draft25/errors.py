@@ -9,7 +9,7 @@ from oauthlib.common import urlencode
 
 class OAuth2Error(Exception):
 
-    def __init__(self, description=None, uri=None, state=None):
+    def __init__(self, description=None, uri=None, state=None, status_code=400):
         """
         description:    A human-readable ASCII [USASCII] text providing
                         additional information, used to assist the client
@@ -30,6 +30,7 @@ class OAuth2Error(Exception):
         self.description = description
         self.uri = uri
         self.state = state
+        self.status_code = status_code
 
     @property
     def twotuples(self):
@@ -48,7 +49,19 @@ class OAuth2Error(Exception):
 
     @property
     def json(self):
-        return json.dumps(self.twotuples)
+        return json.dumps(dict(self.twotuples))
+
+
+class FatalClientError(OAuth2Error):
+    pass
+
+
+class RedirectURIError(FatalClientError):
+    error = 'invalid_redirect_uri'
+
+
+class ClientIDError(FatalClientError):
+    error = 'invalid_client_id'
 
 
 class InvalidRequestError(OAuth2Error):

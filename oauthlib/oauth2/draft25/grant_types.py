@@ -4,7 +4,7 @@ oauthlib.oauth2.draft_25.grant_types
 """
 from __future__ import unicode_literals
 import json
-from oauthlib.common import generate_token, add_params_to_uri
+from oauthlib import common
 from oauthlib.oauth2.draft25 import errors
 from oauthlib.uri_validate import is_absolute_uri
 
@@ -100,7 +100,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
     def create_authorization_code(self, request):
         """Generates an authorization grant represented as a dictionary."""
-        grant = {'code': generate_token()}
+        grant = {'code': common.generate_token()}
         if hasattr(request, 'state') and request.state:
             grant['state'] = request.state
         return grant
@@ -113,14 +113,27 @@ class AuthorizationCodeGrant(GrantTypeBase):
         try:
             self.request_validator.validate_request(request)
 
+        # If the request fails due to a missing, invalid, or mismatching
+        # redirection URI, or if the client identifier is missing or invalid,
+        # the authorization server SHOULD inform the resource owner of the
+        # error and MUST NOT automatically redirect the user-agent to the
+        # invalid redirection URI.
+        except errors.FatalClientError:
+            raise
+
+        # If the resource owner denies the access request or if the request
+        # fails for reasons other than a missing or invalid redirection URI,
+        # the authorization server informs the client by adding the following
+        # parameters to the query component of the redirection URI using the
+        # "application/x-www-form-urlencoded" format, per Appendix B:
+        # http://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
-            request.redirect_uri = getattr(request, 'redirect_uri',
-                    self.error_uri)
-            return add_params_to_uri(request.redirect_uri, e.twotuples)
+            request.redirect_uri = request.redirect_uri or self.error_uri
+            return common.add_params_to_uri(request.redirect_uri, e.twotuples), None, None, e.status_code
 
         grant = self.create_authorization_code(request)
         self.save_authorization_code(request.client_id, grant)
-        return add_params_to_uri(request.redirect_uri, grant.items()), None, None
+        return common.add_params_to_uri(request.redirect_uri, grant.items()), None, None, 200
 
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.
@@ -134,8 +147,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         try:
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
-            return e.json
-        return json.dumps(token_handler(request, refresh_token=True))
+            return None, None, e.json, e.status_code
+
+        return None, None, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
 
     def validate_token_request(self, request):
 
@@ -267,12 +281,28 @@ class ImplicitGrant(GrantTypeBase):
         """
         try:
             self.request_validator.validate_request(request)
+
+        # If the request fails due to a missing, invalid, or mismatching
+        # redirection URI, or if the client identifier is missing or invalid,
+        # the authorization server SHOULD inform the resource owner of the
+        # error and MUST NOT automatically redirect the user-agent to the
+        # invalid redirection URI.
+        except errors.FatalClientError:
+            raise
+
+        # If the resource owner denies the access request or if the request
+        # fails for reasons other than a missing or invalid redirection URI,
+        # the authorization server informs the client by adding the following
+        # parameters to the fragment component of the redirection URI using the
+        # "application/x-www-form-urlencoded" format, per Appendix B:
+        # http://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
-            return add_params_to_uri(request.redirect_uri, e.twotuples,
-                    fragment=True)
-        token = token_handler(request, refresh_token=False)
-        return add_params_to_uri(request.redirect_uri, token.items(),
-                fragment=True), {}, None
+            return common.add_params_to_uri(request.redirect_uri, e.twotuples,
+                    fragment=True), None, None, e.status_code
+
+        token = token_handler.create_token(request, refresh_token=False)
+        return common.add_params_to_uri(request.redirect_uri, token.items(),
+                fragment=True), None, None, 200
 
 
 class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
@@ -354,8 +384,9 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
                 self.request_validator.authenticate_client(request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
-            return None, {}, e.json
-        return None, {}, json.dumps(token_handler(request, refresh_token=True))
+            return None, {}, e.json, e.status_code
+
+        return None, {}, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
 
     def validate_token_request(self, request):
         for param in ('grant_type', 'username', 'password'):
@@ -430,8 +461,9 @@ class ClientCredentialsGrant(GrantTypeBase):
             self.request_validator.authenticate_client(request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
-            return None, {}, e.json
-        return None, {}, json.dumps(token_handler(request, refresh_token=True))
+            return None, {}, e.json, e.status_code
+
+        return None, {}, json.dumps(token_handler.create_token(request, refresh_token=False)), 200
 
     def validate_token_request(self, request):
         if not getattr(request, 'grant_type'):

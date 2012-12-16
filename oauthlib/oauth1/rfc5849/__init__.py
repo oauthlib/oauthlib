@@ -648,6 +648,27 @@ class Server(object):
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
+    def verify_request_token_request(self, uri, http_method='GET', body=None,
+            headers=None):
+        """Verify the initial request in the OAuth workflow.
+
+        During this step the client obtains a request token for use during
+        resource owner authorization (which is outside the scope of oauthlib).
+        """
+        return self.verify_request(uri, http_method=http_method, body=body,
+                headers=headers, require_resource_owner=False,
+                require_realm=True)
+
+    def verify_access_token_request(self, uri, http_method='GET', body=None,
+            headers=None):
+        """Verify the second request in the OAuth workflow.
+
+        During this step the client obtains the access token for use when
+        accessing protected resources.
+        """
+        return self.verify_request(uri, http_method=http_method, body=body,
+                headers=headers, require_verifier=True)
+
     def verify_request(self, uri, http_method='GET', body=None,
             headers=None, require_resource_owner=True, require_verifier=False,
             require_realm=False, required_realm=None):

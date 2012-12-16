@@ -9,11 +9,10 @@ This module is an implementation of various logic needed
 for signing and checking OAuth 2.0 draft 25 requests.
 """
 from oauthlib.common import Request
-from oauthlib.oauth2.draft25 import errors, tokens
+from oauthlib.oauth2.draft25 import tokens
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
-from .utils import params_from_uri
 
 
 AUTH_HEADER = 'auth_header'
@@ -564,13 +563,25 @@ class AuthorizationEndpoint(object):
     MUST NOT be included more than once.
     """
 
-    def __init__(self, default_token=None, response_types=None):
+    def __init__(self, default_response_type, default_token=None,
+            response_types=None):
         self._response_types = response_types or {}
+        self._default_response_type = default_response_type
         self._default_token = default_token or tokens.BearerToken()
+
+        assert self.default_response_type in self.response_types
 
     @property
     def response_types(self):
         return self._response_types
+
+    @property
+    def default_response_type(self):
+        return self._default_response_type
+
+    @property
+    def default_response_type_handler(self):
+        return self.response_types.get(self.default_response_type)
 
     @property
     def default_token(self):
@@ -580,39 +591,31 @@ class AuthorizationEndpoint(object):
             headers=None):
         """Extract response_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        query_params = params_from_uri(request.uri)
-        body_params = request.decoded_body
-
-        # Prioritize response_type defined as query param over those in body.
-        # Chosen because the two core grant types utilizing the response type
-        # parameter both supply it in the uri. However it is not specified
-        # explicitely in RFC 6748.
-        if 'response_type' in query_params:
-            request.response_type = query_params.get('response_type')
-        elif 'response_type' in body_params:
-            request.response_type = body_params.get('response_type')
-        else:
-            raise errors.InvalidRequestError(
-                description='The response_type parameter is missing.')
-
-        if not request.response_type in self.response_types:
-            raise errors.UnsupportedResponseTypeError(
-                description='Invalid response type')
-
-        return self.response_types.get(
-                request.response_type).create_authorization_response(
+        response_type_handler = self.response_types.get(
+                request.response_type, self.default_response_type_handler)
+        return response_type_handler.create_authorization_response(
                         request, self.default_token)
 
 
 class TokenEndpoint(object):
 
-    def __init__(self, default_token=None, grant_types=None):
+    def __init__(self, default_grant_type, default_token=None,
+            grant_types=None):
         self._grant_types = grant_types or {}
         self._default_token = default_token or tokens.BearerToken()
+        self._default_grant_type = default_grant_type
 
     @property
     def grant_types(self):
         return self._grant_types
+
+    @property
+    def default_grant_type(self):
+        return self._default_grant_type
+
+    @property
+    def default_grant_type_handler(self):
+        return self.grant_types.get(self.default_grant_type)
 
     @property
     def default_token(self):
@@ -621,33 +624,26 @@ class TokenEndpoint(object):
     def create_token_response(self, uri, http_method='GET', body=None, headers=None):
         """Extract grant_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        query_params = params_from_uri(self.request.uri)
-        body_params = self.request.decoded_body
 
-        # Prioritize grant_type defined as body param over those in uri.
-        # Chosen because all three core grant types supply this parameter
-        # in the body. However it is not specified explicitely in RFC 6748.
-        if 'grant_type' in body_params:
-            request.grant_type = query_params.get('grant_type')
-        elif 'grant_type' in query_params:
-            request.grant_type = body_params.get('grant_type')
-        else:
-            raise errors.InvalidRequestError(
-                description='The grant_type parameter is missing.')
+        grant_type_handler = self.grant_types.get(request.grant_type,
+                self.default_grant_type_handler)
 
-        if not request.grant_type in self.grant_types:
-            raise errors.UnsupportedGrantTypeError(
-                description='Invalid response type')
-
-        return self.grant_types.get(
-                request.grant_type).create_token_response(
-                        request, self.default_token)
+        return grant_type_handler.create_token_response(request, self.default_token)
 
 
 class ResourceEndpoint(object):
 
-    def __init__(self, token_types=None):
+    def __init__(self, default_token_type, token_types=None):
         self._tokens = token_types or {'Bearer': tokens.BearerToken()}
+        self._default_token_type = default_token_type
+
+    @property
+    def default_token_type(self):
+        return self._default_token_type
+
+    @property
+    def default_token_type_handler(self):
+        return self.tokens.get(self.default_token_type)
 
     @property
     def tokens(self):
@@ -658,15 +654,10 @@ class ResourceEndpoint(object):
         request = Request(uri, http_method, body, headers)
         request.token_type = self.find_token_type(request)
 
-        # TODO(ib-lundgren): How to return errors is not strictly defined and
-        # should allow for customization.
-        if not request.token_type:
-            raise ValueError('Could not determine the token type.')
+        token_type_handler = self.tokens.get(request.token_type,
+                self.default_token_type_handler)
 
-        if not request.token_type in self.tokens:
-            raise ValueError('Unsupported token type.')
-
-        return self.tokens.get(request.token_type).validate_request(request)
+        return token_type_handler.validate_request(request)
 
     def find_token_type(self, request):
         """Token type identification.
@@ -676,8 +667,8 @@ class ResourceEndpoint(object):
         the most likely token type (if any) by asking each known token type
         to give an estimation based on the request.
         """
-        estimates = sorted((t.estimate_type(request) for t in self.tokens))
-        return estimates[0] if len(estimates) else None
+        estimates = sorted(((t.estimate_type(request), n) for n, t in self.tokens.items()))
+        return estimates[0][1] if len(estimates) else None
 
 
 class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):

@@ -168,6 +168,9 @@ class TokenBase(object):
 
 class BearerToken(TokenBase):
 
+    def __init__(self, request_validator=None):
+        self.request_validator = request_validator
+
     @property
     def expires_in(self):
         return 3600
@@ -176,7 +179,8 @@ class BearerToken(TokenBase):
         """Saves authorization codes for later use by the token endpoint."""
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def __call__(self, request, refresh_token=False):
+    def create_token(self, request, refresh_token=False):
+        """Create a BearerToken, by default without refresh token."""
         token = {
             'access_token': common.generate_token(),
             'expires_in': self.expires_in,
@@ -195,7 +199,19 @@ class BearerToken(TokenBase):
         return token
 
     def validate_request(self, request):
-        pass
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers.get('Authorization')[8:]
+        else:
+            token = request.access_token
+
+        valid = self.request_validator.validate_bearer_token(token)
+        return valid, request
 
     def estimate_type(self, request):
-        pass
+        if request.headers.get('Authorization', '').startswith('Bearer'):
+            return 9
+        elif request.access_token is not None:
+            return 5
+        else:
+            return 0
