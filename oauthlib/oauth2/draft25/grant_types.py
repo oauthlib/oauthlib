@@ -473,3 +473,46 @@ class ClientCredentialsGrant(GrantTypeBase):
             raise errors.UnsupportedGrantTypeError()
 
         self.request_validator.validate_request_scopes(request)
+
+
+class RefreshTokenGrant(GrantTypeBase):
+
+    @property
+    def scope(self):
+        return ('default',)
+
+    def __init__(self, request_validator=None):
+        self.request_validator = request_validator or RequestValidator()
+
+    def create_token_response(self, request, token_handler):
+        """
+        Validate the refresh token grant and the actual refresh token.
+
+        The client MUST use the refresh token provided on issue of the
+        access token.
+        """
+        try:
+            self.validate_token_request(request)
+        except errors.OAuth2Error as e:
+            return None, {}, e.json, 400
+        return None, {}, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
+
+    def validate_token_request(self, request):
+
+        if request.grant_type != 'refresh_token':
+            raise errors.UnsupportedGrantTypeError()
+
+        if request.refresh_token is None:
+            raise errors.InvalidRequestError(
+                    description='Missing refresh token parameter.')
+
+        # TODO: document diff client & client_id, former is authenticated
+        # outside spec, i.e. http basic
+        if not self.request_validator.validate_client(
+                request.client, request.grant_type):
+            raise errors.UnauthorizedClientError()
+
+        # validate_refresh_token must be provided by the provided request_validator.
+        if not self.request_validator.validate_refresh_token(
+                request.client, request.refresh_token):
+            raise errors.InvalidRequestError()
