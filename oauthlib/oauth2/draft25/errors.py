@@ -56,11 +56,23 @@ class FatalClientError(OAuth2Error):
     pass
 
 
-class RedirectURIError(FatalClientError):
+class InvalidRedirectURIError(FatalClientError):
     error = 'invalid_redirect_uri'
 
 
-class ClientIDError(FatalClientError):
+class MissingRedirectURIError(FatalClientError):
+    error = 'missing_redirect_uri'
+
+
+class MismatchingRedirectURIError(FatalClientError):
+    error = 'mismatching_redirect_uri'
+
+
+class MissingClientIdError(FatalClientError):
+    error = 'invalid_client_id'
+
+
+class InvalidClientIdError(FatalClientError):
     error = 'invalid_client_id'
 
 
@@ -76,7 +88,7 @@ class UnauthorizedClientError(OAuth2Error):
     """The client is not authorized to request an authorization code using
     this method.
     """
-error = 'unauthorized_client'
+    error = 'unauthorized_client'
 
 
 class AccessDeniedError(OAuth2Error):

@@ -11,68 +11,37 @@ from oauthlib.uri_validate import is_absolute_uri
 
 class RequestValidator(object):
 
-    @property
-    def response_types(self):
-        return ('code', 'token')
-
-    def validate_request(self, request, response_types=None):
-        request.state = getattr(request, 'state', None)
-        response_types = response_types or self.response_types or []
-
-        if not request.client_id:
-            raise errors.InvalidRequestError(state=request.state,
-                    description='Missing client_id parameter.')
-
-        if not request.response_type:
-            raise errors.InvalidRequestError(state=request.state,
-                    description='Missing response_type parameter.')
-
-        if not self.validate_client(request.client_id):
-            raise errors.UnauthorizedClientError(state=request.state)
-
-        if not request.response_type in response_types:
-            raise errors.UnsupportedResponseTypeError(state=request.state)
-
-        self.validate_request_scopes(request)
-
-        if getattr(request, 'redirect_uri', None):
-            if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRequestError(state=request.state,
-                        description='Non absolute redirect URI. See RFC3986')
-
-            if not self.validate_redirect_uri(request.client_id, request.redirect_uri):
-                raise errors.AccessDeniedError(state=request.state)
-        else:
-            request.redirect_uri = self.get_default_redirect_uri(request.client_id)
-            if not request.redirect_uri:
-                raise errors.AccessDeniedError(state=request.state)
-
-        return True
-
-    def validate_request_scopes(self, request):
-        request.state = getattr(request, 'state', None)
-        if request.scopes:
-            if not self.validate_scopes(request.client_id, request.scopes):
-                raise errors.InvalidScopeError(state=request.state)
-        else:
-            request.scopes = self.get_default_scopes(request.client_id)
-
-    def validate_client(self, client, *args, **kwargs):
+    def validate_client_id(self, client_id, *args, **kwargs):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_scopes(self, client, scopes):
+    def validate_client(self, client_id, grant_type, client, *args, **kwargs):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_code(self, client_id, code, client, *args, **kwargs):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_refresh_token(self, refresh_token, client, *args, **kwargs):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def authenticate_client(self, request, *args, **kwargs):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_scopes(self, client_id, scopes, client):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def confirm_scopes(self, refresh_token, scopes):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_user(self, username, password, client=None):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_redirect_uri(self, client, redirect_uri):
+    def validate_redirect_uri(self, client_id, redirect_uri):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_default_redirect_uri(self, client):
+    def confirm_redirect_uri(self, client_id, code, redirect_uri, client):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_default_scopes(self, client):
+    def get_default_redirect_uri(self, client_id):
         raise NotImplementedError('Subclasses must implement this method.')
 
 
@@ -111,7 +80,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
     def create_authorization_response(self, request, token_handler):
         try:
-            self.request_validator.validate_request(request)
+            self.validate_authorization_request(request)
 
         # If the request fails due to a missing, invalid, or mismatching
         # redirection URI, or if the client identifier is missing or invalid,
@@ -151,25 +120,112 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         return None, None, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
 
+    def validate_authorization_request(self, request):
+        """Check the authorization request for normal and fatal errors.
+
+        A normal error could be a missing response_type parameter or the client
+        attempting to access scope it is not allowed to ask authorization for.
+        Normal errors can safely be included in the redirection URI and
+        sent back to the client.
+
+        Fatal errors occur when the client_id or redirect_uri is invalid or
+        missing. These must be caught by the provider and handled, how this
+        is done is outside of the scope of OAuthLib but showing an error
+        page describing the issue is a good idea.
+        """
+
+        # First check for fatal errors
+
+        # If the request fails due to a missing, invalid, or mismatching
+        # redirection URI, or if the client identifier is missing or invalid,
+        # the authorization server SHOULD inform the resource owner of the
+        # error and MUST NOT automatically redirect the user-agent to the
+        # invalid redirection URI.
+
+        # REQUIRED. The client identifier as described in Section 2.2.
+        # http://tools.ietf.org/html/rfc6749#section-2.2
+        if not request.client_id:
+            raise errors.MissingClientIdError(state=request.state)
+
+        if not self.request_validator.validate_client_id(request.client_id):
+            raise errors.InvalidClientIdError(state=request.state)
+
+        # OPTIONAL. As described in Section 3.1.2.
+        # http://tools.ietf.org/html/rfc6749#section-3.1.2
+        if request.redirect_uri is not None:
+            if not is_absolute_uri(request.redirect_uri):
+                raise errors.InvalidRedirectURIError(state=request.state)
+
+            if not self.request_validator.validate_redirect_uri(
+                    request.client_id, request.redirect_uri):
+                raise errors.MismatchingRedirectURIError(state=request.state)
+        else:
+            request.redirect_uri = self.request_validator.get_default_redirect_uri(request.client_id)
+            if not request.redirect_uri:
+                raise errors.MissingRedirectURIError(state=request.state)
+
+        # Then check for normal errors.
+
+        # If the resource owner denies the access request or if the request
+        # fails for reasons other than a missing or invalid redirection URI,
+        # the authorization server informs the client by adding the following
+        # parameters to the query component of the redirection URI using the
+        # "application/x-www-form-urlencoded" format, per Appendix B.
+        # http://tools.ietf.org/html/rfc6749#appendix-B
+
+        # Note that the correct parameters to be added are automatically
+        # populated through the use of specific exceptions.
+        if request.response_type is None:
+            raise errors.InvalidRequestError(state=request.state,
+                    description='Missing response_type parameter.')
+
+        # REQUIRED. Value MUST be set to "code".
+        if request.response_type != 'code':
+            raise errors.UnsupportedResponseTypeError(state=request.state)
+
+        # OPTIONAL. The scope of the access request as described by Section 3.3
+        # http://tools.ietf.org/html/rfc6749#section-3.3
+        if not self.request_validator.validate_scopes(request.client_id,
+                request.scopes):
+            raise errors.InvalidScopeError(state=request.state)
+
     def validate_token_request(self, request):
 
-        if getattr(request, 'grant_type', '') != 'authorization_code':
+        # REQUIRED. Value MUST be set to "authorization_code".
+        if request.grant_type != 'authorization_code':
             raise errors.UnsupportedGrantTypeError()
 
-        if not getattr(request, 'code', None):
+        if request.code is None:
             raise errors.InvalidRequestError(
                     description='Missing code parameter.')
 
-        # TODO: document diff client & client_id, former is authenticated
-        # outside spec, i.e. http basic
-        if (not hasattr(request, 'client') or
-            not self.request_validator.validate_client(request.client, request.grant_type)):
+        # If the client type is confidential or the client was issued client
+        # credentials (or assigned other authentication requirements), the
+        # client MUST authenticate with the authorization server as described
+        # in Section 3.2.1.
+        # http://tools.ietf.org/html/rfc6749#section-3.2.1
+        if not self.request_validator.authenticate_client(request):
+            raise errors.AccessDeniedError()
+
+        # REQUIRED, if the client is not authenticating with the
+        # authorization server as described in Section 3.2.1.
+        # http://tools.ietf.org/html/rfc6749#section-3.2.1
+        if not self.request_validator.validate_client(request.client_id,
+                request.grant_type, request.client):
             raise errors.UnauthorizedClientError()
 
-        if not self.request_validator.validate_code(request.client, request.code):
+        # REQUIRED. The authorization code received from the
+        # authorization server.
+        if not self.request_validator.validate_code(request.client_id,
+                request.code, request.client):
             raise errors.InvalidGrantError()
 
-    # TODO: validate scopes
+        # REQUIRED, if the "redirect_uri" parameter was included in the
+        # authorization request as described in Section 4.1.1, and their
+        # values MUST be identical.
+        if not self.request_validator.confirm_redirect_uri(request.client_id,
+                request.code, request.redirect_uri, request.client):
+            raise errors.AccessDeniedError()
 
 
 class ImplicitGrant(GrantTypeBase):
@@ -280,7 +336,7 @@ class ImplicitGrant(GrantTypeBase):
         .. _`Section 7.2`: http://tools.ietf.org/html/rfc6749#section-7.2
         """
         try:
-            self.request_validator.validate_request(request)
+            self.validate_token_request(request)
 
         # If the request fails due to a missing, invalid, or mismatching
         # redirection URI, or if the client identifier is missing or invalid,
@@ -303,6 +359,83 @@ class ImplicitGrant(GrantTypeBase):
         token = token_handler.create_token(request, refresh_token=False)
         return common.add_params_to_uri(request.redirect_uri, token.items(),
                 fragment=True), None, None, 200
+
+
+    def validate_token_request(self, request):
+        """Check the token request for normal and fatal errors.
+
+        This method is very similar to validate_authorization_request in
+        the AuthorizationCodeGrant but differ in a few subtle areas.
+
+        A normal error could be a missing response_type parameter or the client
+        attempting to access scope it is not allowed to ask authorization for.
+        Normal errors can safely be included in the redirection URI and
+        sent back to the client.
+
+        Fatal errors occur when the client_id or redirect_uri is invalid or
+        missing. These must be caught by the provider and handled, how this
+        is done is outside of the scope of OAuthLib but showing an error
+        page describing the issue is a good idea.
+        """
+
+        # First check for fatal errors
+
+        # If the request fails due to a missing, invalid, or mismatching
+        # redirection URI, or if the client identifier is missing or invalid,
+        # the authorization server SHOULD inform the resource owner of the
+        # error and MUST NOT automatically redirect the user-agent to the
+        # invalid redirection URI.
+
+        # REQUIRED. The client identifier as described in Section 2.2.
+        # http://tools.ietf.org/html/rfc6749#section-2.2
+        if not request.client_id:
+            raise errors.MissingClientIdError(state=request.state)
+
+        if not self.request_validator.validate_client_id(request.client_id):
+            raise errors.InvalidClientIdError(state=request.state)
+
+        # OPTIONAL. As described in Section 3.1.2.
+        # http://tools.ietf.org/html/rfc6749#section-3.1.2
+        if request.redirect_uri is not None:
+            if not is_absolute_uri(request.redirect_uri):
+                raise errors.InvalidRedirectURIError(state=request.state)
+
+            # The authorization server MUST verify that the redirection URI
+            # to which it will redirect the access token matches a
+            # redirection URI registered by the client as described in
+            # Section 3.1.2.
+            # http://tools.ietf.org/html/rfc6749#section-3.1.2
+            if not self.request_validator.validate_redirect_uri(
+                    request.client_id, request.redirect_uri):
+                raise errors.MismatchingRedirectURIError(state=request.state)
+        else:
+            request.redirect_uri = self.request_validator.get_default_redirect_uri(request.client_id)
+            if not request.redirect_uri:
+                raise errors.MissingRedirectURIError(state=request.state)
+
+        # Then check for normal errors.
+
+        # If the resource owner denies the access request or if the request
+        # fails for reasons other than a missing or invalid redirection URI,
+        # the authorization server informs the client by adding the following
+        # parameters to the fragment component of the redirection URI using the
+        # "application/x-www-form-urlencoded" format, per Appendix B.
+        # http://tools.ietf.org/html/rfc6749#appendix-B
+
+        # Note that the correct parameters to be added are automatically
+        # populated through the use of specific exceptions.
+        if request.response_type is None:
+            raise errors.InvalidRequestError(state=request.state,
+                    description='Missing response_type parameter.')
+
+        # REQUIRED. Value MUST be set to "token".
+        if request.response_type != 'token':
+            raise errors.UnsupportedResponseTypeError(state=request.state)
+
+        # OPTIONAL. The scope of the access request as described by Section 3.3
+        # http://tools.ietf.org/html/rfc6749#section-3.3
+        if not self.request_validator.validate_scopes(request):
+            raise errors.InvalidScopeError(state=request.state)
 
 
 class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
@@ -476,29 +609,49 @@ class ClientCredentialsGrant(GrantTypeBase):
 
 
 class RefreshTokenGrant(GrantTypeBase):
+    """`Refresh token grant`_
+
+    .. _`Refresh token grant`: http://tools.ietf.org/html/rfc6749#section-6
+    """
 
     @property
     def scope(self):
         return ('default',)
 
-    def __init__(self, request_validator=None):
+    def __init__(self, request_validator=None, issue_new_refresh_tokens=True):
         self.request_validator = request_validator or RequestValidator()
 
     def create_token_response(self, request, token_handler):
-        """
-        Validate the refresh token grant and the actual refresh token.
+        """Create a new access token from a refresh_token.
 
-        The client MUST use the refresh token provided on issue of the
-        access token.
+        If valid and authorized, the authorization server issues an access
+        token as described in `Section 5.1`_. If the request failed
+        verification or is invalid, the authorization server returns an error
+        response as described in `Section 5.2`_.
+
+        The authorization server MAY issue a new refresh token, in which case
+        the client MUST discard the old refresh token and replace it with the
+        new refresh token. The authorization server MAY revoke the old
+        refresh token after issuing a new refresh token to the client. If a
+        new refresh token is issued, the refresh token scope MUST be
+        identical to that of the refresh token included by the client in the
+        request.
+
+        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
         try:
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
             return None, {}, e.json, 400
-        return None, {}, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
+
+        token = token_handler.create_token(request,
+                refresh_token=self.issue_new_refresh_tokens)
+        return None, {}, json.dumps(token), 200
 
     def validate_token_request(self, request):
 
+        # REQUIRED. Value MUST be set to "refresh_token".
         if request.grant_type != 'refresh_token':
             raise errors.UnsupportedGrantTypeError()
 
@@ -506,13 +659,26 @@ class RefreshTokenGrant(GrantTypeBase):
             raise errors.InvalidRequestError(
                     description='Missing refresh token parameter.')
 
-        # TODO: document diff client & client_id, former is authenticated
-        # outside spec, i.e. http basic
-        if not self.request_validator.validate_client(
-                request.client, request.grant_type):
-            raise errors.UnauthorizedClientError()
+        # Because refresh tokens are typically long-lasting credentials used to
+        # request additional access tokens, the refresh token is bound to the
+        # client to which it was issued.  If the client type is confidential or
+        # the client was issued client credentials (or assigned other
+        # authentication requirements), the client MUST authenticate with the
+        # authorization server as described in Section 3.2.1.
+        # http://tools.ietf.org/html/rfc6749#section-3.2.1
+        if not self.request_validator.authenticate_client(request):
+            raise errors.AccessDeniedError()
 
-        # validate_refresh_token must be provided by the provided request_validator.
+        # OPTIONAL. The scope of the access request as described by
+        # Section 3.3. The requested scope MUST NOT include any scope
+        # not originally granted by the resource owner, and if omitted is
+        # treated as equal to the scope originally granted by the
+        # resource owner.
+        if not self.request_validator.confirm_scopes(request.refresh_token,
+                request.scopes):
+            raise errors.InvalidScopeError(state=request.state)
+
+        # REQUIRED. The refresh token issued to the client.
         if not self.request_validator.validate_refresh_token(
-                request.client, request.refresh_token):
+                request.refresh_token, request.client):
             raise errors.InvalidRequestError()

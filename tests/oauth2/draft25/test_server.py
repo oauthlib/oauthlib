@@ -51,7 +51,7 @@ class AuthorizationEndpointTest(TestCase):
         self.mock_validator.validate_request = mock.MagicMock(
                 side_effect=errors.InvalidRequestError())
         uri, headers, body, status_code = self.endpoint.create_authorization_response(uri)
-        self.assertURLEqual(uri, 'http://back.to/me?error=invalid_request')
+        self.assertURLEqual(uri, 'http://back.to/me?error=invalid_request&error_description=Missing+response_type+parameter.')
 
     def test_invalid_type(self):
         uri = 'http://i.b/l?response_type=invalid&client_id=me&scope=all+of+them'
