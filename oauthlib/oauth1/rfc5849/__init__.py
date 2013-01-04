@@ -48,14 +48,15 @@ class Client(object):
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None, realm=None,
-            convert_to_unicode=False, encoding='utf-8'):
+            convert_to_unicode=False, encoding='utf-8',
+            nonce=None, timestamp=None):
         if convert_to_unicode:
             if isinstance(client_key, bytes_type):
                 client_key = client_key.decode(encoding)
             if isinstance(client_secret, bytes_type):
                 client_secret = client_secret.decode(encoding)
-            if isinstance(resource_owner, bytes_type):
-                resource_owner = resource_owner.decode(encoding)
+            if isinstance(resource_owner_key, bytes_type):
+                resource_owner_key = resource_owner_key.decode(encoding)
             if isinstance(resource_owner_secret, bytes_type):
                 resource_owner_secret = resource_owner_secret.decode(encoding)
             if isinstance(callback_uri, bytes_type):
@@ -70,6 +71,10 @@ class Client(object):
                 verifier = verifier.decode(encoding)
             if isinstance(realm, bytes_type):
                 realm = realm.decode(encoding)
+            if isinstance(nonce, bytes_type):
+                nonce = nonce.decode(encoding)
+            if isinstance(timestamp, bytes_type):
+                timestamp = timestamp.decode(encoding)
 
         self.client_key = client_key
         self.client_secret = client_secret
@@ -83,6 +88,8 @@ class Client(object):
         self.realm = realm
         self.convert_to_unicode = convert_to_unicode
         self.encoding = encoding
+        self.nonce = nonce
+        self.timestamp = timestamp
 
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
@@ -128,9 +135,13 @@ class Client(object):
     def get_oauth_params(self):
         """Get the basic OAuth parameters to be used in generating a signature.
         """
+        nonce = (generate_nonce()
+                 if self.nonce is None else self.nonce)
+        timestamp = (generate_timestamp() 
+                     if self.timestamp is None else self.timestamp)
         params = [
-            ('oauth_nonce', generate_nonce()),
-            ('oauth_timestamp', generate_timestamp()),
+            ('oauth_nonce', nonce),
+            ('oauth_timestamp', timestamp),
             ('oauth_version', '1.0'),
             ('oauth_signature_method', self.signature_method),
             ('oauth_consumer_key', self.client_key),
