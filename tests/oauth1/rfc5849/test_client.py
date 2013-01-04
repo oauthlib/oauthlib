@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals 
 
-from oauthlib.oauth1.rfc5849 import Client
+from oauthlib.oauth1.rfc5849 import Client, bytes_type
 from ...unittest import TestCase
 
 
@@ -27,3 +27,13 @@ class ClientRealmTests(TestCase):
             header["Authorization"].startswith('OAuth realm="baa-realm",'))
         # make sure sign() does not override the default realm
         self.assertEqual(client.realm, "moo-realm")
+
+
+class ClientConstructorTests(TestCase):
+
+    def test_convert_to_unicode_resource_owner(self):
+        client = Client('client-key', 
+                        resource_owner_key=b'owner key',
+                        convert_to_unicode=True)
+        self.assertFalse(isinstance(client.resource_owner_key, bytes_type))
+        self.assertEqual(client.resource_owner_key, 'owner key')

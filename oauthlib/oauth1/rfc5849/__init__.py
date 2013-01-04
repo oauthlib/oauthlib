@@ -54,8 +54,8 @@ class Client(object):
                 client_key = client_key.decode(encoding)
             if isinstance(client_secret, bytes_type):
                 client_secret = client_secret.decode(encoding)
-            if isinstance(resource_owner, bytes_type):
-                resource_owner = resource_owner.decode(encoding)
+            if isinstance(resource_owner_key, bytes_type):
+                resource_owner_key = resource_owner_key.decode(encoding)
             if isinstance(resource_owner_secret, bytes_type):
                 resource_owner_secret = resource_owner_secret.decode(encoding)
             if isinstance(callback_uri, bytes_type):
