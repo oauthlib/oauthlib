@@ -20,6 +20,9 @@ class RequestValidator(object):
     def validate_code(self, client_id, code, client, *args, **kwargs):
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def validate_bearer_token(self, token):
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def validate_refresh_token(self, refresh_token, client, *args, **kwargs):
         raise NotImplementedError('Subclasses must implement this method.')
 
