@@ -237,6 +237,32 @@ def safe_string_equals(a, b):
     return result == 0
 
 
+def to_unicode(data, encoding):
+    """Convert a number of different types of objects to unicode."""
+    if isinstance(data, unicode_type):
+        return data
+
+    if isinstance(data, bytes_type):
+        return unicode_type(data, encoding=encoding)
+
+    if hasattr(data, '__iter__'):
+        try:
+            dict(data)
+        except TypeError:
+            pass
+        except ValueError:
+            # Assume it's a one dimensional data structure
+            return (to_unicode(i, encoding) for i in data)
+        else:
+            # We support 2.6 which lacks dict comprehensions
+            return dict(((to_unicode(k, encoding), to_unicode(v, encoding))
+                         for k, v in (
+                             data.items() if isinstance(data, dict) else data
+                        )))
+
+    return data
+
+
 class Request(object):
     """A malleable representation of a signable HTTP request.
 
@@ -252,26 +278,15 @@ class Request(object):
     """
 
     def __init__(self, uri, http_method='GET', body=None, headers=None,
-            convert_to_unicode=False, encoding='utf-8'):
-        if convert_to_unicode:
-            if isinstance(uri, bytes_type):
-                uri = uri.decode(encoding)
-            if isinstance(http_method, bytes_type):
-                http_method = http_method.decode(encoding)
-            if isinstance(body, bytes_type):
-                body = body.decode(encoding)
-            unicode_headers = {}
-            for k, v in headers.items():
-                k = k.decode(encoding) if isinstance(k, bytes_type) else k
-                v = v.decode(encoding) if isinstance(v, bytes_type) else v
-                unicode_headers[k] = v
-            headers = unicode_headers
+            encoding='utf-8'):
+        # Convert to unicode using encoding if given, else assume unicode
+        encode = lambda x: to_unicode(x, encoding) if encoding else x
 
-        self.uri = uri
-        self.http_method = http_method
-        self.headers = headers or {}
-        self.body = body
-        self.decoded_body = extract_params(body)
+        self.uri = encode(uri)
+        self.http_method = encode(http_method)
+        self.headers = encode(headers or {})
+        self.body = encode(body)
+        self.decoded_body = extract_params(encode(body))
         self.oauth_params = []
 
         self._params = {}

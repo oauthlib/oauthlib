@@ -23,7 +23,7 @@ else:
     bytes_type = str
 
 from oauthlib.common import Request, urlencode, generate_nonce
-from oauthlib.common import generate_timestamp
+from oauthlib.common import generate_timestamp, to_unicode
 from . import parameters, signature, utils
 
 SIGNATURE_HMAC = "HMAC-SHA1"
@@ -48,48 +48,24 @@ class Client(object):
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None, realm=None,
-            convert_to_unicode=False, encoding='utf-8',
-            nonce=None, timestamp=None):
-        if convert_to_unicode:
-            if isinstance(client_key, bytes_type):
-                client_key = client_key.decode(encoding)
-            if isinstance(client_secret, bytes_type):
-                client_secret = client_secret.decode(encoding)
-            if isinstance(resource_owner_key, bytes_type):
-                resource_owner_key = resource_owner_key.decode(encoding)
-            if isinstance(resource_owner_secret, bytes_type):
-                resource_owner_secret = resource_owner_secret.decode(encoding)
-            if isinstance(callback_uri, bytes_type):
-                callback_uri = callback_uri.decode(encoding)
-            if isinstance(signature_method, bytes_type):
-                signature_method = signature_method.decode(encoding)
-            if isinstance(signature_type, bytes_type):
-                signature_type = signature_type.decode(encoding)
-            if isinstance(rsa_key, bytes_type):
-                rsa_key = rsa_key.decode(encoding)
-            if isinstance(verifier, bytes_type):
-                verifier = verifier.decode(encoding)
-            if isinstance(realm, bytes_type):
-                realm = realm.decode(encoding)
-            if isinstance(nonce, bytes_type):
-                nonce = nonce.decode(encoding)
-            if isinstance(timestamp, bytes_type):
-                timestamp = timestamp.decode(encoding)
+            encoding='utf-8', nonce=None, timestamp=None):
 
-        self.client_key = client_key
-        self.client_secret = client_secret
-        self.resource_owner_key = resource_owner_key
-        self.resource_owner_secret = resource_owner_secret
-        self.signature_method = signature_method
-        self.signature_type = signature_type
-        self.callback_uri = callback_uri
-        self.rsa_key = rsa_key
-        self.verifier = verifier
-        self.realm = realm
-        self.convert_to_unicode = convert_to_unicode
-        self.encoding = encoding
-        self.nonce = nonce
-        self.timestamp = timestamp
+        # Convert to unicode using encoding if given, else assume unicode
+        encode = lambda x: to_unicode(x, encoding) if encoding else x
+
+        self.client_key = encode(client_key)
+        self.client_secret = encode(client_secret)
+        self.resource_owner_key = encode(resource_owner_key)
+        self.resource_owner_secret = encode(resource_owner_secret)
+        self.signature_method = encode(signature_method)
+        self.signature_type = encode(signature_type)
+        self.callback_uri = encode(callback_uri)
+        self.rsa_key = encode(rsa_key)
+        self.verifier = encode(verifier)
+        self.realm = encode(realm)
+        self.encoding = encode(encoding)
+        self.nonce = encode(nonce)
+        self.timestamp = encode(timestamp)
 
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
@@ -137,7 +113,7 @@ class Client(object):
         """
         nonce = (generate_nonce()
                  if self.nonce is None else self.nonce)
-        timestamp = (generate_timestamp() 
+        timestamp = (generate_timestamp()
                      if self.timestamp is None else self.timestamp)
         params = [
             ('oauth_nonce', nonce),
@@ -215,7 +191,6 @@ class Client(object):
         """
         # normalize request data
         request = Request(uri, http_method, body, headers,
-                          convert_to_unicode=self.convert_to_unicode,
                           encoding=self.encoding)
 
         # sanity check

@@ -56,8 +56,7 @@ class CommonTests(TestCase):
         r = Request(bytes_type('http://a.b/path?query', 'utf-8'),
                     http_method=bytes_type('GET', 'utf-8'),
                     body=bytes_type('you=shall+pass', 'utf-8'),
-                    headers={bytes_type('a', 'utf-8'): bytes_type('b', 'utf-8')},
-                    convert_to_unicode=True)
+                    headers={bytes_type('a', 'utf-8'): bytes_type('b', 'utf-8')})
         self.assertEqual(r.uri, 'http://a.b/path?query')
         self.assertEqual(r.http_method, 'GET')
         self.assertEqual(r.body, 'you=shall+pass')
