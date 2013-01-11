@@ -73,7 +73,7 @@ class ServerTests(TestCase):
             return True
 
         def validate_redirect_uri(self, client_key, redirect_uri):
-            return True
+            return redirect_uri.startswith('http://client.example.com/')
 
     class ClientServer(Server):
         clients = ['foo']
@@ -147,7 +147,7 @@ class ServerTests(TestCase):
                         (client_key, request_token))))
 
         def validate_redirect_uri(self, client_key, redirect_uri):
-            return True
+            return redirect_uri.startswith('http://client.example.com/')
 
         def get_client_secret(self, client_key):
             return 'super secret'
@@ -174,7 +174,8 @@ class ServerTests(TestCase):
         s = self.TestServer()
 
         uri, headers, body = c.sign('http://server.example.com:80/init')
-        self.assertTrue(s.verify_request(uri, body=body, headers=headers)[0])
+        self.assertTrue(s.verify_request(uri, body=body, headers=headers,
+            )[0])
 
         uri, headers, body = d.sign('http://server.example.com:80/init')
         self.assertTrue(s.verify_request(uri, body=body, headers=headers)[0])
@@ -190,7 +191,22 @@ class ServerTests(TestCase):
         uri, headers, body = c.sign('http://server.example.com:80/init')
 
         s = self.TestServer()
-        self.assertTrue(s.verify_request(uri, body=body, headers=headers)[0])
+        self.assertTrue(s.verify_request(uri, body=body, headers=headers,
+            require_callback=True)[0])
+
+    def test_server_invalid_callback_request(self):
+        c = Client(self.CLIENT_KEY,
+            client_secret=self.CLIENT_SECRET,
+            resource_owner_key=self.RESOURCE_OWNER_KEY,
+            resource_owner_secret=self.RESOURCE_OWNER_SECRET,
+            callback_uri='http://attacker.example.com/callback'
+        )
+
+        uri, headers, body = c.sign('http://server.example.com:80/init')
+
+        s = self.TestServer()
+        self.assertFalse(s.verify_request(uri, body=body, headers=headers,
+            require_callback=True)[0])
 
     def test_not_implemented(self):
         s = Server()

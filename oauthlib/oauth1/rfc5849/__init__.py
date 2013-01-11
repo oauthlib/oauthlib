@@ -657,7 +657,7 @@ class Server(object):
 
     def verify_request(self, uri, http_method='GET', body=None,
             headers=None, require_resource_owner=True, require_verifier=False,
-            require_realm=False, required_realm=None):
+            require_realm=False, required_realm=None, require_callback=False):
         """Verifies a request ensuring that the following is true:
 
         Per `section 3.2`_ of the spec.
@@ -816,9 +816,14 @@ class Server(object):
         if not valid_client:
             client_key = self.dummy_client
 
-        # Ensure a valid redirection uri is used
-        valid_redirect = self.validate_redirect_uri(request.client_key,
-                request.callback_uri)
+        # Callback is normally never required, except for requests for
+        # a Temporary Credential as described in `Section 2.1`_
+        # .._`Section 2.1`: http://tools.ietf.org/html/rfc5849#section-2.1
+        if require_callback:
+            valid_redirect = self.validate_redirect_uri(request.client_key,
+                    request.callback_uri)
+        else:
+            valid_redirect = True
 
         # The server SHOULD return a 401 (Unauthorized) status code when
         # receiving a request with invalid or expired token.
