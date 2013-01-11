@@ -174,8 +174,7 @@ class ServerTests(TestCase):
         s = self.TestServer()
 
         uri, headers, body = c.sign('http://server.example.com:80/init')
-        self.assertTrue(s.verify_request(uri, body=body, headers=headers,
-            )[0])
+        self.assertTrue(s.verify_request(uri, body=body, headers=headers)[0])
 
         uri, headers, body = d.sign('http://server.example.com:80/init')
         self.assertTrue(s.verify_request(uri, body=body, headers=headers)[0])
