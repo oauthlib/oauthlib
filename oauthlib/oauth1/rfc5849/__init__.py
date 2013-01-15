@@ -831,11 +831,13 @@ class Server(object):
             if require_verifier:
                 valid_resource_owner = self.validate_request_token(
                     request.client_key, request.resource_owner_key)
+                if not valid_resource_owner:
+                    resource_owner_key = self.dummy_request_token
             else:
                 valid_resource_owner = self.validate_access_token(
                     request.client_key, request.resource_owner_key)
-            if not valid_resource_owner:
-                resource_owner_key = self.dummy_resource_owner
+                if not valid_resource_owner:
+                    resource_owner_key = self.dummy_access_token
         else:
             valid_resource_owner = True
 
