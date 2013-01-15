@@ -116,7 +116,11 @@ class ServerTests(TestCase):
             return 'dummy'
 
         @property
-        def dummy_resource_owner(self):
+        def dummy_request_token(self):
+            return 'dumbo'
+
+        @property
+        def dummy_access_token(self):
             return 'dumbo'
 
         def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
