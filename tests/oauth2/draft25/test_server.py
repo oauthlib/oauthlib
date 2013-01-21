@@ -24,8 +24,7 @@ class AuthorizationEndpointTest(TestCase):
                 'token': implicit,
         }
 
-        token = tokens.BearerToken()
-        token.save_token = mock.MagicMock()
+        token = tokens.BearerToken(self.mock_validator)
         self.endpoint = draft25.AuthorizationEndpoint(
                 default_response_type='code',
                 default_token=token,
@@ -78,10 +77,9 @@ class TokenEndpointTest(TestCase):
                 'password': password,
                 'client_credentials': client,
         }
-        token = tokens.BearerToken()
-        token.save_token = mock.MagicMock()
+        token = tokens.BearerToken(self.mock_validator)
         self.endpoint = draft25.TokenEndpoint('authorization_code',
-                default_token=token, grant_types=supported_types)
+                default_token_type=token, grant_types=supported_types)
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
@@ -140,8 +138,7 @@ class ResourceEndpointTest(TestCase):
         self.mock_validator = mock.MagicMock()
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
         token = tokens.BearerToken(request_validator=self.mock_validator)
-        token.save_token = mock.MagicMock()
-        self.endpoint = draft25.ResourceEndpoint('Bearer',
+        self.endpoint = draft25.ResourceEndpoint(default_token='Bearer',
                 token_types={'Bearer': token})
 
     def test_defaults(self):

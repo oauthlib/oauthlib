@@ -50,8 +50,8 @@ class AuthorizationCodeGrantTest(TestCase):
         self.request_state = Request('http://a.b/path')
         self.request_state.state = 'abc'
 
-        mock_validator = mock.MagicMock()
-        self.auth = AuthorizationCodeGrant(request_validator=mock_validator)
+        self.mock_validator = mock.MagicMock()
+        self.auth = AuthorizationCodeGrant(request_validator=self.mock_validator)
 
     def test_create_authorization_grant(self):
         grant = self.auth.create_authorization_code(self.request)
@@ -62,8 +62,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertIn('state', grant)
 
     def test_create_token_response(self):
-        bearer = BearerToken()
-        bearer.save_token = mock.MagicMock()
+        bearer = BearerToken(self.mock_validator)
         u, h, token, s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertIn('access_token', token)
@@ -109,8 +108,7 @@ class ImplicitGrantTest(TestCase):
         self.auth = ImplicitGrant(request_validator=self.mock_validator)
 
     def test_create_token_response(self):
-        bearer = BearerToken()
-        bearer.save_token = mock.MagicMock()
+        bearer = BearerToken(self.mock_validator)
         orig_generate_token = common.generate_token
         self.addCleanup(setattr, common, 'generate_token', orig_generate_token)
         common.generate_token = lambda *args, **kwargs: '1234'
@@ -137,8 +135,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
                 request_validator=self.mock_validator)
 
     def test_create_token_response(self):
-        bearer = BearerToken()
-        bearer.save_token = mock.MagicMock()
+        bearer = BearerToken(self.mock_validator)
         uri, headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
@@ -166,8 +163,7 @@ class ClientCredentialsGrantTest(TestCase):
                 request_validator=self.mock_validator)
 
     def test_create_token_response(self):
-        bearer = BearerToken()
-        bearer.save_token = mock.MagicMock()
+        bearer = BearerToken(self.mock_validator)
         uri, headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)

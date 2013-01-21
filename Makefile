@@ -1,5 +1,5 @@
 test:
-	python setup.py test
+	nosetests -w tests
 
 pycco:
 	find oauthlib -name "*.py" -exec pycco -p -s reST {} \;

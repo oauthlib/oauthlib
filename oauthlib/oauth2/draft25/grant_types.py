@@ -5,7 +5,7 @@ oauthlib.oauth2.draft_25.grant_types
 from __future__ import unicode_literals
 import json
 from oauthlib import common
-from oauthlib.oauth2.draft25 import errors
+from oauthlib.oauth2.draft25 import errors, utils
 from oauthlib.uri_validate import is_absolute_uri
 
 
@@ -47,6 +47,12 @@ class RequestValidator(object):
     def get_default_redirect_uri(self, client_id):
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def save_request_token(self, token, request):
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def save_authorization_code(self, client_id, code):
+        raise NotImplementedError('Subclasses must implement this method.')
+
 
 class GrantTypeBase(object):
 
@@ -77,10 +83,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
             grant['state'] = request.state
         return grant
 
-    def save_authorization_code(self, client_id, grant):
-        """Saves authorization codes for later use by the token endpoint."""
-        raise NotImplementedError('Subclasses must implement this method.')
-
     def create_authorization_response(self, request, token_handler):
         try:
             self.validate_authorization_request(request)
@@ -104,7 +106,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             return common.add_params_to_uri(request.redirect_uri, e.twotuples), None, None, e.status_code
 
         grant = self.create_authorization_code(request)
-        self.save_authorization_code(request.client_id, grant)
+        self.request_validator.save_authorization_code(request.client_id, grant)
         return common.add_params_to_uri(request.redirect_uri, grant.items()), None, None, 200
 
     def create_token_response(self, request, token_handler):
@@ -119,9 +121,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         try:
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
-            return None, None, e.json, e.status_code
+            return None, {}, e.json, e.status_code
 
-        return None, None, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
+        return None, {}, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
 
     def validate_authorization_request(self, request):
         """Check the authorization request for normal and fatal errors.
@@ -188,9 +190,16 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
+        request.scopes = utils.scope_to_list(request.scope) or self.request_validator.get_default_scopes(request.client_id)
         if not self.request_validator.validate_scopes(request.client_id,
-                request.scopes):
+                request.scopes, request.client):
             raise errors.InvalidScopeError(state=request.state)
+
+        return True, request.scopes, {
+                'client_id': request.client_id,
+                'redirect_uri': request.redirect_uri,
+                'response_type': request.response_type
+                }
 
     def validate_token_request(self, request):
 
@@ -230,6 +239,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 request.code, request.redirect_uri, request.client):
             raise errors.AccessDeniedError()
 
+        return True
 
 class ImplicitGrant(GrantTypeBase):
     """`Implicit Grant`_
@@ -357,11 +367,11 @@ class ImplicitGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             return common.add_params_to_uri(request.redirect_uri, e.twotuples,
-                    fragment=True), None, None, e.status_code
+                    fragment=True), {}, None, e.status_code
 
         token = token_handler.create_token(request, refresh_token=False)
         return common.add_params_to_uri(request.redirect_uri, token.items(),
-                fragment=True), None, None, 200
+                fragment=True), {}, None, 200
 
 
     def validate_token_request(self, request):

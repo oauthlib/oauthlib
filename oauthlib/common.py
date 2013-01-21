@@ -255,10 +255,9 @@ def to_unicode(data, encoding):
             return (to_unicode(i, encoding) for i in data)
         else:
             # We support 2.6 which lacks dict comprehensions
-            return dict(((to_unicode(k, encoding), to_unicode(v, encoding))
-                         for k, v in (
-                             data.items() if isinstance(data, dict) else data
-                        )))
+            if isinstance(data, dict):
+                data = data.items()
+            return dict(((to_unicode(k, encoding), to_unicode(v, encoding)) for k, v in data))
 
     return data
 

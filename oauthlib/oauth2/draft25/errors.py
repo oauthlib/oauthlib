@@ -4,7 +4,7 @@ oauthlib.oauth2.draft_25.errors
 """
 from __future__ import unicode_literals
 import json
-from oauthlib.common import urlencode
+from oauthlib.common import urlencode, add_params_to_uri
 
 
 class OAuth2Error(Exception):
@@ -31,6 +31,9 @@ class OAuth2Error(Exception):
         self.uri = uri
         self.state = state
         self.status_code = status_code
+
+    def in_uri(self, uri):
+        return add_params_to_uri(uri, self.twotuples)
 
     @property
     def twotuples(self):

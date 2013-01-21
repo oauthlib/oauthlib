@@ -9,7 +9,7 @@ This module is an implementation of various logic needed
 for signing and checking OAuth 2.0 draft 25 requests.
 """
 from oauthlib.common import Request
-from oauthlib.oauth2.draft25 import tokens
+from oauthlib.oauth2.draft25 import tokens, grant_types
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
@@ -563,13 +563,11 @@ class AuthorizationEndpoint(object):
     MUST NOT be included more than once.
     """
 
-    def __init__(self, default_response_type, default_token=None,
+    def __init__(self, default_response_type=None, default_token=None,
             response_types=None):
         self._response_types = response_types or {}
         self._default_response_type = default_response_type
         self._default_token = default_token or tokens.BearerToken()
-
-        assert self.default_response_type in self.response_types
 
     @property
     def response_types(self):
@@ -588,21 +586,32 @@ class AuthorizationEndpoint(object):
         return self._default_token
 
     def create_authorization_response(self, uri, http_method='GET', body=None,
-            headers=None):
+            headers=None, scopes=None, credentials=None):
         """Extract response_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
+        request.authorized_scopes = scopes
+        for k, v in (credentials or {}).items():
+            setattr(request, k, v)
         response_type_handler = self.response_types.get(
                 request.response_type, self.default_response_type_handler)
         return response_type_handler.create_authorization_response(
                         request, self.default_token)
 
+    def validate_authorization_request(self, uri, http_method='GET', body=None,
+            headers=None):
+        """Extract response_type and route to the designated handler."""
+        request = Request(uri, http_method=http_method, body=body, headers=headers)
+        response_type_handler = self.response_types.get(
+                request.response_type, self.default_response_type_handler)
+        return response_type_handler.validate_authorization_request(request)
+
 
 class TokenEndpoint(object):
 
-    def __init__(self, default_grant_type, default_token=None,
+    def __init__(self, default_grant_type=None, default_token_type=None,
             grant_types=None):
         self._grant_types = grant_types or {}
-        self._default_token = default_token or tokens.BearerToken()
+        self._default_token_type = default_token_type or tokens.BearerToken()
         self._default_grant_type = default_grant_type
 
     @property
@@ -618,8 +627,8 @@ class TokenEndpoint(object):
         return self.grant_types.get(self.default_grant_type)
 
     @property
-    def default_token(self):
-        return self._default_token
+    def default_token_type(self):
+        return self._default_token_type
 
     def create_token_response(self, uri, http_method='GET', body=None, headers=None):
         """Extract grant_type and route to the designated handler."""
@@ -628,22 +637,23 @@ class TokenEndpoint(object):
         grant_type_handler = self.grant_types.get(request.grant_type,
                 self.default_grant_type_handler)
 
-        return grant_type_handler.create_token_response(request, self.default_token)
+        return grant_type_handler.create_token_response(
+                request, self.default_token_type)
 
 
 class ResourceEndpoint(object):
 
-    def __init__(self, default_token_type, token_types=None):
+    def __init__(self, default_token=None, token_types=None):
         self._tokens = token_types or {'Bearer': tokens.BearerToken()}
-        self._default_token_type = default_token_type
+        self._default_token = default_token
 
     @property
-    def default_token_type(self):
-        return self._default_token_type
+    def default_token(self):
+        return self._default_token
 
     @property
     def default_token_type_handler(self):
-        return self.tokens.get(self.default_token_type)
+        return self.tokens.get(self.default_token)
 
     @property
     def tokens(self):
@@ -657,7 +667,7 @@ class ResourceEndpoint(object):
         token_type_handler = self.tokens.get(request.token_type,
                 self.default_token_type_handler)
 
-        return token_type_handler.validate_request(request)
+        return token_type_handler.validate_request(request), request
 
     def find_token_type(self, request):
         """Token type identification.
@@ -673,3 +683,18 @@ class ResourceEndpoint(object):
 
 class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
     pass
+
+
+class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
+    """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
+
+    def __init__(self, request_validator, *args, **kwargs):
+        auth_grant = grant_types.AuthorizationCodeGrant(request_validator)
+        bearer = tokens.BearerToken(request_validator)
+        AuthorizationEndpoint.__init__(self, default_response_type='code',
+                response_types={'code': auth_grant})
+        TokenEndpoint.__init__(self, default_grant_type='authorization_code',
+                grant_types={'authorization_code': auth_grant},
+                default_token_type=bearer)
+        ResourceEndpoint.__init__(self, default_token='Bearer',
+                token_types={'Bearer': bearer})
