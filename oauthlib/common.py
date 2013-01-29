@@ -47,7 +47,7 @@ else:
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
 def quote(s, safe=b'/'):
-    s = _quote(s, safe)
+    s = _quote(s.encode('utf-8'), safe)
     # PY3 always returns unicode.  PY2 may return either, depending on whether
     # it had to modify the string.
     if isinstance(s, bytes_type):
@@ -112,7 +112,7 @@ def urldecode(query):
     """
     # Check if query contains invalid characters
     if query and not set(query) <= urlencoded:
-        raise ValueError('Invalid characters in query string.')
+        query = quote(query)
 
     # Check for correctly hex encoded values using a regular expression
     # All encoded values begin with % followed by two hex characters
