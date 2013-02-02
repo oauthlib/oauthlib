@@ -20,7 +20,7 @@ except ImportError:
 from oauthlib.common import unicode_type, urldecode
 
 
-def scope_to_string(scope):
+def list_to_scope(scope):
     """Convert a list of scopes to a space separated string."""
     if isinstance(scope, unicode_type) or scope is None:
         return scope

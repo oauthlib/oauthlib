@@ -4,9 +4,12 @@ oauthlib.oauth2.draft_25.grant_types
 """
 from __future__ import unicode_literals
 import json
+import logging
 from oauthlib import common
 from oauthlib.oauth2.draft25 import errors, utils
 from oauthlib.uri_validate import is_absolute_uri
+
+log = logging.getLogger('oauthlib')
 
 
 class RequestValidator(object):
@@ -14,13 +17,13 @@ class RequestValidator(object):
     def validate_client_id(self, client_id, *args, **kwargs):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_client(self, client_id, grant_type, client, *args, **kwargs):
+    def validate_client(self, client_id, grant_type, request, *args, **kwargs):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_code(self, client_id, code, client, *args, **kwargs):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_bearer_token(self, token):
+    def validate_bearer_token(self, token, scopes, request):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_refresh_token(self, refresh_token, client, *args, **kwargs):
@@ -47,9 +50,6 @@ class RequestValidator(object):
     def get_default_redirect_uri(self, client_id):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def save_request_token(self, token, request):
-        raise NotImplementedError('Subclasses must implement this method.')
-
     def save_authorization_code(self, client_id, code):
         raise NotImplementedError('Subclasses must implement this method.')
 
@@ -65,14 +65,6 @@ class GrantTypeBase(object):
 
 class AuthorizationCodeGrant(GrantTypeBase):
 
-    @property
-    def scopes(self):
-        return ('default',)
-
-    @property
-    def error_uri(self):
-        return '/oauth_error'
-
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
 
@@ -81,18 +73,24 @@ class AuthorizationCodeGrant(GrantTypeBase):
         grant = {'code': common.generate_token()}
         if hasattr(request, 'state') and request.state:
             grant['state'] = request.state
+        log.debug('Created authorization code grant %r for request %r.',
+                  grant, request)
         return grant
 
     def create_authorization_response(self, request, token_handler):
         try:
             self.validate_authorization_request(request)
+            log.debug('Pre resource owner authorization validation ok for %r.',
+                      request)
 
         # If the request fails due to a missing, invalid, or mismatching
         # redirection URI, or if the client identifier is missing or invalid,
         # the authorization server SHOULD inform the resource owner of the
         # error and MUST NOT automatically redirect the user-agent to the
         # invalid redirection URI.
-        except errors.FatalClientError:
+        except errors.FatalClientError as e:
+            log.debug('Fatal client error during validation of %r. %r.',
+                      request, e)
             raise
 
         # If the resource owner denies the access request or if the request
@@ -102,11 +100,13 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # "application/x-www-form-urlencoded" format, per Appendix B:
         # http://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
+            log.debug('Client error during validation of %r. %r.', request, e)
             request.redirect_uri = request.redirect_uri or self.error_uri
             return common.add_params_to_uri(request.redirect_uri, e.twotuples), None, None, e.status_code
 
         grant = self.create_authorization_code(request)
-        self.request_validator.save_authorization_code(request.client_id, grant)
+        logging.debug('Saving grant %r for %r.', grant, request)
+        self.request_validator.save_authorization_code(request, grant)
         return common.add_params_to_uri(request.redirect_uri, grant.items()), None, None, 200
 
     def create_token_response(self, request, token_handler):
@@ -120,7 +120,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         """
         try:
             self.validate_token_request(request)
+            log.debug('Token request validation ok for %r.', request)
         except errors.OAuth2Error as e:
+            log.debug('Client error during validation of %r. %r.', request, e)
             return None, {}, e.json, e.status_code
 
         return None, {}, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
@@ -152,12 +154,16 @@ class AuthorizationCodeGrant(GrantTypeBase):
         if not request.client_id:
             raise errors.MissingClientIdError(state=request.state)
 
-        if not self.request_validator.validate_client_id(request.client_id):
+        if not self.request_validator.validate_client_id(request.client_id, request):
             raise errors.InvalidClientIdError(state=request.state)
 
         # OPTIONAL. As described in Section 3.1.2.
         # http://tools.ietf.org/html/rfc6749#section-3.1.2
+        log.debug('Validating redirction uri %s for client %s.',
+                  request.redirect_uri, request.client_id)
         if request.redirect_uri is not None:
+            request.using_default_redirect_uri = False
+            log.debug('Using provided redirect_uri %s', request.redirect_uri)
             if not is_absolute_uri(request.redirect_uri):
                 raise errors.InvalidRedirectURIError(state=request.state)
 
@@ -166,6 +172,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 raise errors.MismatchingRedirectURIError(state=request.state)
         else:
             request.redirect_uri = self.request_validator.get_default_redirect_uri(request.client_id)
+            request.using_default_redirect_uri = True
+            log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
                 raise errors.MissingRedirectURIError(state=request.state)
 
@@ -184,25 +192,33 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.InvalidRequestError(state=request.state,
                     description='Missing response_type parameter.')
 
+        if not self.request_validator.validate_response_type(request.client_id,
+                request.response_type, request):
+            log.debug('Client %s is not authorized to use resposne_type %s.',
+                      request.client_id, request.response_type)
+            raise errors.UnauthorizedClientError()
+
         # REQUIRED. Value MUST be set to "code".
         if request.response_type != 'code':
             raise errors.UnsupportedResponseTypeError(state=request.state)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
-        request.scopes = utils.scope_to_list(request.scope) or self.request_validator.get_default_scopes(request.client_id)
+        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                self.request_validator.get_default_scopes(request.client_id))
+        log.debug('Validating access to scopes %r for client %r (%r).',
+                  request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,
-                request.scopes, request.client):
+                request.scopes, request.client, request):
             raise errors.InvalidScopeError(state=request.state)
 
-        return True, request.scopes, {
+        return request.scopes, {
                 'client_id': request.client_id,
                 'redirect_uri': request.redirect_uri,
-                'response_type': request.response_type
-                }
+                'response_type': request.response_type,
+        }
 
     def validate_token_request(self, request):
-
         # REQUIRED. Value MUST be set to "authorization_code".
         if request.grant_type != 'authorization_code':
             raise errors.UnsupportedGrantTypeError()
@@ -217,19 +233,24 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # in Section 3.2.1.
         # http://tools.ietf.org/html/rfc6749#section-3.2.1
         if not self.request_validator.authenticate_client(request):
+            log.debug('Could not authenticate client, %r.', request)
             raise errors.AccessDeniedError()
 
         # REQUIRED, if the client is not authenticating with the
         # authorization server as described in Section 3.2.1.
         # http://tools.ietf.org/html/rfc6749#section-3.2.1
         if not self.request_validator.validate_client(request.client_id,
-                request.grant_type, request.client):
+                request.grant_type, request):
+            log.debug('Client_id not provided for unauthenticated client, %r.',
+                      request)
             raise errors.UnauthorizedClientError()
 
         # REQUIRED. The authorization code received from the
         # authorization server.
         if not self.request_validator.validate_code(request.client_id,
-                request.code, request.client):
+                request.code, request.client, request):
+            log.debug('Client, %r (%r), is not allowed access to scopes %r.',
+                      request.client_id, request.client, request.scopes)
             raise errors.InvalidGrantError()
 
         # REQUIRED, if the "redirect_uri" parameter was included in the
@@ -237,9 +258,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # values MUST be identical.
         if not self.request_validator.confirm_redirect_uri(request.client_id,
                 request.code, request.redirect_uri, request.client):
+            log.debug('Redirect_uri (%r) invalid for client %r (%r).',
+                      request.redirect_uri, request.client_id, request.client)
             raise errors.AccessDeniedError()
 
-        return True
 
 class ImplicitGrant(GrantTypeBase):
     """`Implicit Grant`_
@@ -356,7 +378,9 @@ class ImplicitGrant(GrantTypeBase):
         # the authorization server SHOULD inform the resource owner of the
         # error and MUST NOT automatically redirect the user-agent to the
         # invalid redirection URI.
-        except errors.FatalClientError:
+        except errors.FatalClientError as e:
+            log.debug('Fatal client error during validation of %r. %r.',
+                      request, e)
             raise
 
         # If the resource owner denies the access request or if the request
@@ -366,6 +390,7 @@ class ImplicitGrant(GrantTypeBase):
         # "application/x-www-form-urlencoded" format, per Appendix B:
         # http://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
+            log.debug('Client error during validation of %r. %r.', request, e)
             return common.add_params_to_uri(request.redirect_uri, e.twotuples,
                     fragment=True), {}, None, e.status_code
 
@@ -373,6 +398,8 @@ class ImplicitGrant(GrantTypeBase):
         return common.add_params_to_uri(request.redirect_uri, token.items(),
                 fragment=True), {}, None, 200
 
+    def validate_authorization_request(self, request):
+        return self.validate_token_request(request)
 
     def validate_token_request(self, request):
         """Check the token request for normal and fatal errors.
@@ -404,12 +431,14 @@ class ImplicitGrant(GrantTypeBase):
         if not request.client_id:
             raise errors.MissingClientIdError(state=request.state)
 
-        if not self.request_validator.validate_client_id(request.client_id):
+        if not self.request_validator.validate_client_id(request.client_id, request):
             raise errors.InvalidClientIdError(state=request.state)
 
         # OPTIONAL. As described in Section 3.1.2.
         # http://tools.ietf.org/html/rfc6749#section-3.1.2
         if request.redirect_uri is not None:
+            request.using_default_redirect_uri = False
+            log.debug('Using provided redirect_uri %s', request.redirect_uri)
             if not is_absolute_uri(request.redirect_uri):
                 raise errors.InvalidRedirectURIError(state=request.state)
 
@@ -423,6 +452,8 @@ class ImplicitGrant(GrantTypeBase):
                 raise errors.MismatchingRedirectURIError(state=request.state)
         else:
             request.redirect_uri = self.request_validator.get_default_redirect_uri(request.client_id)
+            request.using_default_redirect_uri = True
+            log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
                 raise errors.MissingRedirectURIError(state=request.state)
 
@@ -445,10 +476,31 @@ class ImplicitGrant(GrantTypeBase):
         if request.response_type != 'token':
             raise errors.UnsupportedResponseTypeError(state=request.state)
 
+        log.debug('Validating use of response_type token for client %r (%r).',
+                  request.client_id, request.client)
+        if not self.request_validator.validate_response_type(request.client_id,
+                request.response_type, request):
+            log.debug('Client %s is not authorized to use response_type %s.',
+                      request.client_id, request.response_type)
+            raise errors.UnauthorizedClientError()
+
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
-        if not self.request_validator.validate_scopes(request):
+        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                self.request_validator.get_default_scopes(request.client_id))
+        log.debug('Validating access to scopes %r for client %r (%r).',
+                  request.scopes, request.client_id, request.client)
+        if not self.request_validator.validate_scopes(request.client_id,
+                request.scopes, request.client, request):
+            log.debug('Client id %r (%r) may not access scope %r.',
+                  request.client_id, request.client, request.scopes)
             raise errors.InvalidScopeError(state=request.state)
+
+        return request.scopes, {
+                'client_id': request.client_id,
+                'redirect_uri': request.redirect_uri,
+                'response_type': request.response_type,
+        }
 
 
 class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
@@ -527,12 +579,20 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         """
         try:
             if require_authentication:
+                log.debug('Authenticating client, %r.', request)
                 self.request_validator.authenticate_client(request)
+            else:
+                log.debug('Client authentication disabled, %r.', request)
+            log.debug('Validating access token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
+            log.debug('Client error in token request, %s.', e)
             return None, {}, e.json, e.status_code
 
-        return None, {}, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
+        token = token_handler.create_token(request, refresh_token=True)
+        log.debug('Issuing token %r to client id %r (%r) and username %s.',
+                  token, request.client_id, request.client, request.username)
+        return None, {}, json.dumps(token), 200
 
     def validate_token_request(self, request):
         for param in ('grant_type', 'username', 'password'):
@@ -545,13 +605,24 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         if not request.grant_type == 'password':
             raise errors.UnsupportedGrantTypeError()
 
-        # request.client is populated during client authentication
-        client = request.client if getattr(request, 'client') else None
+        log.debug('Validating username %s and password %s.',
+                  request.username, request.password)
         if not self.request_validator.validate_user(request.username,
-                request.password, client=client):
+                request.password, request.client, request):
             raise errors.InvalidGrantError('Invalid credentials given.')
+        log.debug('Authorizing access to user %r.', request.user)
 
-        self.request_validator.validate_request_scopes(request)
+        if request.client:
+            request.client_id = request.client_id or request.client.client_id
+        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                self.request_validator.get_default_scopes(request.client_id))
+        log.debug('Validating access to scopes %r for client id %r (%r).',
+                  request.scopes, request.client_id, request.client)
+        if not self.request_validator.validate_scopes(request.client_id,
+                request.scopes, request.client, request):
+            log.debug('Client id %r (%r) may not access scope %r.',
+                  request.client_id, request.client, request.scopes)
+            raise errors.InvalidScopeError(state=request.state)
 
 
 class ClientCredentialsGrant(GrantTypeBase):
@@ -604,12 +675,18 @@ class ClientCredentialsGrant(GrantTypeBase):
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
         try:
+            log.debug('Authenticating client, %r.', request)
             self.request_validator.authenticate_client(request)
+            log.debug('Validating access token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
+            log.debug('Client error in token request. %s.', e)
             return None, {}, e.json, e.status_code
 
-        return None, {}, json.dumps(token_handler.create_token(request, refresh_token=False)), 200
+        token = token_handler.create_token(request, refresh_token=False)
+        log.debug('Issuing token to client id %r (%r), %r.',
+                  request.client_id, request.client, token)
+        return None, {}, json.dumps(token), 200
 
     def validate_token_request(self, request):
         if not getattr(request, 'grant_type'):
@@ -618,7 +695,18 @@ class ClientCredentialsGrant(GrantTypeBase):
         if not request.grant_type == 'client_credentials':
             raise errors.UnsupportedGrantTypeError()
 
-        self.request_validator.validate_request_scopes(request)
+        request.user = request.user or request.client.user
+        log.debug('Authorizing access to user %r.', request.user)
+        request.client_id = request.client_id or request.client.client_id
+        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                self.request_validator.get_default_scopes(request.client_id))
+        log.debug('Validating access to scopes %r for client id %r (%r).',
+                  request.scopes, request.client_id, request.client)
+        if not self.request_validator.validate_scopes(request.client_id,
+                request.scopes, request.client, request):
+            log.debug('Client id %r (%r) may not access scope %r.',
+                      request.client_id, request.client, request.scopes)
+            raise errors.InvalidScopeError(state=request.state)
 
 
 class RefreshTokenGrant(GrantTypeBase):
@@ -628,8 +716,8 @@ class RefreshTokenGrant(GrantTypeBase):
     """
 
     @property
-    def scope(self):
-        return ('default',)
+    def issue_new_refresh_tokens(self):
+        return True
 
     def __init__(self, request_validator=None, issue_new_refresh_tokens=True):
         self.request_validator = request_validator or RequestValidator()
@@ -654,16 +742,18 @@ class RefreshTokenGrant(GrantTypeBase):
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
         try:
+            log.debug('Validating refresh token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
             return None, {}, e.json, 400
 
         token = token_handler.create_token(request,
                 refresh_token=self.issue_new_refresh_tokens)
+        log.debug('Issuing new token to client id %r (%r), %r.',
+                  request.client_id, request.client, token)
         return None, {}, json.dumps(token), 200
 
     def validate_token_request(self, request):
-
         # REQUIRED. Value MUST be set to "refresh_token".
         if request.grant_type != 'refresh_token':
             raise errors.UnsupportedGrantTypeError()
@@ -679,7 +769,9 @@ class RefreshTokenGrant(GrantTypeBase):
         # authentication requirements), the client MUST authenticate with the
         # authorization server as described in Section 3.2.1.
         # http://tools.ietf.org/html/rfc6749#section-3.2.1
+        log.debug('Authenticating client, %r.', request)
         if not self.request_validator.authenticate_client(request):
+            log.debug('Invalid client (%r), denying access.', request)
             raise errors.AccessDeniedError()
 
         # OPTIONAL. The scope of the access request as described by
@@ -687,11 +779,22 @@ class RefreshTokenGrant(GrantTypeBase):
         # not originally granted by the resource owner, and if omitted is
         # treated as equal to the scope originally granted by the
         # resource owner.
+        if request.scopes:
+            log.debug('Ensuring refresh token %s has access to scopes %r.',
+                    request.refresh_token, request.scopes)
+        else:
+            log.debug('Reusing scopes from previous access token.')
         if not self.request_validator.confirm_scopes(request.refresh_token,
-                request.scopes):
+                request.scopes, request):
+            log.debug('Refresh token %s lack requested scopes, %r.',
+                      request.refresh_token, request.scopes)
             raise errors.InvalidScopeError(state=request.state)
 
         # REQUIRED. The refresh token issued to the client.
+        log.debug('Validating refresh token %s for client %r.',
+                  request.refresh_token, request.client)
         if not self.request_validator.validate_refresh_token(
-                request.refresh_token, request.client):
+                request.refresh_token, request.client, request):
+            log.debug('Invalid refresh token, %s, for client %r.',
+                      request.refresh_token, request.client)
             raise errors.InvalidRequestError()

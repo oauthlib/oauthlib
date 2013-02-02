@@ -191,19 +191,21 @@ class BearerToken(TokenBase):
         if refresh_token:
             token['refresh_token'] = common.generate_token()
 
+        token.update(request.extra_credentials or {})
+
         self.request_validator.save_bearer_token(request, token)
         return token
 
     def validate_request(self, request):
         token = None
         if 'Authorization' in request.headers:
-            token = request.headers.get('Authorization')[8:]
+            token = request.headers.get('Authorization')[7:]
         else:
             token = request.access_token
 
-        request.client_id = self.request_validator.get_client_id(token)
+        request.client = self.request_validator.get_client(token)
         request.resource_owner = self.request_validator.get_resource_owner(token)
-        return self.request_validator.validate_bearer_token(token)
+        return self.request_validator.validate_bearer_token(token, request.scopes, request)
 
     def estimate_type(self, request):
         if request.headers.get('Authorization', '').startswith('Bearer'):

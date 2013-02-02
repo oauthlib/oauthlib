@@ -27,7 +27,7 @@ class AuthorizationEndpointTest(TestCase):
         token = tokens.BearerToken(self.mock_validator)
         self.endpoint = draft25.AuthorizationEndpoint(
                 default_response_type='code',
-                default_token=token,
+                default_token_type=token,
                 response_types=response_types)
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
@@ -42,7 +42,7 @@ class AuthorizationEndpointTest(TestCase):
         uri = 'http://i.b/l?response_type=token&client_id=me&scope=all+of+them&state=xyz'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         uri, headers, body, status_code = self.endpoint.create_authorization_response(uri)
-        self.assertURLEqual(uri, 'http://back.to/me#access_token=abc&expires_in=3600&token_type=Bearer&state=xyz', parse_fragment=True)
+        self.assertURLEqual(uri, 'http://back.to/me#access_token=abc&expires_in=3600&token_type=Bearer&state=xyz&scope=all+of+them', parse_fragment=True)
 
     def test_missing_type(self):
         uri = 'http://i.b/l?client_id=me&scope=all+of+them'
@@ -64,7 +64,14 @@ class AuthorizationEndpointTest(TestCase):
 class TokenEndpointTest(TestCase):
 
     def setUp(self):
+        def set_user(request):
+            request.user = mock.MagicMock()
+            request.client = mock.MagicMock()
+            request.client.client_id = 'mocked_client_id'
+            return True
+
         self.mock_validator = mock.MagicMock()
+        self.mock_validator.authenticate_client.side_effect = set_user
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
         auth_code = grant_types.AuthorizationCodeGrant(
                 request_validator=self.mock_validator)
@@ -104,7 +111,8 @@ class TokenEndpointTest(TestCase):
             'token_type': 'Bearer',
             'expires_in': 3600,
             'access_token': 'abc',
-            'refresh_token': 'abc'
+            'refresh_token': 'abc',
+            'scope': 'all of them',
         }
         self.assertEqual(json.loads(body), token)
 
@@ -117,6 +125,7 @@ class TokenEndpointTest(TestCase):
             'token_type': 'Bearer',
             'expires_in': 3600,
             'access_token': 'abc',
+            'scope': 'all of them',
         }
         self.assertEqual(json.loads(body), token)
 

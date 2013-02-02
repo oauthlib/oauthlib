@@ -16,7 +16,7 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
-from oauthlib.oauth2.draft25.utils import scope_to_string, scope_to_list
+from oauthlib.oauth2.draft25.utils import list_to_scope, scope_to_list
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
@@ -60,7 +60,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     if redirect_uri:
         params.append(('redirect_uri', redirect_uri))
     if scope:
-        params.append(('scope', scope_to_string(scope)))
+        params.append(('scope', list_to_scope(scope)))
     if state:
         params.append(('state', state))
 
@@ -96,7 +96,7 @@ def prepare_token_request(grant_type, body='', **kwargs):
     params = [('grant_type', grant_type)]
 
     if 'scope' in kwargs:
-        kwargs['scope'] = scope_to_string(kwargs['scope'])
+        kwargs['scope'] = list_to_scope(kwargs['scope'])
 
     for k in kwargs:
         if kwargs[k]:

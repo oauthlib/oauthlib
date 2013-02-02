@@ -96,9 +96,11 @@ class AuthorizationCodeGrantTest(TestCase):
 class ImplicitGrantTest(TestCase):
 
     def setUp(self):
+        mock_client = mock.MagicMock()
+        mock_client.user.return_value = 'mocked user'
         self.request = Request('http://a.b/path')
         self.request.scopes = ('hello', 'world')
-        self.request.client = 'batman'
+        self.request.client = mock_client
         self.request.client_id = 'abcdef'
         self.request.response_type = 'token'
         self.request.state = 'xyz'
@@ -114,7 +116,7 @@ class ImplicitGrantTest(TestCase):
         common.generate_token = lambda *args, **kwargs: '1234'
         uri, headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
-        correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=3600&state=xyz&scope=hello+world'
+        correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=3600&state=xyz'
         self.assertURLEqual(uri, correct_uri, parse_fragment=True)
 
     def test_error_response(self):
@@ -124,11 +126,13 @@ class ImplicitGrantTest(TestCase):
 class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
 
     def setUp(self):
+        mock_client = mock.MagicMock()
+        mock_client.user.return_value = 'mocked user'
         self.request = Request('http://a.b/path')
         self.request.grant_type = 'password'
         self.request.username = 'john'
         self.request.password = 'doe'
-        self.request.client = 'mock authenticated'
+        self.request.client = mock_client
         self.request.scopes = ('mocked', 'scopes')
         self.mock_validator = mock.MagicMock()
         self.auth = ResourceOwnerPasswordCredentialsGrant(
@@ -154,9 +158,11 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
 class ClientCredentialsGrantTest(TestCase):
 
     def setUp(self):
+        mock_client = mock.MagicMock()
+        mock_client.user.return_value = 'mocked user'
         self.request = Request('http://a.b/path')
         self.request.grant_type = 'client_credentials'
-        self.request.client = 'mock authenticated'
+        self.request.client = mock_client
         self.request.scopes = ('mocked', 'scopes')
         self.mock_validator = mock.MagicMock()
         self.auth = ClientCredentialsGrant(
