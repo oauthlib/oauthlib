@@ -14,43 +14,308 @@ log = logging.getLogger('oauthlib')
 
 class RequestValidator(object):
 
-    def validate_client_id(self, client_id, *args, **kwargs):
+    def authenticate_client(self, request, *args, **kwargs):
+        """Authenticate client through means outside the OAuth 2 spec.
+
+        Means of authentication is negotiated beforehand and may for example
+        be `HTTP Basic Authentication Scheme`_ which utilizes the Authorization
+        header.
+
+        Headers may be accesses through request.headers and parameters found in
+        both body and query can be obtained by direct attribute access, i.e.
+        request.client_id for client_id in the URL query.
+
+        OBS! Certain grant types rely on this authentication, possibly with
+        other fallbacks, and for them to recognize this authorization please
+        set the client attribute on the request (request.client). Note that
+        preferably this client object should have a client_id attribute of
+        unicode type (request.client.client_id).
+
+        :param request: oauthlib.common.Request
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant
+            - Resource Owner Password Credentials Grant (may be disabled)
+            - Client Credentials Grant
+            - Refresh Token Grant
+
+        .. _`HTTP Basic Authentication Scheme`: http://tools.ietf.org/html/rfc1945#section-11.1
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_client(self, client_id, grant_type, request, *args, **kwargs):
+    def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):
+        """Ensure client is authorized to redirect to the redirect_uri requested.
+
+        All clients should register the absolute URIs of all URIs they intend
+        to redirect to. The registration is outside of the scope of oauthlib.
+
+        :param client_id: Unicode client identifier
+        :param code: Unicode authorization_code.
+        :param redirect_uri: Unicode absolute URI
+        :param client: Client object set by you, see authenticate_client.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant (during token request)
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_code(self, client_id, code, client, *args, **kwargs):
+    def confirm_scopes(self, refresh_token, scopes, request, *args, **kwargs):
+        """Ensure the refresh token is authorized access to requested scopes.
+
+        :param refresh_token: Unicode refresh token
+        :param scopes: List of scopes (defined by you)
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Refresh token grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
+        """Get the default redirect URI for the client.
+
+        :param client_id: Unicode client identifier
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: The default redirect URI for the client
+
+        Method is used by:
+            - Authorization Code Grant
+            - Implicit Grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_default_scopes(self, client_id, request, *args, **kwargs):
+        """Get the default scopes for the client.
+
+        :param client_id: Unicode client identifier
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: List of default scopes
+
+        Method is used by all core grant types:
+            - Authorization Code Grant
+            - Implicit Grant
+            - Resource Owner Password Credentials Grant
+            - Client Credentials grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def save_authorization_code(self, client_id, code, request, *args, **kwargs):
+        """Persist the authorization_code.
+
+        The code should at minimum be associated with:
+            - a client and it's client_id
+            - the redirect URI used (request.redirect_uri)
+            - whether the redirect URI used is the client default or not
+            - a resource owner / user (request.user)
+            - authorized scopes (request.scopes)
+
+        The authorization code grant dict (code) holds at least the key 'code',
+        {'code': 'sdf345jsdf0934f'}.
+
+        :param client_id: Unicode client identifier
+        :param code: A dict of the authorization code grant.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: The default redirect URI for the client
+
+        Method is used by:
+            - Authorization Code Grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def save_bearer_token(self, token, request, *args, **kwargs):
+        """Persist the Bearer token.
+
+        The Bearer token should at minimum be associated with:
+            - a client and it's client_id, if available
+            - a resource owner / user (request.user)
+            - authorized scopes (request.scopes)
+            - an expiration time
+            - a refresh token, if issued
+
+        The Bearer token dict may hold a number of items,
+        {
+            'token_type': 'Bearer',
+            'token': 'askfjh234as9sd8',
+            'expires_in': 3600,
+            'scope': ['list', 'of', 'authorized', 'scopes'],
+            'refresh_token': '23sdf876234',  # if issued
+            'state': 'given_by_client',  # if supplied by client
+        }
+
+        :param client_id: Unicode client identifier
+        :param token: A Bearer token dict
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: The default redirect URI for the client
+
+        Method is used by all core grant types issuing Bearer tokens:
+            - Authorization Code Grant
+            - Implicit Grant
+            - Resource Owner Password Credentials Grant (might not associate a client)
+            - Client Credentials grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_bearer_token(self, token, scopes, request):
+        """Ensure the Bearer token is valid and authorized access to scopes.
+
+        Note, the request.user attribute can be set to the resource owner
+        associated with this token. Similarly the request.client and
+        request.scopes attribute can be set to associated client object
+        and authorized scopes. If you then use a decorator such as the
+        one provided for django these attributes will be made available
+        in all protected views as keyword arguments.
+
+        :param token: Unicode Bearer token
+        :param scopes: List of scopes (defined by you)
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is indirectly used by all core Bearer token issuing grant types:
+            - Authorization Code Grant
+            - Implicit Grant
+            - Resource Owner Password Credentials Grant
+            - Client Credentials Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_refresh_token(self, refresh_token, client, *args, **kwargs):
+    def validate_client_id(self, client_id, request, *args, **kwargs):
+        """Ensure client_id belong to a valid and active client.
+
+        Note, while not strictly necessary it can often be very convenient
+        to set request.client to the client object associated with the
+        given client_id.
+
+        :param request: oauthlib.common.Request
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant
+            - Implicit Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def authenticate_client(self, request, *args, **kwargs):
+    def validate_code(self, client_id, code, client, *args, **kwargs):
+        """Ensure the authorization_code is valid and assigned to client.
+
+        OBS! The request.user attribute should be set to the resource owner
+        associated with this authorization code.
+
+        :param client_id: Unicode client identifier
+        :param code: Unicode authorization code
+        :param client: Client object set by you, see authenticate_client.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_scopes(self, client_id, scopes, client):
+    def validate_grant_type(self, client_id, grant_type, client, request, *args, **kwargs):
+        """Ensure client is authorized to use the grant_type requested.
+
+        :param client_id: Unicode client identifier
+        :param grant_type: Unicode grant type, i.e. authorization_code, password.
+        :param client: Client object set by you, see authenticate_client.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant
+            - Resource Owner Password Credentials Grant
+            - Client Credentials Grant
+            - Refresh Token Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def confirm_scopes(self, refresh_token, scopes):
+    def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
+        """Ensure client is authorized to redirect to the redirect_uri requested.
+
+        All clients should register the absolute URIs of all URIs they intend
+        to redirect to. The registration is outside of the scope of oauthlib.
+
+        :param client_id: Unicode client identifier
+        :param redirect_uri: Unicode absolute URI
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant
+            - Implicit Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_user(self, username, password, client=None):
+    def validate_refresh_token(self, refresh_token, client, request, *args, **kwargs):
+        """Ensure the Bearer token is valid and authorized access to scopes.
+
+        OBS! The request.user attribute should be set to the resource owner
+        associated with this refresh token.
+
+        :param refresh_token: Unicode refresh token
+        :param client: Client object set by you, see authenticate_client.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant (indirectly by issuing refresh tokens)
+            - Resource Owner Password Credentials Grant (also indirectly)
+            - Refresh Token Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_redirect_uri(self, client_id, redirect_uri):
+    def validate_response_type(self, client_id, response_type, client, request, *args, **kwargs):
+        """Ensure client is authorized to use the grant_type requested.
+
+        :param client_id: Unicode client identifier
+        :param response_type: Unicode response type, i.e. code, token.
+        :param client: Client object set by you, see authenticate_client.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant
+            - Implicit Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def confirm_redirect_uri(self, client_id, code, redirect_uri, client):
+    def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
+        """Ensure the client is authorized access to requested scopes.
+
+        :param client_id: Unicode client identifier
+        :param scopes: List of scopes (defined by you)
+        :param client: Client object set by you, see authenticate_client.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by all core grant types:
+            - Authorization Code Grant
+            - Implicit Grant
+            - Resource Owner Password Credentials Grant
+            - Client Credentials Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_default_redirect_uri(self, client_id):
-        raise NotImplementedError('Subclasses must implement this method.')
+    def validate_user(self, username, password, client, request, *args, **kwargs):
+        """Ensure the username and password is valid.
 
-    def save_authorization_code(self, client_id, code):
+        OBS! The validation should also set the user attribute of the request
+        to a valid resource owner, i.e. request.user = username or similar. If
+        not set you will be unable to associate a token with a user in the
+        persistance method used (commonly, save_bearer_token).
+
+        :param username: Unicode username
+        :param password: Unicode password
+        :param client: Client object set by you, see authenticate_client.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Resource Owner Password Credentials Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
 
@@ -171,7 +436,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
                     request.client_id, request.redirect_uri):
                 raise errors.MismatchingRedirectURIError(state=request.state)
         else:
-            request.redirect_uri = self.request_validator.get_default_redirect_uri(request.client_id)
+            request.redirect_uri = self.request_validator.get_default_redirect_uri(
+                    request.client_id, request)
             request.using_default_redirect_uri = True
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
@@ -205,7 +471,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
         request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id))
+                self.request_validator.get_default_scopes(request.client_id, request))
         log.debug('Validating access to scopes %r for client %r (%r).',
                   request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,
@@ -239,8 +505,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # REQUIRED, if the client is not authenticating with the
         # authorization server as described in Section 3.2.1.
         # http://tools.ietf.org/html/rfc6749#section-3.2.1
-        if not self.request_validator.validate_client(request.client_id,
-                request.grant_type, request):
+        if (not request.client and not
+                self.request_validator.validate_client_id(
+                    request.client_id, request)):
             log.debug('Client_id not provided for unauthenticated client, %r.',
                       request)
             raise errors.UnauthorizedClientError()
@@ -451,7 +718,8 @@ class ImplicitGrant(GrantTypeBase):
                     request.client_id, request.redirect_uri):
                 raise errors.MismatchingRedirectURIError(state=request.state)
         else:
-            request.redirect_uri = self.request_validator.get_default_redirect_uri(request.client_id)
+            request.redirect_uri = self.request_validator.get_default_redirect_uri(
+                    request.client_id, request)
             request.using_default_redirect_uri = True
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
@@ -487,7 +755,7 @@ class ImplicitGrant(GrantTypeBase):
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
         request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id))
+                self.request_validator.get_default_scopes(request.client_id, request))
         log.debug('Validating access to scopes %r for client %r (%r).',
                   request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,
@@ -615,7 +883,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         if request.client:
             request.client_id = request.client_id or request.client.client_id
         request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id))
+                self.request_validator.get_default_scopes(request.client_id, request))
         log.debug('Validating access to scopes %r for client id %r (%r).',
                   request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,
@@ -699,7 +967,7 @@ class ClientCredentialsGrant(GrantTypeBase):
         log.debug('Authorizing access to user %r.', request.user)
         request.client_id = request.client_id or request.client.client_id
         request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id))
+                self.request_validator.get_default_scopes(request.client_id, request))
         log.debug('Validating access to scopes %r for client id %r (%r).',
                   request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,

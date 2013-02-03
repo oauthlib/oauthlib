@@ -193,7 +193,7 @@ class BearerToken(TokenBase):
 
         token.update(request.extra_credentials or {})
 
-        self.request_validator.save_bearer_token(request, token)
+        self.request_validator.save_bearer_token(token, request)
         return token
 
     def validate_request(self, request):
@@ -202,9 +202,6 @@ class BearerToken(TokenBase):
             token = request.headers.get('Authorization')[7:]
         else:
             token = request.access_token
-
-        request.client = self.request_validator.get_client(token)
-        request.resource_owner = self.request_validator.get_resource_owner(token)
         return self.request_validator.validate_bearer_token(token, request.scopes, request)
 
     def estimate_type(self, request):

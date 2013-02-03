@@ -82,11 +82,12 @@ class AuthorizationCodeGrantTest(TestCase):
                 auth.validate_token_request, request)
 
         mock_validator.validate_client = mock.MagicMock(return_value=False)
+        mock_validator.validate_client_id = mock.MagicMock(return_value=False)
         request.code = 'waffles'
-        request.client = 'batman'
         self.assertRaises(UnauthorizedClientError,
                 auth.validate_token_request, request)
 
+        request.client = 'batman'
         mock_validator.validate_client = mock.MagicMock(return_value=True)
         mock_validator.validate_code = mock.MagicMock(return_value=False)
         self.assertRaises(InvalidGrantError,
