@@ -102,6 +102,10 @@ Before you submit a pull request, please run the entire OAuthLib test suite from
 
    $ python -m unittest discover
 
+or alternatively, if you prefer nose:
+
+   $ nosetests
+
 
 The first thing the core committers will do is run this command. Any pull request that fails this test suite will be **rejected**.
 
