@@ -327,6 +327,22 @@ class GrantTypeBase(object):
     def create_token_response(self, request, token_handler):
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def validate_grant_type(self, request):
+        if not self.request_validator.validate_grant_type(request.client_id,
+                request.grant_type, request.client, request):
+            log.debug('Unauthorized from %r (%r) access to grant type %s.',
+                      request.client_id, request.client, request.grant_type)
+            raise errors.UnauthorizedClientError()
+
+    def validate_scopes(self, request):
+        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                self.request_validator.get_default_scopes(request.client_id, request))
+        log.debug('Validating access to scopes %r for client %r (%r).',
+                  request.scopes, request.client_id, request.client)
+        if not self.request_validator.validate_scopes(request.client_id,
+                request.scopes, request.client, request):
+            raise errors.InvalidScopeError(state=request.state)
+
 
 class AuthorizationCodeGrant(GrantTypeBase):
 
@@ -470,13 +486,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
-        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id, request))
-        log.debug('Validating access to scopes %r for client %r (%r).',
-                  request.scopes, request.client_id, request.client)
-        if not self.request_validator.validate_scopes(request.client_id,
-                request.scopes, request.client, request):
-            raise errors.InvalidScopeError(state=request.state)
+        self.validate_scopes(request)
 
         return request.scopes, {
                 'client_id': request.client_id,
@@ -511,6 +521,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Client_id not provided for unauthenticated client, %r.',
                       request)
             raise errors.UnauthorizedClientError()
+
+        # Ensure client is authorized use of this grant type
+        self.validate_grant_type(request)
 
         # REQUIRED. The authorization code received from the
         # authorization server.
@@ -754,15 +767,7 @@ class ImplicitGrant(GrantTypeBase):
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
-        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id, request))
-        log.debug('Validating access to scopes %r for client %r (%r).',
-                  request.scopes, request.client_id, request.client)
-        if not self.request_validator.validate_scopes(request.client_id,
-                request.scopes, request.client, request):
-            log.debug('Client id %r (%r) may not access scope %r.',
-                  request.client_id, request.client, request.scopes)
-            raise errors.InvalidScopeError(state=request.state)
+        self.validate_scopes(request)
 
         return request.scopes, {
                 'client_id': request.client_id,
@@ -880,17 +885,12 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             raise errors.InvalidGrantError('Invalid credentials given.')
         log.debug('Authorizing access to user %r.', request.user)
 
+        # Ensure client is authorized use of this grant type
+        self.validate_grant_type(request)
+
         if request.client:
             request.client_id = request.client_id or request.client.client_id
-        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id, request))
-        log.debug('Validating access to scopes %r for client id %r (%r).',
-                  request.scopes, request.client_id, request.client)
-        if not self.request_validator.validate_scopes(request.client_id,
-                request.scopes, request.client, request):
-            log.debug('Client id %r (%r) may not access scope %r.',
-                  request.client_id, request.client, request.scopes)
-            raise errors.InvalidScopeError(state=request.state)
+        self.validate_scopes(request)
 
 
 class ClientCredentialsGrant(GrantTypeBase):
@@ -963,18 +963,13 @@ class ClientCredentialsGrant(GrantTypeBase):
         if not request.grant_type == 'client_credentials':
             raise errors.UnsupportedGrantTypeError()
 
+        # Ensure client is authorized use of this grant type
+        self.validate_grant_type(request)
+
         request.user = request.user or request.client.user
         log.debug('Authorizing access to user %r.', request.user)
         request.client_id = request.client_id or request.client.client_id
-        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id, request))
-        log.debug('Validating access to scopes %r for client id %r (%r).',
-                  request.scopes, request.client_id, request.client)
-        if not self.request_validator.validate_scopes(request.client_id,
-                request.scopes, request.client, request):
-            log.debug('Client id %r (%r) may not access scope %r.',
-                      request.client_id, request.client, request.scopes)
-            raise errors.InvalidScopeError(state=request.state)
+        self.validate_scopes(request)
 
 
 class RefreshTokenGrant(GrantTypeBase):
@@ -1041,6 +1036,9 @@ class RefreshTokenGrant(GrantTypeBase):
         if not self.request_validator.authenticate_client(request):
             log.debug('Invalid client (%r), denying access.', request)
             raise errors.AccessDeniedError()
+
+        # Ensure client is authorized use of this grant type
+        self.validate_grant_type(request)
 
         # OPTIONAL. The scope of the access request as described by
         # Section 3.3. The requested scope MUST NOT include any scope
