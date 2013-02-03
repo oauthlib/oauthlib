@@ -11,8 +11,11 @@ log = logging.getLogger('oauthlib')
 
 class OAuth2ProviderDecorator(object):
 
-    def __init__(self, server, error_uri):
-        self._server = server
+    def __init__(self, error_uri, server=None, authorization_endpoint=None,
+            token_endpoint=None, resource_endpoint=None):
+        self._authorization_endpoint = authorization_endpoint or server
+        self._token_endpoint = token_endpoint or server
+        self._resource_endpoint = resource_endpoint or server
         self._error_uri = error_uri
 
     def _extract_params(self, request):
@@ -34,7 +37,7 @@ class OAuth2ProviderDecorator(object):
             redirect_uri = request.GET.get('redirect_uri', None)
             log.debug('Found redirect uri %s.', redirect_uri)
             try:
-                scopes, credentials = self._server.validate_authorization_request(
+                scopes, credentials = self._authorization_endpoint.validate_authorization_request(
                         uri, http_method, body, headers)
                 log.debug('Saving credentials to session, %r.', credentials)
                 request.session['oauth2_credentials'] = credentials
@@ -61,7 +64,7 @@ class OAuth2ProviderDecorator(object):
             redirect_uri = credentials.get('redirect_uri')
             log.debug('Found redirect uri %s.', redirect_uri)
             try:
-                url, headers, body, status = self._server.create_authorization_response(
+                url, headers, body, status = self._authorization_endpoint.create_authorization_response(
                         uri, http_method, body, headers, scopes, credentials)
                 log.debug('Authorization successful, redirecting to client.')
                 return HttpResponseRedirect(url)
@@ -81,7 +84,7 @@ class OAuth2ProviderDecorator(object):
             uri, http_method, body, headers = self._extract_params(request)
             credentials = f(request, *args, **kwargs)
             log.debug('Fetched credentials view, %r.', credentials)
-            url, headers, body, status = self._server.create_token_response(
+            url, headers, body, status = self._token_endpoint.create_token_response(
                     uri, http_method, body, headers, credentials)
             response = HttpResponse(content=body, status=status)
             for k, v in headers:
@@ -98,7 +101,8 @@ class OAuth2ProviderDecorator(object):
             @functools.wraps(f)
             def wrapper(request, *args, **kwargs):
                 uri, http_method, body, headers = self._extract_params(request)
-                valid, r = self._server.verify_request(uri, http_method, body, headers, scopes)
+                valid, r = self._resource_endpoint.verify_request(
+                        uri, http_method, body, headers, scopes)
                 kwargs.update({
                     'client': r.client,
                     'resource_owner': r.resource_owner,
