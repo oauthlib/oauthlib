@@ -112,7 +112,7 @@ def urldecode(query):
     """
     # Check if query contains invalid characters
     if query and not set(query) <= urlencoded:
-        query = quote(query)
+        raise ValueError('Not a valid urlencoded string.')
 
     # Check for correctly hex encoded values using a regular expression
     # All encoded values begin with % followed by two hex characters

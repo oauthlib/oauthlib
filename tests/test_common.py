@@ -24,8 +24,8 @@ class CommonTests(TestCase):
         self.assertItemsEqual(urldecode('c2='), [('c2', '')])
         self.assertItemsEqual(urldecode('foo=bar'), [('foo', 'bar')])
         self.assertItemsEqual(urldecode('foo_%20~=.bar-'), [('foo_ ~', '.bar-')])
-        self.assertItemsEqual(urldecode('foo bar'), [('foo bar', '')])
-        self.assertItemsEqual(urldecode('?'), [('?', '')])
+        self.assertRaises(ValueError, urldecode, 'foo bar')
+        self.assertRaises(ValueError, urldecode, '?')
         self.assertRaises(ValueError, urldecode, '%R')
         self.assertRaises(ValueError, urldecode, '%RA')
         self.assertRaises(ValueError, urldecode, '%AR')
@@ -47,7 +47,7 @@ class CommonTests(TestCase):
         self.assertItemsEqual(extract_params([]), [])
 
     def test_extract_non_formencoded_string(self):
-        self.assertEqual(extract_params('not a formencoded string'), [('not a formencoded string', '')])
+        self.assertEqual(extract_params('not a formencoded string'), None)
 
     def test_extract_invalid(self):
         self.assertEqual(extract_params(object()), None)
@@ -82,7 +82,7 @@ class CommonTests(TestCase):
     def test_non_formencoded_string_body(self):
         body = 'foo bar'
         r = Request(self.uri, body=body)
-        self.assertEqual(r.decoded_body, [('foo bar', '')])
+        self.assertEqual(r.decoded_body, None)
 
     def test_param_free_sequence_body(self):
         body = [1, 1, 2, 3, 5, 8, 13]
