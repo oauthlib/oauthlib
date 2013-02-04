@@ -4,8 +4,7 @@ OAuthLib
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
 logic.*
 
-.. image:: https://api.travis-ci.org/idan/oauthlib.png?branch=master
-  :target: https://travis-ci.org/idan/oauthlib
+.. image:: https://secure.travis-ci.org/idangazit/oauthlib.png?branch=master
 
 OAuth often seems complicated and difficult-to-implement. There are several
 prominent libraries for signing OAuth requests, but they all suffer from one or
@@ -62,6 +61,8 @@ Changelog
 
 *OAuthLib is in active development, with most of OAuth1 complete and OAuth2
 already in the works.*
+
+0.3.6: Revert default urlencoding.
 
 0.3.5: Default unicode conversion (utf-8) and urlencoding of input.
 
