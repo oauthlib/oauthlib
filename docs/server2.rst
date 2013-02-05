@@ -59,6 +59,14 @@ The request validator can be found in oauthlib.oauth2.draft25.grant_types, which
 Pre configured endpoints
 ------------------------
 
+OAuthLib provide a number of configured all-in-one endpoints (auth + token + resource) with different grant types, all utilize Bearer tokens. The available configurations are
+
+* WebApplicationServer featuring Authorization Code Grant and Refresh Tokens
+* MobileApplicationServer featuring Implicit Grant
+* LegacyApplicationServer featuring Resource Owner Password Credentials Grant and Refresh Tokens
+* BackednApplicationServer featuring Client Credentials Grant 
+* Server featuring all above bundled into one
+
 
 Using the django decorator
 --------------------------
@@ -75,7 +83,7 @@ Assuming you have the validator from above implemented already, creating an OAut
     provider = OAuth2ProviderDecorator(server, '/error')    # See view error below
     
     @login_required
-    @oauth2.pre_authorization_view
+    @provider.pre_authorization_view
     def authorize(request, scopes=None):
         # This is the traditional authorization page
         # Scopes will be the list of scopes client requested access too
@@ -85,7 +93,7 @@ Assuming you have the validator from above implemented already, creating an OAut
 
 
     @login_required
-    @oauth2.post_authorization_view
+    @provider.post_authorization_view
     def authorization_response(request):
         # This is where the form submitted from authorize should end up
         # Which scopes user authorized acess to + extra credentials you want
@@ -93,7 +101,7 @@ Assuming you have the validator from above implemented already, creating an OAut
         return request.POST['scopes'], {}
 
 
-    @oauth2.access_token_view
+    @provider.access_token_view
     def token_response(request):
         # Not much too do here for you, return a dict with extra credentials
         # you want appended to request.credentials passed to the save_bearer_token
@@ -101,7 +109,7 @@ Assuming you have the validator from above implemented already, creating an OAut
         return {'extra': 'creds'}
 
 
-    @oauth2.protected_resource_view(scopes=['images'])
+    @provider.protected_resource_view(scopes=['images'])
     def i_am_protected(request, client, resource_owner, **kwargs):
         # One of your many OAuth 2 protected resource views, returns whatever you fancy
         # May be bound to various scopes of your choosing
