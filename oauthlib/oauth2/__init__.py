@@ -11,4 +11,6 @@ and Server classes.
 
 from .draft25 import Client, Server
 from .draft25 import AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint
-
+from .draft25 import WebApplicationServer, MobileApplicationServer
+from .draft25 import LegacyApplicationServer, BackendApplicationServer
+from .draft25.grant_types import RequestValidator
