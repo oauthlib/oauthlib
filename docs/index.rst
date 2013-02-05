@@ -12,7 +12,10 @@ Contents:
    :maxdepth: 2
    
    contributing
+   client
+   client2
    server
+   server2
 
 Indices and tables
 ==================
