@@ -1,6 +1,10 @@
 Creating an OAuth provider
 ==========================
 
+Note that the current OAuth1 provider interface will change into one resembling the work in progress OAuth 2 provider in a not too distant future. More information in `issue #95`_.
+
+.. _`issue #95`: https://github.com/idan/oauthlib/issues/95
+
 Implementing an OAuth provider is simple with OAuthLib. It is done by inheriting from ``oauthlib.oauth1.rfc5849.Server`` and overloading a few key methods. The base class provide a secure by default implementation including a ``verify_request`` method as well as several input validation methods, all configurable using properties. While it is straightforward to use OAuthLib directly with your web framework of choice it is worth first exploring whether there is an OAuthLib based OAuth provider plugin available for your framework.
 
 A few important facts regarding OAuth security
