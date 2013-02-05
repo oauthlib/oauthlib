@@ -77,6 +77,7 @@ Assuming you have the validator from above implemented already, creating an OAut
     from my_validator import MyRequestValidator
     
     from oauthlib.oauth2 import WebApplicationServer   # BearerTokens + Authorization Code grant
+    from oauthlib.oauth2.ext.django import OAuth2ProviderDecorator
     
     validator = MyRequestValidator()
     server = WebApplicationServer(validator)
