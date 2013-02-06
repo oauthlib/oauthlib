@@ -47,7 +47,7 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
     :param headers: Request headers as a dictionary.
     :param http_method: HTTP Request method.
     :param key: MAC given provided by token endpoint.
-    :param algorithm: HMAC algorithm provided by token endpoint.
+    :param hash_algorithm: HMAC algorithm provided by token endpoint.
     :param issue_time: Time when the MAC credentials were issues as a datetime object.
     :param draft: MAC authentication specification version.
     :return: headers dictionary with the authorization field added.

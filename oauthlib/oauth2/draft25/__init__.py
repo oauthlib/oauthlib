@@ -737,7 +737,8 @@ class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoin
         refresh_grant = grant_types.RefreshTokenGrant(request_validator)
         bearer = tokens.BearerToken(request_validator)
         AuthorizationEndpoint.__init__(self, default_response_type='code',
-                response_types={'code': auth_grant})
+                response_types={'code': auth_grant},
+                default_token_type=bearer)
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                 grant_types={
                     'authorization_code': auth_grant,

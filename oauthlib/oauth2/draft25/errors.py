@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 oauthlib.oauth2.draft_25.errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8,6 +9,7 @@ from oauthlib.common import urlencode, add_params_to_uri
 
 
 class OAuth2Error(Exception):
+    error = None
 
     def __init__(self, description=None, uri=None, state=None, status_code=400):
         """
@@ -120,7 +122,7 @@ class ServerError(OAuth2Error):
     error = 'server_error'
 
 
-class TemporarilyUnvailableError(OAuth2Error):
+class TemporarilyUnavailableError(OAuth2Error):
     """The authorization server is currently unable to handle the request
     due to a temporary overloading or maintenance of the server.
     (This error code is needed because a 503 Service Unavailable HTTP
