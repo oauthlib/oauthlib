@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.draft_25.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -320,6 +321,8 @@ class RequestValidator(object):
 
 
 class GrantTypeBase(object):
+    error_uri = None
+    request_validator = None
 
     def create_authorization_response(self, request, token_handler):
         raise NotImplementedError('Subclasses must implement this method.')
@@ -440,7 +443,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # OPTIONAL. As described in Section 3.1.2.
         # http://tools.ietf.org/html/rfc6749#section-3.1.2
-        log.debug('Validating redirction uri %s for client %s.',
+        log.debug('Validating redirection uri %s for client %s.',
                   request.redirect_uri, request.client_id)
         if request.redirect_uri is not None:
             request.using_default_redirect_uri = False
@@ -476,7 +479,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         if not self.request_validator.validate_response_type(request.client_id,
                 request.response_type, request):
-            log.debug('Client %s is not authorized to use resposne_type %s.',
+            log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
             raise errors.UnauthorizedClientError()
 
@@ -958,7 +961,7 @@ class ClientCredentialsGrant(GrantTypeBase):
 
     def validate_token_request(self, request):
         if not getattr(request, 'grant_type'):
-            raise errors.InvalidRequestError('Request is issing grant type.')
+            raise errors.InvalidRequestError('Request is missing grant type.')
 
         if not request.grant_type == 'client_credentials':
             raise errors.UnsupportedGrantTypeError()
