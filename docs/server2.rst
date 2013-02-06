@@ -81,7 +81,7 @@ Assuming you have the validator from above implemented already, creating an OAut
     
     validator = MyRequestValidator()
     server = WebApplicationServer(validator)
-    provider = OAuth2ProviderDecorator(server, '/error')    # See view error below
+    provider = OAuth2ProviderDecorator('/error', server)    # See view error below
     
     @login_required
     @provider.pre_authorization_view
