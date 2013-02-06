@@ -9,6 +9,7 @@ from oauthlib.common import urlencode, add_params_to_uri
 
 
 class OAuth2Error(Exception):
+    error = None
 
     def __init__(self, description=None, uri=None, state=None, status_code=400):
         """
@@ -32,7 +33,6 @@ class OAuth2Error(Exception):
         self.uri = uri
         self.state = state
         self.status_code = status_code
-        self.error = None
 
     def in_uri(self, uri):
         return add_params_to_uri(uri, self.twotuples)
