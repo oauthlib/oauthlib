@@ -276,10 +276,10 @@ class Server(object):
     each methods documentation for detailed usage.
     The following methods must be implemented:
 
-    - validate_client
+    - validate_client_key
     - validate_request_token
     - validate_access_token
-    - validate_nonce_and_timestamp
+    - validate_timestamp_and_nonce
     - validate_redirect_uri
     - validate_requested_realm
     - validate_realm
