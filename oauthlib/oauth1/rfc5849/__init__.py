@@ -814,7 +814,7 @@ class Server(object):
         # Note that early exit would enable client enumeration
         valid_client = self.validate_client_key(request.client_key)
         if not valid_client:
-            client_key = self.dummy_client
+            request.client_key = self.dummy_client
 
         # Callback is normally never required, except for requests for
         # a Temporary Credential as described in `Section 2.1`_
@@ -837,12 +837,12 @@ class Server(object):
                 valid_resource_owner = self.validate_request_token(
                     request.client_key, request.resource_owner_key)
                 if not valid_resource_owner:
-                    resource_owner_key = self.dummy_request_token
+                    request.resource_owner_key = self.dummy_request_token
             else:
                 valid_resource_owner = self.validate_access_token(
                     request.client_key, request.resource_owner_key)
                 if not valid_resource_owner:
-                    resource_owner_key = self.dummy_access_token
+                    request.resource_owner_key = self.dummy_access_token
         else:
             valid_resource_owner = True
 
