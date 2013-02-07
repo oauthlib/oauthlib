@@ -1,4 +1,5 @@
-from __future__ import unicode_literals
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 import functools

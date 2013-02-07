@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ============================
 Creating an OAuth 2 provider
 ============================
@@ -7,7 +8,7 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
 A high level overview
 ---------------------
 
-OAuth 2 is a very generic set of documents that leave a lot up to the implementor. It is not even a protocol, it is a framework. OAuthLib approaches this by separating the logic into three categories, endpoints, grant types and tokens.
+OAuth 2 is a very generic set of documents that leave a lot up to the implementer. It is not even a protocol, it is a framework. OAuthLib approaches this by separating the logic into three categories, endpoints, grant types and tokens.
 
 Endpoints
 ~~~~~~~~~
@@ -21,7 +22,7 @@ Grant types
 
 Grant types are what make OAuth 2 so flexible. The Authorization Code grant is very similar to OAuth 1 (with less crypto), the Implicit grant serves less secure applications such as mobile applications, the Resource Owner Password Credentials grant allows for legacy applications to incrementally transition to OAuth 2, the Client Credentials grant is excellent for embedded services and backend applications. 
 
-The main purpose of the grant types is to authorize access to protected resources in various ways with different security credentils. 
+The main purpose of the grant types is to authorize access to protected resources in various ways with different security credentials.
 
 Naturally, OAuth 2 allows for extension grant types to be defined and OAuthLib attempts to cater for easy inclusion of this as much as possible. 
 
@@ -64,7 +65,7 @@ OAuthLib provide a number of configured all-in-one endpoints (auth + token + res
 * WebApplicationServer featuring Authorization Code Grant and Refresh Tokens
 * MobileApplicationServer featuring Implicit Grant
 * LegacyApplicationServer featuring Resource Owner Password Credentials Grant and Refresh Tokens
-* BackednApplicationServer featuring Client Credentials Grant 
+* BackendApplicationServer featuring Client Credentials Grant
 * Server featuring all above bundled into one
 
 
@@ -97,7 +98,7 @@ Assuming you have the validator from above implemented already, creating an OAut
     @provider.post_authorization_view
     def authorization_response(request):
         # This is where the form submitted from authorize should end up
-        # Which scopes user authorized acess to + extra credentials you want
+        # Which scopes user authorized access to + extra credentials you want
         # appended to the request object passed into the validator methods
         return request.POST['scopes'], {}
 
@@ -119,22 +120,22 @@ Assuming you have the validator from above implemented already, creating an OAut
 
     def error(request):
         # The /error page users will be redirected to if there was something
-        # wrong with the credentals the client included when redirecting the 
+        # wrong with the credentials the client included when redirecting the
         # user to the authorization form. Mainly if the client was invalid or
         # included a malformed / invalid redirect url.
-        # Error and desciption can be found in GET['error'] and GET['error_description']
+        # Error and description can be found in GET['error'] and GET['error_description']
         return HttpResponse('Bad client! Warn user!')
 
 
 Can you please add X, Y and Z?
 ------------------------------
 
-If these include dashboards, database migrations, registration apis and similar the answer is no. While these would be excellent to have, oauthlib is not the place for them. I would much rather see a django middleware plugin with these features but I currently lack the time to develop it myself.
+If these include dashboards, database migrations, registration APIs and similar the answer is no. While these would be excellent to have, oauthlib is not the place for them. I would much rather see a django middleware plugin with these features but I currently lack the time to develop it myself.
 
 Creating decorators for other frameworks
 ----------------------------------------
 
-Hopefully, it should be quite straighforward to port the django decorator to other web frameworks as the decorator mainly provide a means for translating the framework specific request object into uri, http_method, headers and body.
+Hopefully, it should be quite straightforward to port the django decorator to other web frameworks as the decorator mainly provide a means for translating the framework specific request object into uri, http_method, headers and body.
 
 
 How do I enable logging?
@@ -142,6 +143,6 @@ How do I enable logging?
 OAuthLib can provide valuable debug logs that help you get your provider up and running much quicker. You can log to stdout for example using::
 
     import logging
-    import sys
     log = logging.getLogger('oauthlib')
     log.setLevel(logging.DEBUG)
+
