@@ -155,7 +155,7 @@ def normalize_base_string_uri(uri):
         if (scheme, port) in default_ports:
             netloc = host
 
-    return urlparse.urlunparse((scheme, netloc, path, '', '', ''))
+    return urlparse.urlunparse((scheme, netloc, path, params, '', ''))
 
 
 # ** Request Parameters **
