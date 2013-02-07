@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ============================
 Creating an OAuth 2 provider
 ============================
@@ -144,3 +145,4 @@ OAuthLib can provide valuable debug logs that help you get your provider up and 
     import logging
     log = logging.getLogger('oauthlib')
     log.setLevel(logging.DEBUG)
+
