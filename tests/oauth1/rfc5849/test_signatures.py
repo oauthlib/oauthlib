@@ -13,7 +13,7 @@ from ...unittest import TestCase
 
 class SignatureTests(TestCase):
 
-    uri_query = "b5=%3D%253D&a3=a&c%40=&a2=r%20b&c2=&a3=2 q"
+    uri_query = "b5=%3D%253D&a3=a&c%40=&a2=r%20b&c2=&a3=2+q"
     authorization_header = """OAuth realm="Example",
     oauth_consumer_key="9djdj82h48djs9d2",
     oauth_token="kkk9d7dh3k39sjv7",

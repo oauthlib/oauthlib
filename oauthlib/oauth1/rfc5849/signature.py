@@ -30,7 +30,8 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 from . import utils
-from oauthlib.common import bytes_type, extract_params, safe_string_equals, unicode_type
+from oauthlib.common import urldecode, extract_params, safe_string_equals
+from oauthlib.common import bytes_type, unicode_type
 
 
 def construct_base_string(http_method, base_string_uri,
@@ -245,7 +246,7 @@ def collect_parameters(uri_query='', body=[], headers=None,
     # .. _`RFC3986, Section 3.4`: http://tools.ietf.org/html/rfc3986#section-3.4
     # .. _`W3C.REC-html40-19980424`: http://tools.ietf.org/html/rfc5849#ref-W3C.REC-html40-19980424
     if uri_query:
-        params.extend(urlparse.parse_qsl(uri_query, keep_blank_values=True))
+        params.extend(urldecode(uri_query))
 
     # *  The OAuth HTTP "Authorization" header field (`Section 3.5.1`_) if
     #    present.  The header's content is parsed into a list of name/value
