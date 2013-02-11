@@ -48,8 +48,30 @@ class Client(object):
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
             rsa_key=None, verifier=None, realm=None,
-            encoding='utf-8', nonce=None, timestamp=None):
+            encoding='utf-8', decoding=None,
+            nonce=None, timestamp=None):
+        """Create an OAuth 1 client.
 
+        :param client_key: Client key (consumer key), mandatory.
+        :param resource_owner_key: Resource owner key (oauth token).
+        :param resource_owner_secret: Resource owner secret (oauth token secret).
+        :param callback_uri: Callback used when obtaining request token.
+        :param signature_method: SIGNATURE_HMAC, SIGNATURE_RSA or SIGNATURE_PLAINTEXT.
+        :param signature_type: SIGNATURE_TYPE_AUTH_HEADER (default),
+                               SIGNATURE_TYPE_QUERY or SIGNATURE_TYPE_BODY
+                               depending on where you want to embed the oauth
+                               credentials.
+        :param rsa_key: RSA key used with SIGNATURE_RSA.
+        :param verifier: Verifier used when obtaining an access token.
+        :param realm: Realm (scope) to which access is being requested.
+        :param encoding: If you provide non-unicode input you may use this
+                         to have oauthlib automatically convert.
+        :param decoding: If you wish that the returned uri, headers and body
+                         from sign be encoded back from unicode, then set
+                         decoding to your preferred encoding, i.e. utf-8.
+        :param nonce: Use this nonce instead of generating one. (Mainly for testing)
+        :param timestamp: Use this timestamp instead of using current. (Mainly for testing)
+        """
         # Convert to unicode using encoding if given, else assume unicode
         encode = lambda x: to_unicode(x, encoding) if encoding else x
 
@@ -64,6 +86,7 @@ class Client(object):
         self.verifier = encode(verifier)
         self.realm = encode(realm)
         self.encoding = encode(encoding)
+        self.decoding = encode(decoding)
         self.nonce = encode(nonce)
         self.timestamp = encode(timestamp)
 
@@ -234,8 +257,18 @@ class Client(object):
         request.oauth_params.append(('oauth_signature', self.get_oauth_signature(request)))
 
         # render the signed request and return it
-        return self._render(request, formencode=True,
-                            realm=(realm or self.realm))
+        uri, headers, body = self._render(request, formencode=True,
+                realm=(realm or self.realm))
+
+        if self.decoding:
+            logging.debug('Encoding URI, headers and body to %s.', self.decoding)
+            uri = uri.encode(self.decoding)
+            body = body.encode(self.decoding) if body else body
+            new_headers = {}
+            for k, v in headers.items():
+                new_headers[k.encode(self.decoding)] = v.encode(self.decoding)
+            headers = new_headers
+        return uri, headers, body
 
 
 class Server(object):

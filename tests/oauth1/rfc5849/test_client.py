@@ -46,3 +46,13 @@ class ClientConstructorTests(TestCase):
         client = Client('client-key', nonce='1')
         params = dict(client.get_oauth_params())
         self.assertEqual(params['oauth_nonce'], '1')
+
+    def test_decoding(self):
+        client = Client('client_key', decoding='utf-8')
+        uri, headers, body = client.sign('http://a.b/path?query', body='a=b',
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertIsInstance(uri, bytes_type)
+        self.assertIsInstance(body, bytes_type)
+        for k, v in headers.items():
+            self.assertIsInstance(k, bytes_type)
+            self.assertIsInstance(v, bytes_type)
