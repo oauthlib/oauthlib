@@ -630,7 +630,14 @@ class Server(object):
         straightforward for the provider to verify whether the supplied
         redirect_uri is valid or not.
 
+        Alternatively per `Section 2.1`_ of the spec:
+
+        "If the client is unable to receive callbacks or a callback URI has
+        been established via other means, the parameter value MUST be set to
+        "oob" (case sensitive), to indicate an out-of-band configuration."
+
         .. _`CWE-601`: http://cwe.mitre.org/top25/index.html#CWE-601
+        .. _`Section 2.1`: https://tools.ietf.org/html/rfc5849#section-2.1
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -676,7 +683,7 @@ class Server(object):
         """
         return self.verify_request(uri, http_method=http_method, body=body,
                 headers=headers, require_resource_owner=False,
-                require_realm=True)
+                require_realm=True, require_callback=True)
 
     def verify_access_token_request(self, uri, http_method='GET', body=None,
             headers=None):
@@ -819,6 +826,9 @@ class Server(object):
 
         if require_verifier and not self.check_verifier(request.verifier):
             raise ValueError("Invalid verifier.")
+
+        if require_callback and not request.callback_uri:
+            raise ValueError("Missing callback URI.")
 
         # Servers receiving an authenticated request MUST validate it by:
         #   If using the "HMAC-SHA1" or "RSA-SHA1" signature methods, ensuring
