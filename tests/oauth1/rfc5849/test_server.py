@@ -65,6 +65,9 @@ class ServerTests(TestCase):
             request_token=None, access_token=None):
             return True
 
+        def validate_requested_realm(self, client_key, realm):
+            return True
+
         def validate_realm(self, client_key, realm, uri,
                 request_token=None, access_token=None, required_realm=None):
             return True
@@ -210,6 +213,20 @@ class ServerTests(TestCase):
         s = self.TestServer()
         self.assertFalse(s.verify_request(uri, body=body, headers=headers,
             require_callback=True)[0])
+
+    def test_server_missing_callback_request(self):
+        c = Client(self.CLIENT_KEY,
+            resource_owner_key=self.RESOURCE_OWNER_KEY,
+        )
+
+        uri, headers, body = c.sign('http://server.example.com:80/init')
+
+        s = self.TestServer()
+        self.assertRaises(ValueError, s.verify_request, uri, body=body, headers=headers,
+            require_callback=True)
+
+        self.assertRaises(ValueError, s.verify_request_token_request, uri, body=body,
+            headers=headers)
 
     def test_not_implemented(self):
         s = Server()
