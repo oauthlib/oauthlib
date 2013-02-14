@@ -4,3 +4,4 @@ python-creole
 pycrypto
 mock
 nose
+sphinx
