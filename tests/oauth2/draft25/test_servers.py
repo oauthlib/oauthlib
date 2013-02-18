@@ -145,3 +145,59 @@ class TestScopeHandling(TestCase):
     def test_unauthorized_scope(self):
         # unauthorized by the user or provider
         pass
+
+
+class PreservationTest(TestCase):
+
+    def test_state_preservation(self):
+        pass
+
+    def test_redirect_uri_preservation(self):
+        pass
+
+
+class ClientAuthenticationTest(TestCase):
+
+    def test_client_id_authentication(self):
+        pass
+
+    def test_custom_authentication(self):
+        pass
+
+
+class ResourceOwnerAssociationTest(TestCase):
+
+    def test_web_application(self):
+        pass
+
+    def test_mobile_application(self):
+        pass
+
+    def test_legacy_application(self):
+        pass
+
+    def test_backend_application(self):
+        pass
+
+
+class ErrorResponseTest(TestCase):
+
+    def test_fatal_errors(self):
+        pass
+
+    def test_authorization_response(self):
+        # except scope and state
+        pass
+
+    def test_token_response(self):
+        # except scope and auth
+        pass
+
+
+class ExtraCredentialsTest(TestCase):
+
+    def test_post_authorization_request(self):
+        pass
+
+    def test_token_request(self):
+        pass
