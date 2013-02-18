@@ -5,6 +5,7 @@ OAuthLib
 logic.*
 
 .. image:: https://secure.travis-ci.org/idangazit/oauthlib.png?branch=master
+  :target: https://travis-ci.org/idan/oauthlib
 
 OAuth often seems complicated and difficult-to-implement. There are several
 prominent libraries for signing OAuth requests, but they all suffer from one or
