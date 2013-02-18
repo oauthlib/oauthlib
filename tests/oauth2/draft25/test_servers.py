@@ -7,7 +7,10 @@ ensure consistency in both behaviour and provided interfaces.
 from __future__ import absolute_import, unicode_literals
 import json
 import mock
-from urlparse import urlparse, parse_qs
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 from ...unittest import TestCase
 
 from oauthlib.oauth2 import RequestValidator
@@ -16,11 +19,11 @@ from oauthlib.oauth2 import LegacyApplicationServer, BackendApplicationServer
 
 
 def get_query_credentials(uri):
-    return parse_qs(urlparse(uri).query)
+    return urlparse.parse_qs(urlparse.urlparse(uri).query)
 
 
 def get_fragment_credentials(uri):
-    return parse_qs(urlparse(uri).fragment)
+    return urlparse.parse_qs(urlparse.urlparse(uri).fragment)
 
 
 class TestScopeHandling(TestCase):
