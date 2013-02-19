@@ -172,15 +172,39 @@ class TestScopeHandling(TestCase):
                 body=body % scope)
         self.assertEqual(json.loads(body)['error'], 'invalid_scope')
 
-    def test_unauthorized_scope(self):
-        # unauthorized by the user or provider
-        pass
-
 
 class PreservationTest(TestCase):
 
+    def setUp(self):
+        self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator.get_default_redirect_uri.return_value = TestScopeHandling.DEFAULT_REDIRECT_URI
+        self.web = WebApplicationServer(self.validator)
+        self.mobile = MobileApplicationServer(self.validator)
+
+    def set_state(self, state):
+        def set_request_state(client_id, code, client, request):
+            request.state = state
+            return True
+        return set_request_state
+
     def test_state_preservation(self):
-        pass
+        scope = 'pics+http%3A%2f%2fa.b%2fvideos'
+        auth_uri = 'http://example.com/path?state=xyz&client_id=abc&scope=%s&%s'
+        token_uri = 'http://example.com/path'
+
+        # authorization grant
+        uri, _, _, _ = self.web.create_authorization_response(
+                auth_uri % (scope, 'response_type=code'))
+        code = get_query_credentials(uri)['code'][0]
+        self.validator.validate_code.side_effect = self.set_state('xyz')
+        _, _, body, _ = self.web.create_token_response(token_uri,
+                body='grant_type=authorization_code&code=%s' % code)
+        self.assertEqual(json.loads(body)['state'], 'xyz')
+
+        # implicit grant
+        uri, _, _, _ = self.mobile.create_authorization_response(
+                auth_uri % (scope, 'response_type=token'))
+        self.assertEqual(get_fragment_credentials(uri)['state'][0], 'xyz')
 
     def test_redirect_uri_preservation(self):
         pass
