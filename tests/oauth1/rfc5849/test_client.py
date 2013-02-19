@@ -49,10 +49,23 @@ class ClientConstructorTests(TestCase):
 
     def test_decoding(self):
         client = Client('client_key', decoding='utf-8')
-        uri, headers, body = client.sign('http://a.b/path?query', body='a=b',
+        uri, headers, body = client.sign('http://a.b/path?query',
+                http_method='POST', body='a=b',
                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertIsInstance(uri, bytes_type)
         self.assertIsInstance(body, bytes_type)
         for k, v in headers.items():
             self.assertIsInstance(k, bytes_type)
             self.assertIsInstance(v, bytes_type)
+
+
+class SigningTest(TestCase):
+
+    def test_sign_get_with_body(self):
+        client = Client('client_key', decoding='utf-8')
+        for method in ('GET', 'HEAD'):
+            self.assertRaises(ValueError, client.sign, 'http://a.b/path?query',
+                    http_method=method, body='a=b',
+                    headers={
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    })

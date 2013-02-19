@@ -195,7 +195,9 @@ class Client(object):
 
         Returns a 3-tuple of the signed request's URI, headers, and body.
         Note that http_method is not returned as it is unaffected by the OAuth
-        signing process.
+        signing process. Also worth noting is that duplicate parameters
+        will be included in the signature, regardless of where they are
+        specified (query, body).
 
         The body argument may be a dict, a list of 2-tuples, or a formencoded
         string. The Content-Type header must be 'application/x-www-form-urlencoded'
@@ -209,8 +211,12 @@ class Client(object):
         If the body does contain parameters, it will be returned as a properly-
         formatted formencoded string.
 
-        All string data MUST be unicode. This includes strings inside body
-        dicts, for example.
+        Body may not be included if the http_method is either GET or HEAD as
+        this change the semantic meaning of the request.
+
+        All string data MUST be unicode or be encoded with the same encoding
+        scheme supplied to the Client constructor, default utf-8. This includes
+        strings inside body dicts, for example.
         """
         # normalize request data
         request = Request(uri, http_method, body, headers,
@@ -249,6 +255,14 @@ class Client(object):
         elif self.signature_type == SIGNATURE_TYPE_BODY and not (
                 should_have_params and has_params and not multipart):
             raise ValueError('Body signatures may only be used with form-urlencoded content')
+
+        # We amend http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
+        # with the clause that parameters from body should only be included
+        # in non GET or HEAD requests. This because the body of such a
+        # request should not have semantic meaning. Which including the
+        # parameters when creating the signature would have.
+        elif http_method.upper() in ('GET', 'HEAD') and has_params:
+            raise ValueError('GET/HEAD requests should not include body.')
 
         # generate the basic OAuth parameters
         request.oauth_params = self.get_oauth_params()
