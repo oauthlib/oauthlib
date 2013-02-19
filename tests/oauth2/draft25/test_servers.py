@@ -104,7 +104,6 @@ class TestScopeHandling(TestCase):
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
     def test_scope_changed(self):
-        # TODO overwrite validator
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
         scopes = ['images', 'http://a.b/videos']
         decoded_scope = 'images http://a.b/videos'
@@ -142,8 +141,36 @@ class TestScopeHandling(TestCase):
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
     def test_invalid_scope(self):
-        # invalid, non existing scope
-        pass
+        scope = 'pics+http%3A%2f%2fa.b%2fvideos'
+        auth_uri = 'http://example.com/path?client_id=abc&scope=%s&%s'
+        token_uri = 'http://example.com/path'
+
+        self.validator.validate_scopes.return_value = False
+
+        # authorization grant
+        uri, _, _, _ = self.web.create_authorization_response(
+                auth_uri % (scope, 'response_type=code'))
+        error = get_query_credentials(uri)['error'][0]
+        self.assertEqual(error, 'invalid_scope')
+
+        # implicit grant
+        uri, _, _, _ = self.mobile.create_authorization_response(
+                auth_uri % (scope, 'response_type=token'))
+        error = get_fragment_credentials(uri)['error'][0]
+        self.assertEqual(error, 'invalid_scope')
+
+        # resource owner password credentials grant
+        body = 'grant_type=password&username=abc&password=secret&scope=%s'
+        _, _, body, _ = self.legacy.create_token_response(token_uri,
+                body=body % scope)
+        self.assertEqual(json.loads(body)['error'], 'invalid_scope')
+
+        # client credentials grant
+        self.validator.authenticate_client.side_effect = self.set_user
+        body = 'grant_type=client_credentials&scope=%s'
+        _, _, body, _ = self.backend.create_token_response(token_uri,
+                body=body % scope)
+        self.assertEqual(json.loads(body)['error'], 'invalid_scope')
 
     def test_unauthorized_scope(self):
         # unauthorized by the user or provider
