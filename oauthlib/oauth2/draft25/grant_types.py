@@ -48,6 +48,10 @@ class RequestValidator(object):
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):
         """Ensure client is authorized to redirect to the redirect_uri requested.
 
+        If the client specifies a redirect_uri when obtaining code then
+        that redirect URI must be bound to the code and verified equal
+        in this method.
+
         All clients should register the absolute URIs of all URIs they intend
         to redirect to. The registration is outside of the scope of oauthlib.
 

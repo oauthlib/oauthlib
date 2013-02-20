@@ -207,7 +207,18 @@ class PreservationTest(TestCase):
         self.assertEqual(get_fragment_credentials(uri)['state'][0], 'xyz')
 
     def test_redirect_uri_preservation(self):
-        pass
+        auth_uri = 'http://example.com/path?redirect_uri=http%3A%2F%2Fi.b%2Fpath&client_id=abc'
+        redirect_uri = 'http://i.b/path'
+
+        # authorization grant
+        uri, _, _, _ = self.web.create_authorization_response(
+                auth_uri + '&response_type=code')
+        self.assertTrue(uri.startswith(redirect_uri))
+
+        # implicit grant
+        uri, _, _, _ = self.mobile.create_authorization_response(
+                auth_uri + '&response_type=token')
+        self.assertTrue(uri.startswith(redirect_uri))
 
 
 class ClientAuthenticationTest(TestCase):
