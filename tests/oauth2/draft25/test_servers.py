@@ -16,6 +16,7 @@ from ...unittest import TestCase
 from oauthlib.oauth2 import RequestValidator
 from oauthlib.oauth2 import WebApplicationServer, MobileApplicationServer
 from oauthlib.oauth2 import LegacyApplicationServer, BackendApplicationServer
+from oauthlib.oauth2.draft25 import errors
 
 
 def get_query_credentials(uri):
@@ -209,16 +210,54 @@ class PreservationTest(TestCase):
     def test_redirect_uri_preservation(self):
         auth_uri = 'http://example.com/path?redirect_uri=http%3A%2F%2Fi.b%2Fpath&client_id=abc'
         redirect_uri = 'http://i.b/path'
+        token_uri = 'http://example.com/path'
 
         # authorization grant
         uri, _, _, _ = self.web.create_authorization_response(
                 auth_uri + '&response_type=code')
         self.assertTrue(uri.startswith(redirect_uri))
 
+        # confirm_redirect_uri should return false if the redirect uri
+        # was given in the authorization but not in the token request.
+        self.validator.confirm_redirect_uri.return_value = False
+        code = get_query_credentials(uri)['code'][0]
+        _, _, body, _ = self.web.create_token_response(token_uri,
+                body='grant_type=authorization_code&code=%s' % code)
+        self.assertEqual(json.loads(body)['error'], 'access_denied')
+
         # implicit grant
         uri, _, _, _ = self.mobile.create_authorization_response(
                 auth_uri + '&response_type=token')
         self.assertTrue(uri.startswith(redirect_uri))
+
+    def test_invalid_redirect_uri(self):
+        auth_uri = 'http://example.com/path?redirect_uri=http%3A%2F%2Fi.b%2Fpath&client_id=abc'
+        self.validator.validate_redirect_uri.return_value = False
+
+        # authorization grant
+        self.assertRaises(errors.MismatchingRedirectURIError,
+                self.web.create_authorization_response,
+                auth_uri + '&response_type=code')
+
+        # implicit grant
+        self.assertRaises(errors.MismatchingRedirectURIError,
+                self.web.create_authorization_response,
+                auth_uri + '&response_type=token')
+
+    def test_default_uri(self):
+        auth_uri = 'http://example.com/path?state=xyz&client_id=abc'
+
+        self.validator.get_default_redirect_uri.return_value = None
+
+        # authorization grant
+        self.assertRaises(errors.MissingRedirectURIError,
+                self.web.create_authorization_response,
+                auth_uri + '&response_type=code')
+
+        # implicit grant
+        self.assertRaises(errors.MissingRedirectURIError,
+                self.web.create_authorization_response,
+                auth_uri + '&response_type=token')
 
 
 class ClientAuthenticationTest(TestCase):

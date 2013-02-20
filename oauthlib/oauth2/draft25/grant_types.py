@@ -745,6 +745,8 @@ class ImplicitGrant(GrantTypeBase):
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
                 raise errors.MissingRedirectURIError(state=request.state)
+            if not is_absolute_uri(request.redirect_uri):
+                raise errors.InvalidRedirectURIError(state=request.state)
 
         # Then check for normal errors.
 
