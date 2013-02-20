@@ -42,9 +42,15 @@ class TestScopeHandling(TestCase):
         request.client_id = 'bar'
         return True
 
+    def set_client(self, request):
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
+        return True
+
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = TestScopeHandling.DEFAULT_REDIRECT_URI
+        self.validator.authenticate_client.side_effect = self.set_client
         self.web = WebApplicationServer(self.validator)
         self.mobile = MobileApplicationServer(self.validator)
         self.legacy = LegacyApplicationServer(self.validator)
@@ -179,6 +185,7 @@ class PreservationTest(TestCase):
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = TestScopeHandling.DEFAULT_REDIRECT_URI
+        self.validator.authenticate_client.side_effect = self.set_client
         self.web = WebApplicationServer(self.validator)
         self.mobile = MobileApplicationServer(self.validator)
 
@@ -187,6 +194,11 @@ class PreservationTest(TestCase):
             request.state = state
             return True
         return set_request_state
+
+    def set_client(self, request):
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
+        return True
 
     def test_state_preservation(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
@@ -241,7 +253,7 @@ class PreservationTest(TestCase):
 
         # implicit grant
         self.assertRaises(errors.MismatchingRedirectURIError,
-                self.web.create_authorization_response,
+                self.mobile.create_authorization_response,
                 auth_uri + '&response_type=token')
 
     def test_default_uri(self):
@@ -256,17 +268,34 @@ class PreservationTest(TestCase):
 
         # implicit grant
         self.assertRaises(errors.MissingRedirectURIError,
-                self.web.create_authorization_response,
+                self.mobile.create_authorization_response,
                 auth_uri + '&response_type=token')
 
 
 class ClientAuthenticationTest(TestCase):
 
+    def setUp(self):
+        self.validator = mock.MagicMock(spec=RequestValidator)
+        self.web = WebApplicationServer(self.validator)
+
+    def set_client(self, request):
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
+        return True
+
     def test_client_id_authentication(self):
         pass
 
     def test_custom_authentication(self):
-        pass
+        token_uri = 'http://example.com/path'
+        self.assertRaises(NotImplementedError,
+                self.web.create_token_response, token_uri,
+                body='grant_type=authorization_code&code=mock')
+
+        self.validator.authenticate_client.side_effect = self.set_client
+        _, _, body, _ = self.web.create_token_response(token_uri,
+                body='grant_type=authorization_code&code=mock')
+        self.assertIn('access_token', json.loads(body))
 
 
 class ResourceOwnerAssociationTest(TestCase):

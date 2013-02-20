@@ -518,17 +518,22 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#section-3.2.1
         if not self.request_validator.authenticate_client(request):
             log.debug('Could not authenticate client, %r.', request)
-            raise errors.AccessDeniedError()
+            raise errors.InvalidClientError()
+        else:
+            if not hasattr(request.client, 'client_id'):
+                raise NotImplementedError('Authenticate client must set the '
+                                          'request.client.client_id attribute '
+                                          'in authenticate_client.')
 
         # REQUIRED, if the client is not authenticating with the
         # authorization server as described in Section 3.2.1.
         # http://tools.ietf.org/html/rfc6749#section-3.2.1
-        if (not request.client and not
+        if (not hasattr(request.client, 'client_id') and not
                 self.request_validator.validate_client_id(
                     request.client_id, request)):
             log.debug('Client_id not provided for unauthenticated client, %r.',
                       request)
-            raise errors.UnauthorizedClientError()
+            raise errors.InvalidClientError()
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)

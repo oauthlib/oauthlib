@@ -8,7 +8,7 @@ from oauthlib import common
 from oauthlib.common import Request
 from oauthlib.oauth2.draft25.errors import UnsupportedGrantTypeError
 from oauthlib.oauth2.draft25.errors import InvalidRequestError
-from oauthlib.oauth2.draft25.errors import UnauthorizedClientError
+from oauthlib.oauth2.draft25.errors import InvalidClientError
 from oauthlib.oauth2.draft25.errors import InvalidGrantError
 from oauthlib.oauth2.draft25.grant_types import AuthorizationCodeGrant
 from oauthlib.oauth2.draft25.grant_types import ImplicitGrant
@@ -51,7 +51,13 @@ class AuthorizationCodeGrantTest(TestCase):
         self.request_state.state = 'abc'
 
         self.mock_validator = mock.MagicMock()
+        self.mock_validator.authenticate_client.side_effect = self.set_client
         self.auth = AuthorizationCodeGrant(request_validator=self.mock_validator)
+
+    def set_client(self, request):
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
+        return True
 
     def test_create_authorization_grant(self):
         grant = self.auth.create_authorization_code(self.request)
@@ -81,15 +87,15 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertRaises(InvalidRequestError,
                 auth.validate_token_request, request)
 
-        mock_validator.validate_client = mock.MagicMock(return_value=False)
-        mock_validator.validate_client_id = mock.MagicMock(return_value=False)
+        mock_validator.authenticate_client.return_value = False
+        mock_validator.validate_client_id.return_value = False
         request.code = 'waffles'
-        self.assertRaises(UnauthorizedClientError,
+        self.assertRaises(InvalidClientError,
                 auth.validate_token_request, request)
 
         request.client = 'batman'
-        mock_validator.validate_client = mock.MagicMock(return_value=True)
-        mock_validator.validate_code = mock.MagicMock(return_value=False)
+        mock_validator.authenticate_client = self.set_client
+        mock_validator.validate_code.return_value = False
         self.assertRaises(InvalidGrantError,
                 auth.validate_token_request, request)
 
