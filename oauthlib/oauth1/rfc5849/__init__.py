@@ -212,7 +212,7 @@ class Client(object):
         formatted formencoded string.
 
         Body may not be included if the http_method is either GET or HEAD as
-        this change the semantic meaning of the request.
+        this changes the semantic meaning of the request.
 
         All string data MUST be unicode or be encoded with the same encoding
         scheme supplied to the Client constructor, default utf-8. This includes
@@ -258,9 +258,10 @@ class Client(object):
 
         # We amend http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
         # with the clause that parameters from body should only be included
-        # in non GET or HEAD requests. This because the body of such a
-        # request should not have semantic meaning. Which including the
-        # parameters when creating the signature would have.
+        # in non GET or HEAD requests. Extracting the request body parameters
+        # and including them in the signature base string would give semantic
+        # meaning to the body, which it should not have according to the
+        # HTTP 1.1 spec.
         elif http_method.upper() in ('GET', 'HEAD') and has_params:
             raise ValueError('GET/HEAD requests should not include body.')
 
