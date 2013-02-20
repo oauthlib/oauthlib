@@ -33,11 +33,10 @@ Interested in making OAuth requests?
 ------------------------------------
 
 Then you might be more interested in using `requests`_ which has OAuthLib 
-powered OAuth support built-in. See the `requests OAuth examples`_ for
-how you can get started.
+powered OAuth support provided by the `requests-oauthlib`_ library.
 
 .. _`requests`: https://github.com/kennethreitz/requests
-.. _`requests OAuth examples`: http://docs.python-requests.org/en/latest/user/quickstart/#oauth-authentication 
+.. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
 
 Using OAuthLib? Please get in touch!
 ------------------------------------
