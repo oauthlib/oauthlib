@@ -284,10 +284,25 @@ class ClientAuthenticationTest(TestCase):
         return True
 
     def test_client_id_authentication(self):
-        pass
+        token_uri = 'http://example.com/path'
+
+        # authorization code grant
+        self.validator.authenticate_client.return_value = False
+        self.validator.authenticate_client_id.return_value = False
+        _, _, body, _ = self.web.create_token_response(token_uri,
+                body='grant_type=authorization_code&code=mock')
+        self.assertEqual(json.loads(body)['error'], 'invalid_client')
+
+        self.validator.authenticate_client_id.return_value = True
+        self.validator.authenticate_client.side_effect = self.set_client
+        _, _, body, _ = self.web.create_token_response(token_uri,
+                body='grant_type=authorization_code&code=mock')
+        self.assertIn('access_token', json.loads(body))
 
     def test_custom_authentication(self):
         token_uri = 'http://example.com/path'
+
+        # authorization code grant
         self.assertRaises(NotImplementedError,
                 self.web.create_token_response, token_uri,
                 body='grant_type=authorization_code&code=mock')
@@ -296,6 +311,10 @@ class ClientAuthenticationTest(TestCase):
         _, _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=mock')
         self.assertIn('access_token', json.loads(body))
+
+        # password grant
+
+        # client credentials grant
 
 
 class ResourceOwnerAssociationTest(TestCase):

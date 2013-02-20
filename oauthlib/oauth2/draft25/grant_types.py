@@ -45,6 +45,24 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def authenticate_client_id(self, client_id, request, *args, **kwargs):
+        """Ensure client_id belong to a non-confidential client.
+
+        A non-confidential client is one that is not required to authenticate
+        through other means, such as using HTTP Basic.
+
+        Note, while not strictly necessary it can often be very convenient
+        to set request.client to the client object associated with the
+        given client_id.
+
+        :param request: oauthlib.common.Request
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):
         """Ensure client is authorized to redirect to the redirect_uri requested.
 
@@ -517,23 +535,18 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # in Section 3.2.1.
         # http://tools.ietf.org/html/rfc6749#section-3.2.1
         if not self.request_validator.authenticate_client(request):
-            log.debug('Could not authenticate client, %r.', request)
-            raise errors.InvalidClientError()
+            # REQUIRED, if the client is not authenticating with the
+            # authorization server as described in Section 3.2.1.
+            # http://tools.ietf.org/html/rfc6749#section-3.2.1
+            if not self.request_validator.authenticate_client_id(
+                    request.client_id, request):
+                log.debug('Client authentication failed, %r.', request)
+                raise errors.InvalidClientError()
         else:
             if not hasattr(request.client, 'client_id'):
                 raise NotImplementedError('Authenticate client must set the '
                                           'request.client.client_id attribute '
                                           'in authenticate_client.')
-
-        # REQUIRED, if the client is not authenticating with the
-        # authorization server as described in Section 3.2.1.
-        # http://tools.ietf.org/html/rfc6749#section-3.2.1
-        if (not hasattr(request.client, 'client_id') and not
-                self.request_validator.validate_client_id(
-                    request.client_id, request)):
-            log.debug('Client_id not provided for unauthenticated client, %r.',
-                      request)
-            raise errors.InvalidClientError()
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)

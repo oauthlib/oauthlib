@@ -88,7 +88,7 @@ class AuthorizationCodeGrantTest(TestCase):
                 auth.validate_token_request, request)
 
         mock_validator.authenticate_client.return_value = False
-        mock_validator.validate_client_id.return_value = False
+        mock_validator.authenticate_client_id.return_value = False
         request.code = 'waffles'
         self.assertRaises(InvalidClientError,
                 auth.validate_token_request, request)
