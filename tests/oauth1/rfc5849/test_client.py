@@ -61,6 +61,18 @@ class ClientConstructorTests(TestCase):
 
 class SigningTest(TestCase):
 
+    def test_sign_no_body(self):
+        client = Client('client_key', decoding='utf-8')
+        self.assertRaises(ValueError, client.sign, 'http://i.b/path',
+                http_method='POST', body=None,
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+
+    def test_sign_empty_body(self):
+        client = Client('client_key', decoding='utf-8')
+        _, h, b = client.sign('http://i.b/path', http_method='POST', body='',
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(h['Content-Type'], 'application/x-www-form-urlencoded')
+
     def test_sign_get_with_body(self):
         client = Client('client_key', decoding='utf-8')
         for method in ('GET', 'HEAD'):
