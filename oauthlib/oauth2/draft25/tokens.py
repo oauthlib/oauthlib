@@ -154,6 +154,10 @@ def prepare_bearer_body(token, body=''):
     return add_params_to_qs(body, [(('access_token', token))])
 
 
+def random_token_generator(request, refresh_token=False):
+    return common.generate_token()
+
+
 class TokenBase(object):
 
     def __call__(self, request, refresh_token=False):
@@ -168,8 +172,9 @@ class TokenBase(object):
 
 class BearerToken(TokenBase):
 
-    def __init__(self, request_validator=None):
+    def __init__(self, request_validator=None, token_generator=None):
         self.request_validator = request_validator
+        self.token_generator = token_generator or random_token_generator
 
     @property
     def expires_in(self):
@@ -178,7 +183,7 @@ class BearerToken(TokenBase):
     def create_token(self, request, refresh_token=False):
         """Create a BearerToken, by default without refresh token."""
         token = {
-            'access_token': common.generate_token(),
+            'access_token': self.token_generator(request),
             'expires_in': self.expires_in,
             'token_type': 'Bearer',
         }
@@ -189,7 +194,8 @@ class BearerToken(TokenBase):
             token['state'] = request.state
 
         if refresh_token:
-            token['refresh_token'] = common.generate_token()
+            token['refresh_token'] = self.token_generator(
+                    request, refresh_token=True)
 
         token.update(request.extra_credentials or {})
 
