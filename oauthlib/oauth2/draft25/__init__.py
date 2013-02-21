@@ -604,7 +604,9 @@ class AuthorizationEndpoint(object):
             headers=None, scopes=None, credentials=None):
         """Extract response_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        request.authorized_scopes = scopes
+        request.authorized_scopes = scopes  # TODO: implement/test/doc this
+        # TODO: decide whether this should be a required argument
+        request.user = None     # TODO: explain this in docs
         for k, v in (credentials or {}).items():
             setattr(request, k, v)
         response_type_handler = self.response_types.get(
