@@ -61,6 +61,28 @@ class ClientConstructorTests(TestCase):
 
 class SigningTest(TestCase):
 
+    def test_case_insensitive_headers(self):
+        client = Client('client_key')
+        # Uppercase
+        _, h, _ = client.sign('http://i.b/path', http_method='POST', body='',
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(h['Content-Type'], 'application/x-www-form-urlencoded')
+
+        # Lowercase
+        _, h, _ = client.sign('http://i.b/path', http_method='POST', body='',
+                headers={'content-type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(h['content-type'], 'application/x-www-form-urlencoded')
+
+        # Capitalized
+        _, h, _ = client.sign('http://i.b/path', http_method='POST', body='',
+                headers={'Content-type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(h['Content-type'], 'application/x-www-form-urlencoded')
+
+        # Random
+        _, h, _ = client.sign('http://i.b/path', http_method='POST', body='',
+                headers={'conTent-tYpe': 'application/x-www-form-urlencoded'})
+        self.assertEqual(h['conTent-tYpe'], 'application/x-www-form-urlencoded')
+
     def test_sign_no_body(self):
         client = Client('client_key', decoding='utf-8')
         self.assertRaises(ValueError, client.sign, 'http://i.b/path',
@@ -68,13 +90,13 @@ class SigningTest(TestCase):
                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
 
     def test_sign_empty_body(self):
-        client = Client('client_key', decoding='utf-8')
+        client = Client('client_key')
         _, h, b = client.sign('http://i.b/path', http_method='POST', body='',
                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertEqual(h['Content-Type'], 'application/x-www-form-urlencoded')
 
     def test_sign_get_with_body(self):
-        client = Client('client_key', decoding='utf-8')
+        client = Client('client_key')
         for method in ('GET', 'HEAD'):
             self.assertRaises(ValueError, client.sign, 'http://a.b/path?query',
                     http_method=method, body='a=b',

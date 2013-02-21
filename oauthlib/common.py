@@ -262,6 +262,36 @@ def to_unicode(data, encoding):
     return data
 
 
+class CaseInsensitiveDict(dict):
+    """Basic case insensitive dict with strings only keys."""
+
+    proxy = {}
+
+    def __init__(self, data):
+        self.proxy = dict((k.lower(), k) for k in data)
+        for k in data:
+            self[k] = data[k]
+
+    def __contains__(self, k):
+        return k.lower() in self.proxy
+
+    def __delitem__(self, k):
+        key = self.proxy[k.lower()]
+        super(CaseInsensitiveDict, self).__delitem__(key)
+        del self.proxy[k.lower()]
+
+    def __getitem__(self, k):
+        key = self.proxy[k.lower()]
+        return super(CaseInsensitiveDict, self).__getitem__(key)
+
+    def get(self, k, default=None):
+        return self[k] if k in self else default
+
+    def __setitem__(self, k, v):
+        super(CaseInsensitiveDict, self).__setitem__(k, v)
+        self.proxy[k.lower()] = k
+
+
 class Request(object):
     """A malleable representation of a signable HTTP request.
 
@@ -283,7 +313,7 @@ class Request(object):
 
         self.uri = encode(uri)
         self.http_method = encode(http_method)
-        self.headers = encode(headers or {})
+        self.headers = CaseInsensitiveDict(encode(headers or {}))
         self.body = encode(body)
         self.decoded_body = extract_params(encode(body))
         self.oauth_params = []

@@ -121,3 +121,14 @@ class CommonTests(TestCase):
         token = generate_token(length=6, chars="python")
         self.assertEqual(len(token), 6)
         self.assertNotIn("a", token)
+
+
+class CaseInsensitiveDictTest(TestCase):
+
+    def test_basic(self):
+        cid = CaseInsensitiveDict({})
+        cid['a'] = 'b'
+        cid['c'] = 'd'
+        del cid['c']
+        self.assertEqual(cid['A'], 'b')
+        self.assertEqual(cid['a'], 'b')
