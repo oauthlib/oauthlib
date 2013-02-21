@@ -881,7 +881,15 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         try:
             if require_authentication:
                 log.debug('Authenticating client, %r.', request)
-                self.request_validator.authenticate_client(request)
+                if not self.request_validator.authenticate_client(request):
+                    log.debug('Client authentication failed, %r.', request)
+                    raise errors.InvalidClientError()
+                else:
+                    if not hasattr(request.client, 'client_id'):
+                        raise NotImplementedError(
+                                'Authenticate client must set the '
+                                'request.client.client_id attribute '
+                                'in authenticate_client.')
             else:
                 log.debug('Client authentication disabled, %r.', request)
             log.debug('Validating access token request, %r.', request)
@@ -911,6 +919,12 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         if not self.request_validator.validate_user(request.username,
                 request.password, request.client, request):
             raise errors.InvalidGrantError('Invalid credentials given.')
+        else:
+            if not hasattr(request.client, 'client_id'):
+                raise NotImplementedError(
+                        'Validate user must set the '
+                        'request.client.client_id attribute '
+                        'in authenticate_client.')
         log.debug('Authorizing access to user %r.', request.user)
 
         # Ensure client is authorized use of this grant type
@@ -971,8 +985,6 @@ class ClientCredentialsGrant(GrantTypeBase):
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
         try:
-            log.debug('Authenticating client, %r.', request)
-            self.request_validator.authenticate_client(request)
             log.debug('Validating access token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
@@ -991,6 +1003,15 @@ class ClientCredentialsGrant(GrantTypeBase):
         if not request.grant_type == 'client_credentials':
             raise errors.UnsupportedGrantTypeError()
 
+        log.debug('Authenticating client, %r.', request)
+        if not self.request_validator.authenticate_client(request):
+            log.debug('Client authentication failed, %r.', request)
+            raise errors.InvalidClientError()
+        else:
+            if not hasattr(request.client, 'client_id'):
+                raise NotImplementedError('Authenticate client must set the '
+                                          'request.client.client_id attribute '
+                                          'in authenticate_client.')
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
 

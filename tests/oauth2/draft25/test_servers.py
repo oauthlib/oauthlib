@@ -40,6 +40,8 @@ class TestScopeHandling(TestCase):
     def set_user(self, request):
         request.user = 'foo'
         request.client_id = 'bar'
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
         return True
 
     def set_client(self, request):
@@ -274,11 +276,34 @@ class PreservationTest(TestCase):
 
 class ClientAuthenticationTest(TestCase):
 
+    def inspect_client(self, request, refresh_token=False):
+        if not request.client or not request.client.client_id:
+            raise ValueError()
+        return 'abc'
+
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
-        self.web = WebApplicationServer(self.validator)
+        self.validator.get_default_redirect_uri.return_value = 'http://i.b./path'
+        self.web = WebApplicationServer(self.validator,
+                token_generator=self.inspect_client)
+        self.mobile = MobileApplicationServer(self.validator,
+                token_generator=self.inspect_client)
+        self.legacy = LegacyApplicationServer(self.validator,
+                token_generator=self.inspect_client)
+        self.backend = BackendApplicationServer(self.validator,
+                token_generator=self.inspect_client)
 
     def set_client(self, request):
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
+        return True
+
+    def set_client_id(self, client_id, request):
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
+        return True
+
+    def set_username(self, username, password, client, request):
         request.client = mock.MagicMock()
         request.client.client_id = 'mocked'
         return True
@@ -299,6 +324,14 @@ class ClientAuthenticationTest(TestCase):
                 body='grant_type=authorization_code&code=mock')
         self.assertIn('access_token', json.loads(body))
 
+        # implicit grant
+        auth_uri = 'http://example.com/path?client_id=abc&response_type=token'
+        self.assertRaises(ValueError, self.mobile.create_authorization_response, auth_uri)
+
+        self.validator.validate_client_id.side_effect = self.set_client_id
+        uri, _, _, _ = self.mobile.create_authorization_response(auth_uri)
+        self.assertIn('access_token', get_fragment_credentials(uri))
+
     def test_custom_authentication(self):
         token_uri = 'http://example.com/path'
 
@@ -307,14 +340,17 @@ class ClientAuthenticationTest(TestCase):
                 self.web.create_token_response, token_uri,
                 body='grant_type=authorization_code&code=mock')
 
-        self.validator.authenticate_client.side_effect = self.set_client
-        _, _, body, _ = self.web.create_token_response(token_uri,
-                body='grant_type=authorization_code&code=mock')
-        self.assertIn('access_token', json.loads(body))
-
         # password grant
+        self.validator.authenticate_client.return_value = True
+        self.assertRaises(NotImplementedError,
+                self.legacy.create_token_response, token_uri,
+                body='grant_type=password&username=abc&password=secret')
 
         # client credentials grant
+        self.validator.authenticate_client.return_value = True
+        self.assertRaises(NotImplementedError,
+                self.backend.create_token_response, token_uri,
+                body='grant_type=client_credentials')
 
 
 class ResourceOwnerAssociationTest(TestCase):
