@@ -2,13 +2,14 @@ from __future__ import absolute_import, unicode_literals
 
 from ...unittest import TestCase
 from oauthlib.oauth2.draft25.parameters import *
+from oauthlib.oauth2.draft25.errors import *
 
 
 class ParameterTests(TestCase):
 
     state = 'xyz'
     auth_base = {
-        'uri': 'http://server.example.com/authorize',
+        'uri': 'https://server.example.com/authorize',
         'client_id': 's6BhdRkqt3',
         'redirect_uri': 'https://client.example.com/cb',
         'state': state,
@@ -29,7 +30,7 @@ class ParameterTests(TestCase):
         self.auth_implicit_list_scope.update(self.auth_implicit)
         self.auth_implicit_list_scope['scope'] = self.list_scope
 
-    auth_base_uri = ('http://server.example.com/authorize?response_type={0}'
+    auth_base_uri = ('https://server.example.com/authorize?response_type={0}'
                      '&client_id=s6BhdRkqt3&redirect_uri=https%3A%2F%2F'
                      'client.example.com%2Fcb&scope={1}&state={2}{3}')
 
@@ -69,12 +70,12 @@ class ParameterTests(TestCase):
     error_wrongstate = 'https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA&state=abc'
     error_response = 'https://client.example.com/cb?error=access_denied&state=xyz'
 
-    implicit_base = 'http://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA&scope=abc&'
+    implicit_base = 'https://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA&scope=abc&'
     implicit_response = implicit_base + 'state={0}&token_type=example&expires_in=3600'.format(state)
     implicit_notype = implicit_base + 'state={0}&expires_in=3600'.format(state)
     implicit_wrongstate = implicit_base + 'state={0}&token_type=exampleexpires_in=3600'.format('invalid')
     implicit_nostate = implicit_base + 'token_type=example&expires_in=3600'
-    implicit_notoken = 'http://example.com/cb#state=xyz&token_type=example&expires_in=3600'
+    implicit_notoken = 'https://example.com/cb#state=xyz&token_type=example&expires_in=3600'
 
     implicit_dict = {
         'access_token': '2YotnFZFEjr1zCsicMWpAA',
@@ -132,22 +133,22 @@ class ParameterTests(TestCase):
         params = parse_authorization_code_response(self.grant_response, state=self.state)
         self.assertEqual(params, self.grant_dict)
 
-        self.assertRaises(KeyError, parse_authorization_code_response,
+        self.assertRaises(MissingCodeError, parse_authorization_code_response,
                 self.error_nocode)
-        self.assertRaises(KeyError, parse_authorization_code_response,
+        self.assertRaises(MissingCodeError, parse_authorization_code_response,
                 self.error_response)
-        self.assertRaises(ValueError, parse_authorization_code_response,
+        self.assertRaises(MismatchingStateError, parse_authorization_code_response,
                 self.error_nostate, state=self.state)
-        self.assertRaises(ValueError, parse_authorization_code_response,
+        self.assertRaises(MismatchingStateError, parse_authorization_code_response,
                 self.error_wrongstate, state=self.state)
 
     def test_implicit_token_response(self):
         """Verify correct parameter parsing and validation for implicit responses."""
         self.assertEqual(parse_implicit_response(self.implicit_response),
                 self.implicit_dict)
-        self.assertRaises(KeyError, parse_implicit_response,
+        self.assertRaises(MissingTokenError, parse_implicit_response,
                 self.implicit_notoken)
-        self.assertRaises(KeyError, parse_implicit_response,
+        self.assertRaises(MissingTokenTypeError, parse_implicit_response,
                 self.implicit_notype)
         self.assertRaises(ValueError, parse_implicit_response,
                 self.implicit_nostate, state=self.state)
@@ -157,6 +158,6 @@ class ParameterTests(TestCase):
     def test_json_token_response(self):
         """Verify correct parameter parsing and validation for token responses. """
         self.assertEqual(parse_token_response(self.json_response), self.json_dict)
-        self.assertRaises(KeyError, parse_token_response, self.json_error)
-        self.assertRaises(KeyError, parse_token_response, self.json_notoken)
+        self.assertRaises(InvalidRequestError, parse_token_response, self.json_error)
+        self.assertRaises(MissingTokenError, parse_token_response, self.json_notoken)
         self.assertRaises(Warning, parse_token_response, self.json_response, scope='aaa')

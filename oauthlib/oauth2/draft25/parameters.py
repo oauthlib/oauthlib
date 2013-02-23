@@ -16,7 +16,10 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
-from oauthlib.oauth2.draft25.utils import list_to_scope, scope_to_list
+from .errors import raise_from_error, MissingTokenError, MissingTokenTypeError
+from .errors import MismatchingStateError, MissingCodeError
+from .errors import InsecureTransportError
+from .utils import list_to_scope, scope_to_list
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
@@ -54,6 +57,9 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
     .. _`section 10.12`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-10.12
     """
+    if not uri.startswith('https://'):
+        raise InsecureTransportError()
+
     params = [(('response_type', response_type)),
               (('client_id', client_id))]
 
@@ -141,10 +147,10 @@ def parse_authorization_code_response(uri, state=None):
     params = dict(urlparse.parse_qsl(query))
 
     if not 'code' in params:
-        raise KeyError("Missing code parameter in response.")
+        raise MissingCodeError("Missing code parameter in response.")
 
     if state and params.get('state', None) != state:
-        raise ValueError("Mismatching or missing state in response.")
+        raise MismatchingStateError()
 
     return params
 
@@ -260,12 +266,14 @@ def parse_token_response(body, scope=None):
 
 def validate_token_parameters(params, scope=None):
     """Ensures token precence, token type, expiration and scope in params."""
+    if 'error' in params:
+        raise_from_error(params.get('error'), params)
 
     if not 'access_token' in params:
-        raise KeyError("Missing access token parameter.")
+        raise MissingTokenError(description="Missing access token parameter.")
 
     if not 'token_type' in params:
-        raise KeyError("Missing token type parameter.")
+        raise MissingTokenTypeError()
 
     # If the issued access token scope is different from the one requested by
     # the client, the authorization server MUST include the "scope" response

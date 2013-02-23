@@ -4,7 +4,7 @@ from ...unittest import TestCase
 
 import datetime
 from oauthlib import common
-from oauthlib.oauth2.draft25 import utils
+from oauthlib.oauth2.draft25 import utils, errors
 from oauthlib.oauth2.draft25 import Client, PasswordCredentialsClient
 from oauthlib.oauth2.draft25 import UserAgentClient, WebApplicationClient
 from oauthlib.oauth2.draft25 import ClientCredentialsClient
@@ -14,7 +14,7 @@ from oauthlib.oauth2.draft25 import AUTH_HEADER, URI_QUERY, BODY
 class ClientTest(TestCase):
 
     client_id = "someclientid"
-    uri = "http://example.com/path?query=world"
+    uri = "https://example.com/path?query=world"
     body = "not=empty"
     headers = {}
     access_token = "token"
@@ -29,11 +29,11 @@ class ClientTest(TestCase):
     mac_00_header = {
         "Authorization": 'MAC id="' + access_token + '", nonce="0:abc123",' +
                          ' bodyhash="Yqyso8r3hR5Nm1ZFv+6AvNHrxjE=",' +
-                         ' mac="khWygG6wFPnWeJteDP7aLOPgzZM="'
+                         ' mac="0X6aACoBY0G6xgGZVJ1IeE8dF9k="'
     }
     mac_01_header = {
         "Authorization": 'MAC id="' + access_token + '", ts="123456789",' +
-                          ' nonce="abc123", mac="CoHLzBGb8zVNdLZQDA2tiO6mryk="'
+                          ' nonce="abc123", mac="Xuk+9oqaaKyhitkgh1CD0xrI6+s="'
     }
 
     def test_add_bearer_token(self):
@@ -157,7 +157,7 @@ class ClientTest(TestCase):
 class WebApplicationClientTest(TestCase):
 
     client_id = "someclientid"
-    uri = "http://example.com/path?query=world"
+    uri = "https://example.com/path?query=world"
     uri_id = uri + "&response_type=code&client_id=" + client_id
     uri_redirect = uri_id + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     redirect_uri = "http://my.page.com/callback"
@@ -174,7 +174,7 @@ class WebApplicationClientTest(TestCase):
     code = "zzzzaaaa"
     body = "not=empty"
 
-    body_code = "not=empty&grant_type=authorization_code&code=" + code
+    body_code = "not=empty&grant_type=authorization_code&code=%s&client_id=%s" % (code, client_id)
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 
@@ -249,7 +249,10 @@ class WebApplicationClientTest(TestCase):
         self.assertEqual(client.code, self.code)
 
         # Mismatching state
-        self.assertRaises(ValueError, client.parse_request_uri_response, self.response_uri, state="invalid")
+        self.assertRaises(errors.MismatchingStateError,
+                client.parse_request_uri_response,
+                self.response_uri,
+                state="invalid")
 
     def test_parse_token_response(self):
         client = WebApplicationClient(self.client_id)
@@ -268,7 +271,7 @@ class WebApplicationClientTest(TestCase):
 class UserAgentClientTest(TestCase):
 
     client_id = "someclientid"
-    uri = "http://example.com/path?query=world"
+    uri = "https://example.com/path?query=world"
     uri_id = uri + "&response_type=token&client_id=" + client_id
     uri_redirect = uri_id + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     redirect_uri = "http://my.page.com/callback"

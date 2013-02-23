@@ -8,10 +8,12 @@ oauthlib.oauth2.draft_25
 This module is an implementation of various logic needed
 for signing and checking OAuth 2.0 draft 25 requests.
 """
+import datetime
 import logging
 
 from oauthlib.common import Request
 from oauthlib.oauth2.draft25 import tokens, grant_types
+from .errors import TokenExpiredError
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
@@ -49,6 +51,7 @@ class Client(object):
             refresh_token=None,
             mac_key=None,
             mac_algorithm=None,
+            token=None,
             **kwargs):
         """Initialize a client with commonly used attributes."""
 
@@ -59,6 +62,9 @@ class Client(object):
         self.refresh_token = refresh_token
         self.mac_key = mac_key
         self.mac_algorithm = mac_algorithm
+        self.token = token or {}
+        self._expires_at = None
+        self._populate_attributes(self.token)
 
     @property
     def token_types(self):
@@ -114,6 +120,9 @@ class Client(object):
 
         if not self.access_token:
             raise ValueError("Missing access token.")
+
+        if self._expires_at and self._expires_at < datetime.datetime.now():
+            raise TokenExpiredError()
 
         return self.token_types[self.token_type](uri, http_method, body,
                     headers, token_placement, **kwargs)
@@ -182,6 +191,8 @@ class Client(object):
 
         if 'expires_in' in response:
             self.expires_in = response.get('expires_in')
+            self._expires_at = datetime.datetime.now() + datetime.timedelta(
+                    seconds=int(self.expires_in))
 
         if 'code' in response:
             self.code = response.get('code')
@@ -227,8 +238,7 @@ class WebApplicationClient(Client):
 
     def __init__(self, client_id, code=None, **kwargs):
         super(WebApplicationClient, self).__init__(client_id, **kwargs)
-        if code:
-            self.code = code
+        self.code = code
 
     def prepare_request_uri(self, uri, redirect_uri=None, scope=None,
             state=None, **kwargs):
@@ -285,7 +295,7 @@ class WebApplicationClient(Client):
         """
         code = code or self.code
         return prepare_token_request('authorization_code', code=code, body=body,
-                                          redirect_uri=redirect_uri, **kwargs)
+                client_id=self.client_id, redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
         """Parse the URI query for code and state.
@@ -327,9 +337,9 @@ class WebApplicationClient(Client):
         .. `Section 5.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.1
         .. `Section 5.2`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.2
         """
-        response = parse_token_response(body, scope=scope)
-        self._populate_attributes(response)
-        return response
+        self.token = parse_token_response(body, scope=scope)
+        self._populate_attributes(self.token)
+        return self.token
 
 
 class UserAgentClient(Client):
@@ -423,9 +433,9 @@ class UserAgentClient(Client):
         .. _`Section 7.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-7.1
         .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
         """
-        response = parse_implicit_response(uri, state=state, scope=scope)
-        self._populate_attributes(response)
-        return response
+        self.token = parse_implicit_response(uri, state=state, scope=scope)
+        self._populate_attributes(self.token)
+        return self.token
 
 
 class ClientCredentialsClient(Client):
@@ -475,9 +485,9 @@ class ClientCredentialsClient(Client):
         .. `Section 5.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.1
         .. `Section 5.2`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.2
         """
-        response = parse_token_response(body, scope=scope)
-        self._populate_attributes(response)
-        return response
+        self.token = parse_token_response(body, scope=scope)
+        self._populate_attributes(self.token)
+        return self.token
 
 
 class PasswordCredentialsClient(Client):
@@ -541,9 +551,9 @@ class PasswordCredentialsClient(Client):
         .. `Section 5.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.1
         .. `Section 5.2`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.2
         """
-        response = parse_token_response(body, scope=scope)
-        self._populate_attributes(response)
-        return response
+        self.token = parse_token_response(body, scope=scope)
+        self._populate_attributes(self.token)
+        return self.token
 
 
 class AuthorizationEndpoint(object):
