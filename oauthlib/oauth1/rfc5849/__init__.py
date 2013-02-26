@@ -10,6 +10,8 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 
 import logging
+log = logging.getLogger("oauthlib")
+
 import sys
 import time
 try:
@@ -107,17 +109,17 @@ class Client(object):
             uri_query=urlparse.urlparse(uri).query,
             body=body,
             headers=headers)
-        logging.debug("Collected params: {0}".format(collected_params))
+        log.debug("Collected params: {0}".format(collected_params))
 
         normalized_params = signature.normalize_parameters(collected_params)
         normalized_uri = signature.normalize_base_string_uri(request.uri)
-        logging.debug("Normalized params: {0}".format(normalized_params))
-        logging.debug("Normalized URI: {0}".format(normalized_uri))
+        log.debug("Normalized params: {0}".format(normalized_params))
+        log.debug("Normalized URI: {0}".format(normalized_uri))
 
         base_string = signature.construct_base_string(request.http_method,
             normalized_uri, normalized_params)
 
-        logging.debug("Base signing string: {0}".format(base_string))
+        log.debug("Base signing string: {0}".format(base_string))
 
         if self.signature_method == SIGNATURE_HMAC:
             sig = signature.sign_hmac_sha1(base_string, self.client_secret,
@@ -128,7 +130,7 @@ class Client(object):
             sig = signature.sign_plaintext(self.client_secret,
                 self.resource_owner_secret)
 
-        logging.debug("Signature: {0}".format(sig))
+        log.debug("Signature: {0}".format(sig))
         return sig
 
     def get_oauth_params(self):
@@ -276,7 +278,7 @@ class Client(object):
                 realm=(realm or self.realm))
 
         if self.decoding:
-            logging.debug('Encoding URI, headers and body to %s.', self.decoding)
+            log.debug('Encoding URI, headers and body to %s.', self.decoding)
             uri = uri.encode(self.decoding)
             body = body.encode(self.decoding) if body else body
             new_headers = {}
@@ -995,13 +997,12 @@ class Server(object):
         # prevents malicious users from guessing sensitive information
         v = all((valid_client, valid_resource_owner, valid_realm,
                     valid_redirect, valid_verifier, valid_signature))
-        logger = logging.getLogger("oauthlib")
         if not v:
-            logger.info("[Failure] OAuthLib request verification failed.")
-            logger.info("Valid client:\t%s" % valid_client)
-            logger.info("Valid token:\t%s\t(Required: %s" % (valid_resource_owner, require_resource_owner))
-            logger.info("Valid realm:\t%s\t(Required: %s)" % (valid_realm, require_realm))
-            logger.info("Valid callback:\t%s" % valid_redirect)
-            logger.info("Valid verifier:\t%s\t(Required: %s)" % (valid_verifier, require_verifier))
-            logger.info("Valid signature:\t%s" % valid_signature)
+            log.info("[Failure] OAuthLib request verification failed.")
+            log.info("Valid client:\t%s" % valid_client)
+            log.info("Valid token:\t%s\t(Required: %s" % (valid_resource_owner, require_resource_owner))
+            log.info("Valid realm:\t%s\t(Required: %s)" % (valid_realm, require_realm))
+            log.info("Valid callback:\t%s" % valid_redirect)
+            log.info("Valid verifier:\t%s\t(Required: %s)" % (valid_verifier, require_verifier))
+            log.info("Valid signature:\t%s" % valid_signature)
         return v, request
