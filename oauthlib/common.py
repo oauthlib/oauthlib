@@ -47,7 +47,8 @@ else:
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
 def quote(s, safe=b'/'):
-    s = _quote(s.encode('utf-8'), safe)
+    s = s.encode('utf-8') if isinstance(s, unicode_type) else s
+    s = _quote(s, safe)
     # PY3 always returns unicode.  PY2 may return either, depending on whether
     # it had to modify the string.
     if isinstance(s, bytes_type):
@@ -122,7 +123,7 @@ def urldecode(query):
     if len(re.findall(invalid_hex, query)):
         raise ValueError('Invalid hex encoding in query string.')
 
-    query = query.decode('utf-8') if isinstance(query, bytes_type) else query
+    query = query.encode('utf-8') if isinstance(query, unicode_type) else query
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
     params = urlparse.parse_qsl(query, keep_blank_values=True)
