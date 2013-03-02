@@ -311,13 +311,13 @@ class Server(object):
     overloading the methods a few properties can be used to configure these
     methods.
 
-    @ safe_characters -> (character set)
-    @ client_key_length -> (min, max)
-    @ request_token_length -> (min, max)
-    @ access_token_length -> (min, max)
-    @ nonce_length -> (min, max)
-    @ verifier_length -> (min, max)
-    @ realms -> [list, of, realms]
+    * @safe_characters -> (character set)
+    * @client_key_length -> (min, max)
+    * @request_token_length -> (min, max)
+    * @access_token_length -> (min, max)
+    * @nonce_length -> (min, max)
+    * @verifier_length -> (min, max)
+    * @realms -> [list, of, realms]
 
     Methods used to validate input parameters. These checks usually hit either
     persistent or temporary storage such as databases or the filesystem. See
@@ -350,9 +350,16 @@ class Server(object):
     equivalent to the running time when given a valid client/resource owner.
     The following properties must be implemented:
 
-    @ dummy_client
-    @ dummy_request_token
-    @ dummy_access_token
+    * @dummy_client
+    * @dummy_request_token
+    * @dummy_access_token
+
+    Example implementations have been provided, note that the database used is
+    a simple dictionary and serves only an illustrative purpose. Use whichever
+    database suits your project and how to access it is entirely up to you.
+    The methods are introduced in an order which should make understanding
+    their use more straightforward and as such it could be worth reading what
+    follows in chronological order.
 
     .. _`whitelisting or blacklisting`: http://www.schneier.com/blog/archives/2011/01/whitelisting_vs.html
     """
@@ -450,7 +457,20 @@ class Server(object):
 
         This method must allow the use of a dummy client_key value.
         Fetching the secret using the dummy key must take the same amount of
-        time as fetching a secret for a valid client.
+        time as fetching a secret for a valid client::
+
+            # Unlikely to be near constant time as it uses two database
+            # lookups for a valid client, and only one for an invalid.
+            from your_datastore import ClientSecret
+            if ClientSecret.has(client_key):
+                return ClientSecret.get(client_key)
+            else:
+                return 'dummy'
+
+            # Aim to mimic number of latency inducing operations no matter
+            # whether the client is valid or not.
+            from your_datastore import ClientSecret
+            return ClientSecret.get(client_key, 'dummy')
 
         Note that the returned key must be in plaintext.
         """
@@ -475,7 +495,20 @@ class Server(object):
         """Retrieves the shared secret associated with the request token.
 
         This method must allow the use of a dummy values and the running time
-        must be roughly equivalent to that of the running time of valid values.
+        must be roughly equivalent to that of the running time of valid values::
+
+            # Unlikely to be near constant time as it uses two database
+            # lookups for a valid client, and only one for an invalid.
+            from your_datastore import RequestTokenSecret
+            if RequestTokenSecret.has(client_key):
+                return RequestTokenSecret.get((client_key, request_token))
+            else:
+                return 'dummy'
+
+            # Aim to mimic number of latency inducing operations no matter
+            # whether the client is valid or not.
+            from your_datastore import RequestTokenSecret
+            return ClientSecret.get((client_key, request_token), 'dummy')
 
         Note that the returned key must be in plaintext.
         """
@@ -485,7 +518,20 @@ class Server(object):
         """Retrieves the shared secret associated with the access token.
 
         This method must allow the use of a dummy values and the running time
-        must be roughly equivalent to that of the running time of valid values.
+        must be roughly equivalent to that of the running time of valid values::
+
+            # Unlikely to be near constant time as it uses two database
+            # lookups for a valid client, and only one for an invalid.
+            from your_datastore import AccessTokenSecret
+            if AccessTokenSecret.has(client_key):
+                return AccessTokenSecret.get((client_key, request_token))
+            else:
+                return 'dummy'
+
+            # Aim to mimic number of latency inducing operations no matter
+            # whether the client is valid or not.
+            from your_datastore import AccessTokenSecret
+            return ClientSecret.get((client_key, request_token), 'dummy')
 
         Note that the returned key must be in plaintext.
         """
@@ -515,14 +561,15 @@ class Server(object):
         """Retrieves a previously stored client provided RSA key.
 
         This method must allow the use of a dummy client_key value. Fetching
-        the rsa key using the dummy key must take the same aount of time
-        as fetching a key for a valid client.
+        the rsa key using the dummy key must take the same amount of time
+        as fetching a key for a valid client. The dummy key must also be of
+        the same bit length as client keys.
 
         Note that the key must be returned in plaintext.
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
-    def get_signature_type_and_params(self, request):
+    def _get_signature_type_and_params(self, request):
         """Extracts parameters from query, headers and body. Signature type
         is set to the source in which parameters were found.
         """
@@ -563,16 +610,22 @@ class Server(object):
         Note that if the dummy client is supplied it should validate in same
         or nearly the same amount of time as a valid one.
 
-        Bad:
+        Ensure latency inducing tasks are mimiced even for dummy clients.
+        For example, use::
 
-            if client_key == self.dummy_client:
+            from your_datastore import Client
+            try:
+                return Client.exists(client_key, access_token)
+            except DoesNotExist:
+                return False
+
+        Rather than::
+
+            from your_datastore import Client
+            if access_token == self.dummy_access_token:
                 return False
             else:
-                return storage.has_client(client_key)
-
-        Good:
-
-            return storage.has_client(client_key) and client_key != self.dummy_client
+                return Client.exists(client_key, access_token)
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -582,17 +635,22 @@ class Server(object):
         Note that if the dummy request_token is supplied it should validate in
         the same nearly the same amount of time as a valid one.
 
-        Bad:
+        Ensure latency inducing tasks are mimiced even for dummy clients.
+        For example, use::
 
-            if request_token == self.dummy_request_token:
+            from your_datastore import RequestToken
+            try:
+                return RequestToken.exists(client_key, access_token)
+            except DoesNotExist:
+                return False
+
+        Rather than::
+
+            from your_datastore import RequestToken
+            if access_token == self.dummy_access_token:
                 return False
             else:
-                return storage.has_request_token(request_token)
-
-        Good:
-
-            return (storage.has_request_token(request_token) and
-                    request_token != self.dummy_request_token)
+                return RequestToken.exists(client_key, access_token)
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -602,17 +660,22 @@ class Server(object):
         Note that if the dummy access token is supplied it should validate in
         the same or nearly the same amount of time as a valid one.
 
-        Bad:
+        Ensure latency inducing tasks are mimiced even for dummy clients.
+        For example, use::
 
+            from your_datastore import AccessToken
+            try:
+                return AccessToken.exists(client_key, access_token)
+            except DoesNotExist:
+                return False
+
+        Rather than::
+
+            from your_datastore import AccessToken
             if access_token == self.dummy_access_token:
                 return False
             else:
-                return storage.has_access_token(access_token)
-
-        Good:
-
-            return (storage.has_access_token(access_token) and
-                    access_token != self.dummy_access_token)
+                return AccessToken.exists(client_key, access_token)
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -630,6 +693,24 @@ class Server(object):
 
         .. _`Section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
 
+        One of the first validation checks that will be made is for the validity
+        of the nonce and timestamp, which are associated with a client key and
+        possibly a token. If invalid then immediately fail the request
+        by returning False. If the nonce/timestamp pair has been used before and
+        you may just have detected a replay attack. Therefore it is an essential
+        part of OAuth security that you not allow nonce/timestamp reuse.
+        Note that this validation check is done before checking the validity of
+        the client and token.::
+
+           nonces_and_timestamps_database = [
+              (u'foo', 1234567890, u'rannoMstrInghere', u'bar')
+           ]
+
+           def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+              request_token=None, access_token=None):
+
+              return ((client_key, timestamp, nonce, request_token or access_token)
+                       in self.nonces_and_timestamps_database)
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -686,6 +767,16 @@ class Server(object):
         obtain token credentials and the provider must verify that the
         verifier is valid and associated with the client as well as the
         resource owner.
+
+        Verifier validation should be done in near constant time
+        (to avoid verifier enumeration). To achieve this we need a
+        constant time string comparison which is provided by OAuthLib
+        in ``oauthlib.common.safe_string_equals``::
+
+            from your_datastore import Verifier
+            correct_verifier = Verifier.get(client_key, request_token)
+            from oauthlib.common import safe_string_equals
+            return safe_string_equals(verifier, correct_verifier)
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -753,7 +844,7 @@ class Server(object):
         if self.enforce_ssl and not request.uri.lower().startswith("https://"):
             raise ValueError("Insecure transport, only HTTPS is allowed.")
 
-        signature_type, params, oauth_params = self.get_signature_type_and_params(request)
+        signature_type, params, oauth_params = self._get_signature_type_and_params(request)
 
         # The server SHOULD return a 400 (Bad Request) status code when
         # receiving a request with duplicated protocol parameters.
