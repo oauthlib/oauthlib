@@ -371,21 +371,21 @@ class PasswordCredentialsClientTest(TestCase):
     }
 
     def test_request_body(self):
-        client = PasswordCredentialsClient(self.client_id, self.username,
-                    self.password)
+        client = PasswordCredentialsClient(self.client_id)
 
         # Basic, no extra arguments
-        body = client.prepare_request_body(body=self.body)
+        body = client.prepare_request_body(self.username, self.password,
+                body=self.body)
         self.assertFormBodyEqual(body, self.body_up)
 
         # With extra parameters, checked using length since order of
         # dict items is undefined
-        body = client.prepare_request_body(body=self.body, **self.kwargs)
+        body = client.prepare_request_body(self.username, self.password,
+                body=self.body, **self.kwargs)
         self.assertEqual(len(body), len(self.body_kwargs))
 
     def test_parse_token_response(self):
-        client = PasswordCredentialsClient(self.client_id, self.username,
-                self.password)
+        client = PasswordCredentialsClient(self.client_id)
 
         # Parse code and state
         response = client.parse_request_body_response(self.token_json, scope=self.scope)

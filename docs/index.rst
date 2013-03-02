@@ -6,15 +6,30 @@
 Welcome to OAuthLib's documentation!
 ====================================
 
-Contents:
+If you can't find what you need or have suggestions for improvement, don't
+hesitate to open a `new issue on GitHub`_!
+
+For news and discussions please check out our `G+ OAuthLib community`_.
+
+.. _`new issue on GitHub`: https://github.com/idan/oauthlib/issues/new
+.. _`G+ OAuthLib community`: https://plus.google.com/communities/101889017375384052571
 
 .. toctree::
    :maxdepth: 2
    
    contributing
+
+.. toctree::
+   :maxdepth: 2
+   
    client
-   client2
    server
+
+.. toctree::
+   :maxdepth: 2
+   
+   oauth2_overview
+   client2
    server2
 
 Indices and tables

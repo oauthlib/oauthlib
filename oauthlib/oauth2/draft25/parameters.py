@@ -143,6 +143,9 @@ def parse_authorization_code_response(uri, state=None):
             &state=xyz
 
     """
+    if not uri.lower().startswith('https://'):
+        raise InsecureTransportError()
+
     query = urlparse.urlparse(uri).query
     params = dict(urlparse.parse_qsl(query))
 
@@ -187,6 +190,9 @@ def parse_implicit_response(uri, state=None, scope=None):
     Location: http://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA
             &state=xyz&token_type=example&expires_in=3600
     """
+    if not uri.lower().startswith('https://'):
+        raise InsecureTransportError()
+
     fragment = urlparse.urlparse(uri).fragment
     params = dict(urlparse.parse_qsl(fragment, keep_blank_values=True))
 

@@ -123,7 +123,7 @@ class ImplicitGrantTest(TestCase):
         common.generate_token = lambda *args, **kwargs: '1234'
         uri, headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
-        correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=3600&state=xyz'
+        correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=3600&state=xyz&scope=hello+world'
         self.assertURLEqual(uri, correct_uri, parse_fragment=True)
 
     def test_error_response(self):

@@ -1,147 +1,317 @@
 ============================
-Creating an OAuth 2 provider
+OAuth 2: Creating a Provider
 ============================
 
-Note that OAuth 2 provider is still very much a work in progress, consider it a preview of a near future =) Feedback in any form much welcome!
+Note that OAuth 2 provider is still very much a work in progress, consider it a preview of a near future =)
 
-A high level overview
----------------------
+**1. Which framework are you using?**
 
-OAuth 2 is a very generic set of documents that leave a lot up to the implementer. It is not even a protocol, it is a framework. OAuthLib approaches this by separating the logic into three categories, endpoints, grant types and tokens.
+    OAuthLib is a dependency free library that may be used with any web framework.
+    That said, there are framework specific helper decorator classes to make
+    your life easier. The one we will be using in this example is for Django.
+    For others, and information on how to create one, check out :doc:`decorators`.
 
-Endpoints
-~~~~~~~~~
+    The main purpose of these decoraters is to help marshall between the framework
+    specific request object and framework agnostic url, headers, body and
+    http method parameters. They may also be useful for making sure common
+    best security practices are followed. 
 
-There are three different endpoints, the authorization endpoint which mainly handles user authorization, the token endpoint which provides tokens and the resource endpoint which provides access to protected resources. It is to the endpoints you will feed requests and get back an almost complete response. This process is simplified for you using a decorator such as the django one described later. 
+    Their purpose is not to be a full solution to all your needs as a provider, for
+    that you will want to seek out framework specific extensions building upon
+    OAuthLib. See the section on :doc:`decorators` for a list of extensions.
 
-The main purpose of the endpoint in OAuthLib is to figure out which grant type or token to dispatch the request to.
+    Relevant sections include:
 
-Grant types
-~~~~~~~~~~~
+    .. toctree::
+        :maxdepth: 1
 
-Grant types are what make OAuth 2 so flexible. The Authorization Code grant is very similar to OAuth 1 (with less crypto), the Implicit grant serves less secure applications such as mobile applications, the Resource Owner Password Credentials grant allows for legacy applications to incrementally transition to OAuth 2, the Client Credentials grant is excellent for embedded services and backend applications. 
+        decorators
 
-The main purpose of the grant types is to authorize access to protected resources in various ways with different security credentials.
+**2. Create your datastore models**
 
-Naturally, OAuth 2 allows for extension grant types to be defined and OAuthLib attempts to cater for easy inclusion of this as much as possible. 
+    These models will represent various OAuth specific concepts. There are a few
+    important links between them that the security of OAuth is based on. Below is
+    a suggestion for models and why you need certain properties. There is also
+    example Django model fields which should be straightforward to translate
+    to other ORMs such as SQLAlchemy and the Appengine Datastore.
 
-Certain grant types allow the issuing of refresh tokens which will allow a client to request new tokens for as long as you as provider allow them too. In general, OAuth 2 tokens should expire quickly and rather than annoying the user by require them to go through the authorization redirect loop you may use the refresh token to get a new access token. Refresh tokens, contrary to what their name suggest, are components of a grant type rather than token types (like Bearer tokens), much like the authorization code in the authorization code grant.
+    **User (or Resource Owner)**
+        The user of your site which resources might be access by clients upon
+        authorization from the user. In our example we will re-use the User
+        model provided in django.contrib.auth.models. How the user authenticates
+        is orthogonal from OAuth and may be any way you prefer::
 
-Tokens
-~~~~~~
+            from django.contrib.auth.models import User
 
-The main token type of OAuth 2 is Bearer tokens and that is what OAuthLib currently supports. Other tokens, such as JWT, SAML and possibly MAC (if the spec matures) can easily be added (and will be in due time).
+    **Client (or Consumer)**
+        The client interested in accessing protected resources. 
 
-The purpose of a token is to authorize access to protected resources to a client (i.e. your G+ feed).
+        **Client Identifier**:
+            Required. The identifier the client will use during the OAuth
+            workflow. Structure is up to you and may be a simple UUID::
+
+                client_id = django.db.models.CharField(max_length=100, unique=True)
+
+        **User**:
+            Recommended. It is common practice to link each client with one of your
+            existing users. Whether you do associate clients and users or not, 
+            ensure you are able to protect yourself against malicious clients::
+
+                user = django.db.models.ForeignKey(User)
+
+        **Grant Type**:
+            Required. The grant type the client may utilize. This should only be
+            one per client as each grant type has different security properties
+            and it is best to keep them separate to avoid mistakes::
+
+                # max_length and choices depend on which grants you support
+                grant_type = django.db.models.CharField(max_length=18,
+                    choices=[('Authorization code', 'authorization_code')])
+
+        **Response Type**:
+            Required, if using a grant type with an associated response type or
+            using a grant which only utilizes response types. An example of the
+            former is Authorization Code Grant and the latter Implicit Grant::
+
+                # max_length and choices depend on which response types you support
+                grant_type = django.db.models.CharField(max_length=4,
+                    choices=[('Authorization code', 'code')])
+
+        **Scopes**:
+            Required. The list of scopes the client may request access to. If you
+            allow multiple types of grants this will vary related to their
+            different security properties. For example, the Implicit Grant might
+            only allow read-only scopes but the Authorization Grant also allow
+            writes::
+
+                # You could represent it either as a list of keys or by serializing
+                # the scopes into a string.
+                scopes = django.db.models.TextField()
+
+                # You might also want to mark a certain set of scopes as default
+                # scopes in case the client does not specify any in the authorization
+                default_scopes = django.db.models.TextField()
+
+        **Redirect URIs**:
+            These are the absolute URIs that a client may use to redirect to after
+            authorization. You should never allow a client to redirect to a URI
+            that has not previously been registered::
+
+                # You could represent the URIs either as a list of keys or by
+                # serializing them into a string.
+                redirect_uris = django.db.models.TextField()
+
+                # You might also want to mark a certain URI as defaul in case the
+                # client does not specify any in the authorization
+                default_redirect_uri = django.db.models.TextField()
+
+    **Bearer Token (OAuth 2 Standard Token)**
+        The most common type of OAuth 2 token. Through the documentation this will
+        be considered an object with several properties, such as token type and
+        expiration date, and distinct from the access token it contains. Think of
+        OAuth 2 tokens as containers and access tokens and refresh tokens as text.
+
+        **Client**:
+            Association with the client to whom the token was given::
+
+                client = django.db.models.ForeignKey(Client)
+
+        **User**:
+            Association with the user to which protected resources this token 
+            grants access::
+
+                user = django.db.models.ForeignKey(User)
+
+        **Scopes**:
+            Scopes to which the token is bound. Attempt to access protected
+            resources outside these scopes will be denied::
+
+                # You could represent it either as a list of keys or by serializing
+                # the scopes into a string.
+                scopes = django.db.models.TextField()
+
+        **Access Token**:
+            An unguessable unique string of characters::
+
+                access_token = django.db.models.CharField(max_length=100, unique=True)
+
+        **Refresh Token**:
+            An unguessable unique string of characters. This token is only supplied
+            to confidential clients. For example the Authorization Code Grant or 
+            the Resource Owner Password Credentials Grant::
+
+                refresh_token = django.db.models.CharField(max_length=100, unique=True)
+
+        **Expiration time**:
+            Exact time of expiration. Commonly this is one hour after creation::
+
+                expires_at = django.db.models.DateTimeField()
+
+    **Authorization Code**
+        This is specific to the Authorization Code grant and represent the
+        temporary credential granted to the client upon successful authorization.
+        It will later be exchanged for an access token, when that is done it should
+        cease to exist. It should have a limited life time, less than ten minutes.
+        This model is similar to the Bearer Token as it mainly acts a temporary
+        storage of properties to later be transferred to the token.
+     
+        **Client**:
+            Association with the client to whom the token was given::
+
+                client = django.db.models.ForeignKey(Client)
+
+        **User**:
+            Association with the user to which protected resources this token 
+            grants access::
+
+                user = django.db.models.ForeignKey(User)
+
+        **Scopes**:
+            Scopes to which the token is bound. Attempt to access protected
+            resources outside these scopes will be denied::
+
+                # You could represent it either as a list of keys or by serializing
+                # the scopes into a string.
+                scopes = django.db.models.TextField()
+
+        **Authorization Code**:
+            An unguessable unique string of characters::
+
+                code = django.db.models.CharField(max_length=100, unique=True)
+
+        **Expiration time**:
+            Exact time of expiration. Commonly this is under ten minutes after creation::
+
+                expires_at = django.db.models.DateTimeField()
+
+**3. Implement a validator**
+
+    The majority of the work involved in implementing an OAuth 2 provider relates
+    to mapping various validation and persistence methods to a storage backend.
+    The not very accurately named interface you will need to implement is called
+    a :doc:`RequestValidator <validator>` (name suggestions welcome).
+
+    An example of a very basic implementation of the validate_client_id method
+    can be seen below::
+
+        from oauthlib.oauth2 import RequestValidator
+
+        # From the previous section on models
+        from my_models import Client
+
+        class MyRequestValidator(RequestValidator):
+
+            def validate_client_id(self, client_id, request):
+                try:
+                    Client.objects.get(client_id=client_id)
+                    return True
+                except Client.DoesNotExist:
+                    return False
+
+    The full API you will need to implement is available in the 
+    :doc:`RequestValidator <validator>` section. You might not need to implement
+    all methods depending on which grant types you wish to support. 
+
+    Relevant sections include:
+
+    .. toctree::
+        :maxdepth: 1
+
+        validator
+        security
 
 
-How do I develop an OAuth 2 provider?
--------------------------------------
+**4. Create your composite endpoint**
 
-The majority of the work involves mapping various validation and persistence methods to a storage backend. The not very accurately named interface you will need to implement is called a RequestValidator (name suggestions welcome).
+    Each of the endpoints can function independently from eachother, however for
+    this example it is easier to consider them as one unit. An example of a 
+    pre-configured all-in-one Authorization Code Grant endpoint is given below::
 
-The request validator can be found in oauthlib.oauth2.draft25.grant_types, which will be the main source of documentation on which methods you need to implement. As an example, a very basic validate_client_id method might be implemented in Django as follows::
+        # From the previous section on validators
+        from my_validator import MyRequestValidator
 
-    from oauthlib.oauth2 import RequestValidator
+        from oauthlib.oauth2 import WebApplicationServer
+        from oauthlib.oauth2.ext.django import OAuth2ProviderDecorator
+        
+        validator = MyRequestValidator()
+        server = WebApplicationServer(validator)
+        provider = OAuth2ProviderDecorator('/error', server)    # See next section
+     
+    Relevant sections include:
 
-    from my_models import Client
+    .. toctree::
+        :maxdepth: 1
 
-    class MyRequestValidator(RequestValidator):
-
-        def validate_client_id(self, client_id, request):
-            try:
-                Client.objects.get(client_id=client_id)
-                return True
-            except Client.DoesNotExist:
-                return False
-
-
-Pre configured endpoints
-------------------------
-
-OAuthLib provide a number of configured all-in-one endpoints (auth + token + resource) with different grant types, all utilize Bearer tokens. The available configurations are
-
-* WebApplicationServer featuring Authorization Code Grant and Refresh Tokens
-* MobileApplicationServer featuring Implicit Grant
-* LegacyApplicationServer featuring Resource Owner Password Credentials Grant and Refresh Tokens
-* BackendApplicationServer featuring Client Credentials Grant
-* Server featuring all above bundled into one
+        preconfigured_servers
 
 
-Using the django decorator
---------------------------
+**5. Decorate your endpoint views**
 
-Assuming you have the validator from above implemented already, creating an OAuth 2 provider can be as simple as::
-
-    # your_views.py
-    from my_validator import MyRequestValidator
-    
-    from oauthlib.oauth2 import WebApplicationServer   # BearerTokens + Authorization Code grant
-    from oauthlib.oauth2.ext.django import OAuth2ProviderDecorator
-    
-    validator = MyRequestValidator()
-    server = WebApplicationServer(validator)
-    provider = OAuth2ProviderDecorator('/error', server)    # See view error below
-    
-    @login_required
-    @provider.pre_authorization_view
-    def authorize(request, scopes=None):
-        # This is the traditional authorization page
-        # Scopes will be the list of scopes client requested access too
-        # You will want to present them in a nice form where the user can
-        # select which scopes they allow the client to access.
-        return render(request, 'authorize.html', {'scopes': scopes})
+    We are implementing support for the Authorization Code Grant and will therefore
+    need two views for the authorization, pre- and post-authorization together
+    with the token view. We also include an error page to redirect users to if
+    the client supplied invalid credentials in their redirection, for example
+    an invalid redirect URI::
+       
+        @login_required
+        @provider.pre_authorization_view
+        def authorize(request, scopes=None):
+            # This is the traditional authorization page
+            # Scopes will be the list of scopes client requested access too
+            # You will want to present them in a nice form where the user can
+            # select which scopes they allow the client to access.
+            return render(request, 'authorize.html', {'scopes': scopes})
 
 
-    @login_required
-    @provider.post_authorization_view
-    def authorization_response(request):
-        # This is where the form submitted from authorize should end up
-        # Which scopes user authorized access to + extra credentials you want
-        # appended to the request object passed into the validator methods
-        return request.POST['scopes'], {}
+        @login_required
+        @provider.post_authorization_view
+        def authorization_response(request):
+            # This is where the form submitted from authorize should end up
+            # Which scopes user authorized access to + extra credentials you want
+            # appended to the request object passed into the validator methods
+            return request.POST['scopes'], {}
 
 
-    @provider.access_token_view
-    def token_response(request):
-        # Not much too do here for you, return a dict with extra credentials
-        # you want appended to request.credentials passed to the save_bearer_token
-        # method of the validator.
-        return {'extra': 'creds'}
+        @provider.access_token_view
+        def token_response(request):
+            # Not much too do here for you, return a dict with extra credentials
+            # you want appended to request.credentials passed to the save_bearer_token
+            # method of the validator.
+            return {'extra': 'creds'}
+
+        def error(request):
+            # The /error page users will be redirected to if there was something
+            # wrong with the credentials the client included when redirecting the
+            # user to the authorization form. Mainly if the client was invalid or
+            # included a malformed / invalid redirect url.
+            # Error and description can be found in 
+            # GET['error'] and GET['error_description']
+            return HttpResponse('Bad client! Warn user!')
 
 
-    @provider.protected_resource_view(scopes=['images'])
-    def i_am_protected(request, client, resource_owner, **kwargs):
-        # One of your many OAuth 2 protected resource views, returns whatever you fancy
-        # May be bound to various scopes of your choosing
-        return HttpResponse('pictures of cats')
+**6. Protect your APIs using scopes**
 
+    At this point you are ready to protect your API views with OAuth. Take some
+    time to come up with a good set of scopes as they can be very powerful in
+    controlling access::
 
-    def error(request):
-        # The /error page users will be redirected to if there was something
-        # wrong with the credentials the client included when redirecting the
-        # user to the authorization form. Mainly if the client was invalid or
-        # included a malformed / invalid redirect url.
-        # Error and description can be found in GET['error'] and GET['error_description']
-        return HttpResponse('Bad client! Warn user!')
+        @provider.protected_resource_view(scopes=['images'])
+        def i_am_protected(request, client, resource_owner, **kwargs):
+            # One of your many OAuth 2 protected resource views
+            # Returns whatever you fancy
+            # May be bound to various scopes of your choosing
+            return HttpResponse('pictures of cats')
 
+**7. Let us know how it went!**
 
-Can you please add X, Y and Z?
-------------------------------
+    Drop a line in our `G+ community`_ or open a `GitHub issue`_ =)
 
-If these include dashboards, database migrations, registration APIs and similar the answer is no. While these would be excellent to have, oauthlib is not the place for them. I would much rather see a django middleware plugin with these features but I currently lack the time to develop it myself.
+    .. _`G+ community`: https://plus.google.com/communities/101889017375384052571
+    .. _`GitHub issue`: https://github.com/idan/oauthlib/issues/new
 
-Creating decorators for other frameworks
-----------------------------------------
+    If you run into issues it can be helpful to enable debug logging::
 
-Hopefully, it should be quite straightforward to port the django decorator to other web frameworks as the decorator mainly provide a means for translating the framework specific request object into uri, http_method, headers and body.
-
-
-How do I enable logging?
-------------------------
-OAuthLib can provide valuable debug logs that help you get your provider up and running much quicker. You can log to stdout for example using::
-
-    import logging
-    log = logging.getLogger('oauthlib')
-    log.setLevel(logging.DEBUG)
-
+        import logging
+        log = logging.getLogger('oauthlib')
+        log.addHandler(logging.StreamHandler(sys.stdout))
+        log.setLevel(logging.DEBUG)

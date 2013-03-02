@@ -126,7 +126,7 @@ def prepare_bearer_uri(token, uri):
 
     http://www.example.com/path?access_token=h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
+    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
     """
     return add_params_to_uri(uri, [(('access_token', token))])
 
@@ -137,7 +137,7 @@ def prepare_bearer_headers(token, headers=None):
 
     Authorization: Bearer h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
+    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
     """
     headers = headers or {}
     headers['Authorization'] = 'Bearer %s' % token
@@ -149,7 +149,7 @@ def prepare_bearer_body(token, body=''):
 
     access_token=h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
+    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
     """
     return add_params_to_qs(body, [(('access_token', token))])
 

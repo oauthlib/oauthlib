@@ -136,8 +136,9 @@ class RequestValidator(object):
             - a resource owner / user (request.user)
             - authorized scopes (request.scopes)
 
-        The authorization code grant dict (code) holds at least the key 'code',
-        {'code': 'sdf345jsdf0934f'}.
+        The authorization code grant dict (code) holds at least the key 'code'::
+
+            {'code': 'sdf345jsdf0934f'}
 
         :param client_id: Unicode client identifier
         :param code: A dict of the authorization code grant.
@@ -159,15 +160,16 @@ class RequestValidator(object):
             - an expiration time
             - a refresh token, if issued
 
-        The Bearer token dict may hold a number of items,
-        {
-            'token_type': 'Bearer',
-            'token': 'askfjh234as9sd8',
-            'expires_in': 3600,
-            'scope': ['list', 'of', 'authorized', 'scopes'],
-            'refresh_token': '23sdf876234',  # if issued
-            'state': 'given_by_client',  # if supplied by client
-        }
+        The Bearer token dict may hold a number of items::
+
+            {
+                'token_type': 'Bearer',
+                'token': 'askfjh234as9sd8',
+                'expires_in': 3600,
+                'scope': ['list', 'of', 'authorized', 'scopes'],
+                'refresh_token': '23sdf876234',  # if issued
+                'state': 'given_by_client',  # if supplied by client
+            }
 
         :param client_id: Unicode client identifier
         :param token: A Bearer token dict
@@ -361,8 +363,9 @@ class GrantTypeBase(object):
             raise errors.UnauthorizedClientError()
 
     def validate_scopes(self, request):
-        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id, request))
+        if not request.scopes:
+            request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                    self.request_validator.get_default_scopes(request.client_id, request))
         log.debug('Validating access to scopes %r for client %r (%r).',
                   request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,
@@ -371,7 +374,80 @@ class GrantTypeBase(object):
 
 
 class AuthorizationCodeGrant(GrantTypeBase):
+    """`Authorization Code Grant`_
 
+    The authorization code grant type is used to obtain both access
+    tokens and refresh tokens and is optimized for confidential clients.
+    Since this is a redirection-based flow, the client must be capable of
+    interacting with the resource owner's user-agent (typically a web
+    browser) and capable of receiving incoming requests (via redirection)
+    from the authorization server::
+
+        +----------+
+        | Resource |
+        |   Owner  |
+        |          |
+        +----------+
+            ^
+            |
+            (B)
+        +----|-----+          Client Identifier      +---------------+
+        |         -+----(A)-- & Redirection URI ---->|               |
+        |  User-   |                                 | Authorization |
+        |  Agent  -+----(B)-- User authenticates --->|     Server    |
+        |          |                                 |               |
+        |         -+----(C)-- Authorization Code ---<|               |
+        +-|----|---+                                 +---------------+
+        |    |                                         ^      v
+        (A)  (C)                                        |      |
+        |    |                                         |      |
+        ^    v                                         |      |
+        +---------+                                      |      |
+        |         |>---(D)-- Authorization Code ---------'      |
+        |  Client |          & Redirection URI                  |
+        |         |                                             |
+        |         |<---(E)----- Access Token -------------------'
+        +---------+       (w/ Optional Refresh Token)
+
+    Note: The lines illustrating steps (A), (B), and (C) are broken into
+    two parts as they pass through the user-agent.
+
+    Figure 3: Authorization Code Flow
+
+    The flow illustrated in Figure 3 includes the following steps:
+
+    (A)  The client initiates the flow by directing the resource owner's
+            user-agent to the authorization endpoint.  The client includes
+            its client identifier, requested scope, local state, and a
+            redirection URI to which the authorization server will send the
+            user-agent back once access is granted (or denied).
+
+    (B)  The authorization server authenticates the resource owner (via
+            the user-agent) and establishes whether the resource owner
+            grants or denies the client's access request.
+
+    (C)  Assuming the resource owner grants access, the authorization
+            server redirects the user-agent back to the client using the
+            redirection URI provided earlier (in the request or during
+            client registration).  The redirection URI includes an
+            authorization code and any local state provided by the client
+            earlier.
+
+    (D)  The client requests an access token from the authorization
+            server's token endpoint by including the authorization code
+            received in the previous step.  When making the request, the
+            client authenticates with the authorization server.  The client
+            includes the redirection URI used to obtain the authorization
+            code for verification.
+
+    (E)  The authorization server authenticates the client, validates the
+            authorization code, and ensures that the redirection URI
+            received matches the URI used to redirect the client in
+            step (C).  If valid, the authorization server responds back with
+            an access token and, optionally, a refresh token.
+
+    .. _`Authorization Code Grant`: http://tools.ietf.org/html/rfc6749#section-4.1
+    """
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
 
@@ -385,7 +461,83 @@ class AuthorizationCodeGrant(GrantTypeBase):
         return grant
 
     def create_authorization_response(self, request, token_handler):
+        """
+        The client constructs the request URI by adding the following
+        parameters to the query component of the authorization endpoint URI
+        using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
+
+        response_type
+                REQUIRED.  Value MUST be set to "code".
+        client_id
+                REQUIRED.  The client identifier as described in `Section 2.2`_.
+        redirect_uri
+                OPTIONAL.  As described in `Section 3.1.2`_.
+        scope
+                OPTIONAL.  The scope of the access request as described by
+                `Section 3.3`_.
+        state
+                RECOMMENDED.  An opaque value used by the client to maintain
+                state between the request and callback.  The authorization
+                server includes this value when redirecting the user-agent back
+                to the client.  The parameter SHOULD be used for preventing
+                cross-site request forgery as described in `Section 10.12`_.
+
+        The client directs the resource owner to the constructed URI using an
+        HTTP redirection response, or by other means available to it via the
+        user-agent.
+
+        :param request: oauthlib.commong.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+        :returns: uri, headers, body, status
+        :raises: FatalClientError on invalid redirect URI or client id.
+                 ValueError if scopes are not set on the request object.
+
+        A few examples::
+
+            >>> from your_validator import your_validator
+            >>> request = Request('https://example.com/authorize?client_id=valid'
+            ...                   '&redirect_uri=http%3A%2F%2Fclient.com%2F')
+            >>> from oauthlib.common import Request
+            >>> from oauthlib.oauth2 import AuthorizationCodeGrant, BearerToken
+            >>> token = BearerToken(your_validator)
+            >>> grant = AuthorizationCodeGrant(your_validator)
+            >>> grant.create_authorization_response(request, token)
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/grant_types.py", line 513, in create_authorization_response
+                    raise ValueError('Scopes must be set on post auth.')
+            ValueError: Scopes must be set on post auth.
+            >>> request.scopes = ['authorized', 'in', 'some', 'form']
+            >>> grant.create_authorization_response(request, token)
+            (u'http://client.com/?error=invalid_request&error_description=Missing+response_type+parameter.', None, None, 400)
+            >>> request = Request('https://example.com/authorize?client_id=valid'
+            ...                   '&redirect_uri=http%3A%2F%2Fclient.com%2F'
+            ...                   '&response_type=code')
+            >>> request.scopes = ['authorized', 'in', 'some', 'form']
+            >>> grant.create_authorization_response(request, token)
+            (u'http://client.com/?code=u3F05aEObJuP2k7DordviIgW5wl52N', None, None, 200)
+            >>> # If the client id or redirect uri fails validation
+            >>> grant.create_authorization_response(request, token)
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/grant_types.py", line 515, in create_authorization_response
+                    >>> grant.create_authorization_response(request, token)
+                File "oauthlib/oauth2/draft25/grant_types.py", line 591, in validate_authorization_request
+            oauthlib.oauth2.draft25.errors.InvalidClientIdError
+
+        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
+        """
         try:
+            # request.scopes is only mandated in post auth and both pre and
+            # post auth use validate_authorization_request
+            if not request.scopes:
+                raise ValueError('Scopes must be set on post auth.')
+
             self.validate_authorization_request(request)
             log.debug('Pre resource owner authorization validation ok for %r.',
                       request)
@@ -414,7 +566,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         grant = self.create_authorization_code(request)
         logging.debug('Saving grant %r for %r.', grant, request)
         self.request_validator.save_authorization_code(request, grant)
-        return common.add_params_to_uri(request.redirect_uri, grant.items()), None, None, 200
+        return common.add_params_to_uri(request.redirect_uri, grant.items()), None, None, 302
 
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.
@@ -425,14 +577,19 @@ class AuthorizationCodeGrant(GrantTypeBase):
         previously issued based on that authorization code. The authorization
         code is bound to the client identifier and redirection URI.
         """
+        headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Cache-Control': 'no-store',
+                'Pragma': 'no-cache',
+        }
         try:
             self.validate_token_request(request)
             log.debug('Token request validation ok for %r.', request)
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
-            return None, {}, e.json, e.status_code
+            return None, headers, e.json, e.status_code
 
-        return None, {}, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
+        return None, headers, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
 
     def validate_authorization_request(self, request):
         """Check the authorization request for normal and fatal errors.
@@ -518,6 +675,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 'client_id': request.client_id,
                 'redirect_uri': request.redirect_uri,
                 'response_type': request.response_type,
+                'state': request.state,
         }
 
     def validate_token_request(self, request):
@@ -587,54 +745,128 @@ class ImplicitGrant(GrantTypeBase):
     relies on the presence of the resource owner and the registration of
     the redirection URI.  Because the access token is encoded into the
     redirection URI, it may be exposed to the resource owner and other
-    applications residing on the same device.
+    applications residing on the same device::
 
-    See `Sections 10.3`_ and `10.16`_ for important security considerations
+        +----------+
+        | Resource |
+        |  Owner   |
+        |          |
+        +----------+
+            ^
+            |
+            (B)
+        +----|-----+          Client Identifier     +---------------+
+        |         -+----(A)-- & Redirection URI --->|               |
+        |  User-   |                                | Authorization |
+        |  Agent  -|----(B)-- User authenticates -->|     Server    |
+        |          |                                |               |
+        |          |<---(C)--- Redirection URI ----<|               |
+        |          |          with Access Token     +---------------+
+        |          |            in Fragment
+        |          |                                +---------------+
+        |          |----(D)--- Redirection URI ---->|   Web-Hosted  |
+        |          |          without Fragment      |     Client    |
+        |          |                                |    Resource   |
+        |     (F)  |<---(E)------- Script ---------<|               |
+        |          |                                +---------------+
+        +-|--------+
+        |    |
+        (A)  (G) Access Token
+        |    |
+        ^    v
+        +---------+
+        |         |
+        |  Client |
+        |         |
+        +---------+
+
+   Note: The lines illustrating steps (A) and (B) are broken into two
+   parts as they pass through the user-agent.
+
+   Figure 4: Implicit Grant Flow
+
+   The flow illustrated in Figure 4 includes the following steps:
+
+   (A)  The client initiates the flow by directing the resource owner's
+        user-agent to the authorization endpoint.  The client includes
+        its client identifier, requested scope, local state, and a
+        redirection URI to which the authorization server will send the
+        user-agent back once access is granted (or denied).
+
+   (B)  The authorization server authenticates the resource owner (via
+        the user-agent) and establishes whether the resource owner
+        grants or denies the client's access request.
+
+   (C)  Assuming the resource owner grants access, the authorization
+        server redirects the user-agent back to the client using the
+        redirection URI provided earlier.  The redirection URI includes
+        the access token in the URI fragment.
+
+   (D)  The user-agent follows the redirection instructions by making a
+        request to the web-hosted client resource (which does not
+        include the fragment per [RFC2616]).  The user-agent retains the
+        fragment information locally.
+
+   (E)  The web-hosted client resource returns a web page (typically an
+        HTML document with an embedded script) capable of accessing the
+        full redirection URI including the fragment retained by the
+        user-agent, and extracting the access token (and other
+        parameters) contained in the fragment.
+
+   (F)  The user-agent executes the script provided by the web-hosted
+        client resource locally, which extracts the access token.
+
+   (G)  The user-agent passes the access token to the client.
+
+    See `Section 10.3`_ and `Section 10.16`_ for important security considerations
     when using the implicit grant.
 
-    The client constructs the request URI by adding the following
-    parameters to the query component of the authorization endpoint URI
-    using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
-
-    response_type
-            REQUIRED.  Value MUST be set to "token".
-
-    client_id
-            REQUIRED.  The client identifier as described in `Section 2.2`_.
-
-    redirect_uri
-            OPTIONAL.  As described in `Section 3.1.2`_.
-
-    scope
-            OPTIONAL.  The scope of the access request as described by
-            `Section 3.3`_.
-
-    state
-            RECOMMENDED.  An opaque value used by the client to maintain
-            state between the request and callback.  The authorization
-            server includes this value when redirecting the user-agent back
-            to the client.  The parameter SHOULD be used for preventing
-            cross-site request forgery as described in `Section 10.12`_.
-
-    The authorization server validates the request to ensure that all
-    required parameters are present and valid.  The authorization server
-    MUST verify that the redirection URI to which it will redirect the
-    access token matches a redirection URI registered by the client as
-    described in `Section 3.1.2`_.
-
     .. _`Implicit Grant`: http://tools.ietf.org/html/rfc6749#section-4.2
-    .. _`10.16`: http://tools.ietf.org/html/rfc6749#section-10.16
-    .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
-    .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
-    .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
     .. _`Section 10.3`: http://tools.ietf.org/html/rfc6749#section-10.3
-    .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+    .. _`Section 10.16`: http://tools.ietf.org/html/rfc6749#section-10.16
     """
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
 
     def create_authorization_response(self, request, token_handler):
+        """Create an authorization response.
+        The client constructs the request URI by adding the following
+        parameters to the query component of the authorization endpoint URI
+        using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
+
+        response_type
+                REQUIRED.  Value MUST be set to "token".
+
+        client_id
+                REQUIRED.  The client identifier as described in `Section 2.2`_.
+
+        redirect_uri
+                OPTIONAL.  As described in `Section 3.1.2`_.
+
+        scope
+                OPTIONAL.  The scope of the access request as described by
+                `Section 3.3`_.
+
+        state
+                RECOMMENDED.  An opaque value used by the client to maintain
+                state between the request and callback.  The authorization
+                server includes this value when redirecting the user-agent back
+                to the client.  The parameter SHOULD be used for preventing
+                cross-site request forgery as described in `Section 10.12`_.
+
+        The authorization server validates the request to ensure that all
+        required parameters are present and valid.  The authorization server
+        MUST verify that the redirection URI to which it will redirect the
+        access token matches a redirection URI registered by the client as
+        described in `Section 3.1.2`_.
+
+        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
+        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        """
         return self.create_token_response(request, token_handler)
 
     def create_token_response(self, request, token_handler):
@@ -674,9 +906,14 @@ class ImplicitGrant(GrantTypeBase):
 
         .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
         .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 7.2`: http://tools.ietf.org/html/rfc6749#section-7.2
+        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
         """
         try:
+            # request.scopes is only mandated in post auth and both pre and
+            # post auth use validate_authorization_request
+            if not request.scopes:
+                raise ValueError('Scopes must be set on post auth.')
+
             self.validate_token_request(request)
 
         # If the request fails due to a missing, invalid, or mismatching
@@ -702,7 +939,7 @@ class ImplicitGrant(GrantTypeBase):
 
         token = token_handler.create_token(request, refresh_token=False)
         return common.add_params_to_uri(request.redirect_uri, token.items(),
-                fragment=True), {}, None, 200
+                fragment=True), {}, None, 302
 
     def validate_authorization_request(self, request):
         return self.validate_token_request(request)
@@ -801,65 +1038,62 @@ class ImplicitGrant(GrantTypeBase):
                 'client_id': request.client_id,
                 'redirect_uri': request.redirect_uri,
                 'response_type': request.response_type,
+                'state': request.state,
         }
 
 
 class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     """`Resource Owner Password Credentials Grant`_
 
-    The client makes a request to the token endpoint by adding the
-    following parameters using the "application/x-www-form-urlencoded"
-    format per Appendix B with a character encoding of UTF-8 in the HTTP
-    request entity-body:
+    The resource owner password credentials grant type is suitable in
+    cases where the resource owner has a trust relationship with the
+    client, such as the device operating system or a highly privileged
+    application.  The authorization server should take special care when
+    enabling this grant type and only allow it when other flows are not
+    viable.
 
-    grant_type
-            REQUIRED.  Value MUST be set to "password".
+    This grant type is suitable for clients capable of obtaining the
+    resource owner's credentials (username and password, typically using
+    an interactive form).  It is also used to migrate existing clients
+    using direct authentication schemes such as HTTP Basic or Digest
+    authentication to OAuth by converting the stored credentials to an
+    access token::
 
-    username
-            REQUIRED.  The resource owner username.
+            +----------+
+            | Resource |
+            |  Owner   |
+            |          |
+            +----------+
+                v
+                |    Resource Owner
+                (A) Password Credentials
+                |
+                v
+            +---------+                                  +---------------+
+            |         |>--(B)---- Resource Owner ------->|               |
+            |         |         Password Credentials     | Authorization |
+            | Client  |                                  |     Server    |
+            |         |<--(C)---- Access Token ---------<|               |
+            |         |    (w/ Optional Refresh Token)   |               |
+            +---------+                                  +---------------+
 
-    password
-            REQUIRED.  The resource owner password.
+    Figure 5: Resource Owner Password Credentials Flow
 
-    scope
-            OPTIONAL.  The scope of the access request as described by
-            `Section 3.3`_.
+    The flow illustrated in Figure 5 includes the following steps:
 
-    If the client type is confidential or the client was issued client
-    credentials (or assigned other authentication requirements), the
-    client MUST authenticate with the authorization server as described
-    in `Section 3.2.1`_.
+    (A)  The resource owner provides the client with its username and
+            password.
 
-    For example, the client makes the following HTTP request using
-    transport-layer security (with extra line breaks for display purposes
-    only):
+    (B)  The client requests an access token from the authorization
+            server's token endpoint by including the credentials received
+            from the resource owner.  When making the request, the client
+            authenticates with the authorization server.
 
-        POST /token HTTP/1.1
-        Host: server.example.com
-        Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
-        Content-Type: application/x-www-form-urlencoded
-
-        grant_type=password&username=johndoe&password=A3ddj3w
-
-    The authorization server MUST:
-
-    o  require client authentication for confidential clients or for any
-        client that was issued client credentials (or with other
-        authentication requirements),
-
-    o  authenticate the client if client authentication is included, and
-
-    o  validate the resource owner password credentials using its
-        existing password validation algorithm.
-
-    Since this access token request utilizes the resource owner's
-    password, the authorization server MUST protect the endpoint against
-    brute force attacks (e.g., using rate-limitation or generating
-    alerts).
+    (C)  The authorization server authenticates the client and validates
+            the resource owner credentials, and if valid, issues an access
+            token.
 
     .. _`Resource Owner Password Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.3
-    .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-    .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
     """
 
     def __init__(self, request_validator=None):
@@ -878,6 +1112,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
+        headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Cache-Control': 'no-store',
+                'Pragma': 'no-cache',
+        }
         try:
             if require_authentication:
                 log.debug('Authenticating client, %r.', request)
@@ -896,14 +1135,57 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
             log.debug('Client error in token request, %s.', e)
-            return None, {}, e.json, e.status_code
+            return None, headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=True)
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
                   token, request.client_id, request.client, request.username)
-        return None, {}, json.dumps(token), 200
+        return None, headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
+        """
+        The client makes a request to the token endpoint by adding the
+        following parameters using the "application/x-www-form-urlencoded"
+        format per Appendix B with a character encoding of UTF-8 in the HTTP
+        request entity-body:
+
+        grant_type
+                REQUIRED.  Value MUST be set to "password".
+
+        username
+                REQUIRED.  The resource owner username.
+
+        password
+                REQUIRED.  The resource owner password.
+
+        scope
+                OPTIONAL.  The scope of the access request as described by
+                `Section 3.3`_.
+
+        If the client type is confidential or the client was issued client
+        credentials (or assigned other authentication requirements), the
+        client MUST authenticate with the authorization server as described
+        in `Section 3.2.1`_.
+
+        The authorization server MUST:
+
+        o  require client authentication for confidential clients or for any
+            client that was issued client credentials (or with other
+            authentication requirements),
+
+        o  authenticate the client if client authentication is included, and
+
+        o  validate the resource owner password credentials using its
+            existing password validation algorithm.
+
+        Since this access token request utilizes the resource owner's
+        password, the authorization server MUST protect the endpoint against
+        brute force attacks (e.g., using rate-limitation or generating
+        alerts).
+
+        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        """
         for param in ('grant_type', 'username', 'password'):
             if not getattr(request, param):
                 raise errors.InvalidRequestError(
@@ -946,17 +1228,17 @@ class ClientCredentialsGrant(GrantTypeBase):
     the scope of this specification).
 
     The client credentials grant type MUST only be used by confidential
-    clients.
+    clients::
 
         +---------+                                  +---------------+
-        |         |                                  |               |
-        |         |>--(A)- Client Authentication --->| Authorization |
-        | Client  |                                  |     Server    |
-        |         |<--(B)---- Access Token ---------<|               |
-        |         |                                  |               |
+        :         :                                  :               :
+        :         :>-- A - Client Authentication --->: Authorization :
+        : Client  :                                  :     Server    :
+        :         :<-- B ---- Access Token ---------<:               :
+        :         :                                  :               :
         +---------+                                  +---------------+
 
-                        Figure 6: Client Credentials Flow
+    Figure 6: Client Credentials Flow
 
     The flow illustrated in Figure 6 includes the following steps:
 
@@ -1052,17 +1334,22 @@ class RefreshTokenGrant(GrantTypeBase):
         .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
+        headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Cache-Control': 'no-store',
+                'Pragma': 'no-cache',
+        }
         try:
             log.debug('Validating refresh token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
-            return None, {}, e.json, 400
+            return None, headers, e.json, 400
 
         token = token_handler.create_token(request,
                 refresh_token=self.issue_new_refresh_tokens)
         log.debug('Issuing new token to client id %r (%r), %r.',
                   request.client_id, request.client, token)
-        return None, {}, json.dumps(token), 200
+        return None, headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
         # REQUIRED. Value MUST be set to "refresh_token".

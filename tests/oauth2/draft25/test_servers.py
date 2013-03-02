@@ -20,11 +20,13 @@ from oauthlib.oauth2.draft25 import errors
 
 
 def get_query_credentials(uri):
-    return urlparse.parse_qs(urlparse.urlparse(uri).query)
+    return urlparse.parse_qs(urlparse.urlparse(uri).query,
+            keep_blank_values=True)
 
 
 def get_fragment_credentials(uri):
-    return urlparse.parse_qs(urlparse.urlparse(uri).fragment)
+    return urlparse.parse_qs(urlparse.urlparse(uri).fragment,
+            keep_blank_values=True)
 
 
 class TestScopeHandling(TestCase):
@@ -79,24 +81,22 @@ class TestScopeHandling(TestCase):
 
     def test_scope_preservation(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
-        correct_scope = 'pics http%3A%2f%2fa.b%2fvideos'
         decoded_scope = 'pics http://a.b/videos'
-        scopes = ['pics', 'http%3A%2f%2fa.b%2fvideos']
-        auth_uri = 'http://example.com/path?client_id=abc&scope=%s&%s'
+        auth_uri = 'http://example.com/path?client_id=abc&response_type='
         token_uri = 'http://example.com/path'
 
         # authorization grant
         uri, _, _, _ = self.web.create_authorization_response(
-                auth_uri % (scope, 'response_type=code'))
-        self.validator.validate_code.side_effect = self.set_scopes(scopes)
+                auth_uri + 'code', scopes=decoded_scope.split(' '))
+        self.validator.validate_code.side_effect = self.set_scopes(decoded_scope.split(' '))
         code = get_query_credentials(uri)['code'][0]
         _, _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
-        self.assertEqual(json.loads(body)['scope'], correct_scope)
+        self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # implicit grant
         uri, _, _, _ = self.mobile.create_authorization_response(
-                auth_uri % (scope, 'response_type=token'))
+                auth_uri + 'token', scopes=decoded_scope.split(' '))
         self.assertEqual(get_fragment_credentials(uri)['scope'][0], decoded_scope)
 
         # resource owner password credentials grant
@@ -116,12 +116,12 @@ class TestScopeHandling(TestCase):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
         scopes = ['images', 'http://a.b/videos']
         decoded_scope = 'images http://a.b/videos'
-        auth_uri = 'http://example.com/path?client_id=abc&scope=%s&%s'
+        auth_uri = 'http://example.com/path?client_id=abc&response_type='
         token_uri = 'http://example.com/path'
 
         # authorization grant
         uri, _, _, _ = self.web.create_authorization_response(
-                auth_uri % (scope, 'response_type=code'))
+                auth_uri + 'code', scopes=scopes)
         code = get_query_credentials(uri)['code'][0]
         self.validator.validate_code.side_effect = self.set_scopes(scopes)
         _, _, body, _ = self.web.create_token_response(token_uri,
@@ -131,7 +131,7 @@ class TestScopeHandling(TestCase):
         # implicit grant
         self.validator.validate_scopes.side_effect = self.set_scopes(scopes)
         uri, _, _, _ = self.mobile.create_authorization_response(
-                auth_uri % (scope, 'response_type=token'))
+                auth_uri + 'token', scopes=scopes)
         self.assertEqual(get_fragment_credentials(uri)['scope'][0], decoded_scope)
 
         # resource owner password credentials grant
@@ -151,20 +151,20 @@ class TestScopeHandling(TestCase):
 
     def test_invalid_scope(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
-        auth_uri = 'http://example.com/path?client_id=abc&scope=%s&%s'
+        auth_uri = 'http://example.com/path?client_id=abc&response_type='
         token_uri = 'http://example.com/path'
 
         self.validator.validate_scopes.return_value = False
 
         # authorization grant
         uri, _, _, _ = self.web.create_authorization_response(
-                auth_uri % (scope, 'response_type=code'))
+                auth_uri + 'code', scopes=['invalid'])
         error = get_query_credentials(uri)['error'][0]
         self.assertEqual(error, 'invalid_scope')
 
         # implicit grant
         uri, _, _, _ = self.mobile.create_authorization_response(
-                auth_uri % (scope, 'response_type=token'))
+                auth_uri + 'token', scopes=['invalid'])
         error = get_fragment_credentials(uri)['error'][0]
         self.assertEqual(error, 'invalid_scope')
 
@@ -203,13 +203,12 @@ class PreservationTest(TestCase):
         return True
 
     def test_state_preservation(self):
-        scope = 'pics+http%3A%2f%2fa.b%2fvideos'
-        auth_uri = 'http://example.com/path?state=xyz&client_id=abc&scope=%s&%s'
+        auth_uri = 'http://example.com/path?state=xyz&client_id=abc&response_type='
         token_uri = 'http://example.com/path'
 
         # authorization grant
         uri, _, _, _ = self.web.create_authorization_response(
-                auth_uri % (scope, 'response_type=code'))
+                auth_uri + 'code', scopes=['random'])
         code = get_query_credentials(uri)['code'][0]
         self.validator.validate_code.side_effect = self.set_state('xyz')
         _, _, body, _ = self.web.create_token_response(token_uri,
@@ -218,7 +217,7 @@ class PreservationTest(TestCase):
 
         # implicit grant
         uri, _, _, _ = self.mobile.create_authorization_response(
-                auth_uri % (scope, 'response_type=token'))
+                auth_uri + 'token', scopes=['random'])
         self.assertEqual(get_fragment_credentials(uri)['state'][0], 'xyz')
 
     def test_redirect_uri_preservation(self):
@@ -228,7 +227,7 @@ class PreservationTest(TestCase):
 
         # authorization grant
         uri, _, _, _ = self.web.create_authorization_response(
-                auth_uri + '&response_type=code')
+                auth_uri + '&response_type=code', scopes=['random'])
         self.assertTrue(uri.startswith(redirect_uri))
 
         # confirm_redirect_uri should return false if the redirect uri
@@ -241,7 +240,7 @@ class PreservationTest(TestCase):
 
         # implicit grant
         uri, _, _, _ = self.mobile.create_authorization_response(
-                auth_uri + '&response_type=token')
+                auth_uri + '&response_type=token', scopes=['random'])
         self.assertTrue(uri.startswith(redirect_uri))
 
     def test_invalid_redirect_uri(self):
@@ -251,12 +250,12 @@ class PreservationTest(TestCase):
         # authorization grant
         self.assertRaises(errors.MismatchingRedirectURIError,
                 self.web.create_authorization_response,
-                auth_uri + '&response_type=code')
+                auth_uri + '&response_type=code', scopes=['random'])
 
         # implicit grant
         self.assertRaises(errors.MismatchingRedirectURIError,
                 self.mobile.create_authorization_response,
-                auth_uri + '&response_type=token')
+                auth_uri + '&response_type=token', scopes=['random'])
 
     def test_default_uri(self):
         auth_uri = 'http://example.com/path?state=xyz&client_id=abc'
@@ -266,12 +265,12 @@ class PreservationTest(TestCase):
         # authorization grant
         self.assertRaises(errors.MissingRedirectURIError,
                 self.web.create_authorization_response,
-                auth_uri + '&response_type=code')
+                auth_uri + '&response_type=code', scopes=['random'])
 
         # implicit grant
         self.assertRaises(errors.MissingRedirectURIError,
                 self.mobile.create_authorization_response,
-                auth_uri + '&response_type=token')
+                auth_uri + '&response_type=token', scopes=['random'])
 
 
 class ClientAuthenticationTest(TestCase):
@@ -326,10 +325,11 @@ class ClientAuthenticationTest(TestCase):
 
         # implicit grant
         auth_uri = 'http://example.com/path?client_id=abc&response_type=token'
-        self.assertRaises(ValueError, self.mobile.create_authorization_response, auth_uri)
+        self.assertRaises(ValueError, self.mobile.create_authorization_response,
+                auth_uri, scopes=['random'])
 
         self.validator.validate_client_id.side_effect = self.set_client_id
-        uri, _, _, _ = self.mobile.create_authorization_response(auth_uri)
+        uri, _, _, _ = self.mobile.create_authorization_response(auth_uri, scopes=['random'])
         self.assertIn('access_token', get_fragment_credentials(uri))
 
     def test_custom_authentication(self):
@@ -399,7 +399,7 @@ class ResourceOwnerAssociationTest(TestCase):
         # TODO: code generator + intercept test
         uri, _, _, _ = self.web.create_authorization_response(
                 self.auth_uri + '&response_type=code',
-                credentials={'user': 'test'})
+                credentials={'user': 'test'}, scopes=['random'])
         code = get_query_credentials(uri)['code'][0]
         self.assertRaises(ValueError,
                 self.web.create_token_response, self.token_uri,
@@ -417,7 +417,7 @@ class ResourceOwnerAssociationTest(TestCase):
 
         uri, _, _, _ = self.mobile.create_authorization_response(
                 self.auth_uri + '&response_type=token',
-                credentials={'user': 'test'})
+                credentials={'user': 'test'}, scopes=['random'])
         self.assertEqual(get_fragment_credentials(uri)['access_token'][0], 'abc')
 
     def test_legacy_application(self):

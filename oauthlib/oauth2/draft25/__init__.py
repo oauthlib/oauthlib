@@ -13,7 +13,7 @@ import logging
 
 from oauthlib.common import Request
 from oauthlib.oauth2.draft25 import tokens, grant_types
-from .errors import TokenExpiredError
+from .errors import TokenExpiredError, InsecureTransportError
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
@@ -113,6 +113,9 @@ class Client(object):
         .. _`I-D.ietf-oauth-v2-bearer`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-I-D.ietf-oauth-v2-bearer
         .. _`I-D.ietf-oauth-v2-http-mac`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-I-D.ietf-oauth-v2-http-mac
         """
+        if not uri.lower().startswith('https://'):
+            raise InsecureTransportError()
+
         token_placement = token_placement or self.default_token_placement
 
         if not self.token_type in self.token_types:
@@ -246,52 +249,85 @@ class WebApplicationClient(Client):
 
         The client constructs the request URI by adding the following
         parameters to the query component of the authorization endpoint URI
-        using the "application/x-www-form-urlencoded" format as defined by
-        [`W3C.REC-html401-19991224`_]:
+        using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
 
-        response_type
-                REQUIRED.  Value MUST be set to "code".
-        client_id
-                REQUIRED.  The client identifier as described in `Section 2.2`_.
-        redirect_uri
-                OPTIONAL.  As described in `Section 3.1.2`_.
-        scope
-                OPTIONAL.  The scope of the access request as described by
-                `Section 3.3`_.
-        state
-                RECOMMENDED.  An opaque value used by the client to maintain
-                state between the request and callback.  The authorization
-                server includes this value when redirecting the user-agent back
-                to the client.  The parameter SHOULD be used for preventing
-                cross-site request forgery as described in `Section 10.12`_.
+        :param redirect_uri:  OPTIONAL. The redirect URI must be an absolute URI
+                              and it should have been registerd with the OAuth
+                              provider prior to use. As described in `Section 3.1.2`_.
 
-        .. _`W3C.REC-html401-19991224`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-W3C.REC-html401-19991224
-        .. _`Section 2.2`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-2.2
-        .. _`Section 3.1.2`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.1.2
-        .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
-        .. _`Section 10.12`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-10.12
+        :param scope:  OPTIONAL. The scope of the access request as described by
+                       Section 3.3`_. These may be any string but are commonly
+                       URIs or various categories such as ``videos`` or ``documents``.
+
+        :param state:   RECOMMENDED.  An opaque value used by the client to maintain
+                        state between the request and callback.  The authorization
+                        server includes this value when redirecting the user-agent back
+                        to the client.  The parameter SHOULD be used for preventing
+                        cross-site request forgery as described in `Section 10.12`_.
+
+        :param kwargs:  Extra arguments to include in the request URI.
+
+        In addition to supplied parameters, OAuthLib will append the ``client_id``
+        that was provided in the constructor as well as the mandatory ``response_type``
+        argument, set to ``code``::
+
+            >>> from oauthlib.oauth2 import WebApplicationClient
+            >>> client = WebApplicationClient('your_id')
+            >>> client.prepare_request_uri('https://example.com')
+            'https://example.com?client_id=your_id&response_type=code'
+            >>> client.prepare_request_uri('https://example.com', redirect_uri='https://a.b/callback')
+            'https://example.com?client_id=your_id&response_type=code&redirect_uri=https%3A%2F%2Fa.b%2Fcallback'
+            >>> client.prepare_request_uri('https://example.com', scope=['profile', 'pictures'])
+            'https://example.com?client_id=your_id&response_type=code&scope=profile+pictures'
+            >>> client.prepare_request_uri('https://example.com', foo='bar')
+            'https://example.com?client_id=your_id&response_type=code&foo=bar'
+
+        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
         """
         return prepare_grant_uri(uri, self.client_id, 'code',
                 redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
 
-    def prepare_request_body(self, code=None, body='', redirect_uri=None, **kwargs):
+    def prepare_request_body(self, client_id=None, code=None, body='',
+            redirect_uri=None, **kwargs):
         """Prepare the access token request body.
 
         The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
         format in the HTTP request entity-body:
 
-        grant_type
-                REQUIRED.  Value MUST be set to "authorization_code".
-        code
-                REQUIRED.  The authorization code received from the
-                authorization server.
-        redirect_uri
-                REQUIRED, if the "redirect_uri" parameter was included in the
-                authorization request as described in Section 4.1.1, and their
-                values MUST be identical.
+        :param client_id:   REQUIRED, if the client is not authenticating with the
+                            authorization server as described in `Section 3.2.1`_.
 
-        .. _`Section 4.1.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-4.1.1
+        :param code:    REQUIRED. The authorization code received from the
+                        authorization server.
+
+        :param redirect_uri:    REQUIRED, if the "redirect_uri" parameter was included in the
+                                authorization request as described in `Section 4.1.1`_, and their
+                                values MUST be identical.
+
+        :param kwargs: Extra parameters to include in the token request.
+
+        In addition OAuthLib will add the ``grant_type`` parameter set to
+        ``authorization_code``.
+
+        If the client type is confidential or the client was issued client
+        credentials (or assigned other authentication requirements), the
+        client MUST authenticate with the authorization server as described
+        in `Section 3.2.1`_::
+
+            >>> from oauthlib.oauth2 import WebApplicationClient
+            >>> client = WebApplicationClient('your_id')
+            >>> client.prepare_request_body(code='sh35ksdf09sf')
+            'grant_type=authorization_code&code=sh35ksdf09sf'
+            >>> client.prepare_request_body(code='sh35ksdf09sf', foo='bar')
+            'grant_type=authorization_code&code=sh35ksdf09sf&foo=bar'
+
+        .. _`Section 4.1.1`: http://tools.ietf.org/html/rfc6749#section-4.1.1
+        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         code = code or self.code
         return prepare_token_request('authorization_code', code=code, body=body,
@@ -305,21 +341,41 @@ class WebApplicationClient(Client):
         adding the following parameters to the query component of the
         redirection URI using the "application/x-www-form-urlencoded" format:
 
-        code
-                REQUIRED.  The authorization code generated by the
-                authorization server.  The authorization code MUST expire
-                shortly after it is issued to mitigate the risk of leaks.  A
-                maximum authorization code lifetime of 10 minutes is
-                RECOMMENDED.  The client MUST NOT use the authorization code
-                more than once.  If an authorization code is used more than
-                once, the authorization server MUST deny the request and SHOULD
-                revoke (when possible) all tokens previously issued based on
-                that authorization code.  The authorization code is bound to
-                the client identifier and redirection URI.
-        state
-                REQUIRED if the "state" parameter was present in the client
-                authorization request.  The exact value received from the
-                client.
+        :param uri: The callback URI that resulted from the user being redirected
+                    back from the provider to you, the client.
+        :param state: The state provided in the authorization request.
+
+        **code**
+            The authorization code generated by the authorization server.
+            The authorization code MUST expire shortly after it is issued
+            to mitigate the risk of leaks. A maximum authorization code
+            lifetime of 10 minutes is RECOMMENDED. The client MUST NOT
+            use the authorization code more than once. If an authorization
+            code is used more than once, the authorization server MUST deny
+            the request and SHOULD revoke (when possible) all tokens
+            previously issued based on that authorization code.
+            The authorization code is bound to the client identifier and
+            redirection URI.
+
+        **state**
+                If the "state" parameter was present in the authorization request.
+
+        This method is mainly intended to enforce strict state checking with
+        the added benefit of easily extracting parameters from the URI::
+
+            >>> from oauthlib.oauth2 import WebApplicationClient
+            >>> client = WebApplicationClient('your_id')
+            >>> uri = 'https://example.com/callback?code=sdfkjh345&state=sfetw45'
+            >>> client.parse_request_uri_response(uri, state='sfetw45')
+            {'state': 'sfetw45', 'code': 'sdfkjh345'}
+            >>> client.parse_request_uri_response(uri, state='other')
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 357, in parse_request_uri_response
+                    back from the provider to you, the client.
+                File "oauthlib/oauth2/draft25/parameters.py", line 153, in parse_authorization_code_response
+                    raise MismatchingStateError()
+            oauthlib.oauth2.draft25.errors.MismatchingStateError
         """
         response = parse_authorization_code_response(uri, state=state)
         self._populate_attributes(response)
@@ -334,15 +390,97 @@ class WebApplicationClient(Client):
         authentication failed or is invalid, the authorization server returns
         an error response as described in `Section 5.2`_.
 
-        .. `Section 5.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.1
-        .. `Section 5.2`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.2
+        :param body: The response body from the token request.
+        :param scope: Scopes originally requested.
+        :return: Dictionary of token parameters.
+        :raises: Warning if scope has changed. OAuth2Error if response is invalid.
+
+        These response are json encoded and could easily be parsed without
+        the assistance of OAuthLib. However, there are a few subtle issues
+        to be aware of regarding the response which are helpfully addressed
+        through the raising of various errors.
+
+        A successful response should always contain
+
+        **access_token**
+                The access token issued by the authorization server. Often
+                a random string.
+
+        **token_type**
+            The type of the token issued as described in `Section 7.1`_.
+            Commonly ``Bearer``.
+
+        While it is not mandated it is recommended that the provider include
+
+        **expires_in**
+            The lifetime in seconds of the access token.  For
+            example, the value "3600" denotes that the access token will
+            expire in one hour from the time the response was generated.
+            If omitted, the authorization server SHOULD provide the
+            expiration time via other means or document the default value.
+
+        **scope**
+            Providers may supply this in all responses but are required to only
+            if it has changed since the authorization request.
+
+        A normal response might look like::
+
+            >>> json.loads(response_body)
+            {
+                    'access_token': 'sdfkjh345',
+                    'token_type': 'Bearer',
+                    'expires_in': '3600',
+                    'refresh_token': 'x345dgasd',
+                    'scope': 'hello world',
+            }
+            >>> from oauthlib.oauth2 import WebApplicationClient
+            >>> client = WebApplicationClient('your_id')
+            >>> client.parse_request_body_response(response_body)
+            {
+                    'access_token': 'sdfkjh345',
+                    'token_type': 'Bearer',
+                    'expires_in': '3600',
+                    'refresh_token': 'x345dgasd',
+                    'scope': ['hello', 'world'],    # note the list
+            }
+
+        If there was a scope change you will be notified with a warning::
+
+            >>> client.parse_request_body_response(response_body, scope=['images'])
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                    .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                    validate_token_parameters(params, scope)
+                File "oauthlib/oauth2/draft25/parameters.py", line 285, in validate_token_parameters
+                    raise Warning("Scope has changed to %s." % new_scope)
+            Warning: Scope has changed to [u'hello', u'world'].
+
+        If there was an error on the providers side you will be notified with
+        an error. For example, if there was no ``token_type`` provided::
+
+            >>> client.parse_request_body_response(response_body)
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                    File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                    validate_token_parameters(params, scope)
+                File "oauthlib/oauth2/draft25/parameters.py", line 276, in validate_token_parameters
+                    raise MissingTokenTypeError()
+            oauthlib.oauth2.draft25.errors.MissingTokenTypeError
+
+        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
         """
         self.token = parse_token_response(body, scope=scope)
         self._populate_attributes(self.token)
         return self.token
 
 
-class UserAgentClient(Client):
+class MobileApplicationClient(Client):
     """A public client utilizing the implicit code grant workflow.
 
     A user-agent-based application is a public client in which the
@@ -381,23 +519,44 @@ class UserAgentClient(Client):
 
         The client constructs the request URI by adding the following
         parameters to the query component of the authorization endpoint URI
-        using the "application/x-www-form-urlencoded" format:
+        using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
 
-        response_type
-                REQUIRED.  Value MUST be set to "token".
-        client_id
-                REQUIRED.  The client identifier as described in Section 2.2.
-        redirect_uri
-                OPTIONAL.  As described in Section 3.1.2.
-        scope
-                OPTIONAL.  The scope of the access request as described by
-                Section 3.3.
-        state
-                RECOMMENDED.  An opaque value used by the client to maintain
-                state between the request and callback.  The authorization
-                server includes this value when redirecting the user-agent back
-                to the client.  The parameter SHOULD be used for preventing
-                cross-site request forgery as described in Section 10.12.
+        :param redirect_uri:  OPTIONAL. The redirect URI must be an absolute URI
+                              and it should have been registerd with the OAuth
+                              provider prior to use. As described in `Section 3.1.2`_.
+
+        :param scope:  OPTIONAL. The scope of the access request as described by
+                       Section 3.3`_. These may be any string but are commonly
+                       URIs or various categories such as ``videos`` or ``documents``.
+
+        :param state:   RECOMMENDED.  An opaque value used by the client to maintain
+                        state between the request and callback.  The authorization
+                        server includes this value when redirecting the user-agent back
+                        to the client.  The parameter SHOULD be used for preventing
+                        cross-site request forgery as described in `Section 10.12`_.
+
+        :param kwargs:  Extra arguments to include in the request URI.
+
+        In addition to supplied parameters, OAuthLib will append the ``client_id``
+        that was provided in the constructor as well as the mandatory ``response_type``
+        argument, set to ``token``::
+
+            >>> from oauthlib.oauth2 import MobileApplicationClient
+            >>> client = MobileApplicationClient('your_id')
+            >>> client.prepare_request_uri('https://example.com')
+            'https://example.com?client_id=your_id&response_type=token'
+            >>> client.prepare_request_uri('https://example.com', redirect_uri='https://a.b/callback')
+            'https://example.com?client_id=your_id&response_type=token&redirect_uri=https%3A%2F%2Fa.b%2Fcallback'
+            >>> client.prepare_request_uri('https://example.com', scope=['profile', 'pictures'])
+            'https://example.com?client_id=your_id&response_type=token&scope=profile+pictures'
+            >>> client.prepare_request_uri('https://example.com', foo='bar')
+            'https://example.com?client_id=your_id&response_type=token&foo=bar'
+
+        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
         """
         return prepare_grant_uri(uri, self.client_id, 'token',
                 redirect_uri=redirect_uri, state=state, scope=scope, **kwargs)
@@ -410,35 +569,81 @@ class UserAgentClient(Client):
         the following parameters to the fragment component of the redirection
         URI using the "application/x-www-form-urlencoded" format:
 
-        access_token
-                REQUIRED.  The access token issued by the authorization server.
-        token_type
-                REQUIRED.  The type of the token issued as described in
-                `Section 7.1`_.  Value is case insensitive.
-        expires_in
-                RECOMMENDED.  The lifetime in seconds of the access token.  For
-                example, the value "3600" denotes that the access token will
-                expire in one hour from the time the response was generated.
-                If omitted, the authorization server SHOULD provide the
-                expiration time via other means or document the default value.
-        scope
-                OPTIONAL, if identical to the scope requested by the client,
-                otherwise REQUIRED.  The scope of the access token as described
-                by `Section 3.3`_.
-        state
-                REQUIRED if the "state" parameter was present in the client
-                authorization request.  The exact value received from the
-                client.
+        :param uri: The callback URI that resulted from the user being redirected
+                    back from the provider to you, the client.
+        :param state: The state provided in the authorization request.
+        :param scope: The scopes provided in the authorization request.
+        :return: Dictionary of token parameters.
+        :raises: Warning if scope has changed. OAuth2Error if response is invalid.
 
-        .. _`Section 7.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-7.1
-        .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
+        A successful response should always contain
+
+        **access_token**
+                The access token issued by the authorization server. Often
+                a random string.
+
+        **token_type**
+            The type of the token issued as described in `Section 7.1`_.
+            Commonly ``Bearer``.
+
+        **state**
+            If you provided the state parameter in the authorization phase, then
+            the provider is required to include that exact state value in the
+            response.
+
+        While it is not mandated it is recommended that the provider include
+
+        **expires_in**
+            The lifetime in seconds of the access token.  For
+            example, the value "3600" denotes that the access token will
+            expire in one hour from the time the response was generated.
+            If omitted, the authorization server SHOULD provide the
+            expiration time via other means or document the default value.
+
+        **scope**
+            Providers may supply this in all responses but are required to only
+            if it has changed since the authorization request.
+
+        A few example responses can be seen below::
+
+            >>> response_uri = 'https://example.com/callback#access_token=sdlfkj452&state=ss345asyht&token_type=Bearer&scope=hello+world'
+            >>> from oauthlib.oauth2 import MobileApplicationClient
+            >>> client = MobileApplicationClient('your_id')
+            >>> client.parse_request_uri_response(response_uri)
+            {
+                'access_token': 'sdlfkj452',
+                'token_type': 'Bearer',
+                'state': 'ss345asyht',
+                'scope': [u'hello', u'world']
+            }
+            >>> client.parse_request_uri_response(response_uri, state='other')
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 598, in parse_request_uri_response
+                    **scope**
+                File "oauthlib/oauth2/draft25/parameters.py", line 197, in parse_implicit_response
+                    raise ValueError("Mismatching or missing state in params.")
+            ValueError: Mismatching or missing state in params.
+            >>> client.parse_request_uri_response(response_uri, scope=['other'])
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 598, in parse_request_uri_response
+                    **scope**
+                File "oauthlib/oauth2/draft25/parameters.py", line 199, in parse_implicit_response
+                    validate_token_parameters(params, scope)
+                File "oauthlib/oauth2/draft25/parameters.py", line 285, in validate_token_parameters
+                    raise Warning("Scope has changed to %s." % new_scope)
+            Warning: Scope has changed to [u'hello', u'world'].
+
+        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
+        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
         """
         self.token = parse_implicit_response(uri, state=state, scope=scope)
         self._populate_attributes(self.token)
         return self.token
 
 
-class ClientCredentialsClient(Client):
+class BackendApplicationClient(Client):
     """A public client utilizing the client credentials grant workflow.
 
     The client can request an access token using only its client
@@ -460,15 +665,26 @@ class ClientCredentialsClient(Client):
 
         The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
-        format in the HTTP request entity-body:
+        format per `Appendix B`_ in the HTTP request entity-body:
 
-        grant_type
-                REQUIRED.  Value MUST be set to "client_credentials".
-        scope
-                OPTIONAL.  The scope of the access request as described by
-                `Section 3.3`_.
+        :param scope:   The scope of the access request as described by
+                        `Section 3.3`_.
+        :param kwargs:  Extra credentials to include in the token request.
 
-        .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
+        The client MUST authenticate with the authorization server as
+        described in `Section 3.2.1`_.
+
+        The prepared body will include all provided credentials as well as
+        the ``grant_type`` parameter set to ``client_credentials``::
+
+            >>> from oauthlib.oauth2 import BackendApplicationClient
+            >>> client = BackendApplicationClient('your_id')
+            >>> client.prepare_request_body(scope=['hello', 'world'])
+            'grant_type=client_credentials&scope=hello+world'
+
+        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         return prepare_token_request('client_credentials', body=body,
                                      scope=scope, **kwargs)
@@ -482,15 +698,97 @@ class ClientCredentialsClient(Client):
         failed client authentication or is invalid, the authorization server
         returns an error response as described in `Section 5.2`_.
 
-        .. `Section 5.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.1
-        .. `Section 5.2`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.2
+        :param body: The response body from the token request.
+        :param scope: Scopes originally requested.
+        :return: Dictionary of token parameters.
+        :raises: Warning if scope has changed. OAuth2Error if response is invalid.
+
+        These response are json encoded and could easily be parsed without
+        the assistance of OAuthLib. However, there are a few subtle issues
+        to be aware of regarding the response which are helpfully addressed
+        through the raising of various errors.
+
+        A successful response should always contain
+
+        **access_token**
+                The access token issued by the authorization server. Often
+                a random string.
+
+        **token_type**
+            The type of the token issued as described in `Section 7.1`_.
+            Commonly ``Bearer``.
+
+        While it is not mandated it is recommended that the provider include
+
+        **expires_in**
+            The lifetime in seconds of the access token.  For
+            example, the value "3600" denotes that the access token will
+            expire in one hour from the time the response was generated.
+            If omitted, the authorization server SHOULD provide the
+            expiration time via other means or document the default value.
+
+        **scope**
+            Providers may supply this in all responses but are required to only
+            if it has changed since the authorization request.
+
+        A normal response might look like::
+
+            >>> json.loads(response_body)
+            {
+                    'access_token': 'sdfkjh345',
+                    'token_type': 'Bearer',
+                    'expires_in': '3600',
+                    'refresh_token': 'x345dgasd',
+                    'scope': 'hello world',
+            }
+            >>> from oauthlib.oauth2 import BackendApplicationClient
+            >>> client = BackendApplicationClient('your_id')
+            >>> client.parse_request_body_response(response_body)
+            {
+                    'access_token': 'sdfkjh345',
+                    'token_type': 'Bearer',
+                    'expires_in': '3600',
+                    'refresh_token': 'x345dgasd',
+                    'scope': ['hello', 'world'],    # note the list
+            }
+
+        If there was a scope change you will be notified with a warning::
+
+            >>> client.parse_request_body_response(response_body, scope=['images'])
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                    .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                    validate_token_parameters(params, scope)
+                File "oauthlib/oauth2/draft25/parameters.py", line 285, in validate_token_parameters
+                    raise Warning("Scope has changed to %s." % new_scope)
+            Warning: Scope has changed to [u'hello', u'world'].
+
+        If there was an error on the providers side you will be notified with
+        an error. For example, if there was no ``token_type`` provided::
+
+            >>> client.parse_request_body_response(response_body)
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                    File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                    validate_token_parameters(params, scope)
+                File "oauthlib/oauth2/draft25/parameters.py", line 276, in validate_token_parameters
+                    raise MissingTokenTypeError()
+            oauthlib.oauth2.draft25.errors.MissingTokenTypeError
+
+        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
         """
         self.token = parse_token_response(body, scope=scope)
         self._populate_attributes(self.token)
         return self.token
 
 
-class PasswordCredentialsClient(Client):
+class LegacyApplicationClient(Client):
     """A public client using the resource owner password and username directly.
 
     The resource owner password credentials grant type is suitable in
@@ -512,32 +810,41 @@ class PasswordCredentialsClient(Client):
     MUST discard the credentials once an access token has been obtained.
     """
 
-    def __init__(self, client_id, username, password, **kwargs):
-        super(PasswordCredentialsClient, self).__init__(client_id, **kwargs)
-        self.username = username
-        self.password = password
+    def __init__(self, client_id, **kwargs):
+        super(LegacyApplicationClient, self).__init__(client_id, **kwargs)
 
-    def prepare_request_body(self, body='', scope=None, **kwargs):
+    def prepare_request_body(self, username, password, body='', scope=None, **kwargs):
         """Add the resource owner password and username to the request body.
 
         The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
-        format in the HTTP request entity-body:
+        format per `Appendix B`_ in the HTTP request entity-body:
 
-        grant_type
-                REQUIRED.  Value MUST be set to "password".
-        username
-                REQUIRED.  The resource owner username.
-        password
-                REQUIRED.  The resource owner password.
-        scope
-                OPTIONAL.  The scope of the access request as described by
-                `Section 3.3`_.
+        :param username:    The resource owner username.
+        :param password:    The resource owner password.
+        :param scope:   The scope of the access request as described by
+                        `Section 3.3`_.
+        :param kwargs:  Extra credentials to include in the token request.
 
-        .. _`Section 3.3`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-3.3
+        If the client type is confidential or the client was issued client
+        credentials (or assigned other authentication requirements), the
+        client MUST authenticate with the authorization server as described
+        in `Section 3.2.1`_.
+
+        The prepared body will include all provided credentials as well as
+        the ``grant_type`` parameter set to ``password``::
+
+            >>> from oauthlib.oauth2 import LegacyApplicationClient
+            >>> client = LegacyApplicationClient('your_id')
+            >>> client.prepare_request_body(username='foo', password='bar', scope=['hello', 'world'])
+            'grant_type=password&username=foo&scope=hello+world&password=bar'
+
+        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
-        return prepare_token_request('password', body=body, username=self.username,
-                password=self.password, scope=scope, **kwargs)
+        return prepare_token_request('password', body=body, username=username,
+                password=password, scope=scope, **kwargs)
 
     def parse_request_body_response(self, body, scope=None):
         """Parse the JSON response body.
@@ -548,12 +855,107 @@ class PasswordCredentialsClient(Client):
         authentication or is invalid, the authorization server returns an
         error response as described in `Section 5.2`_.
 
-        .. `Section 5.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.1
-        .. `Section 5.2`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#section-5.2
+        :param body: The response body from the token request.
+        :param scope: Scopes originally requested.
+        :return: Dictionary of token parameters.
+        :raises: Warning if scope has changed. OAuth2Error if response is invalid.
+
+        These response are json encoded and could easily be parsed without
+        the assistance of OAuthLib. However, there are a few subtle issues
+        to be aware of regarding the response which are helpfully addressed
+        through the raising of various errors.
+
+        A successful response should always contain
+
+        **access_token**
+                The access token issued by the authorization server. Often
+                a random string.
+
+        **token_type**
+            The type of the token issued as described in `Section 7.1`_.
+            Commonly ``Bearer``.
+
+        While it is not mandated it is recommended that the provider include
+
+        **expires_in**
+            The lifetime in seconds of the access token.  For
+            example, the value "3600" denotes that the access token will
+            expire in one hour from the time the response was generated.
+            If omitted, the authorization server SHOULD provide the
+            expiration time via other means or document the default value.
+
+        **scope**
+            Providers may supply this in all responses but are required to only
+            if it has changed since the authorization request.
+
+        A normal response might look like::
+
+            >>> json.loads(response_body)
+            {
+                    'access_token': 'sdfkjh345',
+                    'token_type': 'Bearer',
+                    'expires_in': '3600',
+                    'refresh_token': 'x345dgasd',
+                    'scope': 'hello world',
+            }
+            >>> from oauthlib.oauth2 import LegacyApplicationClient
+            >>> client = LegacyApplicationClient('your_id')
+            >>> client.parse_request_body_response(response_body)
+            {
+                    'access_token': 'sdfkjh345',
+                    'token_type': 'Bearer',
+                    'expires_in': '3600',
+                    'refresh_token': 'x345dgasd',
+                    'scope': ['hello', 'world'],    # note the list
+            }
+
+        If there was a scope change you will be notified with a warning::
+
+            >>> client.parse_request_body_response(response_body, scope=['images'])
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                    .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                    validate_token_parameters(params, scope)
+                File "oauthlib/oauth2/draft25/parameters.py", line 285, in validate_token_parameters
+                    raise Warning("Scope has changed to %s." % new_scope)
+            Warning: Scope has changed to [u'hello', u'world'].
+
+        If there was an error on the providers side you will be notified with
+        an error. For example, if there was no ``token_type`` provided::
+
+            >>> client.parse_request_body_response(response_body)
+            Traceback (most recent call last):
+                File "<stdin>", line 1, in <module>
+                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                    File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                    validate_token_parameters(params, scope)
+                File "oauthlib/oauth2/draft25/parameters.py", line 276, in validate_token_parameters
+                    raise MissingTokenTypeError()
+            oauthlib.oauth2.draft25.errors.MissingTokenTypeError
+
+        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
         """
         self.token = parse_token_response(body, scope=scope)
         self._populate_attributes(self.token)
         return self.token
+
+
+# TODO(ib-lundgren): Deprecate these names
+class UserAgentClient(MobileApplicationClient):
+    pass
+
+
+class PasswordCredentialsClient(LegacyApplicationClient):
+    pass
+
+
+class ClientCredentialsClient(BackendApplicationClient):
+    pass
 
 
 class AuthorizationEndpoint(object):
@@ -568,24 +970,35 @@ class AuthorizationEndpoint(object):
     this specification.
 
     The endpoint URI MAY include an "application/x-www-form-urlencoded"
-    formatted (per Appendix B) query component ([RFC3986] section 3.4),
+    formatted (per `Appendix B`_) query component,
     which MUST be retained when adding additional query parameters.  The
-    endpoint URI MUST NOT include a fragment component.
+    endpoint URI MUST NOT include a fragment component::
+
+        https://example.com/path?query=component             # OK
+        https://example.com/path?query=component#fragment    # Not OK
 
     Since requests to the authorization endpoint result in user
     authentication and the transmission of clear-text credentials (in the
     HTTP response), the authorization server MUST require the use of TLS
     as described in Section 1.6 when sending requests to the
-    authorization endpoint.
+    authorization endpoint::
+
+        # We will deny any request which URI schema is not with https
 
     The authorization server MUST support the use of the HTTP "GET"
     method [RFC2616] for the authorization endpoint, and MAY support the
-    use of the "POST" method as well.
+    use of the "POST" method as well::
+
+        # HTTP method is currently not enforced
 
     Parameters sent without a value MUST be treated as if they were
     omitted from the request.  The authorization server MUST ignore
     unrecognized request parameters.  Request and response parameters
-    MUST NOT be included more than once.
+    MUST NOT be included more than once::
+
+        # Enforced through the design of oauthlib.common.Request
+
+    .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
     """
 
     def __init__(self, default_response_type, default_token_type,
@@ -614,7 +1027,7 @@ class AuthorizationEndpoint(object):
             headers=None, scopes=None, credentials=None):
         """Extract response_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        request.authorized_scopes = scopes  # TODO: implement/test/doc this
+        request.scopes = scopes
         # TODO: decide whether this should be a required argument
         request.user = None     # TODO: explain this in docs
         for k, v in (credentials or {}).items():
@@ -630,12 +1043,54 @@ class AuthorizationEndpoint(object):
             headers=None):
         """Extract response_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
+        request.scopes = None
         response_type_handler = self.response_types.get(
                 request.response_type, self.default_response_type_handler)
         return response_type_handler.validate_authorization_request(request)
 
 
 class TokenEndpoint(object):
+    """Token issuing endpoint.
+
+    The token endpoint is used by the client to obtain an access token by
+    presenting its authorization grant or refresh token.  The token
+    endpoint is used with every authorization grant except for the
+    implicit grant type (since an access token is issued directly).
+
+    The means through which the client obtains the location of the token
+    endpoint are beyond the scope of this specification, but the location
+    is typically provided in the service documentation.
+
+    The endpoint URI MAY include an "application/x-www-form-urlencoded"
+    formatted (per `Appendix B`_) query component,
+    which MUST be retained when adding additional query parameters.  The
+    endpoint URI MUST NOT include a fragment component::
+
+        https://example.com/path?query=component             # OK
+        https://example.com/path?query=component#fragment    # Not OK
+
+    Since requests to the authorization endpoint result in user
+    Since requests to the token endpoint result in the transmission of
+    clear-text credentials (in the HTTP request and response), the
+    authorization server MUST require the use of TLS as described in
+    Section 1.6 when sending requests to the token endpoint::
+
+        # We will deny any request which URI schema is not with https
+
+    The client MUST use the HTTP "POST" method when making access token
+    requests::
+
+        # HTTP method is currently not enforced
+
+    Parameters sent without a value MUST be treated as if they were
+    omitted from the request.  The authorization server MUST ignore
+    unrecognized request parameters.  Request and response parameters
+    MUST NOT be included more than once::
+
+        # Delegated to each grant type.
+
+    .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+    """
 
     def __init__(self, default_grant_type, default_token_type, grant_types):
         self._grant_types = grant_types
@@ -672,7 +1127,30 @@ class TokenEndpoint(object):
 
 
 class ResourceEndpoint(object):
+    """Authorizes access to protected resources.
 
+    The client accesses protected resources by presenting the access
+    token to the resource server.  The resource server MUST validate the
+    access token and ensure that it has not expired and that its scope
+    covers the requested resource.  The methods used by the resource
+    server to validate the access token (as well as any error responses)
+    are beyond the scope of this specification but generally involve an
+    interaction or coordination between the resource server and the
+    authorization server::
+
+        # For most cases, returning a 403 should suffice.
+
+    The method in which the client utilizes the access token to
+    authenticate with the resource server depends on the type of access
+    token issued by the authorization server.  Typically, it involves
+    using the HTTP "Authorization" request header field [RFC2617] with an
+    authentication scheme defined by the specification of the access
+    token type used, such as [RFC6750]::
+
+        # Access tokens may also be provided in query and body
+        https://example.com/protected?access_token=kjfch2345sdf   # Query
+        access_token=sdf23409df   # Body
+    """
     def __init__(self, default_token, token_types):
         self._tokens = token_types
         self._default_token = default_token
@@ -745,6 +1223,13 @@ class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoin
     """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
 
     def __init__(self, request_validator, token_generator=None, **kwargs):
+        """Construct a new web application server.
+
+        :param request_validator: An implementation of oauthlib.oauth2.RequestValidator.
+        :param token_generator: A function to generate a token from a request.
+        :param kwargs: Extra parameters to pass to authorization endpoint,
+                       token endpoint and resource endpoint constructors.
+        """
         auth_grant = grant_types.AuthorizationCodeGrant(request_validator)
         refresh_grant = grant_types.RefreshTokenGrant(request_validator)
         bearer = tokens.BearerToken(request_validator, token_generator)

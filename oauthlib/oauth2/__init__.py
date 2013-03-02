@@ -16,5 +16,6 @@ from .draft25 import ClientCredentialsClient as BackendApplicationClient
 from .draft25 import AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint
 from .draft25 import WebApplicationServer, MobileApplicationServer
 from .draft25 import LegacyApplicationServer, BackendApplicationServer
-from .draft25.grant_types import RequestValidator
+from .draft25.grant_types import *
+from .draft25.tokens import BearerToken
 from .draft25.errors import *

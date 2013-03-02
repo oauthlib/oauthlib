@@ -34,14 +34,16 @@ class AuthorizationEndpointTest(TestCase):
     def test_authorization_grant(self):
         uri = 'http://i.b/l?response_type=code&client_id=me&scope=all+of+them&state=xyz'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
-        uri, headers, body, status_code = self.endpoint.create_authorization_response(uri)
+        uri, headers, body, status_code = self.endpoint.create_authorization_response(
+                uri, scopes=['all', 'of', 'them'])
         self.assertURLEqual(uri, 'http://back.to/me?code=abc&state=xyz')
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_implicit_grant(self):
         uri = 'http://i.b/l?response_type=token&client_id=me&scope=all+of+them&state=xyz'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
-        uri, headers, body, status_code = self.endpoint.create_authorization_response(uri)
+        uri, headers, body, status_code = self.endpoint.create_authorization_response(
+                uri, scopes=['all', 'of', 'them'])
         self.assertURLEqual(uri, 'http://back.to/me#access_token=abc&expires_in=3600&token_type=Bearer&state=xyz&scope=all+of+them', parse_fragment=True)
 
     def test_missing_type(self):
@@ -49,7 +51,8 @@ class AuthorizationEndpointTest(TestCase):
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         self.mock_validator.validate_request = mock.MagicMock(
                 side_effect=errors.InvalidRequestError())
-        uri, headers, body, status_code = self.endpoint.create_authorization_response(uri)
+        uri, headers, body, status_code = self.endpoint.create_authorization_response(
+                uri, scopes=['all', 'of', 'them'])
         self.assertURLEqual(uri, 'http://back.to/me?error=invalid_request&error_description=Missing+response_type+parameter.')
 
     def test_invalid_type(self):
@@ -57,7 +60,8 @@ class AuthorizationEndpointTest(TestCase):
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         self.mock_validator.validate_request = mock.MagicMock(
                 side_effect=errors.UnsupportedResponseTypeError())
-        uri, headers, body, status_code = self.endpoint.create_authorization_response(uri)
+        uri, headers, body, status_code = self.endpoint.create_authorization_response(
+                uri, scopes=['all', 'of', 'them'])
         self.assertURLEqual(uri, 'http://back.to/me?error=unsupported_response_type')
 
 
