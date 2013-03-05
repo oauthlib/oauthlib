@@ -84,29 +84,30 @@ OAuth 1: Using the Client
 
     OAuth 1 commonly use the Authorization header to pass the OAuth signature and other OAuth parameters. This is the default setting in Client and need not be specified. However you may also use the request url query or the request body to pass the parameters. You can specify this location using the signature_type constructor parameter, as shown below::
 
-        # Embed in Authorization header (recommended)
-        client = oauthlib.oauth1.Client('client_key',
-            signature_type=SIGNATURE_TYPE_AUTH_HEADER,
-        )
+        >>> # Embed in Authorization header (recommended)
+        >>> client = oauthlib.oauth1.Client('client_key',
+                signature_type=SIGNATURE_TYPE_AUTH_HEADER,
+            )
 
         >>> uri, headers, body = client.sign('http://example.com/path?query=hello')
         >>> headers
         {u'Authorization': u'OAuth oauth_nonce="107143098223781054691360095427", oauth_timestamp="1360095427", oauth_version="1.0", oauth_signature_method="HMAC-SHA1", oauth_consumer_key="client_key", oauth_signature="86gpxY1DUXSBRRyWnRNJekeWEzw%3D"'}
 
-        # Embed in url query
-        client = oauthlib.oauth1.Client('client_key',
-            signature_type=SIGNATURE_TYPE_QUERY,
-        )
+        >>> # Embed in url query
+        >>> client = oauthlib.oauth1.Client('client_key',
+                signature_type=SIGNATURE_TYPE_QUERY,
+            )
+
         >>> uri, headers, body = client.sign('http://example.com/path?query=hello')
         >>> uri
         http://example.com/path?query=hello&oauth_nonce=97599600646423262881360095509&oauth_timestamp=1360095509&oauth_version=1.0&oauth_signature_method=HMAC-SHA1&oauth_consumer_key=client_key&oauth_signature=VQAib%2F4uRPwfVmCZkgSE3q2p7zU%3D
         
-        # Embed in body
-        client = oauthlib.oauth1.Client('client_key',
-            signature_type=SIGNATURE_TYPE_BODY,
-        )
+        >>> # Embed in body
+        >>> client = oauthlib.oauth1.Client('client_key',
+                signature_type=SIGNATURE_TYPE_BODY,
+            )
 
-        # Please set content-type to application/x-www-form-urlencoded
+        >>> # Please set content-type to application/x-www-form-urlencoded
         >>> headers = {'Authorization':oauthlib.oauth1.CONTENT_TYPE_FORM_URLENCODED}
         >>> uri, headers, body = client.sign('http://example.com/path?query=hello',
                                              headers=headers)

@@ -33,15 +33,18 @@ Implementing an OAuth provider is simple with OAuthLib. It is done by inheriting
 
     There are three types of verifications you will want to perform, all which could be altered through the use of a realm parameter if you choose to allow/require this. Note that if verify_request returns false a HTTP 401Unauthorized should be returned. If a ValueError is raised a HTTP 400 Bad Request response should be returned. All request verifications will look similar to the following::
 
-       try:
-          authorized = server.verify_request(uri, http_method, body, headers)
-          if not authorized:
-             # return a HTTP 401 Unauthorized response
-          else:
-             # Create, save and return request token/access token/protected resource 
-             # or whatever you had in mind that required OAuth 
-       except ValueError:
-           # return a HTTP 400 Bad Request response    
+        try:
+            authorized = server.verify_request(uri, http_method, body, headers)
+            if not authorized:
+                # return a HTTP 401 Unauthorized response
+                pass
+            else:
+               # Create, save and return request token/access token/protected resource
+               # or whatever you had in mind that required OAuth
+               pass
+        except ValueError:
+            # return a HTTP 400 Bad Request response
+            pass
 
     The only change will be parameters to the verify_request method.
 
