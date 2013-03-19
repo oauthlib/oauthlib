@@ -115,13 +115,6 @@ class InvalidRequestError(OAuth2Error):
     error = 'invalid_request'
 
 
-class UnauthorizedClientError(OAuth2Error):
-    """The client is not authorized to request an authorization code using
-    this method.
-    """
-    error = 'unauthorized_client'
-
-
 class AccessDeniedError(OAuth2Error):
     """The resource owner or authorization server denied the request."""
     error = 'access_denied'
@@ -192,13 +185,6 @@ class UnsupportedGrantTypeError(OAuth2Error):
     server.
     """
     error = 'unsupported_grant_type'
-
-
-class InvalidScopeError(OAuth2Error):
-    """The requested scope is invalid, unknown, malformed, or exceeds the
-    scope granted by the resource owner.
-    """
-    error = 'invalid_scope'
 
 
 def raise_from_error(error, params=None):

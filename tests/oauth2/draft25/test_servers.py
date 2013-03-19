@@ -445,15 +445,151 @@ class ResourceOwnerAssociationTest(TestCase):
 
 class ErrorResponseTest(TestCase):
 
-    def test_fatal_errors(self):
+    def setUp(self):
+        self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator.get_default_redirect_uri.return_value = None
+        self.web = WebApplicationServer(self.validator)
+        self.mobile = MobileApplicationServer(self.validator)
+        self.legacy = LegacyApplicationServer(self.validator)
+        self.backend = BackendApplicationServer(self.validator)
+
+    def test_invalid_redirect_uri(self):
+        uri = 'https://example.com/authorize?client_id=foo&redirect_uri=wrong'
+        # Authorization code grant
+        self.assertRaises(errors.InvalidRedirectURIError,
+                self.web.validate_authorization_request, uri)
+        self.assertRaises(errors.InvalidRedirectURIError,
+                self.web.create_authorization_response, uri, scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaises(errors.InvalidRedirectURIError,
+                self.mobile.validate_authorization_request, uri)
+        self.assertRaises(errors.InvalidRedirectURIError,
+                self.mobile.create_authorization_response, uri, scopes=['foo'])
+
+    def test_missing_redirect_uri(self):
+        uri = 'https://example.com/authorize?client_id=foo'
+        # Authorization code grant
+        self.assertRaises(errors.MissingRedirectURIError,
+                self.web.validate_authorization_request, uri)
+        self.assertRaises(errors.MissingRedirectURIError,
+                self.web.create_authorization_response, uri, scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaises(errors.MissingRedirectURIError,
+                self.mobile.validate_authorization_request, uri)
+        self.assertRaises(errors.MissingRedirectURIError,
+                self.mobile.create_authorization_response, uri, scopes=['foo'])
+
+    def test_mismatching_redirect_uri(self):
+        uri = 'https://example.com/authorize?client_id=foo&redirect_uri=https%3A%2F%2Fi.b%2Fback'
+        # Authorization code grant
+        self.validator.validate_redirect_uri.return_value = False
+        self.assertRaises(errors.MismatchingRedirectURIError,
+                self.web.validate_authorization_request, uri)
+        self.assertRaises(errors.MismatchingRedirectURIError,
+                self.web.create_authorization_response, uri, scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaises(errors.MismatchingRedirectURIError,
+                self.mobile.validate_authorization_request, uri)
+        self.assertRaises(errors.MismatchingRedirectURIError,
+                self.mobile.create_authorization_response, uri, scopes=['foo'])
+
+    def test_missing_client_id(self):
+        uri = 'https://example.com/authorize?redirect_uri=https%3A%2F%2Fi.b%2Fback'
+        # Authorization code grant
+        self.validator.validate_redirect_uri.return_value = False
+        self.assertRaises(errors.MissingClientIdError,
+                self.web.validate_authorization_request, uri)
+        self.assertRaises(errors.MissingClientIdError,
+                self.web.create_authorization_response, uri, scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaises(errors.MissingClientIdError,
+                self.mobile.validate_authorization_request, uri)
+        self.assertRaises(errors.MissingClientIdError,
+                self.mobile.create_authorization_response, uri, scopes=['foo'])
+
+    def test_invalid_client_id(self):
+        uri = 'https://example.com/authorize?client_id=foo&redirect_uri=https%3A%2F%2Fi.b%2Fback'
+        # Authorization code grant
+        self.validator.validate_client_id.return_value = False
+        self.assertRaises(errors.InvalidClientIdError,
+                self.web.validate_authorization_request, uri)
+        self.assertRaises(errors.InvalidClientIdError,
+                self.web.create_authorization_response, uri, scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaises(errors.InvalidClientIdError,
+                self.mobile.validate_authorization_request, uri)
+        self.assertRaises(errors.InvalidClientIdError,
+                self.mobile.create_authorization_response, uri, scopes=['foo'])
+
+    def test_invalid_request(self):
+        # Authorization code grant
+        # Implicit grant
+        # Password credentials grant
+        # Client credentials grant
         pass
 
-    def test_authorization_response(self):
-        # except scope and state
+    def test_unauthorized_client(self):
+        # Authorization code grant
+        # Implicit grant
+        # Password credentials grant
+        # Client credentials grant
         pass
 
-    def test_token_response(self):
-        # except scope and auth
+    def test_access_denied(self):
+        # Authorization code grant
+        # Implicit grant
+        # Password credentials grant
+        # Client credentials grant
+        pass
+
+    def test_unsupported_response_type(self):
+        # Authorization code grant
+        # Implicit grant
+        pass
+
+    def test_invalid_scope(self):
+        # Authorization code grant
+        # Implicit grant
+        # Password credentials grant
+        # Client credentials grant
+        pass
+
+    def test_server_error(self):
+        # Authorization code grant
+        # Implicit grant
+        # Password credentials grant
+        # Client credentials grant
+        pass
+
+    def test_temporarily_unavailable(self):
+        # Authorization code grant
+        # Implicit grant
+        # Password credentials grant
+        # Client credentials grant
+        pass
+
+    def test_invalid_client(self):
+        # Authorization code grant
+        # Implicit grant
+        # Password credentials grant
+        # Client credentials grant
+        pass
+
+    def test_invalid_grant(self):
+        # Authorization code grant
+        # Password credentials grant
+        # Client credentials grant
+        pass
+
+    def test_unsupported_grant_type(self):
+        # Authorization code grant
+        # Password credentials grant
+        # Client credentials grant
         pass
 
 
