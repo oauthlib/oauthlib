@@ -123,7 +123,6 @@ def urldecode(query):
     if len(re.findall(invalid_hex, query)):
         raise ValueError('Invalid hex encoding in query string.')
 
-    query = query.encode('utf-8') if isinstance(query, unicode_type) else query
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
     params = urlparse.parse_qsl(query, keep_blank_values=True)
@@ -315,7 +314,7 @@ class Request(object):
         self.uri = encode(uri)
         self.http_method = encode(http_method)
         self.headers = CaseInsensitiveDict(encode(headers or {}))
-        self.body = encode(body)
+        self.body = body
         self.decoded_body = extract_params(encode(body))
         self.oauth_params = []
 
