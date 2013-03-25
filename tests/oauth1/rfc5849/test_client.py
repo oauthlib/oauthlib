@@ -103,3 +103,16 @@ class SigningTest(TestCase):
                     headers={
                         'Content-Type': 'application/x-www-form-urlencoded'
                     })
+
+    def test_sign_unicode(self):
+        client = Client('client_key', nonce='abc', timestamp='abc')
+        _, h, b = client.sign('http://i.b/path', http_method='POST',
+                body='status=%E5%95%A6%E5%95%A6',
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(b, 'status=%E5%95%A6%E5%95%A6')
+        self.assertIn('oauth_signature="yrtSqp88m%2Fc5UDaucI8BXK4oEtk%3D"', h['Authorization'])
+        _, h, b = client.sign('http://i.b/path', http_method='POST',
+                body='status=%C3%A6%C3%A5%C3%B8',
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(b, 'status=%C3%A6%C3%A5%C3%B8')
+        self.assertIn('oauth_signature="oG5t3Eg%2FXO5FfQgUUlTtUeeZzvk%3D"', h['Authorization'])

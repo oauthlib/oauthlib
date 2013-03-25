@@ -124,7 +124,7 @@ def urldecode(query):
     if len(re.findall(invalid_hex, query)):
         raise ValueError('Invalid hex encoding in query string.')
 
-    query = query.encode('utf-8') if isinstance(query, unicode_type) else query
+    query = query.encode('utf-8') if not PY3 and isinstance(query, unicode_type) else query
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
     params = urlparse.parse_qsl(query, keep_blank_values=True)
