@@ -727,11 +727,23 @@ class ErrorResponseTest(TestCase):
         self.assertEqual(s, 503)
 
     def test_invalid_client(self):
+        self.validator.authenticate_client.return_value = False
+        self.validator.authenticate_client_id.return_value = False
+
         # Authorization code grant
-        # Implicit grant
+        _, _, body, _ = self.web.create_token_response('https://i.b/token',
+                body='grant_type=authorization_code&code=foo')
+        self.assertEqual('invalid_client', json.loads(body)['error'])
+
         # Password credentials grant
+        _, _, body, _ = self.legacy.create_token_response('https://i.b/token',
+                body='grant_type=password&username=foo&password=bar')
+        self.assertEqual('invalid_client', json.loads(body)['error'])
+
         # Client credentials grant
-        pass
+        _, _, body, _ = self.legacy.create_token_response('https://i.b/token',
+                body='grant_type=client_credentials')
+        self.assertEqual('invalid_client', json.loads(body)['error'])
 
     def test_invalid_grant(self):
         self.validator.authenticate_client.side_effect = self.set_client
