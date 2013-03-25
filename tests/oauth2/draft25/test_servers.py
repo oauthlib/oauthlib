@@ -739,10 +739,22 @@ class ErrorResponseTest(TestCase):
         pass
 
     def test_unsupported_grant_type(self):
+        self.validator.authenticate_client.side_effect = self.set_client
+
         # Authorization code grant
+        _, _, body, _ = self.web.create_token_response('https://i.b/token',
+                body='grant_type=bar&code=foo')
+        self.assertEqual('unsupported_grant_type', json.loads(body)['error'])
+
         # Password credentials grant
+        _, _, body, _ = self.legacy.create_token_response('https://i.b/token',
+                body='grant_type=bar&username=foo&password=bar')
+        self.assertEqual('unsupported_grant_type', json.loads(body)['error'])
+
         # Client credentials grant
-        pass
+        _, _, body, _ = self.backend.create_token_response('https://i.b/token',
+                body='grant_type=bar')
+        self.assertEqual('unsupported_grant_type', json.loads(body)['error'])
 
 
 class ExtraCredentialsTest(TestCase):
