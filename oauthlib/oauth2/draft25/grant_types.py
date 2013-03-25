@@ -126,6 +126,18 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def invalidate_authorization_code(self, client_id, code, request, *args, **kwargs):
+        """Invalidate an authorization code after use.
+
+        :param client_id: Unicode client identifier
+        :param code: A dict of the authorization code grant.
+        :param request: The HTTP Request (oauthlib.common.Request)
+
+        Method is used by:
+            - Authorization Code Grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         """Persist the authorization_code.
 
@@ -589,7 +601,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Client error during validation of %r. %r.', request, e)
             return None, headers, e.json, e.status_code
 
-        return None, headers, json.dumps(token_handler.create_token(request, refresh_token=True)), 200
+        token = token_handler.create_token(request, refresh_token=True)
+        self.request_validator.invalidate_authorization_code(
+                request.client_id, request.code, request)
+        return None, headers, json.dumps(token), 200
 
     def validate_authorization_request(self, request):
         """Check the authorization request for normal and fatal errors.
