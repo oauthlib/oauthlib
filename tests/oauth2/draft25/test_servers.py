@@ -632,9 +632,17 @@ class ErrorResponseTest(TestCase):
         self.assertEqual('access_denied', json.loads(body)['error'])
 
     def test_unsupported_response_type(self):
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+
         # Authorization code grant
+        self.assertRaises(errors.UnsupportedResponseTypeError,
+                self.web.validate_authorization_request,
+                'https://i.b/auth?response_type=foo&client_id=foo')
+
         # Implicit grant
-        pass
+        self.assertRaises(errors.UnsupportedResponseTypeError,
+                self.mobile.validate_authorization_request,
+                'https://i.b/auth?response_type=foo&client_id=foo')
 
     def test_invalid_scope(self):
         # Authorization code grant
