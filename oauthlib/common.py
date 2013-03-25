@@ -9,6 +9,7 @@ This module provides data structures and utilities common
 to all implementations of OAuth.
 """
 
+import collections
 import random
 import re
 import sys
@@ -333,5 +334,15 @@ class Request(object):
 
     @property
     def uri_query_params(self):
+        if not self.uri_query:
+            return []
         return urlparse.parse_qsl(self.uri_query, keep_blank_values=True,
                                   strict_parsing=True)
+
+    @property
+    def duplicate_params(self):
+        seen_keys = collections.defaultdict(int)
+        all_keys = (p[0] for p in self.decoded_body or [] + self.uri_query_params)
+        for k in all_keys:
+            seen_keys[k] += 1
+        return [k for k, c in seen_keys.items() if c > 1]

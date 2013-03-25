@@ -657,6 +657,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.InvalidRequestError(state=request.state,
                     description='Missing response_type parameter.')
 
+        for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
+            if param in request.duplicate_params:
+                raise errors.InvalidRequestError(state=request.state,
+                        description='Duplicate %s parameter.' % param)
+
         if not self.request_validator.validate_response_type(request.client_id,
                 request.response_type, request):
             log.debug('Client %s is not authorized to use response_type %s.',
@@ -686,6 +691,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
         if request.code is None:
             raise errors.InvalidRequestError(
                     description='Missing code parameter.')
+
+        for param in ('client_id', 'grant_type', 'redirect_uri'):
+            if param in request.duplicate_params:
+                raise errors.InvalidRequestError(state=request.state,
+                        description='Duplicate %s parameter.' % param)
 
         # If the client type is confidential or the client was issued client
         # credentials (or assigned other authentication requirements), the
@@ -1018,6 +1028,11 @@ class ImplicitGrant(GrantTypeBase):
             raise errors.InvalidRequestError(state=request.state,
                     description='Missing response_type parameter.')
 
+        for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
+            if param in request.duplicate_params:
+                raise errors.InvalidRequestError(state=request.state,
+                        description='Duplicate %s parameter.' % param)
+
         # REQUIRED. Value MUST be set to "token".
         if request.response_type != 'token':
             raise errors.UnsupportedResponseTypeError(state=request.state)
@@ -1191,6 +1206,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
                 raise errors.InvalidRequestError(
                         'Request is missing %s parameter.' % param)
 
+        for param in ('grant_type', 'username', 'password', 'scope'):
+            if param in request.duplicate_params:
+                raise errors.InvalidRequestError(state=request.state,
+                        description='Duplicate %s parameter.' % param)
+
         # This error should rarely (if ever) occur if requests are routed to
         # grant type handlers based on the grant_type parameter.
         if not request.grant_type == 'password':
@@ -1284,6 +1304,11 @@ class ClientCredentialsGrant(GrantTypeBase):
 
         if not request.grant_type == 'client_credentials':
             raise errors.UnsupportedGrantTypeError()
+
+        for param in ('grant_type', 'scope'):
+            if param in request.duplicate_params:
+                raise errors.InvalidRequestError(state=request.state,
+                        description='Duplicate %s parameter.' % param)
 
         log.debug('Authenticating client, %r.', request)
         if not self.request_validator.authenticate_client(request):

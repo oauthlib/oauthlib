@@ -445,6 +445,11 @@ class ResourceOwnerAssociationTest(TestCase):
 
 class ErrorResponseTest(TestCase):
 
+    def set_client(self, request):
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
+        return True
+
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = None
@@ -527,11 +532,65 @@ class ErrorResponseTest(TestCase):
                 self.mobile.create_authorization_response, uri, scopes=['foo'])
 
     def test_invalid_request(self):
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+        token_uri = 'https://i.b/token'
+        invalid_uris = [
+            # Duplicate parameters
+            'https://i.b/auth?client_id=foo&client_id=bar&response_type={0}',
+            # Missing response type
+            'https://i.b/auth?client_id=foo',
+        ]
+
         # Authorization code grant
+        for uri in invalid_uris:
+            self.assertRaises(errors.InvalidRequestError,
+                    self.web.validate_authorization_request,
+                    uri.format('code'))
+            url, _, _, _ = self.web.create_authorization_response(
+                    uri.format('code'), scopes=['foo'])
+            self.assertIn('error=invalid_request', url)
+        invalid_bodies = [
+            # duplicate params
+            'grant_type=authorization_code&client_id=nope&client_id=nope&authorization_code=foo'
+        ]
+        for body in invalid_bodies:
+            _, _, body, _ = self.web.create_token_response(token_uri,
+                    body=body)
+            self.assertEqual('invalid_request', json.loads(body)['error'])
+
         # Implicit grant
+        for uri in invalid_uris:
+            self.assertRaises(errors.InvalidRequestError,
+                    self.mobile.validate_authorization_request,
+                    uri.format('token'))
+            url, _, _, _ = self.mobile.create_authorization_response(
+                    uri.format('token'), scopes=['foo'])
+            self.assertIn('error=invalid_request', url)
+
         # Password credentials grant
+        invalid_bodies = [
+            # duplicate params
+            'grant_type=password&username=foo&username=bar&password=baz'
+            # missing username
+            'grant_type=password&password=baz'
+            # missing password
+            'grant_type=password&username=foo'
+        ]
+        self.validator.authenticate_client.side_effect = self.set_client
+        for body in invalid_bodies:
+            _, _, body, _ = self.legacy.create_token_response(token_uri,
+                    body=body)
+            self.assertEqual('invalid_request', json.loads(body)['error'])
+
         # Client credentials grant
-        pass
+        invalid_bodies = [
+            # duplicate params
+            'grant_type=client_credentials&scope=foo&scope=bar'
+        ]
+        for body in invalid_bodies:
+            _, _, body, _ = self.backend.create_token_response(token_uri,
+                    body=body)
+            self.assertEqual('invalid_request', json.loads(body)['error'])
 
     def test_unauthorized_client(self):
         # Authorization code grant
