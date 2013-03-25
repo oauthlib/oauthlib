@@ -652,18 +652,79 @@ class ErrorResponseTest(TestCase):
         pass
 
     def test_server_error(self):
+        def raise_error(*args, **kwargs):
+            raise ValueError()
+
+        self.validator.validate_client_id.side_effect = raise_error
+        self.validator.authenticate_client.side_effect = raise_error
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+
         # Authorization code grant
+        self.web.catch_errors = True
+        _, _, _, s = self.web.create_authorization_response(
+                'https://i.b/auth?client_id=foo&response_type=code',
+                scopes=['foo'])
+        self.assertEqual(s, 500)
+        _, _, _, s = self.web.create_token_response(
+                'https://i.b/token',
+                body='grant_type=authorization_code&code=foo',
+                scopes=['foo'])
+        self.assertEqual(s, 500)
+
         # Implicit grant
+        self.mobile.catch_errors = True
+        _, _, _, s = self.mobile.create_authorization_response(
+                'https://i.b/auth?client_id=foo&response_type=token',
+                scopes=['foo'])
+        self.assertEqual(s, 500)
+
         # Password credentials grant
+        self.legacy.catch_errors = True
+        _, _, _, s = self.legacy.create_token_response(
+                'https://i.b/token',
+                body='grant_type=password&username=foo&password=foo')
+        self.assertEqual(s, 500)
+
         # Client credentials grant
-        pass
+        self.backend.catch_errors = True
+        _, _, _, s = self.backend.create_token_response(
+                'https://i.b/token',
+                body='grant_type=client_credentials')
+        self.assertEqual(s, 500)
 
     def test_temporarily_unavailable(self):
         # Authorization code grant
+        self.web.available = False
+        _, _, _, s = self.web.create_authorization_response(
+                'https://i.b/auth?client_id=foo&response_type=code',
+                scopes=['foo'])
+        self.assertEqual(s, 503)
+        _, _, _, s = self.web.create_token_response(
+                'https://i.b/token',
+                body='grant_type=authorization_code&code=foo',
+                scopes=['foo'])
+        self.assertEqual(s, 503)
+
         # Implicit grant
+        self.mobile.available = False
+        _, _, _, s = self.mobile.create_authorization_response(
+                'https://i.b/auth?client_id=foo&response_type=token',
+                scopes=['foo'])
+        self.assertEqual(s, 503)
+
         # Password credentials grant
+        self.legacy.available = False
+        _, _, _, s = self.legacy.create_token_response(
+                'https://i.b/token',
+                body='grant_type=password&username=foo&password=foo')
+        self.assertEqual(s, 503)
+
         # Client credentials grant
-        pass
+        self.backend.available = False
+        _, _, _, s = self.backend.create_token_response(
+                'https://i.b/token',
+                body='grant_type=client_credentials')
+        self.assertEqual(s, 503)
 
     def test_invalid_client(self):
         # Authorization code grant
@@ -675,7 +736,6 @@ class ErrorResponseTest(TestCase):
     def test_invalid_grant(self):
         # Authorization code grant
         # Password credentials grant
-        # Client credentials grant
         pass
 
     def test_unsupported_grant_type(self):

@@ -9,11 +9,14 @@ This module is an implementation of various logic needed
 for signing and checking OAuth 2.0 draft 25 requests.
 """
 import datetime
+import functools
 import logging
 
 from oauthlib.common import Request
 from oauthlib.oauth2.draft25 import tokens, grant_types
 from .errors import TokenExpiredError, InsecureTransportError
+from .errors import TemporarilyUnavailableError, ServerError
+from .errors import FatalClientError, OAuth2Error
 from .parameters import prepare_grant_uri, prepare_token_request
 from .parameters import parse_authorization_code_response
 from .parameters import parse_implicit_response, parse_token_response
@@ -958,7 +961,53 @@ class ClientCredentialsClient(BackendApplicationClient):
     pass
 
 
-class AuthorizationEndpoint(object):
+class BaseEndpoint(object):
+    def __init__(self):
+        self._available = True
+        self._catch_errors = False
+
+    @property
+    def available(self):
+        return self._available
+
+    @available.setter
+    def available(self, available):
+        self._available = available
+
+    @property
+    def catch_errors(self):
+        return self._catch_errors
+
+    @catch_errors.setter
+    def catch_errors(self, catch_errors):
+        self._catch_errors = catch_errors
+
+
+def catch_errors_and_unavailability(f):
+    @functools.wraps(f)
+    def wrapper(endpoint, uri, *args, **kwargs):
+        if not endpoint.available:
+            e = TemporarilyUnavailableError()
+            log.info('Endpoint unavailable, ignoring request %s.' % uri)
+            return None, {}, e.json, 503
+
+        if endpoint.catch_errors:
+            try:
+                return f(endpoint, uri, *args, **kwargs)
+            except OAuth2Error:
+                raise
+            except FatalClientError:
+                raise
+            except Exception as e:
+                error = ServerError()
+                log.warning('Exception caught while processing request, %s.' % e)
+                return None, {}, error.json, 500
+        else:
+            return f(endpoint, uri, *args, **kwargs)
+    return wrapper
+
+
+class AuthorizationEndpoint(BaseEndpoint):
     """Authorization endpoint - used by the client to obtain authorization
     from the resource owner via user-agent redirection.
 
@@ -1003,6 +1052,7 @@ class AuthorizationEndpoint(object):
 
     def __init__(self, default_response_type, default_token_type,
             response_types):
+        BaseEndpoint.__init__(self)
         self._response_types = response_types
         self._default_response_type = default_response_type
         self._default_token_type = default_token_type
@@ -1023,6 +1073,7 @@ class AuthorizationEndpoint(object):
     def default_token_type(self):
         return self._default_token_type
 
+    @catch_errors_and_unavailability
     def create_authorization_response(self, uri, http_method='GET', body=None,
             headers=None, scopes=None, credentials=None):
         """Extract response_type and route to the designated handler."""
@@ -1039,6 +1090,7 @@ class AuthorizationEndpoint(object):
         return response_type_handler.create_authorization_response(
                         request, self.default_token_type)
 
+    @catch_errors_and_unavailability
     def validate_authorization_request(self, uri, http_method='GET', body=None,
             headers=None):
         """Extract response_type and route to the designated handler."""
@@ -1049,7 +1101,7 @@ class AuthorizationEndpoint(object):
         return response_type_handler.validate_authorization_request(request)
 
 
-class TokenEndpoint(object):
+class TokenEndpoint(BaseEndpoint):
     """Token issuing endpoint.
 
     The token endpoint is used by the client to obtain an access token by
@@ -1093,6 +1145,7 @@ class TokenEndpoint(object):
     """
 
     def __init__(self, default_grant_type, default_token_type, grant_types):
+        BaseEndpoint.__init__(self)
         self._grant_types = grant_types
         self._default_token_type = default_token_type
         self._default_grant_type = default_grant_type
@@ -1113,6 +1166,7 @@ class TokenEndpoint(object):
     def default_token_type(self):
         return self._default_token_type
 
+    @catch_errors_and_unavailability
     def create_token_response(self, uri, http_method='GET', body=None,
             headers=None, credentials=None):
         """Extract grant_type and route to the designated handler."""
@@ -1126,7 +1180,7 @@ class TokenEndpoint(object):
                 request, self.default_token_type)
 
 
-class ResourceEndpoint(object):
+class ResourceEndpoint(BaseEndpoint):
     """Authorizes access to protected resources.
 
     The client accesses protected resources by presenting the access
@@ -1152,6 +1206,7 @@ class ResourceEndpoint(object):
         access_token=sdf23409df   # Body
     """
     def __init__(self, default_token, token_types):
+        BaseEndpoint.__init__(self)
         self._tokens = token_types
         self._default_token = default_token
 
@@ -1167,6 +1222,7 @@ class ResourceEndpoint(object):
     def tokens(self):
         return self._tokens
 
+    @catch_errors_and_unavailability
     def verify_request(self, uri, http_method='GET', body=None, headers=None,
             scopes=None):
         """Validate client, code etc, return body + headers"""
