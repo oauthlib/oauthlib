@@ -551,7 +551,7 @@ class ErrorResponseTest(TestCase):
             self.assertIn('error=invalid_request', url)
         invalid_bodies = [
             # duplicate params
-            'grant_type=authorization_code&client_id=nope&client_id=nope&authorization_code=foo'
+            'grant_type=authorization_code&client_id=nope&client_id=nope&code=foo'
         ]
         for body in invalid_bodies:
             _, _, body, _ = self.web.create_token_response(token_uri,
@@ -593,11 +593,34 @@ class ErrorResponseTest(TestCase):
             self.assertEqual('invalid_request', json.loads(body)['error'])
 
     def test_unauthorized_client(self):
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+        self.validator.validate_grant_type.return_value = False
+        self.validator.validate_response_type.return_value = False
+        self.validator.authenticate_client.side_effect = self.set_client
+        token_uri = 'https://i.b/token'
+
         # Authorization code grant
+        self.assertRaises(errors.UnauthorizedClientError,
+                self.web.validate_authorization_request,
+                'https://i.b/auth?response_type=code&client_id=foo')
+        _, _, body, _ = self.web.create_token_response(token_uri,
+                body='grant_type=authorization_code&code=foo')
+        self.assertEqual('unauthorized_client', json.loads(body)['error'])
+
         # Implicit grant
+        self.assertRaises(errors.UnauthorizedClientError,
+                self.mobile.validate_authorization_request,
+                'https://i.b/auth?response_type=token&client_id=foo')
+
         # Password credentials grant
+        _, _, body, _ = self.legacy.create_token_response(token_uri,
+                body='grant_type=password&username=foo&password=bar')
+        self.assertEqual('unauthorized_client', json.loads(body)['error'])
+
         # Client credentials grant
-        pass
+        _, _, body, _ = self.backend.create_token_response(token_uri,
+                body='grant_type=client_credentials')
+        self.assertEqual('unauthorized_client', json.loads(body)['error'])
 
     def test_access_denied(self):
         # Authorization code grant
