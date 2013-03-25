@@ -268,8 +268,11 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
         def authorization_response(request):
             # This is where the form submitted from authorize should end up
             # Which scopes user authorized access to + extra credentials you want
-            # appended to the request object passed into the validator methods
-            return request.POST['scopes'], {}
+            # appended to the request object passed into the validator methods.
+            # In almost every case, you will want to include the current
+            # user in these extra credentials in order to associate the user with
+            # the authorization code or bearer token. 
+            return request.POST['scopes'], {'user': request.user}
 
 
         @provider.access_token_view
