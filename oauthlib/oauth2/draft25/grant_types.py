@@ -565,7 +565,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         grant = self.create_authorization_code(request)
         logging.debug('Saving grant %r for %r.', grant, request)
-        self.request_validator.save_authorization_code(request, grant)
+        self.request_validator.save_authorization_code(request.client_id, grant, request)
         return common.add_params_to_uri(request.redirect_uri, grant.items()), None, None, 302
 
     def create_token_response(self, request, token_handler):
