@@ -734,9 +734,19 @@ class ErrorResponseTest(TestCase):
         pass
 
     def test_invalid_grant(self):
+        self.validator.authenticate_client.side_effect = self.set_client
+
         # Authorization code grant
+        self.validator.validate_code.return_value = False
+        _, _, body, _ = self.web.create_token_response('https://i.b/token',
+                body='grant_type=authorization_code&code=foo')
+        self.assertEqual('invalid_grant', json.loads(body)['error'])
+
         # Password credentials grant
-        pass
+        self.validator.validate_user.return_value = False
+        _, _, body, _ = self.legacy.create_token_response('https://i.b/token',
+                body='grant_type=password&username=foo&password=bar')
+        self.assertEqual('invalid_grant', json.loads(body)['error'])
 
     def test_unsupported_grant_type(self):
         self.validator.authenticate_client.side_effect = self.set_client
