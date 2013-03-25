@@ -645,11 +645,31 @@ class ErrorResponseTest(TestCase):
                 'https://i.b/auth?response_type=foo&client_id=foo')
 
     def test_invalid_scope(self):
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+        self.validator.validate_scopes.return_value = False
+        self.validator.authenticate_client.side_effect = self.set_client
+
         # Authorization code grant
+        self.assertRaises(errors.InvalidScopeError,
+                self.web.validate_authorization_request,
+                'https://i.b/auth?response_type=code&client_id=foo')
+
         # Implicit grant
+        self.assertRaises(errors.InvalidScopeError,
+                self.mobile.validate_authorization_request,
+                'https://i.b/auth?response_type=token&client_id=foo')
+
         # Password credentials grant
+        _, _, body, _ = self.legacy.create_token_response(
+                'https://i.b/token',
+                body='grant_type=password&username=foo&password=bar')
+        self.assertEqual('invalid_scope', json.loads(body)['error'])
+
         # Client credentials grant
-        pass
+        _, _, body, _ = self.backend.create_token_response(
+                'https://i.b/token',
+                body='grant_type=client_credentials')
+        self.assertEqual('invalid_scope', json.loads(body)['error'])
 
     def test_server_error(self):
         def raise_error(*args, **kwargs):
