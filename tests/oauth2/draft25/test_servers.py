@@ -623,11 +623,13 @@ class ErrorResponseTest(TestCase):
         self.assertEqual('unauthorized_client', json.loads(body)['error'])
 
     def test_access_denied(self):
+        self.validator.authenticate_client.side_effect = self.set_client
+        self.validator.confirm_redirect_uri.return_value = False
+        token_uri = 'https://i.b/token'
         # Authorization code grant
-        # Implicit grant
-        # Password credentials grant
-        # Client credentials grant
-        pass
+        _, _, body, _ = self.web.create_token_response(token_uri,
+                body='grant_type=authorization_code&code=foo')
+        self.assertEqual('access_denied', json.loads(body)['error'])
 
     def test_unsupported_response_type(self):
         # Authorization code grant
