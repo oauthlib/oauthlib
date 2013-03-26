@@ -122,6 +122,17 @@ class CommonTests(TestCase):
         self.assertEqual(len(token), 6)
         self.assertNotIn("a", token)
 
+    def test_generate_client_id(self):
+        client_id = generate_client_id()
+        self.assertEqual(len(client_id), 30)
+
+        client_id = generate_client_id(length=44)
+        self.assertEqual(len(client_id), 44)
+
+        client_id = generate_client_id(length=6, chars="python")
+        self.assertEqual(len(client_id), 6)
+        self.assertNotIn("a", client_id)
+
 
 class CaseInsensitiveDictTest(TestCase):
 
