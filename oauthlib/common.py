@@ -124,6 +124,20 @@ def urldecode(query):
     if len(re.findall(invalid_hex, query)):
         raise ValueError('Invalid hex encoding in query string.')
 
+    # We encode to utf-8 prior to parsing because parse_qsl behaves
+    # differently on unicode input in python 2 and 3.
+    # Python 2.7
+    # >>> urlparse.parse_qsl(u'%E5%95%A6%E5%95%A6')
+    # u'\xe5\x95\xa6\xe5\x95\xa6'
+    # Python 2.7, non unicode input gives the same
+    # >>> urlparse.parse_qsl('%E5%95%A6%E5%95%A6')
+    # '\xe5\x95\xa6\xe5\x95\xa6'
+    # but now we can decode it to unicode
+    # >>> urlparse.parse_qsl('%E5%95%A6%E5%95%A6').decode('utf-8')
+    # u'\u5566\u5566'
+    # Python 3.3 however
+    # >>> urllib.parse.parse_qsl(u'%E5%95%A6%E5%95%A6')
+    # u'\u5566\u5566'
     query = query.encode('utf-8') if not PY3 and isinstance(query, unicode_type) else query
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
