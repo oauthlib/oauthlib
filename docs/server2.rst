@@ -210,7 +210,11 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
 
     The full API you will need to implement is available in the 
     :doc:`RequestValidator <validator>` section. You might not need to implement
-    all methods depending on which grant types you wish to support. 
+    all methods depending on which grant types you wish to support. A skeleton
+    validator listing the methods required for the WebApplicationServer is 
+    available in the `examples`_ folder on GitHub.
+
+    ..  _`examples`: https://github.com/idan/oauthlib/blob/master/examples/skeleton_oauth2_web_application_server.py
 
     Relevant sections include:
 

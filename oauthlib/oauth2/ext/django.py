@@ -43,6 +43,7 @@ class OAuth2ProviderDecorator(object):
                 log.debug('Saving credentials to session, %r.', credentials)
                 request.session['oauth2_credentials'] = credentials
                 kwargs['scopes'] = scopes
+                kwargs.update(credentials)
                 log.debug('Invoking view method, %r.', f)
                 return f(request, *args, **kwargs)
 
