@@ -62,6 +62,8 @@ Changelog
 *OAuthLib is in active development, with most of OAuth1 complete and OAuth2
 already in the works.*
 
+0.4.0: OAuth 2 Provider support (experimental).
+
 0.3.8: OAuth 2 Client now uses custom errors and raise on expire
 
 0.3.7: OAuth 1 optional encoding of Client.sign return values
