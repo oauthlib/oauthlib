@@ -100,7 +100,7 @@ class OAuth2ProviderDecorator(object):
                         uri, http_method, body, headers, scopes)
                 kwargs.update({
                     'client': r.client,
-                    'resource_owner': r.resource_owner,
+                    'user': r.user,
                     'scopes': r.scopes
                 })
                 if valid:

@@ -176,7 +176,7 @@ class RequestValidator(object):
 
             {
                 'token_type': 'Bearer',
-                'token': 'askfjh234as9sd8',
+                'access_token': 'askfjh234as9sd8',
                 'expires_in': 3600,
                 'scope': ['list', 'of', 'authorized', 'scopes'],
                 'refresh_token': '23sdf876234',  # if issued
@@ -262,7 +262,7 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_code(self, client_id, code, client, *args, **kwargs):
+    def validate_code(self, client_id, code, client, request, *args, **kwargs):
         """Ensure the authorization_code is valid and assigned to client.
 
         OBS! The request.user attribute should be set to the resource owner
