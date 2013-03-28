@@ -43,6 +43,14 @@ class ClientTest(TestCase):
         client = Client(self.client_id, token_type="invalid")
         self.assertRaises(ValueError, client.add_token, self.uri)
 
+        # Case-insensitive token type
+        client = Client(self.client_id, access_token=self.access_token, token_type="bEAreR")
+        uri, headers, body = client.add_token(self.uri, body=self.body,
+                headers=self.headers)
+        self.assertURLEqual(uri, self.uri)
+        self.assertFormBodyEqual(body, self.body)
+        self.assertEqual(headers, self.bearer_header)
+
         # Missing access token
         client = Client(self.client_id)
         self.assertRaises(ValueError, client.add_token, self.uri)
