@@ -674,7 +674,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 raise errors.InvalidRedirectURIError(state=request.state)
 
             if not self.request_validator.validate_redirect_uri(
-                    request.client_id, request.redirect_uri):
+                    request.client_id, request.redirect_uri, request):
                 raise errors.MismatchingRedirectURIError(state=request.state)
         else:
             request.redirect_uri = self.request_validator.get_default_redirect_uri(
@@ -705,7 +705,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                         description='Duplicate %s parameter.' % param)
 
         if not self.request_validator.validate_response_type(request.client_id,
-                request.response_type, request):
+                request.response_type, request.client, request):
             log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
             raise errors.UnauthorizedClientError()
@@ -1047,7 +1047,7 @@ class ImplicitGrant(GrantTypeBase):
             # Section 3.1.2.
             # http://tools.ietf.org/html/rfc6749#section-3.1.2
             if not self.request_validator.validate_redirect_uri(
-                    request.client_id, request.redirect_uri):
+                    request.client_id, request.redirect_uri, request):
                 raise errors.MismatchingRedirectURIError(state=request.state)
         else:
             request.redirect_uri = self.request_validator.get_default_redirect_uri(
@@ -1086,7 +1086,7 @@ class ImplicitGrant(GrantTypeBase):
         log.debug('Validating use of response_type token for client %r (%r).',
                   request.client_id, request.client)
         if not self.request_validator.validate_response_type(request.client_id,
-                request.response_type, request):
+                request.response_type, request.client, request):
             log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
             raise errors.UnauthorizedClientError()
