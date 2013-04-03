@@ -24,8 +24,10 @@ class OAuth2ProviderDecorator(object):
         uri = request.build_absolute_uri()
         http_method = request.method
         headers = request.META
-        del headers['wsgi.input']
-        del headers['wsgi.errors']
+        if 'wsgi.input' in headers:
+            del headers['wsgi.input']
+        if 'wsgi.errors' in headers:
+            del headers['wsgi.errors']
         if 'HTTP_AUTHORIZATION' in headers:
             headers['Authorization'] = headers['HTTP_AUTHORIZATION']
         body = urlencode(request.POST.items())
@@ -86,7 +88,7 @@ class OAuth2ProviderDecorator(object):
             url, headers, body, status = self._token_endpoint.create_token_response(
                     uri, http_method, body, headers, credentials)
             response = HttpResponse(content=body, status=status)
-            for k, v in headers:
+            for k, v in headers.iteritems():
                 response[k] = v
             return response
         return wrapper
