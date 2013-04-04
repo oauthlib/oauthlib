@@ -88,7 +88,7 @@ class OAuth2ProviderDecorator(object):
             url, headers, body, status = self._token_endpoint.create_token_response(
                     uri, http_method, body, headers, credentials)
             response = HttpResponse(content=body, status=status)
-            for k, v in headers.iteritems():
+            for k, v in headers.items():
                 response[k] = v
             return response
         return wrapper
