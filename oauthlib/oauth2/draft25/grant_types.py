@@ -130,7 +130,7 @@ class RequestValidator(object):
         """Invalidate an authorization code after use.
 
         :param client_id: Unicode client identifier
-        :param code: A dict of the authorization code grant.
+        :param code: The authorization code grant (request.code).
         :param request: The HTTP Request (oauthlib.common.Request)
 
         Method is used by:
@@ -178,10 +178,13 @@ class RequestValidator(object):
                 'token_type': 'Bearer',
                 'access_token': 'askfjh234as9sd8',
                 'expires_in': 3600,
-                'scope': ['list', 'of', 'authorized', 'scopes'],
+                'scope': 'string of space separated authorized scopes',
                 'refresh_token': '23sdf876234',  # if issued
                 'state': 'given_by_client',  # if supplied by client
             }
+
+        Note that while "scope" is a string-separated list of authorized scopes,
+        the original list is still available in request.scopes
 
         :param client_id: Unicode client identifier
         :param token: A Bearer token dict
