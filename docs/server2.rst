@@ -74,7 +74,7 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
             former is Authorization Code Grant and the latter Implicit Grant::
 
                 # max_length and choices depend on which response types you support
-                grant_type = django.db.models.CharField(max_length=4,
+                response_type = django.db.models.CharField(max_length=4,
                     choices=[('Authorization code', 'code')])
 
         **Scopes**:
@@ -101,7 +101,7 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
                 # serializing them into a string.
                 redirect_uris = django.db.models.TextField()
 
-                # You might also want to mark a certain URI as defaul in case the
+                # You might also want to mark a certain URI as default in case the
                 # client does not specify any in the authorization
                 default_redirect_uri = django.db.models.TextField()
 
