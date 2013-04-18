@@ -142,6 +142,11 @@ def token_response(request):
     # validation methods, including save_bearer_token.
     return {}
 
-
+@provider.protected_resource_view
+def resource_response(request):
+    # access to protected resource with access token
+    # need to verify the access token with authorization server
+    return {}
+    
 def error(request):
     return HttpResponse('Bad client! Warn user!')
