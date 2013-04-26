@@ -1047,8 +1047,7 @@ class Server(object):
 
         # Parameters to Client depend on signature method which may vary
         # for each request. Note that HMAC-SHA1 and PLAINTEXT share parameters
-
-        request.params = filter(lambda x: x[0] not in ("oauth_signature", "realm"), params)
+        request.params = params
 
         # ---- RSA Signature verification ----
         if request.signature_method == SIGNATURE_RSA:

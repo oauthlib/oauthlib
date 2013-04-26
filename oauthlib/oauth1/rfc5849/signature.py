@@ -370,11 +370,15 @@ def normalize_parameters(params):
     #
     # .. _`Section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
+    #  - The header's content is parsed into a list of name/value pairs excluding the "realm" parameter if present.
+    #  - The "oauth_signature" parameter MUST be excluded from the signature base string if present.
+    key_values = [(k, v) for k, v in params if k not in ("realm", "oauth_signature")]
+
     # 1.  First, the name and value of each parameter are encoded
     #     (`Section 3.6`_).
     #
     # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
-    key_values = [(utils.escape(k), utils.escape(v)) for k, v in params]
+    key_values = [(utils.escape(k), utils.escape(v)) for k, v in key_values]
 
     # 2.  The parameters are sorted by name, using ascending byte value
     #     ordering.  If two or more parameters share the same name, they
