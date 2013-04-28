@@ -37,11 +37,11 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
 
     **User (or Resource Owner)**
         The user of your site which resources might be access by clients upon
-        authorization from the user. In our example we will re-use the User
-        model provided in django.contrib.auth.models. How the user authenticates
-        is orthogonal from OAuth and may be any way you prefer::
+        authorization from the user. In our example we will use the User
+        model provided by django.contrib.auth.get_user_model. How the user
+        authenticates is orthogonal from OAuth and may be any way you prefer::
 
-            from django.contrib.auth.models import User
+            from django.contrib.auth import get_user_model
 
     **Client (or Consumer)**
         The client interested in accessing protected resources. 
@@ -57,7 +57,7 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
             existing users. Whether you do associate clients and users or not, 
             ensure you are able to protect yourself against malicious clients::
 
-                user = django.db.models.ForeignKey(User)
+                user = django.db.models.ForeignKey(get_user_model())
 
         **Grant Type**:
             Required. The grant type the client may utilize. This should only be
@@ -120,7 +120,7 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
             Association with the user to which protected resources this token 
             grants access::
 
-                user = django.db.models.ForeignKey(User)
+                user = django.db.models.ForeignKey(get_user_model())
 
         **Scopes**:
             Scopes to which the token is bound. Attempt to access protected
@@ -164,7 +164,7 @@ Note that OAuth 2 provider is still very much a work in progress, consider it a 
             Association with the user to which protected resources this token 
             grants access::
 
-                user = django.db.models.ForeignKey(User)
+                user = django.db.models.ForeignKey(get_user_model())
 
         **Scopes**:
             Scopes to which the token is bound. Attempt to access protected
