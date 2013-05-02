@@ -129,7 +129,7 @@ def normalize_base_string_uri(uri):
     # are included by constructing an "http" or "https" URI representing
     # the request resource (without the query or fragment) as follows:
     #
-    # .. _`RFC2616`: http://tools.ietf.org/html/rfc3986
+    # .. _`RFC3986`: http://tools.ietf.org/html/rfc3986
 
     # 1.  The scheme and host MUST be in lowercase.
     scheme = scheme.lower()
