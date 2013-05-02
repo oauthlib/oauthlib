@@ -99,7 +99,7 @@ def construct_base_string(http_method, base_string_uri,
     return base_string
 
 
-def normalize_base_string_uri(uri):
+def normalize_base_string_uri(uri, host=None):
     """**Base String URI**
     Per `section 3.4.1.2`_ of the spec.
 
@@ -133,7 +133,7 @@ def normalize_base_string_uri(uri):
 
     # 1.  The scheme and host MUST be in lowercase.
     scheme = scheme.lower()
-    netloc = netloc.lower()
+    netloc = (host or netloc).lower()
 
     # 2.  The host and port values MUST match the content of the HTTP
     #     request "Host" header field.
