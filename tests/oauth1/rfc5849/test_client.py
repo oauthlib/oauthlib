@@ -9,20 +9,20 @@ class ClientRealmTests(TestCase):
 
     def test_client_no_realm(self):
         client = Client("client-key")
-        uri, header, body = client.sign("example-uri")
+        uri, header, body = client.sign("http://example-uri")
         self.assertTrue(
             header["Authorization"].startswith('OAuth oauth_nonce='))
 
     def test_client_realm_sign_with_default_realm(self):
         client = Client("client-key", realm="moo-realm")
         self.assertEqual(client.realm, "moo-realm")
-        uri, header, body = client.sign("example-uri")
+        uri, header, body = client.sign("http://example-uri")
         self.assertTrue(
             header["Authorization"].startswith('OAuth realm="moo-realm",'))
 
     def test_client_realm_sign_with_additional_realm(self):
         client = Client("client-key", realm="moo-realm")
-        uri, header, body = client.sign("example-uri", realm="baa-realm")
+        uri, header, body = client.sign("http://example-uri", realm="baa-realm")
         self.assertTrue(
             header["Authorization"].startswith('OAuth realm="baa-realm",'))
         # make sure sign() does not override the default realm
