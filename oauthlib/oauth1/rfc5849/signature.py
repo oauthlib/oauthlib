@@ -133,6 +133,18 @@ def normalize_base_string_uri(uri, host=None):
     #
     # .. _`RFC2616`: http://tools.ietf.org/html/rfc3986
 
+    if not scheme:
+        raise ValueError('uri must include a scheme')
+
+    # Per `RFC 2616 section 5.1.2`_:
+    #
+    # Note that the absolute path cannot be empty; if none is present in
+    # the original URI, it MUST be given as "/" (the server root).
+    #
+    # .. _`RFC 2616 section 5.1.2`: http://tools.ietf.org/html/rfc2616#section-5.1.2
+    if not path:
+        path = '/'
+
     # 1.  The scheme and host MUST be in lowercase.
     scheme = scheme.lower()
     netloc = netloc.lower()
