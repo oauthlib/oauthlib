@@ -86,6 +86,10 @@ class SignatureTests(TestCase):
         uri = "http://www.example.com:80"
         self.assertEquals(normalize_base_string_uri(uri), "http://www.example.com")
 
+        host = "alternatehost.example.com"
+        self.assertEquals(normalize_base_string_uri(uri, host),
+                          "http://alternatehost.example.com")
+
     def test_collect_parameters(self):
         """ We check against parameters multiple times in case things change after more
                 parameters are added.

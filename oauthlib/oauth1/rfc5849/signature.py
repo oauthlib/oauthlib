@@ -118,6 +118,8 @@ def normalize_base_string_uri(uri, host=None):
     is represented by the base string URI: "https://www.example.net:8080/".
 
     .. _`section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
+
+    The host argument overrides the netloc part of the uri argument.
     """
     if not isinstance(uri, unicode_type):
         raise ValueError('uri must be a unicode object.')
@@ -133,11 +135,12 @@ def normalize_base_string_uri(uri, host=None):
 
     # 1.  The scheme and host MUST be in lowercase.
     scheme = scheme.lower()
-    netloc = (host or netloc).lower()
+    netloc = netloc.lower()
 
     # 2.  The host and port values MUST match the content of the HTTP
     #     request "Host" header field.
-    # TODO: enforce this constraint
+    if host is not None:
+        netloc = host.lower()
 
     # 3.  The port MUST be included if it is not the default port for the
     #     scheme, and MUST be excluded if it is the default.  Specifically,
@@ -514,6 +517,15 @@ def verify_hmac_sha1(request, client_secret=None,
     Per `section 3.4`_ of the spec.
 
     .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
+
+    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
+    attribute MUST be an absolute URI whose netloc part identifies the
+    origin server or gateway on which the resource resides. Any Host
+    item of the request argument's headers dict attribute will be
+    ignored.
+
+    .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
+
     """
     norm_params = normalize_parameters(request.params)
     uri = normalize_base_string_uri(request.uri)
@@ -532,6 +544,13 @@ def verify_rsa_sha1(request, rsa_public_key):
 
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
 
+    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
+    attribute MUST be an absolute URI whose netloc part identifies the
+    origin server or gateway on which the resource resides. Any Host
+    item of the request argument's headers dict attribute will be
+    ignored.
+
+    .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
     """
     from Crypto.PublicKey import RSA
     from Crypto.Signature import PKCS1_v1_5
