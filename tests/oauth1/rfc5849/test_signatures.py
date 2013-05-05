@@ -83,8 +83,24 @@ class SignatureTests(TestCase):
         uri = b"www.example.com:8080"
         self.assertRaises(ValueError, normalize_base_string_uri, uri)
 
-        uri = "http://www.example.com:80"
-        self.assertEquals(normalize_base_string_uri(uri), "http://www.example.com")
+        # test a URI with the default port
+        uri = "http://www.example.com:80/"
+        self.assertEquals(normalize_base_string_uri(uri), "http://www.example.com/")
+
+        # test a URI missing a path
+        uri = "http://www.example.com"
+        self.assertEquals(normalize_base_string_uri(uri), "http://www.example.com/")
+
+        # test a relative URI
+        uri = "/a-host-relative-uri"
+        host = "www.example.com"
+        self.assertRaises(ValueError, normalize_base_string_uri, (uri, host))
+
+        # test overriding the URI's netloc with a host argument
+        uri = "http://www.example.com/a-path"
+        host = "alternatehost.example.com"
+        self.assertEquals(normalize_base_string_uri(uri, host),
+                          "http://alternatehost.example.com/a-path")
 
     def test_collect_parameters(self):
         """ We check against parameters multiple times in case things change after more
