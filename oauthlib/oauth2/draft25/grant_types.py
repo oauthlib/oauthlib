@@ -430,8 +430,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         |   Owner  |
         |          |
         +----------+
-            ^
-            |
+             ^
+             |
             (B)
         +----|-----+          Client Identifier      +---------------+
         |         -+----(A)-- & Redirection URI ---->|               |
@@ -440,10 +440,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         |          |                                 |               |
         |         -+----(C)-- Authorization Code ---<|               |
         +-|----|---+                                 +---------------+
-        |    |                                         ^      v
-        (A)  (C)                                        |      |
-        |    |                                         |      |
-        ^    v                                         |      |
+          |    |                                         ^      v
+         (A)  (C)                                        |      |
+          |    |                                         |      |
+          ^    v                                         |      |
         +---------+                                      |      |
         |         |>---(D)-- Authorization Code ---------'      |
         |  Client |          & Redirection URI                  |
@@ -811,8 +811,8 @@ class ImplicitGrant(GrantTypeBase):
         |  Owner   |
         |          |
         +----------+
-            ^
-            |
+             ^
+             |
             (B)
         +----|-----+          Client Identifier     +---------------+
         |         -+----(A)-- & Redirection URI --->|               |
@@ -829,10 +829,10 @@ class ImplicitGrant(GrantTypeBase):
         |     (F)  |<---(E)------- Script ---------<|               |
         |          |                                +---------------+
         +-|--------+
-        |    |
-        (A)  (G) Access Token
-        |    |
-        ^    v
+          |    |
+         (A)  (G) Access Token
+          |    |
+          ^    v
         +---------+
         |         |
         |  Client |
@@ -1128,11 +1128,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             |  Owner   |
             |          |
             +----------+
-                v
-                |    Resource Owner
+                 v
+                 |    Resource Owner
                 (A) Password Credentials
-                |
-                v
+                 |
+                 v
             +---------+                                  +---------------+
             |         |>--(B)---- Resource Owner ------->|               |
             |         |         Password Credentials     | Authorization |
