@@ -98,9 +98,13 @@ class OAuth2ProviderDecorator(object):
             @csrf_exempt
             @functools.wraps(f)
             def wrapper(request, *args, **kwargs):
+                try:
+                    scopes_list = scopes(request)
+                except TypeError:
+                    scopes_list = scopes
                 uri, http_method, body, headers = self._extract_params(request)
                 valid, r = self._resource_endpoint.verify_request(
-                        uri, http_method, body, headers, scopes)
+                        uri, http_method, body, headers, scopes_list)
                 kwargs.update({
                     'client': r.client,
                     'user': r.user,
