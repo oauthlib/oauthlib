@@ -3,11 +3,11 @@ OAuth 2 Endpoints
 =================
 
 Endpoints in OAuth 2 are targets with a specific responsibility and often
-associated with a particular URL. Because of this the word endpoint might
-be used interchangably from the endpoint url. 
+associated with a particular URL. Because of this the word endpoint might be
+used interchangably from the endpoint url.
 
-There main three responsibilities in an OAuth 2 flow is to authorize access
-to a certain users resources to a client, to supply said client with a token
+There main three responsibilities in an OAuth 2 flow is to authorize access to a
+certain users resources to a client, to supply said client with a token
 embodying this authorization and to verify that the token is valid when the
 client attempts to access thee user resources on their behalf.
 
@@ -18,34 +18,34 @@ extracted away into a decorator class.** See :doc:`decorators` for examples.
 Authorization
 -------------
 
-Authorization can be either explicit or implicit. The former require the user
-to actively authorize the client by being redirected to the authorization
-endpoint. There he/she is usually presented by a form and asked to either
-accept or deny access to certain scopes. These scopes can be
-thought of as Access Control Lists that are tied to certain privileges and
-categories of resources, such as write access to their status feed or read 
-access to their profile. It is vital that the implications of granting access
-to a certain scope is very clear in the authorization form presented to the
-user. It is up to the provider to allow the user agree to all, a few or none
-of the scopes. Being flexible here is a great benefit to the user at the cost
-of added complexity in both the provider and clients. 
+Authorization can be either explicit or implicit. The former require the user to
+actively authorize the client by being redirected to the authorization endpoint.
+There he/she is usually presented by a form and asked to either accept or deny
+access to certain scopes. These scopes can be thought of as Access Control Lists
+that are tied to certain privileges and categories of resources, such as write
+access to their status feed or read access to their profile. It is vital that
+the implications of granting access to a certain scope is very clear in the
+authorization form presented to the user. It is up to the provider to allow the
+user agree to all, a few or none of the scopes. Being flexible here is a great
+benefit to the user at the cost of added complexity in both the provider and
+clients.
 
-Implicit authorization happens when the authorization happens before the 
-OAuth flow, such as the user giving the client his/her password and username,
-or if there is a very high level of trust between the user, client and provider
-and no explicit authorization is necessary. 
+Implicit authorization happens when the authorization happens before the OAuth
+flow, such as the user giving the client his/her password and username, or if
+there is a very high level of trust between the user, client and provider and no
+explicit authorization is necessary.
 
 Examples of explicit authorization is the Authorization Code Grant and the
-Implicit Grant. 
+Implicit Grant.
 
 Examples of implicit authorization is the Resource Owner Password Credentials
 Grant and the Client Credentials Grant.
 
 **Pre Authorization Request**
-    OAuth is known for it's authorization page where the user accepts or
-    denies access to a certain client and set of scopes. Before presenting
-    the user with such a form you need to ensure the credentials the client
-    supplied in the redirection to this page are valid::
+    OAuth is known for it's authorization page where the user accepts or denies
+    access to a certain client and set of scopes. Before presenting the user
+    with such a form you need to ensure the credentials the client supplied in
+    the redirection to this page are valid::
 
         # Initial setup
         from your_validator import your_validator
@@ -70,7 +70,7 @@ Grant and the Client Credentials Grant.
                 'response_type': 'code',
                 'state': 'randomstring',
             }
-            # these credentials will be needed in the post authorization view and 
+            # these credentials will be needed in the post authorization view and
             # should be persisted between. None of them are secret but take care
             # to ensure their integrety if embedding them in the form or cookies.
             from your_datastore import persist_credentials
@@ -90,8 +90,8 @@ Grant and the Client Credentials Grant.
 **Post Authorization Request**
     Generally, this is where you handle the submitted form. Rather than using
     ``validate_authorization_request`` we use ``create_authorization_response``
-    which in the case of Authorization Code Grant embed an authorization code
-    in the client provided redirect uri::
+    which in the case of Authorization Code Grant embed an authorization code in
+    the client provided redirect uri::
 
         # Initial setup
         from your_validator import your_validator
@@ -140,34 +140,33 @@ Grant and the Client Credentials Grant.
 Token creation
 --------------
 
-Token endpoints issue tokens to clients who have already been authorized
-access, be it by explicit actions from the user or implicitely. The token
-response is well defined and typically consist of an unguessable access token,
-the token type, its expiration from now in seconds and depending on the
-scenario, a refresh token to be used to fetch new access tokens without 
-authorization. 
+Token endpoints issue tokens to clients who have already been authorized access,
+be it by explicit actions from the user or implicitely. The token response is
+well defined and typically consist of an unguessable access token, the token
+type, its expiration from now in seconds and depending on the scenario, a
+refresh token to be used to fetch new access tokens without authorization.
 
-One argument for OAuth 2 being more scalable than OAuth 1 is that tokens
-may contain hidden information. A provider may embed information such as
-client identifier, user identifier, expiration times, etc. in the token
-by encrypting it. This trades a slight increase in work required to decrypt
-the token but frees the necessary database lookups otherwise required,
-thus improving latency substantially. OAuthlib currently does not provide
-a method for creating crypto-tokens but may do in the future.
+One argument for OAuth 2 being more scalable than OAuth 1 is that tokens may
+contain hidden information. A provider may embed information such as client
+identifier, user identifier, expiration times, etc. in the token by encrypting
+it. This trades a slight increase in work required to decrypt the token but
+frees the necessary database lookups otherwise required, thus improving latency
+substantially. OAuthlib currently does not provide a method for creating
+crypto-tokens but may do in the future.
 
 The standard token type, Bearer, does not require that the provider bind a
-specific client to the token. Not binding clients to tokens allow for 
-anonymized tokens which unless you are certain you need them, are a bad idea.
+specific client to the token. Not binding clients to tokens allow for anonymized
+tokens which unless you are certain you need them, are a bad idea.
 
 **Token Request**
-    A POST request used in most grant types but with a varied setup of 
-    credentials. If you wish to embed extra credentials in the request, i.e.
-    for later use in validation or when creating the token, you can
-    use the ``credentials`` argument in ``create_token_response``. 
-    
-    All responses are in json format and the headers argument returned by 
-    ``create_token_response`` will contain a few suggested headers related
-    to content type and caching::
+    A POST request used in most grant types but with a varied setup of
+    credentials. If you wish to embed extra credentials in the request, i.e. for
+    later use in validation or when creating the token, you can use the
+    ``credentials`` argument in ``create_token_response``.
+
+    All responses are in json format and the headers argument returned by
+    ``create_token_response`` will contain a few suggested headers related to
+    content type and caching::
 
         # Initial setup
         from your_validator import your_validator
@@ -216,7 +215,7 @@ anonymized tokens which unless you are certain you need them, are a bad idea.
         # status will be a suggested status code, 200 on ok, 400 on bad request
         # and 401 if client is trying to use an invalid authorization code,
         # fail to authenticate etc.
-        
+
         from your_framework import http_response
         http_response(body, status=status, headers=headers)
 
@@ -228,7 +227,7 @@ Authorizing resource access
 ---------------------------
 
 Resource endpoints verify that the token presented is valid and granted access
-to the scopes associated with the resource in question. 
+to the scopes associated with the resource in question.
 
 **Request Verfication**
     Each view may set certain scopes under which it is bound. Only requests
@@ -250,7 +249,7 @@ to the scopes associated with the resource in question.
         valid, oauthlib_request = server.verify_request(
             uri, http_method, body, headers, required_scopes)
 
-        # oauthlib_request has a few convenient attributes set such as 
+        # oauthlib_request has a few convenient attributes set such as
         # oauthlib_request.client = the client associated with the token
         # oauthlib_request.user = the user associated with the token
         # oauthlib_request.scopes = the scopes bound to this token

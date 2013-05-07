@@ -16,23 +16,23 @@ For news and discussions please check out our `G+ OAuthLib community`_.
 
 .. toctree::
    :maxdepth: 2
-   
+
    contributing
 
 .. toctree::
    :maxdepth: 2
-   
+
    oauth_1_versus_oauth_2
 
 .. toctree::
    :maxdepth: 2
-   
+
    client
    server
 
 .. toctree::
    :maxdepth: 2
-   
+
    oauth2_overview
    client2
    server2
