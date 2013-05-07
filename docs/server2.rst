@@ -73,9 +73,9 @@ preview of a near future =)
                     choices=[('Authorization code', 'authorization_code')])
 
         **Response Type**:
-            Required, if using a grant type with an associated response type or
-            using a grant which only utilizes response types. An example of the
-            former is Authorization Code Grant and the latter Implicit Grant::
+            Required, if using a grant type with an associated response type
+            (eg. Authorization Code Grant) or using a grant which only utilizes
+            response types (eg. Implicit Grant)::
 
                 # max_length and choices depend on which response types you support
                 response_type = django.db.models.CharField(max_length=4,
