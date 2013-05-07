@@ -234,8 +234,8 @@ preview of a near future =)
 
 **4. Create your composite endpoint**
 
-    Each of the endpoints can function independently from eachother, however for
-    this example it is easier to consider them as one unit. An example of a
+    Each of the endpoints can function independently from each other, however
+    for this example it is easier to consider them as one unit. An example of a
     pre-configured all-in-one Authorization Code Grant endpoint is given below::
 
         # From the previous section on validators
