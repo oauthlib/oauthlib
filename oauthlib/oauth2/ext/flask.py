@@ -59,7 +59,7 @@ class OAuth2ProviderDecorator(object):
             uri, http_method, body, headers = self._extract_params()
             scopes, credentials = f(*args, **kwargs)
             log.debug('Fetched credentials view, %r.', credentials)
-            credentials.update(request.session.get('oauth2_credentials', {}))
+            credentials.update(session.get('oauth2_credentials', {}))
             log.debug('Fetched credentials from session, %r.', credentials)
             redirect_uri = credentials.get('redirect_uri')
             log.debug('Found redirect uri %s.', redirect_uri)
