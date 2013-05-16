@@ -16,9 +16,9 @@ from oauthlib.oauth2.ext.django import OAuth2ProviderDecorator
 
 class SkeletonValidator(RequestValidator):
 
-    # Ordered roughly in order of apperance in the authorization grant flow
+    # Ordered roughly in order of appearance in the authorization grant flow
 
-    # Pre- and Post-authorization.
+    # Pre- and post-authorization.
 
     def validate_client_id(self, client_id, request, *args, **kwargs):
         # Simple validity check, does client exist? Not banned?
@@ -83,7 +83,7 @@ class SkeletonValidator(RequestValidator):
         pass
 
     def save_bearer_token(self, token, request, *args, **kwargs):
-        # Remeber to associate it with request.scopes, request.user and
+        # Remember to associate it with request.scopes, request.user and
         # request.client. The two former will be set when you validate
         # the authorization code. Don't forget to save both the
         # access_token and the refresh_token and set expiration for the
