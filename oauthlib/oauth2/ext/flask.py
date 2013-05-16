@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
-from flask import abort, g, make_response, redirect, request, session
+from flask import abort, make_response, redirect, request, session
+try:
+    from flask import _app_ctx_stack as stack
+except ImportError:
+    from flask import _request_ctx_stack as stack
 import functools
 import logging
 from oauthlib.common import urlencode
@@ -11,12 +15,28 @@ log = logging.getLogger('oauthlib')
 
 class OAuth2ProviderDecorator(object):
 
-    def __init__(self, error_uri, server=None, authorization_endpoint=None,
+    def __init__(self, error_uri,server=None,authorization_endpoint=None,
             token_endpoint=None, resource_endpoint=None):
         self._authorization_endpoint = authorization_endpoint or server
         self._token_endpoint = token_endpoint or server
         self._resource_endpoint = resource_endpoint or server
         self._error_uri = error_uri
+    
+    def __getattr__(self, name):
+        ctx = stack.top
+        if ctx is not None:
+            oauth_name = 'oauth_' + name
+            try:
+                return getattr(ctx, oauth_name)
+            except AttributeError:
+                return None
+        return None 
+
+    def _set_ctx(self, name, value):
+        ctx = stack.top
+        if ctx is not None:
+            oauth_name = 'oauth_' + name
+            setattr(ctx, oauth_name, value)
 
     def _extract_params(self):
         log.debug('Extracting parameters from request.')
@@ -102,10 +122,10 @@ class OAuth2ProviderDecorator(object):
                 uri, http_method, body, headers = self._extract_params()
                 valid, r = self._resource_endpoint.verify_request(
                         uri, http_method, body, headers, scopes_list)
-                g.client = r.client
-                g.user = r.user
-                g.scopes = r.scopes
-                g.token_scopes = r.token_scopes
+                self._set_ctx('client', r.client)
+                self._set_ctx('user', r.user)
+                self._set_ctx('scopes', r.scopes)
+                self._set_ctx('token_scopes', r.token_scopes)
                 if valid:
                     return f(*args, **kwargs)
                 elif forbidden is not None:
