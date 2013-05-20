@@ -284,7 +284,7 @@ def to_unicode(data, encoding):
             return (to_unicode(i, encoding) for i in data)
         else:
             # We support 2.6 which lacks dict comprehensions
-            if isinstance(data, dict):
+            if hasattr(data, 'items'):
                 data = data.items()
             return dict(((to_unicode(k, encoding), to_unicode(v, encoding)) for k, v in data))
 
