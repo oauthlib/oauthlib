@@ -70,7 +70,7 @@ preview of a near future =)
 
                 # max_length and choices depend on which grants you support
                 grant_type = django.db.models.CharField(max_length=18,
-                    choices=[('Authorization code', 'authorization_code')])
+                    choices=[('authorization_code', 'Authorization code')])
 
         **Response Type**:
             Required, if using a grant type with an associated response type
@@ -79,7 +79,7 @@ preview of a near future =)
 
                 # max_length and choices depend on which response types you support
                 response_type = django.db.models.CharField(max_length=4,
-                    choices=[('Authorization code', 'code')])
+                    choices=[('code', 'Authorization code')])
 
         **Scopes**:
             Required. The list of scopes the client may request access to. If
