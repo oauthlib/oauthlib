@@ -316,6 +316,19 @@ preview of a near future =)
             # May be bound to various scopes of your choosing
             return HttpResponse('pictures of cats')
 
+    The set of scopes that protects a view may also be dynamically configured
+    at runtime by a function, rather then by a list::
+
+        def dynamic_scopes(request):
+            # Place code here to dynamically determine the scopes
+            # and return as a list
+            return ['images']
+
+        @provider.protected_resource_view(scopes=dynamic_scopes)
+        def i_am_also_protected(request, client, resource_owner, **kwargs)
+            # A view that has its views functionally set.
+            return HttpResponse('pictures of cats')
+
 **7. Let us know how it went!**
 
     Drop a line in our `G+ community`_ or open a `GitHub issue`_ =)
