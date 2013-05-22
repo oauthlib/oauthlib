@@ -266,7 +266,8 @@ preview of a near future =)
 
         @login_required
         @provider.pre_authorization_view
-        def authorize(request, scopes=None):
+        def authorize(request, client_id=None, scopes=None, state=None,
+            redirect_uri=None, response_type=None):
             # This is the traditional authorization page
             # Scopes will be the list of scopes client requested access too
             # You will want to present them in a nice form where the user can
