@@ -68,7 +68,7 @@ class SkeletonValidator(RequestValidator):
         # Don't allow public (non-authenticated) clients
         return False
 
-    def validate_code(self, client_id, code, client, *args, **kwargs):
+    def validate_code(self, client_id, code, client, request, *args, **kwargs):
         # Validate the code belongs to the client. Add associated scopes,
         # state and user to request.scopes, request.state and request.user.
         pass
