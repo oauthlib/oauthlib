@@ -133,7 +133,7 @@ def authorize(request, scopes=None, client_id=None):
 def authorization_response(request):
     # Only return scopes the user actually authorized, i.e. the checked
     # scope checkboxes from the authorize view.
-    return request.POST['scopes'], {'user': request.user}
+    return request.POST.getlist(['scopes']), {'user': request.user}
 
 
 @provider.access_token_view

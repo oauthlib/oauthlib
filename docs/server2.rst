@@ -284,7 +284,7 @@ preview of a near future =)
             # In almost every case, you will want to include the current
             # user in these extra credentials in order to associate the user with
             # the authorization code or bearer token.
-            return request.POST['scopes'], {'user': request.user}
+            return request.POST.getlist['scopes'], {'user': request.user}
 
 
         @provider.access_token_view
