@@ -93,13 +93,13 @@ there is an OAuthLib based OAuth provider plugin available for your framework.
     The only change will be parameters to the verify_request method.
 
     #. Requests to obtain request tokens, these may include an optional
-     redirection URI parameter::
+       redirection URI parameter::
 
         authorized = server.verify_request(uri, http_method, body, headers,
                                            require_resource_owner=False)
 
     #. Requests to obtain access tokens, these should always include a verifier
-     and a resource owner key::
+       and a resource owner key::
 
         authorized = server.verify_request(uri, http_method, body, headers,
                                            require_verifier=True)
