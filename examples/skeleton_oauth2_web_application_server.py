@@ -68,7 +68,7 @@ class SkeletonValidator(RequestValidator):
         # Don't allow public (non-authenticated) clients
         return False
 
-    def validate_code(self, client_id, code, client, *args, **kwargs):
+    def validate_code(self, client_id, code, client, request, *args, **kwargs):
         # Validate the code belongs to the client. Add associated scopes,
         # state and user to request.scopes, request.state and request.user.
         pass
@@ -133,7 +133,7 @@ def authorize(request, scopes=None, client_id=None):
 def authorization_response(request):
     # Only return scopes the user actually authorized, i.e. the checked
     # scope checkboxes from the authorize view.
-    return request.POST['scopes'], {'user': request.user}
+    return request.POST.getlist(['scopes']), {'user': request.user}
 
 
 @provider.access_token_view
