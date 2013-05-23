@@ -24,7 +24,10 @@ veneer on top of OAuthLib and get OAuth support for very little effort.
 Documentation
 --------------
 
-Full documentation is available on `Read the Docs`_. All contributions are very welcome! The documentation is still quite sparse, please open an issue for what you'd like to know, or discuss it in our `G+ community`_, or even better, send a pull request!
+Full documentation is available on `Read the Docs`_. All contributions are very
+welcome! The documentation is still quite sparse, please open an issue for what
+you'd like to know, or discuss it in our `G+ community`_, or even better, send a
+pull request!
 
 .. _`G+ community`: https://plus.google.com/communities/101889017375384052571
 .. _`Read the Docs`: https://oauthlib.readthedocs.org/en/latest/index.html
@@ -32,7 +35,7 @@ Full documentation is available on `Read the Docs`_. All contributions are very 
 Interested in making OAuth requests?
 ------------------------------------
 
-Then you might be more interested in using `requests`_ which has OAuthLib 
+Then you might be more interested in using `requests`_ which has OAuthLib
 powered OAuth support provided by the `requests-oauthlib`_ library.
 
 .. _`requests`: https://github.com/kennethreitz/requests
@@ -40,11 +43,18 @@ powered OAuth support provided by the `requests-oauthlib`_ library.
 
 Using OAuthLib? Please get in touch!
 ------------------------------------
-Patching OAuth support onto an http request framework? Creating an OAuth provider extension for a web framework? Simply using OAuthLib to Get Things Done or to learn? 
+Patching OAuth support onto an http request framework? Creating an OAuth
+provider extension for a web framework? Simply using OAuthLib to Get Things Done
+or to learn?
 
-No matter which we'd love to hear from you in our `G+ community`_ or if you have anything in particular you would like to have, change or comment on don't hesitate for a second to send a pull request or open an issue. We might be quite busy and therefore slow to reply but we love feedback!
+No matter which we'd love to hear from you in our `G+ community`_ or if you have
+anything in particular you would like to have, change or comment on don't
+hesitate for a second to send a pull request or open an issue. We might be quite
+busy and therefore slow to reply but we love feedback!
 
-Chances are you have run into something annoying that you wish there was documentation for, if you wish to gain eternal fame and glory, and a drink if we have the pleasure to run into eachother, please send a docs pull request =)
+Chances are you have run into something annoying that you wish there was
+documentation for, if you wish to gain eternal fame and glory, and a drink if we
+have the pleasure to run into eachother, please send a docs pull request =)
 
 .. _`G+ community`: https://plus.google.com/communities/101889017375384052571
 
@@ -88,7 +98,7 @@ already in the works.*
 
 0.2.0: OAuth provider support
 
-0.1.4: soft dependency on PyCrypto  
+0.1.4: soft dependency on PyCrypto
 
 0.1.3: use python-rsa instead of pycrypto.
 
