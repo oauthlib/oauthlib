@@ -1251,13 +1251,15 @@ class ResourceEndpoint(BaseEndpoint):
 class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
     """An all-in-one endpoint featuring all four major grant types."""
 
-    def __init__(self, request_validator, *args, **kwargs):
+    def __init__(self, request_validator, token_expires_in=None,
+            *args, **kwargs):
         auth_grant = grant_types.AuthorizationCodeGrant(request_validator)
         implicit_grant = grant_types.ImplicitGrant(request_validator)
         password_grant = grant_types.ResourceOwnerPasswordCredentialsGrant(request_validator)
         credentials_grant = grant_types.ClientCredentialsGrant(request_validator)
         refresh_grant = grant_types.RefreshTokenGrant(request_validator)
-        bearer = tokens.BearerToken(request_validator)
+        bearer = tokens.BearerToken(request_validator,
+                expires_in=token_expires_in)
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                 response_types={
                     'code': auth_grant,
@@ -1279,7 +1281,8 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
 class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
     """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
 
-    def __init__(self, request_validator, token_generator=None, **kwargs):
+    def __init__(self, request_validator, token_generator=None,
+            token_expires_in=None, **kwargs):
         """Construct a new web application server.
 
         :param request_validator: An implementation of oauthlib.oauth2.RequestValidator.
@@ -1289,7 +1292,8 @@ class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoin
         """
         auth_grant = grant_types.AuthorizationCodeGrant(request_validator)
         refresh_grant = grant_types.RefreshTokenGrant(request_validator)
-        bearer = tokens.BearerToken(request_validator, token_generator)
+        bearer = tokens.BearerToken(request_validator, token_generator,
+                expires_in=token_expires_in)
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                 response_types={'code': auth_grant},
                 default_token_type=bearer)
@@ -1306,9 +1310,11 @@ class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoin
 class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint):
     """An all-in-one endpoint featuring Implicit code grant and Bearer tokens."""
 
-    def __init__(self, request_validator, token_generator=None, **kwargs):
+    def __init__(self, request_validator, token_generator=None, 
+            token_expires_in=None, **kwargs):
         implicit_grant = grant_types.ImplicitGrant(request_validator)
-        bearer = tokens.BearerToken(request_validator, token_generator)
+        bearer = tokens.BearerToken(request_validator, token_generator,
+                expires_in=token_expires_in)
         AuthorizationEndpoint.__init__(self, default_response_type='token',
                 response_types={'token': implicit_grant},
                 default_token_type=bearer)
@@ -1319,10 +1325,12 @@ class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint):
 class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint):
     """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
 
-    def __init__(self, request_validator, token_generator=None, **kwargs):
+    def __init__(self, request_validator, token_generator=None,
+            token_expires_in=None, **kwargs):
         password_grant = grant_types.ResourceOwnerPasswordCredentialsGrant(request_validator)
         refresh_grant = grant_types.RefreshTokenGrant(request_validator)
-        bearer = tokens.BearerToken(request_validator, token_generator)
+        bearer = tokens.BearerToken(request_validator, token_generator,
+                expires_in=token_expires_in)
         TokenEndpoint.__init__(self, default_grant_type='password',
                 grant_types={
                     'password': password_grant,
@@ -1336,9 +1344,11 @@ class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint):
 class BackendApplicationServer(TokenEndpoint, ResourceEndpoint):
     """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
 
-    def __init__(self, request_validator, token_generator=None, **kwargs):
+    def __init__(self, request_validator, token_generator=None,
+            token_expires_in=None, **kwargs):
         credentials_grant = grant_types.ClientCredentialsGrant(request_validator)
-        bearer = tokens.BearerToken(request_validator, token_generator)
+        bearer = tokens.BearerToken(request_validator, token_generator,
+                expires_in=token_expires_in)
         TokenEndpoint.__init__(self, default_grant_type='client_credentials',
                 grant_types={'client_credentials': credentials_grant},
                 default_token_type=bearer)

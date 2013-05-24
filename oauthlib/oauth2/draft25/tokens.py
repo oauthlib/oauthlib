@@ -172,13 +172,11 @@ class TokenBase(object):
 
 class BearerToken(TokenBase):
 
-    def __init__(self, request_validator=None, token_generator=None):
+    def __init__(self, request_validator=None, token_generator=None,
+            expires_in=None):
         self.request_validator = request_validator
         self.token_generator = token_generator or random_token_generator
-
-    @property
-    def expires_in(self):
-        return 3600
+        self.expires_in = expires_in or 3600
 
     def create_token(self, request, refresh_token=False):
         """Create a BearerToken, by default without refresh token."""
