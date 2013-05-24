@@ -7,7 +7,7 @@ python:
   - "pypy"
 
 install:
-    - pip install nose pycrypto mock unittest2
+    - pip install nose pycrypto mock
 
 script:
     - nosetests -w tests
