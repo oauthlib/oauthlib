@@ -8,6 +8,7 @@ python:
 
 install:
     - pip install nose pycrypto mock
+    - python .travis_install.py
 
 script:
     - nosetests -w tests
