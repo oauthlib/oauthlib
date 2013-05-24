@@ -23,8 +23,9 @@ class AuthorizationEndpointTest(TestCase):
                 'code': auth_code,
                 'token': implicit,
         }
-
-        token = tokens.BearerToken(self.mock_validator)
+        self.expires_in = 1800
+        token = tokens.BearerToken(self.mock_validator,
+                expires_in=self.expires_in)
         self.endpoint = draft25.AuthorizationEndpoint(
                 default_response_type='code',
                 default_token_type=token,
@@ -44,7 +45,7 @@ class AuthorizationEndpointTest(TestCase):
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         uri, headers, body, status_code = self.endpoint.create_authorization_response(
                 uri, scopes=['all', 'of', 'them'])
-        self.assertURLEqual(uri, 'http://back.to/me#access_token=abc&expires_in=3600&token_type=Bearer&state=xyz&scope=all+of+them', parse_fragment=True)
+        self.assertURLEqual(uri, 'http://back.to/me#access_token=abc&expires_in=' + str(self.expires_in) + '&token_type=Bearer&state=xyz&scope=all+of+them', parse_fragment=True)
 
     def test_missing_type(self):
         uri = 'http://i.b/l?client_id=me&scope=all+of+them'
@@ -88,7 +89,9 @@ class TokenEndpointTest(TestCase):
                 'password': password,
                 'client_credentials': client,
         }
-        token = tokens.BearerToken(self.mock_validator)
+        self.expires_in = 1800
+        token = tokens.BearerToken(self.mock_validator,
+                expires_in=self.expires_in)
         self.endpoint = draft25.TokenEndpoint('authorization_code',
                 default_token_type=token, grant_types=supported_types)
 
@@ -99,7 +102,7 @@ class TokenEndpointTest(TestCase):
                 '', body=body)
         token = {
             'token_type': 'Bearer',
-            'expires_in': 3600,
+            'expires_in': self.expires_in,
             'access_token': 'abc',
             'refresh_token': 'abc',
             'state': 'xyz'
@@ -113,7 +116,7 @@ class TokenEndpointTest(TestCase):
                 '', body=body)
         token = {
             'token_type': 'Bearer',
-            'expires_in': 3600,
+            'expires_in': self.expires_in,
             'access_token': 'abc',
             'refresh_token': 'abc',
             'scope': 'all of them',
@@ -127,7 +130,7 @@ class TokenEndpointTest(TestCase):
                 '', body=body)
         token = {
             'token_type': 'Bearer',
-            'expires_in': 3600,
+            'expires_in': self.expires_in,
             'access_token': 'abc',
             'scope': 'all of them',
         }

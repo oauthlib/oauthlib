@@ -117,13 +117,13 @@ class ImplicitGrantTest(TestCase):
         self.auth = ImplicitGrant(request_validator=self.mock_validator)
 
     def test_create_token_response(self):
-        bearer = BearerToken(self.mock_validator)
+        bearer = BearerToken(self.mock_validator, expires_in=1800)
         orig_generate_token = common.generate_token
         self.addCleanup(setattr, common, 'generate_token', orig_generate_token)
         common.generate_token = lambda *args, **kwargs: '1234'
         uri, headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
-        correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=3600&state=xyz&scope=hello+world'
+        correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=1800&state=xyz&scope=hello+world'
         self.assertURLEqual(uri, correct_uri, parse_fragment=True)
 
     def test_error_response(self):
