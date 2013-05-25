@@ -97,21 +97,21 @@ class Client(object):
 
         For example, the "bearer" token type defined in
         [I-D.ietf-oauth-v2-bearer] is utilized by simply including the access
-        token string in the request:
+        token string in the request::
 
-        GET /resource/1 HTTP/1.1
-        Host: example.com
-        Authorization: Bearer mF_9.B5f-4.1JqM
+            GET /resource/1 HTTP/1.1
+            Host: example.com
+            Authorization: Bearer mF_9.B5f-4.1JqM
 
         while the "mac" token type defined in [I-D.ietf-oauth-v2-http-mac] is
         utilized by issuing a MAC key together with the access token which is
-        used to sign certain components of the HTTP requests:
+        used to sign certain components of the HTTP requests::
 
-        GET /resource/1 HTTP/1.1
-        Host: example.com
-        Authorization: MAC id="h480djs93hd8",
-                            nonce="274312:dj83hs9s",
-                            mac="kDZvddkndxvhGRXZhvuDjEWhGeE="
+            GET /resource/1 HTTP/1.1
+            Host: example.com
+            Authorization: MAC id="h480djs93hd8",
+                                nonce="274312:dj83hs9s",
+                                mac="kDZvddkndxvhGRXZhvuDjEWhGeE="
 
         .. _`I-D.ietf-oauth-v2-bearer`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-I-D.ietf-oauth-v2-bearer
         .. _`I-D.ietf-oauth-v2-http-mac`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-I-D.ietf-oauth-v2-http-mac
