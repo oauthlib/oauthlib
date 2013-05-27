@@ -97,7 +97,9 @@ class Client(object):
 
         For example, the "bearer" token type defined in
         [I-D.ietf-oauth-v2-bearer] is utilized by simply including the access
-        token string in the request::
+        token string in the request:
+
+        .. code-block:: http
 
             GET /resource/1 HTTP/1.1
             Host: example.com
@@ -105,7 +107,9 @@ class Client(object):
 
         while the "mac" token type defined in [I-D.ietf-oauth-v2-http-mac] is
         utilized by issuing a MAC key together with the access token which is
-        used to sign certain components of the HTTP requests::
+        used to sign certain components of the HTTP requests:
+
+        .. code-block:: http
 
             GET /resource/1 HTTP/1.1
             Host: example.com
