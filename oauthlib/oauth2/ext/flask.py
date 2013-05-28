@@ -15,13 +15,13 @@ log = logging.getLogger('oauthlib')
 
 class OAuth2ProviderDecorator(object):
 
-    def __init__(self, error_uri,server=None,authorization_endpoint=None,
-            token_endpoint=None, resource_endpoint=None):
+    def __init__(self, error_uri, server=None, authorization_endpoint=None,
+                 token_endpoint=None, resource_endpoint=None):
         self._authorization_endpoint = authorization_endpoint or server
         self._token_endpoint = token_endpoint or server
         self._resource_endpoint = resource_endpoint or server
         self._error_uri = error_uri
-    
+
     def __getattr__(self, name):
         ctx = stack.top
         if ctx is not None:
@@ -30,7 +30,7 @@ class OAuth2ProviderDecorator(object):
                 return getattr(ctx, oauth_name)
             except AttributeError:
                 return None
-        return None 
+        return None
 
     def _set_ctx(self, name, value):
         ctx = stack.top
