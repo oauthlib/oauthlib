@@ -9,6 +9,7 @@ to use them please browse the documentation for each client type below.
 .. toctree::
     :maxdepth: 2
 
+    baseclient
     webapplicationclient
     mobileapplicationclient
     legacyapplicationclient
