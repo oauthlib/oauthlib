@@ -1310,7 +1310,7 @@ class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoin
 class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint):
     """An all-in-one endpoint featuring Implicit code grant and Bearer tokens."""
 
-    def __init__(self, request_validator, token_generator=None, 
+    def __init__(self, request_validator, token_generator=None,
             token_expires_in=None, **kwargs):
         implicit_grant = grant_types.ImplicitGrant(request_validator)
         bearer = tokens.BearerToken(request_validator, token_generator,
