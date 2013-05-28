@@ -412,7 +412,8 @@ class GrantTypeBase(object):
                   request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,
                 request.scopes, request.client, request):
-            raise errors.InvalidScopeError(state=request.state)
+            raise errors.InvalidScopeError(state=request.state,
+                                           redirect_uri=request.redirect_uri)
 
 
 class AuthorizationCodeGrant(GrantTypeBase):
@@ -700,22 +701,25 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # populated through the use of specific exceptions.
         if request.response_type is None:
             raise errors.InvalidRequestError(state=request.state,
-                    description='Missing response_type parameter.')
+                    description='Missing response_type parameter.',
+                    redirect_uri=request.redirect_uri)
 
         for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
             if param in request.duplicate_params:
                 raise errors.InvalidRequestError(state=request.state,
-                        description='Duplicate %s parameter.' % param)
+                        description='Duplicate %s parameter.' % param,
+                        redirect_uri=request.redirect_uri)
 
         if not self.request_validator.validate_response_type(request.client_id,
                 request.response_type, request.client, request):
             log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
-            raise errors.UnauthorizedClientError()
+            raise errors.UnauthorizedClientError(redirect_uri=request.redirect_uri)
 
         # REQUIRED. Value MUST be set to "code".
         if request.response_type != 'code':
-            raise errors.UnsupportedResponseTypeError(state=request.state)
+            raise errors.UnsupportedResponseTypeError(state=request.state,
+                                                      redirect_uri=request.redirect_uri)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
@@ -1075,16 +1079,19 @@ class ImplicitGrant(GrantTypeBase):
         # populated through the use of specific exceptions.
         if request.response_type is None:
             raise errors.InvalidRequestError(state=request.state,
-                    description='Missing response_type parameter.')
+                    description='Missing response_type parameter.',
+                    redirect_uri=request.redirect_uri)
 
         for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
             if param in request.duplicate_params:
                 raise errors.InvalidRequestError(state=request.state,
-                        description='Duplicate %s parameter.' % param)
+                        description='Duplicate %s parameter.' % param,
+                        redirect_uri=request.redirect_uri)
 
         # REQUIRED. Value MUST be set to "token".
         if request.response_type != 'token':
-            raise errors.UnsupportedResponseTypeError(state=request.state)
+            raise errors.UnsupportedResponseTypeError(state=request.state,
+                                                      redirect_uri=request.redirect_uri)
 
         log.debug('Validating use of response_type token for client %r (%r).',
                   request.client_id, request.client)
@@ -1092,7 +1099,7 @@ class ImplicitGrant(GrantTypeBase):
                 request.response_type, request.client, request):
             log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
-            raise errors.UnauthorizedClientError()
+            raise errors.UnauthorizedClientError(redirect_uri=request.redirect_uri)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
