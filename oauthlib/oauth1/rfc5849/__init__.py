@@ -720,7 +720,7 @@ class Server(object):
               request_token=None, access_token=None):
 
               return ((client_key, timestamp, nonce, request_token or access_token)
-                       in self.nonces_and_timestamps_database)
+                       not in self.nonces_and_timestamps_database)
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
