@@ -15,7 +15,7 @@ script:
 
 after_success:
   - pip install coveralls
-  - nosetests --with-coverage --cover-package=oauthlib -w tests
+  - nosetests --with-coverage --cover-package=oauthlib
   - coveralls
 
 branches:
