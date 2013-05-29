@@ -1327,7 +1327,7 @@ class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint):
 
 
 class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint):
-    """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
+    """An all-in-one endpoint featuring Resource Owner Password Credentials grant and Bearer tokens."""
 
     def __init__(self, request_validator, token_generator=None,
             token_expires_in=None, **kwargs):
@@ -1346,7 +1346,7 @@ class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint):
 
 
 class BackendApplicationServer(TokenEndpoint, ResourceEndpoint):
-    """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
+    """An all-in-one endpoint featuring Client Credentials grant and Bearer tokens."""
 
     def __init__(self, request_validator, token_generator=None,
             token_expires_in=None, **kwargs):
