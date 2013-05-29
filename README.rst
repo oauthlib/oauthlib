@@ -4,8 +4,11 @@ OAuthLib
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
 logic.*
 
-.. image:: https://secure.travis-ci.org/idangazit/oauthlib.png?branch=master
+.. image:: https://travis-ci.org/idan/oauthlib.png?branch=master
   :target: https://travis-ci.org/idan/oauthlib
+.. image:: https://coveralls.io/repos/idan/oauthlib/badge.png?branch=master
+  :target: https://coveralls.io/r/idan/oauthlib
+
 
 OAuth often seems complicated and difficult-to-implement. There are several
 prominent libraries for signing OAuth requests, but they all suffer from one or
