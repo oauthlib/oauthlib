@@ -11,7 +11,8 @@ from oauthlib.common import urlencode, add_params_to_uri
 class OAuth2Error(Exception):
     error = None
 
-    def __init__(self, description=None, uri=None, state=None, status_code=400):
+    def __init__(self, description=None, uri=None, state=None, status_code=400,
+                 request=None):
         """
         description:    A human-readable ASCII [USASCII] text providing
                         additional information, used to assist the client
@@ -28,11 +29,20 @@ class OAuth2Error(Exception):
                 x21 / x23-5B / x5D-7E.
 
         state:  A CSRF protection value received from the client.
+
+        request:  Oauthlib Request object
         """
         self.description = description
         self.uri = uri
         self.state = state
         self.status_code = status_code
+
+        if request:
+            self.redirect_uri = request.redirect_uri
+            self.client_id = request.client_id
+            self.scopes = request.scopes
+            self.response_type = request.response_type
+            self.grant_type = request.grant_type
 
     def in_uri(self, uri):
         return add_params_to_uri(uri, self.twotuples)
