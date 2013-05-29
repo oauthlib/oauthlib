@@ -57,6 +57,27 @@ class OAuth2Error(Exception):
         return json.dumps(dict(self.twotuples))
 
 
+class RedirectClientError(OAuth2Error):
+    """
+    If the request fails for reasons other than a missing or invalid
+    redirection URI, the authorization server informs the client by adding
+    the parameters defined in
+    http://tools.ietf.org/html/rfc6749#section-4.1.2.1 and #section-4.2.2.1
+    to the fragment component of the redirection URI
+
+    This class adds the possibility to specify a redirect_uri so the
+    application that uses oauthlib doesn't need to evaluate the correct
+    redirect_uri itself.
+    """
+    def __init__(self, redirect_uri=None, **kwargs):
+        """
+        redirect_uri:   The redirection uri registered by client application
+                        or provided as a query string parameter.
+        """
+        self.redirect_uri = redirect_uri
+        super(RedirectClientError, self).__init__(**kwargs)
+
+
 class TokenExpiredError(OAuth2Error):
     error = 'token_expired'
 
@@ -107,7 +128,7 @@ class InvalidClientIdError(FatalClientError):
     error = 'invalid_client_id'
 
 
-class InvalidRequestError(OAuth2Error):
+class InvalidRequestError(RedirectClientError):
     """The request is missing a required parameter, includes an invalid
     parameter value, includes a parameter more than once, or is
     otherwise malformed.
@@ -115,24 +136,24 @@ class InvalidRequestError(OAuth2Error):
     error = 'invalid_request'
 
 
-class AccessDeniedError(OAuth2Error):
+class AccessDeniedError(RedirectClientError):
     """The resource owner or authorization server denied the request."""
     error = 'access_denied'
 
 
-class UnsupportedResponseTypeError(OAuth2Error):
+class UnsupportedResponseTypeError(RedirectClientError):
     """The authorization server does not support obtaining an authorization
     code using this method.
     """
     error = 'unsupported_response_type'
 
 
-class InvalidScopeError(OAuth2Error):
+class InvalidScopeError(RedirectClientError):
     """The requested scope is invalid, unknown, or malformed."""
     error = 'invalid_scope'
 
 
-class ServerError(OAuth2Error):
+class ServerError(RedirectClientError):
     """The authorization server encountered an unexpected condition that
     prevented it from fulfilling the request.  (This error code is needed
     because a 500 Internal Server Error HTTP status code cannot be returned
@@ -141,7 +162,7 @@ class ServerError(OAuth2Error):
     error = 'server_error'
 
 
-class TemporarilyUnavailableError(OAuth2Error):
+class TemporarilyUnavailableError(RedirectClientError):
     """The authorization server is currently unable to handle the request
     due to a temporary overloading or maintenance of the server.
     (This error code is needed because a 503 Service Unavailable HTTP
@@ -173,7 +194,7 @@ class InvalidGrantError(OAuth2Error):
     error = 'invalid_grant'
 
 
-class UnauthorizedClientError(OAuth2Error):
+class UnauthorizedClientError(RedirectClientError):
     """The authenticated client is not authorized to use this authorization
     grant type.
     """
