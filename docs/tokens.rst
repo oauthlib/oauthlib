@@ -2,8 +2,6 @@
 OAuth 2 Tokens
 ==============
 
-TODO(ib-lundgren): Outline the various use cases for each token type.
-
 ------------------------
 Bearer Tokens (standard)
 ------------------------
@@ -15,7 +13,7 @@ Bearer tokens are the default setting with all configured endpoints. Generally
 you will not need to ever construct a token yourself as the provided servers
 will do so for you.
 
-.. autoclass:: oauthlib.oauth2.draft25.tokens.BearerToken
+.. autoclass:: oauthlib.oauth2.BearerToken
     :members:
 
 -----------

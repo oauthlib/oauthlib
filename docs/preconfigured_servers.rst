@@ -23,14 +23,14 @@ If you prefer to construct tokens yourself you may pass a token generator::
 
     server = WebApplicationServer(your_validator, token_generator=your_token_generator)
 
-.. autoclass:: oauthlib.oauth2.draft25.WebApplicationServer
+.. autoclass:: oauthlib.oauth2.WebApplicationServer
     :members:
 
-.. autoclass:: oauthlib.oauth2.draft25.MobileApplicationServer
+.. autoclass:: oauthlib.oauth2.MobileApplicationServer
     :members:
 
-.. autoclass:: oauthlib.oauth2.draft25.LegacyApplicationServer
+.. autoclass:: oauthlib.oauth2.LegacyApplicationServer
     :members:
 
-.. autoclass:: oauthlib.oauth2.draft25.BackendApplicationServer
+.. autoclass:: oauthlib.oauth2.BackendApplicationServer
     :members:

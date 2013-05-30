@@ -133,7 +133,7 @@ Grant and the Client Credentials Grant.
             client_redirect_uri = credentials.get('redirect_uri')
             redirect(e.in_uri(client_redirect_uri))
 
-.. autoclass:: oauthlib.oauth2.draft25.AuthorizationEndpoint
+.. autoclass:: oauthlib.oauth2.AuthorizationEndpoint
     :members:
 
 --------------
@@ -219,7 +219,7 @@ tokens which unless you are certain you need them, are a bad idea.
         from your_framework import http_response
         http_response(body, status=status, headers=headers)
 
-.. autoclass:: oauthlib.oauth2.draft25.TokenEndpoint
+.. autoclass:: oauthlib.oauth2.TokenEndpoint
     :members:
 
 ---------------------------
@@ -259,6 +259,6 @@ to the scopes associated with the resource in question.
         else:
             # return an http forbidden 403
 
-.. autoclass:: oauthlib.oauth2.draft25.ResourceEndpoint
+.. autoclass:: oauthlib.oauth2.ResourceEndpoint
     :members:
 

@@ -1,5 +1,5 @@
 Base Client (Client)
 --------------------
 
-.. autoclass:: oauthlib.oauth2.draft25.Client
+.. autoclass:: oauthlib.oauth2.Client
     :members:
