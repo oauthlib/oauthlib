@@ -121,9 +121,34 @@ the project root via:
 
    $ python -m unittest discover
 
-
 The first thing the core committers will do is run this command. Any pull
 request that fails this test suite will be **rejected**.
+
+Testing multiple versions of Python
+-----------------------------------
+
+OAuthLib supports Python 2.6, 2.7, 3.2, 3.3 and experimentally PyPy. Testing
+all versions conveniently can be done using `Tox`_.
+
+.. sourcecode:: bash
+
+   $ tox
+
+Tox requires you to have `virtualenv`_ installed as well as respective python
+version. For Ubuntu you can easily install all after adding one ppa.
+
+.. sourcecode:: bash
+
+   $ sudo add-apt-repository ppa:fkrull/deadsnakes
+   $ sudo apt-get update
+   $ sudo apt-get install python2.6 python2.6-dev
+   $ sudo apt-get install python2.7 python2.7-dev
+   $ sudo apt-get install python3.2 python3.2-dev
+   $ sudo apt-get install python3.3 python3.3-dev
+   $ sudo apt-get install pypy pypy-dev
+
+.. _`Tox`: http://tox.readthedocs.org/en/latest/install.html
+.. _`virtualenv`: http://www.virtualenv.org/en/latest/#installation
 
 If you add code you need to add tests!
 --------------------------------------
