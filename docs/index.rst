@@ -18,6 +18,8 @@ For news and discussions please check out our `G+ OAuthLib community`_.
    :maxdepth: 2
 
    contributing
+   faq
+   feature_matrix
 
 .. toctree::
    :maxdepth: 2
