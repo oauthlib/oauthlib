@@ -1,7 +1,10 @@
 # coding=utf-8
 """
-oauthlib.oauth2.draft_25.errors
+oauthlib.oauth2.rfc6749.errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Error used both by OAuth 2 clients and provicers to represent the spec
+defined error responses for all four core grant types.
 """
 from __future__ import unicode_literals
 import json
@@ -94,6 +97,16 @@ class MissingTokenTypeError(OAuth2Error):
 
 
 class FatalClientError(OAuth2Error):
+    """Errors during authorization where user should not be redirected back.
+
+    If the request fails due to a missing, invalid, or mismatching
+    redirection URI, or if the client identifier is missing or invalid,
+    the authorization server SHOULD inform the resource owner of the
+    error and MUST NOT automatically redirect the user-agent to the
+    invalid redirection URI.
+
+    Instead the user should be informed of the error by the provider itself.
+    """
     pass
 
 

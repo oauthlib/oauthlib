@@ -2,18 +2,18 @@
 from __future__ import absolute_import, unicode_literals
 
 """
-oauthlib.oauth2.draft_25
-~~~~~~~~~~~~~~
+oauthlib.oauth2.rfc6749
+~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various logic needed
-for signing and checking OAuth 2.0 draft 25 requests.
+for consuming and providing OAuth 2.0 RFC6749.
 """
 import datetime
 import functools
 import logging
 
 from oauthlib.common import Request
-from oauthlib.oauth2.draft25 import tokens, grant_types
+from . import tokens, grant_types
 from .errors import TokenExpiredError, InsecureTransportError
 from .errors import TemporarilyUnavailableError, ServerError
 from .errors import FatalClientError, OAuth2Error
@@ -96,7 +96,7 @@ class Client(object):
         type.
 
         For example, the "bearer" token type defined in
-        [I-D.ietf-oauth-v2-bearer] is utilized by simply including the access
+        [`I-D.ietf-oauth-v2-bearer`_] is utilized by simply including the access
         token string in the request:
 
         .. code-block:: http
@@ -105,7 +105,7 @@ class Client(object):
             Host: example.com
             Authorization: Bearer mF_9.B5f-4.1JqM
 
-        while the "mac" token type defined in [I-D.ietf-oauth-v2-http-mac] is
+        while the "mac" token type defined in [`I-D.ietf-oauth-v2-http-mac`_] is
         utilized by issuing a MAC key together with the access token which is
         used to sign certain components of the HTTP requests:
 
@@ -117,8 +117,8 @@ class Client(object):
                                 nonce="274312:dj83hs9s",
                                 mac="kDZvddkndxvhGRXZhvuDjEWhGeE="
 
-        .. _`I-D.ietf-oauth-v2-bearer`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-I-D.ietf-oauth-v2-bearer
-        .. _`I-D.ietf-oauth-v2-http-mac`: http://tools.ietf.org/html/draft-ietf-oauth-v2-28#ref-I-D.ietf-oauth-v2-http-mac
+        .. _`I-D.ietf-oauth-v2-bearer`: http://tools.ietf.org/html/rfc6749#section-12.2
+        .. _`I-D.ietf-oauth-v2-http-mac`: http://tools.ietf.org/html/rfc6749#section-12.2
         """
         if not uri.lower().startswith('https://'):
             raise InsecureTransportError()
@@ -379,11 +379,11 @@ class WebApplicationClient(Client):
             >>> client.parse_request_uri_response(uri, state='other')
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 357, in parse_request_uri_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 357, in parse_request_uri_response
                     back from the provider to you, the client.
-                File "oauthlib/oauth2/draft25/parameters.py", line 153, in parse_authorization_code_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 153, in parse_authorization_code_response
                     raise MismatchingStateError()
-            oauthlib.oauth2.draft25.errors.MismatchingStateError
+            oauthlib.oauth2.rfc6749.errors.MismatchingStateError
         """
         response = parse_authorization_code_response(uri, state=state)
         self._populate_attributes(response)
@@ -457,11 +457,11 @@ class WebApplicationClient(Client):
             >>> client.parse_request_body_response(response_body, scope=['images'])
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
                     .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
-                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 263, in parse_token_response
                     validate_token_parameters(params, scope)
-                File "oauthlib/oauth2/draft25/parameters.py", line 285, in validate_token_parameters
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 285, in validate_token_parameters
                     raise Warning("Scope has changed to %s." % new_scope)
             Warning: Scope has changed to [u'hello', u'world'].
 
@@ -471,13 +471,13 @@ class WebApplicationClient(Client):
             >>> client.parse_request_body_response(response_body)
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
-                    File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
-                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
+                    File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 263, in parse_token_response
                     validate_token_parameters(params, scope)
-                File "oauthlib/oauth2/draft25/parameters.py", line 276, in validate_token_parameters
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 276, in validate_token_parameters
                     raise MissingTokenTypeError()
-            oauthlib.oauth2.draft25.errors.MissingTokenTypeError
+            oauthlib.oauth2.rfc6749.errors.MissingTokenTypeError
 
         .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
@@ -627,19 +627,19 @@ class MobileApplicationClient(Client):
             >>> client.parse_request_uri_response(response_uri, state='other')
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 598, in parse_request_uri_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 598, in parse_request_uri_response
                     **scope**
-                File "oauthlib/oauth2/draft25/parameters.py", line 197, in parse_implicit_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 197, in parse_implicit_response
                     raise ValueError("Mismatching or missing state in params.")
             ValueError: Mismatching or missing state in params.
             >>> client.parse_request_uri_response(response_uri, scope=['other'])
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 598, in parse_request_uri_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 598, in parse_request_uri_response
                     **scope**
-                File "oauthlib/oauth2/draft25/parameters.py", line 199, in parse_implicit_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 199, in parse_implicit_response
                     validate_token_parameters(params, scope)
-                File "oauthlib/oauth2/draft25/parameters.py", line 285, in validate_token_parameters
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 285, in validate_token_parameters
                     raise Warning("Scope has changed to %s." % new_scope)
             Warning: Scope has changed to [u'hello', u'world'].
 
@@ -765,11 +765,11 @@ class BackendApplicationClient(Client):
             >>> client.parse_request_body_response(response_body, scope=['images'])
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
                     .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
-                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 263, in parse_token_response
                     validate_token_parameters(params, scope)
-                File "oauthlib/oauth2/draft25/parameters.py", line 285, in validate_token_parameters
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 285, in validate_token_parameters
                     raise Warning("Scope has changed to %s." % new_scope)
             Warning: Scope has changed to [u'hello', u'world'].
 
@@ -779,13 +779,13 @@ class BackendApplicationClient(Client):
             >>> client.parse_request_body_response(response_body)
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
-                    File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
-                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
+                    File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 263, in parse_token_response
                     validate_token_parameters(params, scope)
-                File "oauthlib/oauth2/draft25/parameters.py", line 276, in validate_token_parameters
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 276, in validate_token_parameters
                     raise MissingTokenTypeError()
-            oauthlib.oauth2.draft25.errors.MissingTokenTypeError
+            oauthlib.oauth2.rfc6749.errors.MissingTokenTypeError
 
         .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
@@ -922,11 +922,11 @@ class LegacyApplicationClient(Client):
             >>> client.parse_request_body_response(response_body, scope=['images'])
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
                     .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
-                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 263, in parse_token_response
                     validate_token_parameters(params, scope)
-                File "oauthlib/oauth2/draft25/parameters.py", line 285, in validate_token_parameters
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 285, in validate_token_parameters
                     raise Warning("Scope has changed to %s." % new_scope)
             Warning: Scope has changed to [u'hello', u'world'].
 
@@ -936,13 +936,13 @@ class LegacyApplicationClient(Client):
             >>> client.parse_request_body_response(response_body)
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
-                    File "oauthlib/oauth2/draft25/__init__.py", line 421, in parse_request_body_response
-                File "oauthlib/oauth2/draft25/parameters.py", line 263, in parse_token_response
+                File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
+                    File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 263, in parse_token_response
                     validate_token_parameters(params, scope)
-                File "oauthlib/oauth2/draft25/parameters.py", line 276, in validate_token_parameters
+                File "oauthlib/oauth2/rfc6749/parameters.py", line 276, in validate_token_parameters
                     raise MissingTokenTypeError()
-            oauthlib.oauth2.draft25.errors.MissingTokenTypeError
+            oauthlib.oauth2.rfc6749.errors.MissingTokenTypeError
 
         .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2

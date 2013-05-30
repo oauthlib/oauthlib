@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.draft_25.grant_types
+oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 import json
 import logging
 from oauthlib import common
-from oauthlib.oauth2.draft25 import errors, utils
 from oauthlib.uri_validate import is_absolute_uri
+
+from . import errors, utils
 
 log = logging.getLogger('oauthlib')
 
@@ -547,7 +548,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             >>> grant.create_authorization_response(request, token)
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/grant_types.py", line 513, in create_authorization_response
+                File "oauthlib/oauth2/rfc6749/grant_types.py", line 513, in create_authorization_response
                     raise ValueError('Scopes must be set on post auth.')
             ValueError: Scopes must be set on post auth.
             >>> request.scopes = ['authorized', 'in', 'some', 'form']
@@ -563,10 +564,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
             >>> grant.create_authorization_response(request, token)
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/draft25/grant_types.py", line 515, in create_authorization_response
+                File "oauthlib/oauth2/rfc6749/grant_types.py", line 515, in create_authorization_response
                     >>> grant.create_authorization_response(request, token)
-                File "oauthlib/oauth2/draft25/grant_types.py", line 591, in validate_authorization_request
-            oauthlib.oauth2.draft25.errors.InvalidClientIdError
+                File "oauthlib/oauth2/rfc6749/grant_types.py", line 591, in validate_authorization_request
+            oauthlib.oauth2.rfc6749.errors.InvalidClientIdError
 
         .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
         .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2

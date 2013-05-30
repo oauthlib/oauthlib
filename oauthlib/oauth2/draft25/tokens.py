@@ -1,12 +1,12 @@
 from __future__ import absolute_import, unicode_literals
 """
-oauthlib.oauth2.draft25.tokens
+oauthlib.oauth2.rfc6749.tokens
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This module contains methods for adding two types of access tokens to requests.
 
-- Bearer http://tools.ietf.org/html/draft-ietf-oauth-saml2-bearer-08
-- MAC http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00
+- Bearer http://tools.ietf.org/html/rfc6750
+- MAC http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
 
 """
 from binascii import b2a_base64
