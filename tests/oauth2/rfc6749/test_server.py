@@ -4,9 +4,14 @@ from ...unittest import TestCase
 import json
 import mock
 
-from oauthlib.oauth2.rfc6749 import AuthorizationEndpoint
-from oauthlib.oauth2.rfc6749 import TokenEndpoint, ResourceEndpoint
-from oauthlib.oauth2.rfc6749 import grant_types, tokens, errors
+from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.resource import ResourceEndpoint
+from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
+from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
+from oauthlib.oauth2.rfc6749.grant_types import ResourceOwnerPasswordCredentialsGrant
+from oauthlib.oauth2.rfc6749.grant_types import ClientCredentialsGrant
+from oauthlib.oauth2.rfc6749 import tokens, errors
 
 
 class AuthorizationEndpointTest(TestCase):
@@ -14,10 +19,10 @@ class AuthorizationEndpointTest(TestCase):
     def setUp(self):
         self.mock_validator = mock.MagicMock()
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
-        auth_code = grant_types.AuthorizationCodeGrant(
+        auth_code = AuthorizationCodeGrant(
                 request_validator=self.mock_validator)
         auth_code.save_authorization_code = mock.MagicMock()
-        implicit = grant_types.ImplicitGrant(
+        implicit = ImplicitGrant(
                 request_validator=self.mock_validator)
         implicit.save_token = mock.MagicMock()
         response_types = {
@@ -79,11 +84,11 @@ class TokenEndpointTest(TestCase):
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = set_user
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
-        auth_code = grant_types.AuthorizationCodeGrant(
+        auth_code = AuthorizationCodeGrant(
                 request_validator=self.mock_validator)
-        password = grant_types.ResourceOwnerPasswordCredentialsGrant(
+        password = ResourceOwnerPasswordCredentialsGrant(
                 request_validator=self.mock_validator)
-        client = grant_types.ClientCredentialsGrant(
+        client = ClientCredentialsGrant(
                 request_validator=self.mock_validator)
         supported_types = {
                 'authorization_code': auth_code,

@@ -10,6 +10,7 @@ to all implementations of OAuth.
 """
 
 import collections
+import logging
 import random
 import re
 import sys
@@ -41,6 +42,19 @@ always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 PY3 = sys.version_info[0] == 3
 
+# Logger used throughout oauthlib
+log = logging.getLogger('oauthlib')
+# Add a NullHandler to prevent warnings for users who don't wish
+# to configure logging.
+try:
+    log.addHandler(logging.NullHandler())
+# NullHandler gracefully backported to 2.6
+except AttributeError:
+    class NullHandler(logging.Handler):
+
+        def emit(self, record):
+            pass
+    log.addHandler(NullHandler())
 
 if PY3:
     unicode_type = str

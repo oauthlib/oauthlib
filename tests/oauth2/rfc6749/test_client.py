@@ -5,10 +5,12 @@ from ...unittest import TestCase
 import datetime
 from oauthlib import common
 from oauthlib.oauth2.rfc6749 import utils, errors
-from oauthlib.oauth2.rfc6749 import Client, PasswordCredentialsClient
-from oauthlib.oauth2.rfc6749 import UserAgentClient, WebApplicationClient
-from oauthlib.oauth2.rfc6749 import ClientCredentialsClient
-from oauthlib.oauth2.rfc6749 import AUTH_HEADER, URI_QUERY, BODY
+from oauthlib.oauth2 import Client
+from oauthlib.oauth2 import WebApplicationClient
+from oauthlib.oauth2 import MobileApplicationClient
+from oauthlib.oauth2 import LegacyApplicationClient
+from oauthlib.oauth2 import BackendApplicationClient
+from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, URI_QUERY, BODY
 
 
 class ClientTest(TestCase):
@@ -274,7 +276,7 @@ class WebApplicationClientTest(TestCase):
         self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope="invalid")
 
 
-class UserAgentClientTest(TestCase):
+class MobileApplicationClientTest(TestCase):
 
     client_id = "someclientid"
     uri = "https://example.com/path?query=world"
@@ -308,7 +310,7 @@ class UserAgentClientTest(TestCase):
     }
 
     def test_implicit_token_uri(self):
-        client = UserAgentClient(self.client_id)
+        client = MobileApplicationClient(self.client_id)
 
         # Basic, no extra arguments
         uri = client.prepare_request_uri(self.uri)
@@ -331,7 +333,7 @@ class UserAgentClientTest(TestCase):
         self.assertURLEqual(uri, self.uri_kwargs)
 
     def test_parse_token_response(self):
-        client = UserAgentClient(self.client_id)
+        client = MobileApplicationClient(self.client_id)
 
         # Parse code and state
         response = client.parse_request_uri_response(self.response_uri, scope=self.scope)
@@ -344,7 +346,7 @@ class UserAgentClientTest(TestCase):
         self.assertRaises(Warning, client.parse_request_uri_response, self.response_uri, scope="invalid")
 
 
-class PasswordCredentialsClientTest(TestCase):
+class LegacyApplicationClientTest(TestCase):
 
     client_id = "someclientid"
     scope = ["/profile"]
@@ -376,7 +378,7 @@ class PasswordCredentialsClientTest(TestCase):
     }
 
     def test_request_body(self):
-        client = PasswordCredentialsClient(self.client_id)
+        client = LegacyApplicationClient(self.client_id)
 
         # Basic, no extra arguments
         body = client.prepare_request_body(self.username, self.password,
@@ -389,7 +391,7 @@ class PasswordCredentialsClientTest(TestCase):
         self.assertFormBodyEqual(body, self.body_kwargs)
 
     def test_parse_token_response(self):
-        client = PasswordCredentialsClient(self.client_id)
+        client = LegacyApplicationClient(self.client_id)
 
         # Parse code and state
         response = client.parse_request_body_response(self.token_json, scope=self.scope)
@@ -402,7 +404,7 @@ class PasswordCredentialsClientTest(TestCase):
         self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope="invalid")
 
 
-class ClientCredentialsClientTest(TestCase):
+class BackendApplicationClientTest(TestCase):
 
     client_id = "someclientid"
     scope = ["/profile"]
@@ -430,13 +432,13 @@ class ClientCredentialsClientTest(TestCase):
     }
 
     def test_request_body(self):
-        client = ClientCredentialsClient(self.client_id)
+        client = BackendApplicationClient(self.client_id)
 
         # Basic, no extra arguments
         body = client.prepare_request_body(body=self.body)
         self.assertFormBodyEqual(body, self.body_up)
 
-        rclient = ClientCredentialsClient(self.client_id)
+        rclient = BackendApplicationClient(self.client_id)
         body = rclient.prepare_request_body(body=self.body)
         self.assertFormBodyEqual(body, self.body_up)
 
@@ -445,7 +447,7 @@ class ClientCredentialsClientTest(TestCase):
         self.assertFormBodyEqual(body, self.body_kwargs)
 
     def test_parse_token_response(self):
-        client = ClientCredentialsClient(self.client_id)
+        client = BackendApplicationClient(self.client_id)
 
         # Parse code and state
         response = client.parse_request_body_response(self.token_json, scope=self.scope)

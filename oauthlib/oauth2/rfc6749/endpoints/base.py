@@ -11,8 +11,9 @@ for consuming and providing OAuth 2.0 RFC6749.
 import functools
 
 from oauthlib.common import log
-from .errors import TemporarilyUnavailableError, ServerError
-from .errors import FatalClientError, OAuth2Error
+
+from ..errors import TemporarilyUnavailableError, ServerError
+from ..errors import FatalClientError, OAuth2Error
 
 
 class BaseEndpoint(object):
