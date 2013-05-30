@@ -16,7 +16,7 @@ from ...unittest import TestCase
 from oauthlib.oauth2 import RequestValidator
 from oauthlib.oauth2 import WebApplicationServer, MobileApplicationServer
 from oauthlib.oauth2 import LegacyApplicationServer, BackendApplicationServer
-from oauthlib.oauth2.draft25 import errors
+from oauthlib.oauth2.rfc6749 import errors
 
 
 def get_query_credentials(uri):

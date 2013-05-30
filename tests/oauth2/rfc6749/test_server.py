@@ -4,8 +4,9 @@ from ...unittest import TestCase
 import json
 import mock
 
-from oauthlib.oauth2 import draft25
-from oauthlib.oauth2.draft25 import grant_types, tokens, errors
+from oauthlib.oauth2.rfc6749 import AuthorizationEndpoint
+from oauthlib.oauth2.rfc6749 import TokenEndpoint, ResourceEndpoint
+from oauthlib.oauth2.rfc6749 import grant_types, tokens, errors
 
 
 class AuthorizationEndpointTest(TestCase):
@@ -26,7 +27,7 @@ class AuthorizationEndpointTest(TestCase):
         self.expires_in = 1800
         token = tokens.BearerToken(self.mock_validator,
                 expires_in=self.expires_in)
-        self.endpoint = draft25.AuthorizationEndpoint(
+        self.endpoint = AuthorizationEndpoint(
                 default_response_type='code',
                 default_token_type=token,
                 response_types=response_types)
@@ -92,7 +93,7 @@ class TokenEndpointTest(TestCase):
         self.expires_in = 1800
         token = tokens.BearerToken(self.mock_validator,
                 expires_in=self.expires_in)
-        self.endpoint = draft25.TokenEndpoint('authorization_code',
+        self.endpoint = TokenEndpoint('authorization_code',
                 default_token_type=token, grant_types=supported_types)
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
@@ -154,7 +155,7 @@ class ResourceEndpointTest(TestCase):
         self.mock_validator = mock.MagicMock()
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
         token = tokens.BearerToken(request_validator=self.mock_validator)
-        self.endpoint = draft25.ResourceEndpoint(default_token='Bearer',
+        self.endpoint = ResourceEndpoint(default_token='Bearer',
                 token_types={'Bearer': token})
 
     def test_defaults(self):

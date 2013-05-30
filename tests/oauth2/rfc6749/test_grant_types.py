@@ -6,15 +6,15 @@ import json
 import mock
 from oauthlib import common
 from oauthlib.common import Request
-from oauthlib.oauth2.draft25.errors import UnsupportedGrantTypeError
-from oauthlib.oauth2.draft25.errors import InvalidRequestError
-from oauthlib.oauth2.draft25.errors import InvalidClientError
-from oauthlib.oauth2.draft25.errors import InvalidGrantError
-from oauthlib.oauth2.draft25.grant_types import AuthorizationCodeGrant
-from oauthlib.oauth2.draft25.grant_types import ImplicitGrant
-from oauthlib.oauth2.draft25.grant_types import ResourceOwnerPasswordCredentialsGrant
-from oauthlib.oauth2.draft25.grant_types import ClientCredentialsGrant
-from oauthlib.oauth2.draft25.tokens import BearerToken
+from oauthlib.oauth2.rfc6749.errors import UnsupportedGrantTypeError
+from oauthlib.oauth2.rfc6749.errors import InvalidRequestError
+from oauthlib.oauth2.rfc6749.errors import InvalidClientError
+from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
+from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
+from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
+from oauthlib.oauth2.rfc6749.grant_types import ResourceOwnerPasswordCredentialsGrant
+from oauthlib.oauth2.rfc6749.grant_types import ClientCredentialsGrant
+from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 
 class RequestValidatorTest(TestCase):

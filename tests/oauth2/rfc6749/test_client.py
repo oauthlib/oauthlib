@@ -4,11 +4,11 @@ from ...unittest import TestCase
 
 import datetime
 from oauthlib import common
-from oauthlib.oauth2.draft25 import utils, errors
-from oauthlib.oauth2.draft25 import Client, PasswordCredentialsClient
-from oauthlib.oauth2.draft25 import UserAgentClient, WebApplicationClient
-from oauthlib.oauth2.draft25 import ClientCredentialsClient
-from oauthlib.oauth2.draft25 import AUTH_HEADER, URI_QUERY, BODY
+from oauthlib.oauth2.rfc6749 import utils, errors
+from oauthlib.oauth2.rfc6749 import Client, PasswordCredentialsClient
+from oauthlib.oauth2.rfc6749 import UserAgentClient, WebApplicationClient
+from oauthlib.oauth2.rfc6749 import ClientCredentialsClient
+from oauthlib.oauth2.rfc6749 import AUTH_HEADER, URI_QUERY, BODY
 
 
 class ClientTest(TestCase):

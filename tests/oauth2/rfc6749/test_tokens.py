@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 from ...unittest import TestCase
 
-from oauthlib.oauth2.draft25.tokens import *
+from oauthlib.oauth2.rfc6749.tokens import *
 
 
 class TokenTest(TestCase):

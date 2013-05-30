@@ -1,8 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 
 from ...unittest import TestCase
-from oauthlib.oauth2.draft25.parameters import *
-from oauthlib.oauth2.draft25.errors import *
+from oauthlib.oauth2.rfc6749.parameters import *
+from oauthlib.oauth2.rfc6749.errors import *
 
 
 class ParameterTests(TestCase):
