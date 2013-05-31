@@ -87,4 +87,4 @@ def is_secure_transport(uri):
     """Check if the uri is over ssl."""
     if os.environ.get('DEBUG'):
         return True
-    return uri.startswith('https://')
+    return uri.lower().startswith('https://')

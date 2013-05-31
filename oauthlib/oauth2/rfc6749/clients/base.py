@@ -102,7 +102,7 @@ class Client(object):
         .. _`I-D.ietf-oauth-v2-bearer`: http://tools.ietf.org/html/rfc6749#section-12.2
         .. _`I-D.ietf-oauth-v2-http-mac`: http://tools.ietf.org/html/rfc6749#section-12.2
         """
-        if not is_secure_transport(uri.lower()):
+        if not is_secure_transport(uri):
             raise InsecureTransportError()
 
         token_placement = token_placement or self.default_token_placement
