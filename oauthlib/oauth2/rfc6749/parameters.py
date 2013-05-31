@@ -10,6 +10,7 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 .. _`Section 4`: http://tools.ietf.org/html/rfc6749#section-4
 """
 
+import os
 import json
 try:
     import urlparse
@@ -61,7 +62,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
     .. _`section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
     """
-    if not uri.startswith('https://'):
+    if not uri.startswith('https://') and not os.environ.get('DEBUG'):
         raise InsecureTransportError()
 
     params = [(('response_type', response_type)),
