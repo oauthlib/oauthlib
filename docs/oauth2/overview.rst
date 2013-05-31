@@ -31,10 +31,10 @@ Grant types
 .. toctree::
     :maxdepth: 2
 
-    authcode
-    implicit
-    password
-    credentials
+    grants/authcode
+    grants/implicit
+    grants/password
+    grants/credentials
 
 Grant types are what make OAuth 2 so flexible. The Authorization Code grant is
 very similar to OAuth 1 (with less crypto), the Implicit grant serves less

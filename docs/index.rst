@@ -17,27 +17,13 @@ For news and discussions please check out our `G+ OAuthLib community`_.
 .. toctree::
    :maxdepth: 2
 
+   oauth_1_versus_oauth_2
+   oauth1/oauth1
+   oauth2/oauth2
    contributing
    faq
    feature_matrix
 
-.. toctree::
-   :maxdepth: 2
-
-   oauth_1_versus_oauth_2
-
-.. toctree::
-   :maxdepth: 2
-
-   client
-   server
-
-.. toctree::
-   :maxdepth: 2
-
-   oauth2_overview
-   client2
-   server2
 
 Indices and tables
 ==================
@@ -45,4 +31,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

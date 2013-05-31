@@ -21,51 +21,51 @@ taken to restrict non authenticated clients access to resources appropriately.
   access to your users resources to a malicious third party which has
   stolen tokens (but not authentication secrets) from one of your clients.
 
-    **(Provider)** Offer :doc:`authcode`. Impact can be limited by not
+    **(Provider)** Offer :doc:`oauth2/grants/authcode`. Impact can be limited by not
     providing refresh tokens.
-    Default in :doc:`WebApplicationServer <preconfigured_servers>`.
+    Default in :doc:`WebApplicationServer <oauth2/preconfigured_servers>`.
 
-    **(Client)** Use :doc:`Web Application Client <webapplicationclient>`.
+    **(Client)** Use :doc:`Web Application Client <oauth2/clients/webapplicationclient>`.
 
 * Similar to above, but you are unwilling to risk malicious access based on
   stolen tokens alone.
 
-    **(Provider)** Offer :doc:`OAuth 1 <server>`.
+    **(Provider)** Offer :doc:`OAuth 1 <oauth1/server>`.
 
-    **(Client)** Use :doc:`OAuth 1 Client <client>`.
+    **(Client)** Use :doc:`OAuth 1 Client <oauth1/client>`.
 
 * Your clients reside in user controlled devices with the ability to authorize
   through a web based workflow. This workflow is inherently insecure, restrict
   the privileges associated with tokens accordingly.
 
-    **(Provider)** Offer :doc:`implicit`.
-    Default in :doc:`MobileApplicationServer <preconfigured_servers>`.
+    **(Provider)** Offer :doc:`oauth2/grants/implicit`.
+    Default in :doc:`MobileApplicationServer <oauth2/preconfigured_servers>`.
 
-    **(Client)** Use :doc:`Mobile Application Client <mobileapplicationclient>`.
+    **(Client)** Use :doc:`Mobile Application Client <oauth2/clients/mobileapplicationclient>`.
 
 * Similar to above but without the ability to use web authorization. These
   clients must have a strong trust relationship with the users although
   they offer no additional security.
 
-    **(Provider)** Offer non authenticated :doc:`password`.
-    Default in :doc:`LegacyApplicationServer <preconfigured_servers>`.
+    **(Provider)** Offer non authenticated :doc:`oauth2/grants/password`.
+    Default in :doc:`LegacyApplicationServer <oauth2/preconfigured_servers>`.
 
-    **(Client)** Use :doc:`Legacy Application Client <legacyapplicationclient>`.
+    **(Client)** Use :doc:`Legacy Application Client <oauth2/clients/legacyapplicationclient>`.
 
 * Your clients are transitioning from using usernames/passwords to interact with your
   API to using OAuth tokens but for various reasons don't wish to use the web based
   authorization workflow. The clients reside in secure environments and have a strong
   trust relationship with their users.
 
-    **(Provider)** Offer authenticated :doc:`password`.
-    Default in :doc:`LegacyApplicationServer <preconfigured_servers>`.
+    **(Provider)** Offer authenticated :doc:`oauth2/grants/password`.
+    Default in :doc:`LegacyApplicationServer <oauth2/preconfigured_servers>`.
 
-    **(Client)** Use :doc:`Legacy Application Client <legacyapplicationclient>`.
+    **(Client)** Use :doc:`Legacy Application Client <oauth2/clients/legacyapplicationclient>`.
 
 * You wish to run an internal, highly trusted, job acting on protected
   resources but not interacting with users.
 
-    **(Provider)** Offer :doc:`credentials`.
-    Default in :doc:`BackendApplicationServer <preconfigured_servers>`.
+    **(Provider)** Offer :doc:`oauth2/grants/credentials`.
+    Default in :doc:`BackendApplicationServer <oauth2/preconfigured_servers>`.
 
-    **(Client)** Use :doc:`Backend Application Client <backendapplicationclient>`.
+    **(Client)** Use :doc:`Backend Application Client <oauth2/clients/backendapplicationclient>`.
