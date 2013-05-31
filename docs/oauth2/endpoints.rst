@@ -11,9 +11,6 @@ certain users resources to a client, to supply said client with a token
 embodying this authorization and to verify that the token is valid when the
 client attempts to access thee user resources on their behalf.
 
-**Much of the logic presented in code snippets below can be conveniently
-extracted away into a decorator class.** See :doc:`decorators` for examples.
-
 -------------
 Authorization
 -------------

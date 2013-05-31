@@ -3,11 +3,7 @@ Preconfigured all-in-one servers
 
 A pre configured server is an all-in-one endpoint serving a specific class of
 application clients. As the individual endpoints, they depend on the use of a
-:doc:`validator`.
-
-Once constructed they can be plugged into any of the available :doc:`decorators`
-or used on their own. For the latter case you might be interested in looking at
-:doc:`endpoints`.
+:doc:`validator`. See also :doc:`endpoints`.
 
 Construction is simple, only import your validator and you are good to go::
 
