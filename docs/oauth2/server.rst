@@ -230,7 +230,6 @@ as well as provide an interface for a backend to store tokens, clients, etc.
         from my_validator import MyRequestValidator
 
         from oauthlib.oauth2 import WebApplicationServer
-        from oauthlib.oauth2.ext.django import OAuth2ProviderDecorator
 
         validator = MyRequestValidator()
         server = WebApplicationServer(validator)
@@ -251,12 +250,145 @@ as well as provide an interface for a backend to store tokens, clients, etc.
     users to if the client supplied invalid credentials in their redirection,
     for example an invalid redirect URI.
 
-    The rest of this section will come soon.
+    The example using Django but should be transferable to any framework.
+
+    .. code-block:: python
+
+        # Handles GET and POST requests to /authorize
+        class AuthorizationView(View):
+
+            def __init__(self):
+                # Using the server from previous section
+                self._authorization_endpoint = server
+                self._error_uri = '/error'
+
+            def get(self, request):
+                # You need to define extract_params and make sure it does not
+                # include file like objects waiting for input. In Django this
+                # is request.META['wsgi.input'] and request.META['wsgi.errors']
+                uri, http_method, body, headers = extract_params(request)
+
+                try:
+                    scopes, credentials = self._authorization_endpoint.validate_authorization_request(
+                            uri, http_method, body, headers)
+
+                    # Not necessarily in session but they need to be
+                    # accessible in the POST view after form submit.
+                    request.session['oauth2_credentials'] = credentials
+
+                    # You probably want to render a template instead.
+                    response = HttpResponse()
+                    response.write('<h1> Authorize access to %s </h1>' % client_id)
+                    response.write('<form method="POST" action="/authorize">')
+                    for scope in scopes or []:
+                        response.write('<input type="checkbox" name="scopes" ' + 
+                                       'value="%s"/> %s' % (scope, scope))
+                    response.write('<input type="submit" value="Authorize"/>')
+                    return response
+
+                # Errors that should be shown to the user on the provider website
+                except errors.FatalClientError as e:
+                    return HttpResponseRedirect(e.in_uri(self._error_uri))
+
+                # Errors embedded in the redirect URI back to the client
+                except errors.OAuth2Error as e:
+                    return HttpResponseRedirect(e.in_uri(e.redirect_uri))
+
+            @csrf_exempt
+            def post(self, request):
+                uri, http_method, body, headers = extract_params(request)
+                
+                # The scopes the user actually authorized, i.e. checkboxes
+                # that were selected.
+                scopes = request.POST.getlist(['scopes'])
+
+                # Extra credentials we need in the validator
+                credentials = {'user': request.user}
+
+                # The previously stored (in authorization GET view) credentials
+                credentials.update(request.session.get('oauth2_credentials', {}))
+
+                try:
+                    url, headers, body, status = self._authorization_endpoint.create_authorization_response(
+                            uri, http_method, body, headers, scopes, credentials)
+                    return HttpResponseRedirect(url)
+
+                except errors.FatalClientError as e:
+                    return HttpResponseRedirect(e.in_uri(self._error_uri))
+
+                except errors.OAuth2Error as e:
+                    return HttpResponseRedirect(e.in_uri(redirect_uri))
+
+        # Handles requests to /token
+        class TokenView(View):
+
+            def __init__(self):
+                # Using the server from previous section
+                self._token_endpoint = server
+
+            def post(self, request):
+                uri, http_method, body, headers = extract_params(request)
+
+                # If you wish to include request specific extra credentials for
+                # use in the validator, do so here.
+                credentials = {'foo': 'bar'}
+
+                url, headers, body, status = self._token_endpoint.create_token_response(
+                        uri, http_method, body, headers, credentials)
+
+                # All requests to /token will return a json response, no redirection.
+                response = HttpResponse(content=body, status=status)
+                for k, v in headers.items():
+                    response[k] = v
+                return response
+
+
+        class ErrorView(View):
+            response = HttpResponse()
+            response.write('Evil client is unable to send a proper request.')
+            return response
 
 **5. Protect your APIs using scopes**
 
-    The definition of ``protected_resource_view`` will come soon. Please see
-    the framework specific extensions outlined in the beginning for now.
+    Let's define a decorator we can use to protect the views.
+
+    .. code-block:: python
+
+        class OAuth2ProviderDecorator(object):
+
+            def __init__(self, resource_endpoint):
+                self._resource_endpoint = resource_endpoint
+
+            def protected_resource_view(self, scopes=None):
+                def decorator(f):
+                    @functools.wraps(f)
+                    def wrapper(request):
+                        # Get the list of scopes
+                        try:
+                            scopes_list = scopes(request)
+                        except TypeError:
+                            scopes_list = scopes
+
+                        uri, http_method, body, headers = extract_params(request)
+
+                        valid, r = self._resource_endpoint.verify_request(
+                                uri, http_method, body, headers, scopes_list)
+
+                        # For convenient parameter access in the view
+                        add_params(request, {
+                            'client': r.client,
+                            'user': r.user,
+                            'scopes': r.scopes
+                        })
+                        if valid:
+                            return f(request)
+                        else:
+                            # Framework specific HTTP 403
+                            return HttpResponseForbidden()
+                    return wrapper
+                return decorator
+
+        provider = OAuth2ProviderDecorator(server)
 
     At this point you are ready to protect your API views with OAuth. Take some
     time to come up with a good set of scopes as they can be very powerful in
