@@ -14,6 +14,7 @@ from oauthlib.oauth2.rfc6749 import tokens
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_request
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import InsecureTransportError
+from oauthlib.oauth2.rfc6749.utils import is_secure_transport
 
 
 AUTH_HEADER = 'auth_header'
@@ -101,7 +102,7 @@ class Client(object):
         .. _`I-D.ietf-oauth-v2-bearer`: http://tools.ietf.org/html/rfc6749#section-12.2
         .. _`I-D.ietf-oauth-v2-http-mac`: http://tools.ietf.org/html/rfc6749#section-12.2
         """
-        if not uri.lower().startswith('https://'):
+        if not is_secure_transport(uri):
             raise InsecureTransportError()
 
         token_placement = token_placement or self.default_token_placement
