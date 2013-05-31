@@ -2,16 +2,10 @@
 # provider configured for Authorization Code, Refresh Token grants and
 # for dispensing Bearer Tokens.
 
-# This example is tailored for django but should translate to other
-# web frameworks easily.
-
 # This example is meant to act as a supplement to the documentation,
 # see http://oauthlib.readthedocs.org/en/latest/.
 
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from oauthlib.oauth2 import RequestValidator, WebApplicationServer
-from oauthlib.oauth2.ext.django import OAuth2ProviderDecorator
 
 
 class SkeletonValidator(RequestValidator):
@@ -111,37 +105,3 @@ class SkeletonValidator(RequestValidator):
 
 validator = SkeletonValidator()
 server = WebApplicationServer(validator)
-provider = OAuth2ProviderDecorator('/error', server)
-
-
-@login_required
-@provider.pre_authorization_view
-def authorize(request, scopes=None, client_id=None):
-    # The user might not want to provide access to all scopes,
-    # make it easy for them to opt-out.
-    response = HttpResponse()
-    response.write('<h1> Authorize access to %s </h1>' % client_id)
-    response.write('<form method="POST" action="/post_authorization">')
-    for scope in scopes or []:
-        response.write('<input type="checkbox" name="scopes" value="%s"/> %s' % (scope, scope))
-    response.write('<input type="submit" value="Authorize"/>')
-    return response
-
-
-@login_required
-@provider.post_authorization_view
-def authorization_response(request):
-    # Only return scopes the user actually authorized, i.e. the checked
-    # scope checkboxes from the authorize view.
-    return request.POST.getlist(['scopes']), {'user': request.user}
-
-
-@provider.access_token_view
-def token_response(request):
-    # This dict will be available as request.extra_credentials in all
-    # validation methods, including save_bearer_token.
-    return {}
-
-
-def error(request):
-    return HttpResponse('Bad client! Warn user!')
