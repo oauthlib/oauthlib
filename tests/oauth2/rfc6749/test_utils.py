@@ -1,7 +1,9 @@
 from __future__ import absolute_import, unicode_literals
 
+import os
 from ...unittest import TestCase
 from oauthlib.oauth2.rfc6749.utils import escape, host_from_uri
+from oauthlib.oauth2.rfc6749.utils import is_secure_transport
 
 
 class UtilsTests(TestCase):
@@ -21,3 +23,15 @@ class UtilsTests(TestCase):
         self.assertEqual(host_from_uri('https://a.b.com:8080'), ('a.b.com', '8080'))
         self.assertEqual(host_from_uri('http://www.example.com'), ('www.example.com', '80'))
         self.assertEqual(host_from_uri('https://www.example.com'), ('www.example.com', '443'))
+
+    def test_is_secure_transport(self):
+        """Test check secure uri."""
+        if 'DEBUG' in os.environ:
+            del os.environ['DEBUG']
+
+        self.assertTrue(is_secure_transport('https://example.com'))
+        self.assertFalse(is_secure_transport('http://example.com'))
+
+        os.environ['DEBUG'] = '1'
+        self.assertTrue(is_secure_transport('http://example.com'))
+        del os.environ['DEBUG']
