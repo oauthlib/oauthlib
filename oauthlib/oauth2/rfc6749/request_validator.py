@@ -337,7 +337,7 @@ class RequestValidator(object):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_response_type(self, client_id, response_type, client, request, *args, **kwargs):
-        """Ensure client is authorized to use the grant_type requested.
+        """Ensure client is authorized to use the response_type requested.
 
         :param client_id: Unicode client identifier
         :param response_type: Unicode response type, i.e. code, token.

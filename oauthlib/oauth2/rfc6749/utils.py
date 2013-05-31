@@ -8,6 +8,7 @@ oauthlib.utils
 This module contains utility methods used by various parts of the OAuth 2 spec.
 """
 
+import os
 import datetime
 try:
     from urllib import quote
@@ -80,3 +81,10 @@ def generate_age(issue_time):
     td = datetime.datetime.now() - issue_time
     age = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
     return unicode_type(age)
+
+
+def is_secure_transport(uri):
+    """Check if the uri is over ssl."""
+    if os.environ.get('DEBUG'):
+        return True
+    return uri.startswith('https://')

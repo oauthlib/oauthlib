@@ -19,7 +19,7 @@ from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
 from .errors import raise_from_error, MissingTokenError, MissingTokenTypeError
 from .errors import MismatchingStateError, MissingCodeError
 from .errors import InsecureTransportError
-from .utils import list_to_scope, scope_to_list
+from .utils import list_to_scope, scope_to_list, is_secure_transport
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
@@ -61,7 +61,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
     .. _`section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
     """
-    if not uri.startswith('https://'):
+    if not is_secure_transport(uri):
         raise InsecureTransportError()
 
     params = [(('response_type', response_type)),
@@ -157,7 +157,7 @@ def parse_authorization_code_response(uri, state=None):
                 &state=xyz
 
     """
-    if not uri.lower().startswith('https://'):
+    if not is_secure_transport(uri.lower()):
         raise InsecureTransportError()
 
     query = urlparse.urlparse(uri).query
@@ -213,7 +213,7 @@ def parse_implicit_response(uri, state=None, scope=None):
         Location: http://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA
                 &state=xyz&token_type=example&expires_in=3600
     """
-    if not uri.lower().startswith('https://'):
+    if not is_secure_transport(uri.lower()):
         raise InsecureTransportError()
 
     fragment = urlparse.urlparse(uri).fragment
