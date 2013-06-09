@@ -82,10 +82,19 @@ class RefreshTokenGrant(GrantTypeBase):
         log.debug('Authenticating client, %r.', request)
         if not self.request_validator.authenticate_client(request):
             log.debug('Invalid client (%r), denying access.', request)
-            raise errors.AccessDeniedError(request=request)
+            raise errors.InvalidClientError(request=request)
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
+
+        # REQUIRED. The refresh token issued to the client.
+        log.debug('Validating refresh token %s for client %r.',
+                  request.refresh_token, request.client)
+        if not self.request_validator.validate_refresh_token(
+                request.refresh_token, request.client, request):
+            log.debug('Invalid refresh token, %s, for client %r.',
+                      request.refresh_token, request.client)
+            raise errors.InvalidGrantError(request=request)
 
         # OPTIONAL. The scope of the access request as described by
         # Section 3.3. The requested scope MUST NOT include any scope
@@ -102,12 +111,3 @@ class RefreshTokenGrant(GrantTypeBase):
             log.debug('Refresh token %s lack requested scopes, %r.',
                       request.refresh_token, request.scopes)
             raise errors.InvalidScopeError(state=request.state, request=request)
-
-        # REQUIRED. The refresh token issued to the client.
-        log.debug('Validating refresh token %s for client %r.',
-                  request.refresh_token, request.client)
-        if not self.request_validator.validate_refresh_token(
-                request.refresh_token, request.client, request):
-            log.debug('Invalid refresh token, %s, for client %r.',
-                      request.refresh_token, request.client)
-            raise errors.InvalidRequestError(request=request)
