@@ -49,7 +49,7 @@ Which web frameworks are supported?
 
 The following packages provide OAuth support using OAuthLib.
 
-- For Django there is `django-oauth-toolkit`_, which include `Django REST framework`_ support.
+- For Django there is `django-oauth-toolkit`_, which includes `Django REST framework`_ support.
 - For Flask there is `flask-oauthlib`_.
 
 If you have written an OAuthLib package that supports your favorite framework,
