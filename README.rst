@@ -44,6 +44,21 @@ powered OAuth support provided by the `requests-oauthlib`_ library.
 .. _`requests`: https://github.com/kennethreitz/requests
 .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
 
+Which web frameworks are supported?
+-----------------------------------
+
+The following packages provide OAuth support using OAuthLib.
+
+- For Django there is `django-oauth-toolkit`_, which include `Django REST framework`_ support.
+- For Flask there is `flask-oauthlib`_.
+
+If you have written an OAuthLib package that supports your favorite framework,
+please open a Pull Request, updating the documentation.
+
+.. _`django-oauth-toolkit`: https://github.com/evonove/django-oauth-toolkit
+.. _`flask-oauthlib`: https://github.com/lepture/flask-oauthlib
+.. _`Django REST framework`: http://django-rest-framework.org
+
 Using OAuthLib? Please get in touch!
 ------------------------------------
 Patching OAuth support onto an http request framework? Creating an OAuth
