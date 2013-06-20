@@ -14,6 +14,7 @@ from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
 from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
 from oauthlib.oauth2.rfc6749.grant_types import ResourceOwnerPasswordCredentialsGrant
 from oauthlib.oauth2.rfc6749.grant_types import ClientCredentialsGrant
+from oauthlib.oauth2.rfc6749.grant_types import RefreshTokenGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 
@@ -190,3 +191,45 @@ class ClientCredentialsGrantTest(TestCase):
     def test_validate_token_response(self):
         # wrong grant type, scope
         pass
+
+
+class RefreshTokenGrantTest(TestCase):
+
+    def setUp(self):
+        mock_client = mock.MagicMock()
+        mock_client.user.return_value = 'mocked user'
+        self.request = Request('http://a.b/path')
+        self.request.grant_type = 'refresh_token'
+        self.request.refresh_token = 'lsdkfhj230'
+        self.request.client = mock_client
+        self.request.scopes = ('mocked', 'scopes')
+        self.mock_validator = mock.MagicMock()
+        self.auth = RefreshTokenGrant(
+                request_validator=self.mock_validator)
+
+    def test_create_token_response(self):
+        bearer = BearerToken(self.mock_validator)
+        uri, headers, body, status_code = self.auth.create_token_response(
+                self.request, bearer)
+        token = json.loads(body)
+        self.assertIn('access_token', token)
+        self.assertIn('token_type', token)
+        self.assertIn('expires_in', token)
+
+    def test_invalid_token(self):
+        self.mock_validator.validate_refresh_token.return_value = False
+        bearer = BearerToken(self.mock_validator)
+        uri, headers, body, status_code = self.auth.create_token_response(
+                self.request, bearer)
+        token = json.loads(body)
+        self.assertEqual(token['error'], 'invalid_grant')
+        self.assertEqual(status_code, 400)
+
+    def test_invalid_client(self):
+        self.mock_validator.authenticate_client.return_value = False
+        bearer = BearerToken(self.mock_validator)
+        uri, headers, body, status_code = self.auth.create_token_response(
+                self.request, bearer)
+        token = json.loads(body)
+        self.assertEqual(token['error'], 'invalid_client')
+        self.assertEqual(status_code, 401)

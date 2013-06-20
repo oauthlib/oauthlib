@@ -54,7 +54,7 @@ class RefreshTokenGrant(GrantTypeBase):
             log.debug('Validating refresh token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
-            return None, headers, e.json, 400
+            return None, headers, e.json, e.status_code
 
         token = token_handler.create_token(request,
                 refresh_token=self.issue_new_refresh_tokens)
@@ -82,7 +82,7 @@ class RefreshTokenGrant(GrantTypeBase):
         log.debug('Authenticating client, %r.', request)
         if not self.request_validator.authenticate_client(request):
             log.debug('Invalid client (%r), denying access.', request)
-            raise errors.InvalidClientError(request=request)
+            raise errors.InvalidClientError(request=request, status_code=401)
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
@@ -95,5 +95,4 @@ class RefreshTokenGrant(GrantTypeBase):
             log.debug('Invalid refresh token, %s, for client %r.',
                       request.refresh_token, request.client)
             raise errors.InvalidGrantError(request=request)
-
         self.validate_scopes(request)
