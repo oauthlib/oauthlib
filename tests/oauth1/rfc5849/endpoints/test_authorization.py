@@ -40,6 +40,6 @@ class ResourceEndpointTest(TestCase):
 
     def test_create_authorization_response(self):
         u, h, b, s = self.endpoint.create_authorization_response(self.uri)
-        self.assertEqual(s, 301)
+        self.assertEqual(s, 302)
         self.assertTrue(u.startswith('https://c.b/cb'))
         self.assertIn('oauth_verifier', u)

@@ -55,19 +55,19 @@ class AccessTokenEndpointTest(TestCase):
         self.validator.validate_client_key.return_value = False
         u, h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
-        self.assertEqual(s, 403)
+        self.assertEqual(s, 401)
 
     def test_validate_request_token(self):
         self.validator.validate_request_token.return_value = False
         u, h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
-        self.assertEqual(s, 403)
+        self.assertEqual(s, 401)
 
     def test_validate_verifier(self):
         self.validator.validate_verifier.return_value = False
         u, h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
-        self.assertEqual(s, 403)
+        self.assertEqual(s, 401)
 
     def test_validate_signature(self):
         client = Client('foo',
@@ -77,7 +77,7 @@ class AccessTokenEndpointTest(TestCase):
         _, headers, _ = client.sign(self.uri + '/extra')
         u, h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=headers)
-        self.assertEqual(s, 403)
+        self.assertEqual(s, 401)
 
     def test_valid_request(self):
         u, h, b, s = self.endpoint.create_access_token_response(

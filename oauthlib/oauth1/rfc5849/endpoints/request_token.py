@@ -2,11 +2,13 @@
 from __future__ import absolute_import, unicode_literals
 
 """
-oauthlib.oauth1.rfc5849
-~~~~~~~~~~~~~~
+oauthlib.oauth1.rfc5849.endpoints.request_token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This module is an implementation of various logic needed
-for signing and checking OAuth 1.0 RFC 5849 requests.
+This module is an implementation of the request token provider logic of
+OAuth 1.0 RFC 5849. It validates the correctness of request token requests,
+creates and persists tokens as well as create the proper response to be
+returned to the client.
 """
 from oauthlib.common import log, urlencode
 
@@ -15,32 +17,102 @@ from .. import errors
 
 
 class RequestTokenEndpoint(BaseEndpoint):
+    """An endpoint responsible for providing OAuth 1 request tokens.
 
-    def create_request_token(self, request):
+    Typical use is to instantiate with a request validator and invoke the
+    ``create_request_token_response`` from a view function. The tuple returned
+    has all information necessary (body, status, headers) to quickly form
+    and return a proper response. See :doc:`validator` for details on which
+    validator methods to implement for this endpoint.
+    """
+
+    def create_request_token(self, request, credentials):
+        """Create and save a new request token.
+
+        :param request: An oauthlib.common.Request object.
+        :param credentials: A dict of extra token credentials.
+        :returns: The token as an urlencoded string.
+        """
         token = {
             'oauth_token': self.token_generator(),
             'oauth_token_secret': self.token_generator(),
             'oauth_callback_confirmed': 'true'
         }
+        token.update(credentials)
         self.request_validator.save_request_token(token, request)
         return urlencode(token.items())
 
     def create_request_token_response(self, uri, http_method='GET', body=None,
             headers=None, credentials=None):
+        """Create a request token response, with a new request token if valid.
+
+        :param uri: The full URI of the token request.
+        :param http_method: A valid HTTP verb, i.e. GET, POST, PUT, HEAD, etc.
+        :param body: The request body as a string.
+        :param headers: The request headers as a dict.
+        :param credentials: A list of extra credentials to include in the token.
+        :returns: A tuple of 4 elements.
+                  1. None (uri but n/a for this endpoint, here for consistency.
+                  2. A dict of headers to set on the response.
+                  3. The response body as a string.
+                  4. The response status code as an integer.
+
+        An example of a valid request::
+
+            >>> from your_validator import your_validator
+            >>> from oauthlib.oauth1 import RequestTokenEndpoint
+            >>> endpoint = RequestTokenEndpoint(your_validator)
+            >>> u, h, b, s = endpoint.create_request_token_response(
+            ...     'https://your.provider/request_token?foo=bar',
+            ...     headers={
+            ...         'Authorization': 'OAuth realm=movies user, oauth_....'
+            ...     },
+            ...     credentials={
+            ...         'my_specific': 'argument',
+            ...     })
+            >>> u
+            None
+            >>> h
+            {'Content-Type': 'application/x-www-form-urlencoded'}
+            >>> b
+            'oauth_token=lsdkfol23w54jlksdef&oauth_token_secret=qwe089234lkjsdf&oauth_callback_confirmed=true&my_specific=argument'
+            >>> s
+            200
+
+        An response to invalid request would have a different body and status::
+
+            >>> b
+            'error=invalid_request&description=missing+callback+uri'
+            >>> s
+            400
+
+        The same goes for an an unauthorized request:
+
+            >>> b
+            ''
+            >>> s
+            401
+        """
         resp_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         try:
             request = self._create_request(uri, http_method, body, headers)
             valid, processed_request = self.validate_request_token_request(
                     request)
             if valid:
-                token = self.create_request_token(request)
+                token = self.create_request_token(request, credentials or {})
                 return None, resp_headers, token, 200
             else:
-                return None, {}, None, 403
+                return None, {}, None, 401
         except errors.OAuth1Error as e:
             return None, resp_headers, e.urlencoded, e.status_code
 
     def validate_request_token_request(self, request):
+        """Validate a request token request.
+
+        :param request: An oauthlib.common.Request object.
+        :raises: OAuth1Error if the request is invalid.
+        :returns: True or False
+        """
         self._check_transport_security(request)
         self._check_mandatory_parameters(request)
 
