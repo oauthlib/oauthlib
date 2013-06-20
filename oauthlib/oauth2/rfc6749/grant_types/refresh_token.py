@@ -101,6 +101,8 @@ class RefreshTokenGrant(GrantTypeBase):
         # not originally granted by the resource owner, and if omitted is
         # treated as equal to the scope originally granted by the
         # resource owner.
+        self.validate_scopes(request)
+
         if request.scopes:
             log.debug('Ensuring refresh token %s has access to scopes %r.',
                     request.refresh_token, request.scopes)
