@@ -96,18 +96,4 @@ class RefreshTokenGrant(GrantTypeBase):
                       request.refresh_token, request.client)
             raise errors.InvalidGrantError(request=request)
 
-        # OPTIONAL. The scope of the access request as described by
-        # Section 3.3. The requested scope MUST NOT include any scope
-        # not originally granted by the resource owner, and if omitted is
-        # treated as equal to the scope originally granted by the
-        # resource owner.
-        if request.scopes:
-            log.debug('Ensuring refresh token %s has access to scopes %r.',
-                    request.refresh_token, request.scopes)
-        else:
-            log.debug('Reusing scopes from previous access token.')
-        if not self.request_validator.confirm_scopes(request.refresh_token,
-                request.scopes, request):
-            log.debug('Refresh token %s lack requested scopes, %r.',
-                      request.refresh_token, request.scopes)
-            raise errors.InvalidScopeError(state=request.state, request=request)
+        self.validate_scopes(request)
