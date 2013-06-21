@@ -4,12 +4,8 @@ oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import unicode_literals, absolute_import
-import json
 import logging
-from oauthlib import common
-from oauthlib.uri_validate import is_absolute_uri
 
-from . import errors, utils
 
 log = logging.getLogger('oauthlib')
 
@@ -86,19 +82,6 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def confirm_scopes(self, refresh_token, scopes, request, *args, **kwargs):
-        """Ensure the refresh token is authorized access to requested scopes.
-
-        :param refresh_token: Unicode refresh token
-        :param scopes: List of scopes (defined by you)
-        :param request: The HTTP Request (oauthlib.common.Request)
-        :rtype: True or False
-
-        Method is used by:
-            - Refresh token grant
-        """
-        raise NotImplementedError('Subclasses must implement this method.')
-
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         """Get the default redirect URI for the client.
 
@@ -124,6 +107,18 @@ class RequestValidator(object):
             - Implicit Grant
             - Resource Owner Password Credentials Grant
             - Client Credentials grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_original_scopes(self, refresh_token, request, *args, **kwargs):
+        """Get the list of scopes associated with the refresh token.
+
+        :param refresh_token: Unicode refresh token
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: List of scopes.
+
+        Method is used by:
+            - Refresh token grant
         """
         raise NotImplementedError('Subclasses must implement this method.')
 

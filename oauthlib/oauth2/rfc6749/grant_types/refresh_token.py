@@ -9,7 +9,7 @@ import json
 from oauthlib.common import log
 
 from .base import GrantTypeBase
-from .. import errors
+from .. import errors, utils
 from ..request_validator import RequestValidator
 
 
@@ -95,4 +95,17 @@ class RefreshTokenGrant(GrantTypeBase):
             log.debug('Invalid refresh token, %s, for client %r.',
                       request.refresh_token, request.client)
             raise errors.InvalidGrantError(request=request)
-        self.validate_scopes(request)
+
+        original_scopes = utils.scope_to_list(
+                self.request_validator.get_original_scopes(
+                    request.refresh_token, request))
+
+        if request.scope:
+            request.scopes = utils.scope_to_list(request.scope)
+            if not all((s in original_scopes for s in request.scopes)):
+                log.debug('Refresh token %s lack requested scopes, %r.',
+                        request.refresh_token, request.scopes)
+                raise errors.InvalidScopeError(
+                        state=request.state, request=request, status_code=401)
+        else:
+            request.scopes = original_scopes
