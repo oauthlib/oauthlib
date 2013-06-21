@@ -97,9 +97,11 @@ class SkeletonValidator(RequestValidator):
 
     # Token refresh request
 
-    def confirm_scopes(self, refresh_token, scopes, request, *args, **kwargs):
-        # If the client requests a set of scopes, assure that those are the
-        # same as, or a subset of, the ones associated with the token earlier.
+    def get_original_scopes(self, refresh_token, request, *args, **kwargs):
+        # Obtain the token associated with the given refresh_token and
+        # return its scopes, these will be passed on to the refreshed
+        # access token if the client did not specify a scope during the
+        # request.
         pass
 
 
