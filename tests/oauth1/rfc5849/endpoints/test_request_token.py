@@ -76,3 +76,13 @@ class RequestTokenEndpointTest(TestCase):
                 self.uri, headers=self.headers)
         self.assertEqual(s, 200)
         self.assertIn('oauth_token', b)
+
+    def test_uri_provided_realm(self):
+        client = Client('foo', callback_uri='https://c.b/cb',
+                client_secret='bar')
+        uri = self.uri + '?realm=foo'
+        _, headers, _ = client.sign(uri)
+        u, h, b, s = self.endpoint.create_request_token_response(
+                uri, headers=headers)
+        self.assertEqual(s, 200)
+        self.assertIn('oauth_token', b)

@@ -2,8 +2,8 @@
 from __future__ import absolute_import, unicode_literals
 
 """
-oauthlib.oauth1.rfc5849
-~~~~~~~~~~~~~~
+oauthlib.oauth1.rfc5849.endpoints.base
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
@@ -99,7 +99,10 @@ class BaseEndpoint(object):
 
         # Parameters to Client depend on signature method which may vary
         # for each request. Note that HMAC-SHA1 and PLAINTEXT share parameters
-        request.params = filter(lambda x: x[0] not in ("oauth_signature", "realm"), params)
+        request.params = [(k, v) for k, v in params if k != "oauth_signature"]
+
+        if 'realm' in request.headers.get('Authorization', ''):
+            request.params = [(k, v) for k, v in request.params if k != "realm"]
 
         return request
 
@@ -159,8 +162,6 @@ class BaseEndpoint(object):
             # To avoid the need to retain an infinite number of nonce values for
             # future checks, servers MAY choose to restrict the time period after
             # which a request with an old timestamp is rejected.
-            print(self.request_validator.timestamp_lifetime)
-            print(float(self.request_validator.timestamp_lifetime))
             if abs(time.time() - ts) > self.request_validator.timestamp_lifetime:
                 raise errors.InvalidRequestError(
                         description=('Timestamp given is invalid, differ from '
