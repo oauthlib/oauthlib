@@ -97,5 +97,5 @@ def parse_authorization_header(authorization_header):
     items = parse_http_list(authorization_header)
     try:
         return list(parse_keqv_list(items).items())
-    except ValueError:
+    except (IndexError, ValueError):
         raise ValueError('Malformed authorization header')
