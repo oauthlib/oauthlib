@@ -30,7 +30,7 @@ class RequestValidator(object):
     - check_access_token
     - check_nonce
     - check_verifier
-    - check_realm
+    - check_realms
 
     The methods above default to whitelist input parameters, checking that they
     are alphanumerical and between a minimum and maximum length. Rather than
@@ -55,8 +55,8 @@ class RequestValidator(object):
     - validate_access_token
     - validate_timestamp_and_nonce
     - validate_redirect_uri
-    - validate_requested_realm
-    - validate_realm
+    - validate_requested_realms
+    - validate_realms
     - validate_verifier
 
     Method used to retrieve sensitive information from storage.
@@ -173,9 +173,9 @@ class RequestValidator(object):
         return (set(verifier) <= self.safe_characters and
                 lower <= len(verifier) <= upper)
 
-    def check_realm(self, realm):
+    def check_realms(self, realms):
         """Check that the realm is one of a set allowed realms."""
-        return all((r in self.realms for r in realm))
+        return all((r in self.realms for r in realms))
 
     @property
     def dummy_client(self):
@@ -579,11 +579,11 @@ class RequestValidator(object):
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
-    def validate_requested_realm(self, client_key, realm, request):
+    def validate_requested_realms(self, client_key, realms, request):
         """Validates that the client may request access to the realm.
 
         :param client_key: The client/consumer key.
-        :param realm: The list of realms that client is requesting access to.
+        :param realms: The list of realms that client is requesting access to.
         :param request: An oauthlib.common.Request object.
         :returns: True or False
 
@@ -597,23 +597,23 @@ class RequestValidator(object):
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
-    def validate_realm(self, client_key, token, request, uri=None,
-            required_realm=None):
+    def validate_realms(self, client_key, token, request, uri=None,
+            realms=None):
         """Validates access to the request realm.
 
         :param client_key: The client/consumer key.
         :param token: A request token string.
         :param request: An oauthlib.common.Request object.
         :param uri: The URI the realms is protecting.
-        :param required_realm: A list of realms that must have been granted to
-                               the access token.
+        :param realms: A list of realms that must have been granted to
+                       the access token.
         :returns: True or False
 
         How providers choose to use the realm parameter is outside the OAuth
         specification but it is commonly used to restrict access to a subset
         of protected resources such as "photos".
 
-        required_realm is a convenience parameter which can be used to provide
+        realms is a convenience parameter which can be used to provide
         a per view method pre-defined list of allowed realms.
 
         This method is used by
