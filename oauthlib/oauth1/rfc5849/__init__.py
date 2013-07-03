@@ -1030,7 +1030,7 @@ class Server(object):
         if ((require_realm and not request.resource_owner_key) or
             (not require_resource_owner and not request.realm)):
             valid_realm = self.validate_requested_realm(request.client_key,
-                    request.realm)
+                    request.realm) and (request.realm == required_realm)
         elif require_verifier:
             valid_realm = True
         else:
