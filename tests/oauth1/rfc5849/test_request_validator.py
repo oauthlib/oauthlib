@@ -34,9 +34,9 @@ class RequestValidatorTests(TestCase):
             None, None, None, None)
         self.assertRaises(NotImplementedError, v.validate_redirect_uri,
                 None, None, None)
-        self.assertRaises(NotImplementedError, v.validate_realm,
+        self.assertRaises(NotImplementedError, v.validate_realms,
                 None, None, None, None, None)
-        self.assertRaises(NotImplementedError, v.validate_requested_realm,
+        self.assertRaises(NotImplementedError, v.validate_requested_realms,
                 None, None, None)
         self.assertRaises(NotImplementedError, v.validate_verifier,
                 None, None, None, None)
@@ -56,9 +56,9 @@ class RequestValidatorTests(TestCase):
             for valid in ('itsjustaboutlongenough',):
                 self.assertTrue(method(valid))
 
-    def test_check_realm(self):
+    def test_check_realms(self):
         v = RequestValidator()
-        self.assertFalse(v.check_realm(['foo']))
+        self.assertFalse(v.check_realms(['foo']))
 
         class FooRealmValidator(RequestValidator):
             @property
@@ -66,4 +66,4 @@ class RequestValidatorTests(TestCase):
                 return ['foo']
 
         v = FooRealmValidator()
-        self.assertTrue(v.check_realm(['foo']))
+        self.assertTrue(v.check_realms(['foo']))
