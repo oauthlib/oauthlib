@@ -35,13 +35,13 @@ class AccessTokenEndpoint(BaseEndpoint):
         :param request: An oauthlib.common.Request object.
         :returns: The token as an urlencoded string.
         """
-        request.realm = self.request_validator.get_realms(
+        request.realms = self.request_validator.get_realms(
                 request.oauth_token, request)
         token = {
             'oauth_token': self.token_generator(),
             'oauth_token_secret': self.token_generator(),
             # Backport the authorized scopes indication used in OAuth2
-            'oauth_authorized_realms': ' '.join(request.realm)
+            'oauth_authorized_realms': ' '.join(request.realms)
         }
         token.update(credentials)
         self.request_validator.save_access_token(token, request)

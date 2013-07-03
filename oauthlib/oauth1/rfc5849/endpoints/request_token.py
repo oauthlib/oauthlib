@@ -117,14 +117,14 @@ class RequestTokenEndpoint(BaseEndpoint):
         self._check_mandatory_parameters(request)
 
         if request.realm:
-            request.realm = request.realm.split(' ')
+            request.realms = request.realm.split(' ')
         else:
-            request.realm = self.request_validator.get_default_realms(
+            request.realms = self.request_validator.get_default_realms(
                     request.client_key, request)
-        if not self.request_validator.check_realm(request.realm):
+        if not self.request_validator.check_realms(request.realms):
             raise errors.InvalidRequestError(
                     description='Invalid realm %s. Allowed are %r.' % (
-                        request.realm, self.request_validator.realms))
+                        request.realms, self.request_validator.realms))
 
         if not request.redirect_uri:
             raise errors.InvalidRequestError(
@@ -169,8 +169,8 @@ class RequestTokenEndpoint(BaseEndpoint):
         # Access to protected resources will always validate the realm but note
         # that the realm is now tied to the access token and not provided by
         # the client.
-        valid_realm = self.request_validator.validate_requested_realm(
-                request.client_key, request.realm, request)
+        valid_realm = self.request_validator.validate_requested_realms(
+                request.client_key, request.realms, request)
 
         # Callback is normally never required, except for requests for
         # a Temporary Credential as described in `Section 2.1`_

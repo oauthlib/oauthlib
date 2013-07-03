@@ -42,7 +42,7 @@ class ResourceEndpoint(BaseEndpoint):
                             http_method=request.method,
                             body=request.data,
                             headers=request.headers,
-                            valid_realms=realms or [])
+                            realms=realms or [])
                     if v:
                         return f(*args, **kwargs)
                     else:
@@ -50,16 +50,16 @@ class ResourceEndpoint(BaseEndpoint):
     """
 
     def validate_protected_resource_request(self, uri, http_method='GET',
-            body=None, headers=None, valid_realms=None):
+            body=None, headers=None, realms=None):
         """Create a request token response, with a new request token if valid.
 
         :param uri: The full URI of the token request.
         :param http_method: A valid HTTP verb, i.e. GET, POST, PUT, HEAD, etc.
         :param body: The request body as a string.
         :param headers: The request headers as a dict.
-        :param valid_realms: A list of realms the resource is protected under.
-                             This will be supplied to the ``validate_realm``
-                             method of the request validator.
+        :param realms: A list of realms the resource is protected under.
+                       This will be supplied to the ``validate_realms``
+                       method of the request validator.
         :returns: A tuple of 2 elements.
                   1. True if valid, False otherwise.
                   2. An oauthlib.common.Request object.
@@ -133,9 +133,9 @@ class ResourceEndpoint(BaseEndpoint):
         # Access to protected resources will always validate the realm but note
         # that the realm is now tied to the access token and not provided by
         # the client.
-        valid_realm = self.request_validator.validate_realm(request.client_key,
+        valid_realm = self.request_validator.validate_realms(request.client_key,
                 request.resource_owner_key, request, uri=request.uri,
-                valid_realms=valid_realms)
+                realms=realms)
 
         valid_signature = self._check_signature(request)
 
