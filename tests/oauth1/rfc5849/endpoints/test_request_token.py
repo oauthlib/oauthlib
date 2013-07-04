@@ -17,9 +17,9 @@ class RequestTokenEndpointTest(TestCase):
         self.validator.get_client_secret.return_value = 'bar'
         self.validator.get_default_realms.return_value = ['foo']
         self.validator.timestamp_lifetime = 600
-        self.validator.check_realm.return_value = True
+        self.validator.check_realms.return_value = True
         self.validator.validate_client_key.return_value = True
-        self.validator.validate_requested_realm.return_value = True
+        self.validator.validate_requested_realms.return_value = True
         self.validator.validate_redirect_uri.return_value = True
         self.validator.validate_timestamp_and_nonce.return_value = True
         self.validator.dummy_client = 'dummy'
@@ -39,8 +39,8 @@ class RequestTokenEndpointTest(TestCase):
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
-    def test_check_realm(self):
-        self.validator.check_realm.return_value = False
+    def test_check_realms(self):
+        self.validator.check_realms.return_value = False
         u, h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
@@ -52,8 +52,8 @@ class RequestTokenEndpointTest(TestCase):
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
-    def test_validate_realm(self):
-        self.validator.validate_requested_realm.return_value = False
+    def test_validate_realms(self):
+        self.validator.validate_requested_realms.return_value = False
         u, h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
