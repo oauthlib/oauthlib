@@ -94,8 +94,7 @@ def parse_authorization_header(authorization_header):
     auth_scheme = 'OAuth '
     if authorization_header[:len(auth_scheme)].lower().startswith(
             auth_scheme.lower()):
-        authorization_header = authorization_header.replace(auth_scheme, '', 1)
-        items = parse_http_list(authorization_header)
+        items = parse_http_list(authorization_header[len(auth_scheme):])
         try:
             return list(parse_keqv_list(items).items())
         except (IndexError, ValueError):
