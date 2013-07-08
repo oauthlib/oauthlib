@@ -24,6 +24,7 @@ class CommonTests(TestCase):
         self.assertItemsEqual(urldecode('c2='), [('c2', '')])
         self.assertItemsEqual(urldecode('foo=bar'), [('foo', 'bar')])
         self.assertItemsEqual(urldecode('foo_%20~=.bar-'), [('foo_ ~', '.bar-')])
+        self.assertItemsEqual(urldecode('foo=1,2,3'), [('foo', '1,2,3')])
         self.assertRaises(ValueError, urldecode, 'foo bar')
         self.assertRaises(ValueError, urldecode, '?')
         self.assertRaises(ValueError, urldecode, '%R')
