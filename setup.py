@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import os
+# Hack because logging + setuptools sucks.
+try:
+    import multiprocessing
+except ImportError:
+    pass
+
 import sys
 
 from os.path import dirname, join
-from setuptools import setup, find_packages, Command
-
-# Hack because logging + setuptools sucks.
-import multiprocessing
+from setuptools import setup, find_packages
 
 
 def fread(fn):
@@ -30,10 +32,30 @@ setup(
     author='Idan Gazit',
     author_email='idan@gazit.me',
     url='https://github.com/idan/oauthlib',
-    license='BSD',
-    packages=find_packages(exclude=('docs','tests','tests.*')),
+    platforms='any',
+    license=fread('LICENSE'),
+    packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
     test_suite='nose.collector',
     tests_require=tests_require,
     extras_require={'test': tests_require, 'rsa': rsa_require},
     install_requires=requires,
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Web Environment',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: MacOS',
+        'Operating System :: POSIX',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: Implementation',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ]
 )
