@@ -33,7 +33,7 @@ setup(
     author_email='idan@gazit.me',
     url='https://github.com/idan/oauthlib',
     platforms='any',
-    license=fread('LICENSE'),
+    license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
     test_suite='nose.collector',
     tests_require=tests_require,
