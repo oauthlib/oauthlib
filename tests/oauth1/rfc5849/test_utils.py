@@ -46,6 +46,7 @@ class UtilsTests(TestCase):
         "OAuth",
         "OAuth oauth_nonce=",
         "Negotiate b2F1dGhsaWI=",
+        "OA",
     )
 
     def test_filter_params(self):

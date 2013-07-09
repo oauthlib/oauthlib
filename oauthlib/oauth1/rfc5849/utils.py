@@ -91,9 +91,8 @@ def parse_http_list(u):
 
 def parse_authorization_header(authorization_header):
     """Parse an OAuth authorization header into a list of 2-tuples"""
-    auth_scheme = 'OAuth '
-    if authorization_header[:len(auth_scheme)].lower().startswith(
-            auth_scheme.lower()):
+    auth_scheme = 'OAuth '.lower()
+    if authorization_header[:len(auth_scheme)].lower().startswith(auth_scheme):
         items = parse_http_list(authorization_header[len(auth_scheme):])
         try:
             return list(parse_keqv_list(items).items())
