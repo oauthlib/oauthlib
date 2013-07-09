@@ -42,6 +42,11 @@ class UtilsTests(TestCase):
     oauth_timestamp="137131201",
     oauth_nonce="7d8f3e4a",
     oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
+    bad_authorization_headers = (
+        "OAuth",
+        "OAuth oauth_nonce=",
+        "Negotiate b2F1dGhsaWI=",
+    )
 
     def test_filter_params(self):
 
@@ -127,3 +132,7 @@ class UtilsTests(TestCase):
             ('oauth_token', 'kkk9d7dh3k39sjv7'),
             ('realm', 'Example')]
         self.assertEqual(sorted(authorization_headers), sorted(correct_headers))
+
+        # Check against malformed headers.
+        for header in self.bad_authorization_headers:
+            self.assertRaises(ValueError, parse_authorization_header, header)
