@@ -24,13 +24,13 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
     """An all-in-one endpoint featuring all four major grant types."""
 
     def __init__(self, request_validator, token_expires_in=None,
-            *args, **kwargs):
+            token_generator=None, *args, **kwargs):
         auth_grant = AuthorizationCodeGrant(request_validator)
         implicit_grant = ImplicitGrant(request_validator)
         password_grant = ResourceOwnerPasswordCredentialsGrant(request_validator)
         credentials_grant = ClientCredentialsGrant(request_validator)
         refresh_grant = RefreshTokenGrant(request_validator)
-        bearer = BearerToken(request_validator,
+        bearer = BearerToken(request_validator, token_generator,
                 expires_in=token_expires_in)
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                 response_types={
