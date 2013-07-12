@@ -83,6 +83,7 @@ class TokenEndpoint(BaseEndpoint):
             headers=None, credentials=None):
         """Extract grant_type and route to the designated handler."""
         request = Request(uri, http_method=http_method, body=body, headers=headers)
+        request.scopes = None
         request.extra_credentials = credentials
         grant_type_handler = self.grant_types.get(request.grant_type,
                 self.default_grant_type_handler)
