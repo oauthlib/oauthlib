@@ -36,7 +36,7 @@ class AccessTokenEndpoint(BaseEndpoint):
         :returns: The token as an urlencoded string.
         """
         request.realms = self.request_validator.get_realms(
-                request.oauth_token, request)
+                request.resource_owner_key, request)
         token = {
             'oauth_token': self.token_generator(),
             'oauth_token_secret': self.token_generator(),

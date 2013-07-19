@@ -66,7 +66,7 @@ The client interested in accessing protected resources.
 
         client_secret = sqlalchemy.Column(sqlalchemy.String)
 
-**Cient public key**:
+**Client public key**:
     Required for RSA-SHA1. The public key used to verify the signature of
     requests signed by the clients private key::
 

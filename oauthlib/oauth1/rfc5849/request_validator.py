@@ -736,6 +736,8 @@ class RequestValidator(object):
         """Associate an authorization verifier with a request token.
 
         :param token: A request token string.
+        :param verifier A dictionary containing the oauth_verifier and 
+                        oauth_token
         :param request: An oauthlib.common.Request object.
 
         We need to associate verifiers with tokens for validation during the

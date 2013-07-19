@@ -90,12 +90,12 @@ class AuthorizationEndpoint(BaseEndpoint):
         request = self._create_request(uri, http_method=http_method, body=body,
                 headers=headers)
 
+        if not request.resource_owner_key:
+            raise errors.InvalidRequestError('request.resource_owner_key must be set after '
+                                      'request token verification.')
         if not self.request_validator.verify_request_token(
                 request.resource_owner_key, request):
             raise errors.InvalidClientError()
-        if not request.resource_owner_key:
-            raise NotImplementedError('request.resource_owner_key must be set after '
-                                      'request token verification.')
 
         request.realms = realms
         if (request.realms and not self.request_validator.verify_realms(
@@ -123,13 +123,13 @@ class AuthorizationEndpoint(BaseEndpoint):
                   2. A dict of credentials which may be useful in creating the
                   authorization form.
         """
-        request = Request(uri, http_method=http_method, body=body,
+        request = self._create_request(uri, http_method=http_method, body=body,
                 headers=headers)
 
         if not self.request_validator.verify_request_token(
-                request.oauth_token, request):
+                request.resource_owner_key, request):
             raise errors.InvalidClientError()
 
         realms = self.request_validator.get_realms(
-                request.oauth_token, request)
-        return realms, {'resource_owner_key': request.oauth_token}
+                request.resource_owner_key, request)
+        return realms, {'resource_owner_key': request.resource_owner_key}
