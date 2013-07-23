@@ -84,7 +84,7 @@ class ResourceEndpoint(BaseEndpoint):
 
         if not self.request_validator.validate_timestamp_and_nonce(
                 request.client_key, request.timestamp, request.nonce, request,
-                request_token=request.resource_owner_key):
+                access_token=request.resource_owner_key):
             return False, request
 
         # The server SHOULD return a 401 (Unauthorized) status code when

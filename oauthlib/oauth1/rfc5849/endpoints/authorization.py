@@ -91,8 +91,8 @@ class AuthorizationEndpoint(BaseEndpoint):
                 headers=headers)
 
         if not request.resource_owner_key:
-            raise errors.InvalidRequestError('request.resource_owner_key must be set after '
-                                      'request token verification.')
+            raise errors.InvalidRequestError(
+                    'Missing mandatory parameter oauth_token.')
         if not self.request_validator.verify_request_token(
                 request.resource_owner_key, request):
             raise errors.InvalidClientError()
