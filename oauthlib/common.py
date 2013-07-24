@@ -118,7 +118,7 @@ def decode_params_utf8(params):
     return decoded
 
 
-urlencoded = set(always_safe) | set('=&;%+~,')
+urlencoded = set(always_safe) | set('=&;%+~,*')
 
 
 def urldecode(query):
