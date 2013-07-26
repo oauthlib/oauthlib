@@ -42,12 +42,12 @@ class AuthorizationEndpoint(BaseEndpoint):
         :returns: The verifier as a dict.
         """
         verifier = {
-            'oauth_token': request.oauth_token,
+            'oauth_token': request.resource_owner_key,
             'oauth_verifier': self.token_generator(),
         }
         verifier.update(credentials)
         self.request_validator.save_verifier(
-                request.oauth_token, verifier, request)
+                request.resource_owner_key, verifier, request)
         return verifier
 
     def create_authorization_response(self, uri, http_method='GET', body=None,
@@ -87,25 +87,25 @@ class AuthorizationEndpoint(BaseEndpoint):
             >>> s
             302
         """
-        request = Request(uri, http_method=http_method, body=body,
+        request = self._create_request(uri, http_method=http_method, body=body,
                 headers=headers)
 
+        if not request.resource_owner_key:
+            raise errors.InvalidRequestError(
+                    'Missing mandatory parameter oauth_token.')
         if not self.request_validator.verify_request_token(
-                request.oauth_token, request):
+                request.resource_owner_key, request):
             raise errors.InvalidClientError()
-        if not request.oauth_token:
-            raise NotImplementedError('request.oauth_token must be set after '
-                                      'request token verification.')
 
         request.realms = realms
         if (request.realms and not self.request_validator.verify_realms(
-                request.oauth_token, request.realms, request)):
+                request.resource_owner_key, request.realms, request)):
             raise errors.InvalidRequestError(
                     description=('User granted access to realms outside of '
                                  'what the client may request.'))
 
         redirect_uri = self.request_validator.get_redirect_uri(
-                request.oauth_token, request)
+                request.resource_owner_key, request)
         verifier = self.create_verifier(request, credentials or {})
         uri = add_params_to_uri(redirect_uri, verifier.items())
         return uri, {}, None, 302
@@ -123,13 +123,13 @@ class AuthorizationEndpoint(BaseEndpoint):
                   2. A dict of credentials which may be useful in creating the
                   authorization form.
         """
-        request = Request(uri, http_method=http_method, body=body,
+        request = self._create_request(uri, http_method=http_method, body=body,
                 headers=headers)
 
         if not self.request_validator.verify_request_token(
-                request.oauth_token, request):
+                request.resource_owner_key, request):
             raise errors.InvalidClientError()
 
         realms = self.request_validator.get_realms(
-                request.oauth_token, request)
-        return realms, {'resource_owner_key': request.oauth_token}
+                request.resource_owner_key, request)
+        return realms, {'resource_owner_key': request.resource_owner_key}

@@ -36,7 +36,7 @@ class AccessTokenEndpoint(BaseEndpoint):
         :returns: The token as an urlencoded string.
         """
         request.realms = self.request_validator.get_realms(
-                request.oauth_token, request)
+                request.resource_owner_key, request)
         token = {
             'oauth_token': self.token_generator(),
             'oauth_token_secret': self.token_generator(),
@@ -141,7 +141,7 @@ class AccessTokenEndpoint(BaseEndpoint):
 
         if not self.request_validator.validate_timestamp_and_nonce(
                 request.client_key, request.timestamp, request.nonce, request,
-                access_token=request.resource_owner_key):
+                request_token=request.resource_owner_key):
             return False, request
 
         # The server SHOULD return a 401 (Unauthorized) status code when
