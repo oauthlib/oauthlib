@@ -13,8 +13,10 @@ from oauthlib.common import Request, add_params_to_uri
 
 from .base import BaseEndpoint
 from .. import errors
-import urllib
-
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 
 class AuthorizationEndpoint(BaseEndpoint):
     """An endpoint responsible for letting authenticated users authorize access
@@ -110,7 +112,7 @@ class AuthorizationEndpoint(BaseEndpoint):
                 request.resource_owner_key, request)
         if redirect_uri == 'oob':
             response_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            response_body = urllib.urlencode(verifier)
+            response_body = urlencode(verifier)
             return None, response_headers, response_body, 200
         else:
             populated_redirect = add_params_to_uri(redirect_uri, verifier.items())
