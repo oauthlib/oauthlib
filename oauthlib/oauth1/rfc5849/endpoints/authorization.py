@@ -13,6 +13,7 @@ from oauthlib.common import Request, add_params_to_uri
 
 from .base import BaseEndpoint
 from .. import errors
+import urllib
 
 
 class AuthorizationEndpoint(BaseEndpoint):
@@ -104,11 +105,16 @@ class AuthorizationEndpoint(BaseEndpoint):
                     description=('User granted access to realms outside of '
                                  'what the client may request.'))
 
+        verifier = self.create_verifier(request, credentials or {})
         redirect_uri = self.request_validator.get_redirect_uri(
                 request.resource_owner_key, request)
-        verifier = self.create_verifier(request, credentials or {})
-        uri = add_params_to_uri(redirect_uri, verifier.items())
-        return uri, {}, None, 302
+        if redirect_uri == 'oob':
+            populated_redirect = add_params_to_uri(redirect_uri, verifier.items())
+            return populated_redirect, {}, None, 302
+        else:
+            response_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            response_body = urllib.urlencode(verifier)
+            return None, response_headers, response_body, 200
 
     def get_realms_and_credentials(self, uri, http_method='GET', body=None,
             headers=None):
