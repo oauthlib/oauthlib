@@ -90,6 +90,8 @@ Changelog
 *OAuthLib is in active development, with most of OAuth1 complete and OAuth2
 already in the works.*
 
+0.5.1: OAuth 1 provider fix for incorrect token param in nonce validation.
+
 0.5.0: OAuth 1 provider refactor. OAuth 2 refresh token validation fix.
 
 0.4.2: OAuth 2 draft to RFC. Removed OAuth 2 framework decorators.
