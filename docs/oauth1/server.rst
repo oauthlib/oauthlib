@@ -289,6 +289,7 @@ The example uses Flask but should be transferable to any framework.
 
     from flask import Flask, redirect, Response, request, url_for
     from oauthlib.oauth1 import OAuth1Error
+    import urlparse
 
 
     app = Flask(__name__)
@@ -323,12 +324,17 @@ The example uses Flask but should be transferable to any framework.
     def post_authorize():
         realms = request.form.getlist('realms')
         try:
-            u, _, _, _ = provider.create_authorization_response(request.url,
+            u, h, b, s = provider.create_authorization_response(request.url,
                     http_method=request.method,
                     body=request.data,
                     headers=request.headers,
                     realms=realms)
-            return redirect(u)
+            if status == 302:
+                return redirect(u)
+            elif:
+                return 'Your verifier is: ' + str(urlparse.parse_qs(b)['oauth_verifier'][0])
+            else:
+                Response(b, status=s, headers=h)
         except OAuth1Error as e:
             return redirect(e.in_uri(url_for('/error')))
 
