@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, absolute_import
 
-from mock import MagicMock
+from mock import MagicMock, ANY
 from ....unittest import TestCase
 
 from oauthlib.oauth1.rfc5849 import Client
@@ -76,6 +76,9 @@ class RequestTokenEndpointTest(TestCase):
                 self.uri, headers=self.headers)
         self.assertEqual(s, 200)
         self.assertIn('oauth_token', b)
+        self.validator.validate_timestamp_and_nonce.assert_called_once_with(
+             self.client.client_key, ANY, ANY, ANY,
+             request_token=self.client.resource_owner_key)
 
     def test_uri_provided_realm(self):
         client = Client('foo', callback_uri='https://c.b/cb',
