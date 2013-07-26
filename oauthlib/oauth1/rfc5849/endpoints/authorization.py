@@ -109,12 +109,12 @@ class AuthorizationEndpoint(BaseEndpoint):
         redirect_uri = self.request_validator.get_redirect_uri(
                 request.resource_owner_key, request)
         if redirect_uri == 'oob':
-            populated_redirect = add_params_to_uri(redirect_uri, verifier.items())
-            return populated_redirect, {}, None, 302
-        else:
             response_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
             response_body = urllib.urlencode(verifier)
             return None, response_headers, response_body, 200
+        else:
+            populated_redirect = add_params_to_uri(redirect_uri, verifier.items())
+            return populated_redirect, {}, None, 302
 
     def get_realms_and_credentials(self, uri, http_method='GET', body=None,
             headers=None):

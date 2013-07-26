@@ -15,7 +15,6 @@ class ResourceEndpointTest(TestCase):
         self.validator.verify_request_token.return_value = True
         self.validator.verify_realms.return_value = True
         self.validator.get_realms.return_value = ['test']
-        self.validator.get_redirect_uri.return_value = 'https://c.b/cb'
         self.validator.save_verifier = MagicMock()
         self.endpoint = AuthorizationEndpoint(self.validator)
         self.uri = 'https://i.b/authorize?oauth_token=foo'
@@ -39,7 +38,15 @@ class ResourceEndpointTest(TestCase):
                 realms=['bar'])
 
     def test_create_authorization_response(self):
+        self.validator.get_redirect_uri.return_value = 'https://c.b/cb'
         u, h, b, s = self.endpoint.create_authorization_response(self.uri)
         self.assertEqual(s, 302)
         self.assertTrue(u.startswith('https://c.b/cb'))
         self.assertIn('oauth_verifier', u)
+
+    def test_create_authorization_response(self):
+        self.validator.get_redirect_uri.return_value = 'oob'
+        u, h, b, s = self.endpoint.create_authorization_response(self.uri)
+        self.assertEqual(s, 200)
+        self.assertIn('oauth_verifier', b)
+        self.assertIn('oauth_token', b)
