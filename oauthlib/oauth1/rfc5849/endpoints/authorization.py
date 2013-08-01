@@ -62,30 +62,48 @@ class AuthorizationEndpoint(BaseEndpoint):
         :param body: The request body as a string.
         :param headers: The request headers as a dict.
         :param credentials: A list of credentials to include in the verifier.
-        :returns: A tuple of 4 elements.
+        :returns: A tuple of 3 elements.
                   1. A dict of headers to set on the response.
                   2. The response body as a string.
                   3. The response status code as an integer.
 
-        An example of a valid request::
+        If the callback URI tied to the current token is "oob", a response with
+        a 200 status code will be returned. In this case, it may be desirable to
+        modify the response to better display the verifier to the client.
+
+        An example of an authorization request::
 
             >>> from your_validator import your_validator
-            >>> from oauthlib.oauth1 import RequestTokenEndpoint
-            >>> endpoint = RequestTokenEndpoint(your_validator)
-            >>> h, b, s = endpoint.create_request_token_response(
-            ...     'https://your.provider/request_token?foo=bar',
-            ...     headers={
-            ...         'Authorization': 'OAuth realm=movies user, oauth_....'
-            ...     },
+            >>> from oauthlib.oauth1 import AuthorizationEndpoint
+            >>> endpoint = AuthorizationEndpoint(your_validator)
+            >>> h, b, s = endpoint.create_authorization_response(
+            ...     'https://your.provider/authorize?oauth_token=...',
             ...     credentials={
             ...         'extra': 'argument',
             ...     })
             >>> h
-            {'Location': 'https://the.client/callback?oauth_verifier=...&mextra=argument'}
+            {'Location': 'https://the.client/callback?oauth_verifier=...&extra=argument'}
             >>> b
-            ''
+            None
             >>> s
             302
+
+        An example of a request with an "oob" callback::
+
+            >>> from your_validator import your_validator
+            >>> from oauthlib.oauth1 import AuthorizationEndpoint
+            >>> endpoint = AuthorizationEndpoint(your_validator)
+            >>> h, b, s = endpoint.create_authorization_response(
+            ...     'https://your.provider/authorize?foo=bar',
+            ...     credentials={
+            ...         'extra': 'argument',
+            ...     })
+            >>> h
+            {'Content-Type': 'application/x-www-form-urlencoded'}
+            >>> b
+            'oauth_verifier=...&extra=argument'
+            >>> s
+            200
         """
         request = self._create_request(uri, http_method=http_method, body=body,
                 headers=headers)

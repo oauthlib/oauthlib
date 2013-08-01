@@ -51,7 +51,7 @@ class RequestTokenEndpoint(BaseEndpoint):
         :param body: The request body as a string.
         :param headers: The request headers as a dict.
         :param credentials: A list of extra credentials to include in the token.
-        :returns: A tuple of 4 elements.
+        :returns: A tuple of 3 elements.
                   1. A dict of headers to set on the response.
                   2. The response body as a string.
                   3. The response status code as an integer.
