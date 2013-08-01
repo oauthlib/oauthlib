@@ -39,14 +39,16 @@ class ResourceEndpointTest(TestCase):
 
     def test_create_authorization_response(self):
         self.validator.get_redirect_uri.return_value = 'https://c.b/cb'
-        u, h, b, s = self.endpoint.create_authorization_response(self.uri)
+        h, b, s = self.endpoint.create_authorization_response(self.uri)
         self.assertEqual(s, 302)
-        self.assertTrue(u.startswith('https://c.b/cb'))
-        self.assertIn('oauth_verifier', u)
+        self.assertIn('Location', h)
+        self.assertTrue(location.startswith('https://c.b/cb'))
+        self.assertIn('oauth_verifier', location)
 
     def test_create_authorization_response(self):
         self.validator.get_redirect_uri.return_value = 'oob'
-        u, h, b, s = self.endpoint.create_authorization_response(self.uri)
+        h, b, s = self.endpoint.create_authorization_response(self.uri)
         self.assertEqual(s, 200)
+        self.assertNotIn('Location', h)
         self.assertIn('oauth_verifier', b)
         self.assertIn('oauth_token', b)

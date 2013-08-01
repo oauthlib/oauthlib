@@ -63,17 +63,16 @@ class AuthorizationEndpoint(BaseEndpoint):
         :param headers: The request headers as a dict.
         :param credentials: A list of credentials to include in the verifier.
         :returns: A tuple of 4 elements.
-                  1. The URI to be used to redirect the user back to client.
-                  2. A dict of headers to set on the response.
-                  3. The response body as a string.
-                  4. The response status code as an integer.
+                  1. A dict of headers to set on the response.
+                  2. The response body as a string.
+                  3. The response status code as an integer.
 
         An example of a valid request::
 
             >>> from your_validator import your_validator
             >>> from oauthlib.oauth1 import RequestTokenEndpoint
             >>> endpoint = RequestTokenEndpoint(your_validator)
-            >>> u, h, b, s = endpoint.create_request_token_response(
+            >>> h, b, s = endpoint.create_request_token_response(
             ...     'https://your.provider/request_token?foo=bar',
             ...     headers={
             ...         'Authorization': 'OAuth realm=movies user, oauth_....'
@@ -81,10 +80,8 @@ class AuthorizationEndpoint(BaseEndpoint):
             ...     credentials={
             ...         'extra': 'argument',
             ...     })
-            >>> u
-            'https://the.client/callback?oauth_verifier=...&mextra=argument'
             >>> h
-            {}
+            {'Location': 'https://the.client/callback?oauth_verifier=...&mextra=argument'}
             >>> b
             ''
             >>> s
@@ -113,10 +110,10 @@ class AuthorizationEndpoint(BaseEndpoint):
         if redirect_uri == 'oob':
             response_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
             response_body = urlencode(verifier)
-            return None, response_headers, response_body, 200
+            return response_headers, response_body, 200
         else:
             populated_redirect = add_params_to_uri(redirect_uri, verifier.items())
-            return populated_redirect, {}, None, 302
+            return {'Location': populated_redirect}, None, 302
 
     def get_realms_and_credentials(self, uri, http_method='GET', body=None,
             headers=None):

@@ -297,7 +297,7 @@ The example uses Flask but should be transferable to any framework.
 
     @app.route('/request_token', methods=['POST'])
     def request_token():
-        _, h, b, s = provider.create_request_token_response(request.url,
+        h, b, s = provider.create_request_token_response(request.url,
                 http_method=request.method,
                 body=request.data,
                 headers=request.headers)
@@ -324,14 +324,12 @@ The example uses Flask but should be transferable to any framework.
     def post_authorize():
         realms = request.form.getlist('realms')
         try:
-            u, h, b, s = provider.create_authorization_response(request.url,
+            h, b, s = provider.create_authorization_response(request.url,
                     http_method=request.method,
                     body=request.data,
                     headers=request.headers,
                     realms=realms)
-            if status == 302:
-                return redirect(u)
-            elif:
+            if status == 200:
                 return 'Your verifier is: ' + str(urlparse.parse_qs(b)['oauth_verifier'][0])
             else:
                 return Response(b, status=s, headers=h)
@@ -341,7 +339,7 @@ The example uses Flask but should be transferable to any framework.
 
     @app.route('/access_token', methods=['POST'])
     def access_token():
-        _, h, b, s = provider.create_access_token_response(request.url,
+        h, b, s = provider.create_access_token_response(request.url,
                 http_method=request.method,
                 body=request.data,
                 headers=request.headers)
