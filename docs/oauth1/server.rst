@@ -334,7 +334,7 @@ The example uses Flask but should be transferable to any framework.
             elif:
                 return 'Your verifier is: ' + str(urlparse.parse_qs(b)['oauth_verifier'][0])
             else:
-                Response(b, status=s, headers=h)
+                return Response(b, status=s, headers=h)
         except OAuth1Error as e:
             return redirect(e.in_uri(url_for('/error')))
 
