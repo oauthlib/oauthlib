@@ -329,7 +329,7 @@ The example uses Flask but should be transferable to any framework.
                     body=request.data,
                     headers=request.headers,
                     realms=realms)
-            if status == 200:
+            if s == 200:
                 return 'Your verifier is: ' + str(urlparse.parse_qs(b)['oauth_verifier'][0])
             else:
                 return Response(b, status=s, headers=h)
