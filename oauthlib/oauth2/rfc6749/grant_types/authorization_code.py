@@ -131,7 +131,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         :param request: oauthlib.commong.Request
         :param token_handler: A token handler instace, for example of type
                               oauthlib.oauth2.BearerToken.
-        :returns: uri, headers, body, status
+        :returns: headers, body, status
         :raises: FatalClientError on invalid redirect URI or client id.
                  ValueError if scopes are not set on the request object.
 
@@ -203,12 +203,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
             request.redirect_uri = request.redirect_uri or self.error_uri
-            return common.add_params_to_uri(request.redirect_uri, e.twotuples), None, None, e.status_code
+            return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples)}, None, 302
 
         grant = self.create_authorization_code(request)
         log.debug('Saving grant %r for %r.', grant, request)
         self.request_validator.save_authorization_code(request.client_id, grant, request)
-        return common.add_params_to_uri(request.redirect_uri, grant.items()), None, None, 302
+        return {'Location': common.add_params_to_uri(request.redirect_uri, grant.items())}, None, 302
 
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.
@@ -229,12 +229,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Token request validation ok for %r.', request)
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
-            return None, headers, e.json, e.status_code
+            return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=True)
         self.request_validator.invalidate_authorization_code(
                 request.client_id, request.code, request)
-        return None, headers, json.dumps(token), 200
+        return headers, json.dumps(token), 200
 
     def validate_authorization_request(self, request):
         """Check the authorization request for normal and fatal errors.

@@ -43,7 +43,7 @@ def catch_errors_and_unavailability(f):
         if not endpoint.available:
             e = TemporarilyUnavailableError()
             log.info('Endpoint unavailable, ignoring request %s.' % uri)
-            return None, {}, e.json, 503
+            return {}, e.json, 503
 
         if endpoint.catch_errors:
             try:
@@ -55,7 +55,7 @@ def catch_errors_and_unavailability(f):
             except Exception as e:
                 error = ServerError()
                 log.warning('Exception caught while processing request, %s.' % e)
-                return None, {}, error.json, 500
+                return {}, error.json, 500
         else:
             return f(endpoint, uri, *args, **kwargs)
     return wrapper

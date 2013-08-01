@@ -54,13 +54,13 @@ class RefreshTokenGrant(GrantTypeBase):
             log.debug('Validating refresh token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
-            return None, headers, e.json, e.status_code
+            return headers, e.json, e.status_code
 
         token = token_handler.create_token(request,
                 refresh_token=self.issue_new_refresh_tokens)
         log.debug('Issuing new token to client id %r (%r), %r.',
                   request.client_id, request.client, token)
-        return None, headers, json.dumps(token), 200
+        return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
         # REQUIRED. Value MUST be set to "refresh_token".

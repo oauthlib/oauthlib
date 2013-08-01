@@ -105,12 +105,12 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
             log.debug('Client error in token request, %s.', e)
-            return None, headers, e.json, e.status_code
+            return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=True)
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
                   token, request.client_id, request.client, request.username)
-        return None, headers, json.dumps(token), 200
+        return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
         """
