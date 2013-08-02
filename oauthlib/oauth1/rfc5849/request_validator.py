@@ -59,13 +59,20 @@ class RequestValidator(object):
     - validate_realms
     - validate_verifier
 
-    Method used to retrieve sensitive information from storage.
+    Methods used to retrieve sensitive information from storage.
     The following methods must be implemented:
 
     - get_client_secret
     - get_request_token_secret
     - get_access_token_secret
     - get_rsa_key
+    
+    Methods used to save credentials.
+    The following methods must be implemented:
+    
+    - save_request_token
+    - save_verifier
+    - save_access_token
 
     To prevent timing attacks it is necessary to not exit early even if the
     client key or resource owner key is invalid. Instead dummy values should
@@ -713,7 +720,7 @@ class RequestValidator(object):
         raise NotImplementedError("Subclasses must implement this function.")
 
     def save_request_token(self, token, request):
-        """Save an OAuth1 access token.
+        """Save an OAuth1 request token.
 
         :param token: A dict with token credentials.
         :param request: An oauthlib.common.Request object.
