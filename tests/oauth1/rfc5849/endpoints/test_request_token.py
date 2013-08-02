@@ -34,45 +34,45 @@ class RequestTokenEndpointTest(TestCase):
     def test_check_redirect_uri(self):
         client = Client('foo')
         uri, headers, _ = client.sign(self.uri)
-        u, h, b, s = self.endpoint.create_request_token_response(
+        h, b, s = self.endpoint.create_request_token_response(
                 uri, headers=headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
     def test_check_realms(self):
         self.validator.check_realms.return_value = False
-        u, h, b, s = self.endpoint.create_request_token_response(
+        h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
     def test_validate_client_key(self):
         self.validator.validate_client_key.return_value = False
-        u, h, b, s = self.endpoint.create_request_token_response(
+        h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
     def test_validate_realms(self):
         self.validator.validate_requested_realms.return_value = False
-        u, h, b, s = self.endpoint.create_request_token_response(
+        h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
     def test_validate_redirect_uri(self):
         self.validator.validate_redirect_uri.return_value = False
-        u, h, b, s = self.endpoint.create_request_token_response(
+        h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
     def test_validate_signature(self):
         client = Client('foo', callback_uri='https://c.b/cb')
         _, headers, _ = client.sign(self.uri + '/extra')
-        u, h, b, s = self.endpoint.create_request_token_response(
+        h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=headers)
         self.assertEqual(s, 401)
 
     def test_valid_request(self):
-        u, h, b, s = self.endpoint.create_request_token_response(
+        h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 200)
         self.assertIn('oauth_token', b)
@@ -85,7 +85,7 @@ class RequestTokenEndpointTest(TestCase):
                 client_secret='bar')
         uri = self.uri + '?realm=foo'
         _, headers, _ = client.sign(uri)
-        u, h, b, s = self.endpoint.create_request_token_response(
+        h, b, s = self.endpoint.create_request_token_response(
                 uri, headers=headers)
         self.assertEqual(s, 200)
         self.assertIn('oauth_token', b)

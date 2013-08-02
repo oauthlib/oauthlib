@@ -39,33 +39,33 @@ class AccessTokenEndpointTest(TestCase):
 
     def test_check_request_token(self):
         self.validator.check_request_token.return_value = False
-        u, h, b, s = self.endpoint.create_access_token_response(
+        h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
     def test_check_verifier(self):
         self.validator.check_verifier.return_value = False
-        u, h, b, s = self.endpoint.create_access_token_response(
+        h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
     def test_validate_client_key(self):
         self.validator.validate_client_key.return_value = False
-        u, h, b, s = self.endpoint.create_access_token_response(
+        h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
     def test_validate_request_token(self):
         self.validator.validate_request_token.return_value = False
-        u, h, b, s = self.endpoint.create_access_token_response(
+        h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
     def test_validate_verifier(self):
         self.validator.validate_verifier.return_value = False
-        u, h, b, s = self.endpoint.create_access_token_response(
+        h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
@@ -75,12 +75,12 @@ class AccessTokenEndpointTest(TestCase):
                 resource_owner_secret='secret',
                 verifier='verfier')
         _, headers, _ = client.sign(self.uri + '/extra')
-        u, h, b, s = self.endpoint.create_access_token_response(
+        h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=headers)
         self.assertEqual(s, 401)
 
     def test_valid_request(self):
-        u, h, b, s = self.endpoint.create_access_token_response(
+        h, b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 200)
         self.assertIn('oauth_token', b)

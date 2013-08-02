@@ -57,18 +57,17 @@ class AccessTokenEndpoint(BaseEndpoint):
         :param body: The request body as a string.
         :param headers: The request headers as a dict.
         :param credentials: A list of extra credentials to include in the token.
-        :returns: A tuple of 4 elements.
-                  1. None (uri but n/a for this endpoint, here for consistency.
-                  2. A dict of headers to set on the response.
-                  3. The response body as a string.
-                  4. The response status code as an integer.
+        :returns: A tuple of 3 elements.
+                  1. A dict of headers to set on the response.
+                  2. The response body as a string.
+                  3. The response status code as an integer.
 
         An example of a valid request::
 
             >>> from your_validator import your_validator
             >>> from oauthlib.oauth1 import AccessTokenEndpoint
             >>> endpoint = AccessTokenEndpoint(your_validator)
-            >>> u, h, b, s = endpoint.create_access_token_response(
+            >>> h, b, s = endpoint.create_access_token_response(
             ...     'https://your.provider/access_token?foo=bar',
             ...     headers={
             ...         'Authorization': 'OAuth oauth_token=234lsdkf....'
@@ -76,8 +75,6 @@ class AccessTokenEndpoint(BaseEndpoint):
             ...     credentials={
             ...         'my_specific': 'argument',
             ...     })
-            >>> u
-            None
             >>> h
             {'Content-Type': 'application/x-www-form-urlencoded'}
             >>> b
@@ -106,11 +103,11 @@ class AccessTokenEndpoint(BaseEndpoint):
                     request)
             if valid:
                 token = self.create_access_token(request, credentials or {})
-                return None, resp_headers, token, 200
+                return resp_headers, token, 200
             else:
-                return None, {}, None, 401
+                return {}, None, 401
         except errors.OAuth1Error as e:
-            return None, resp_headers, e.urlencoded, e.status_code
+            return resp_headers, e.urlencoded, e.status_code
 
     def validate_access_token_request(self, request):
         """Validate an access token request.
