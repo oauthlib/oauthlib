@@ -360,11 +360,15 @@ class RequestValidator(object):
         raise NotImplementedError("Subclasses must implement this function.")
 
     def get_redirect_uri(self, token, request):
-        """Get the redirect uri associated with a request token.
+        """Get the redirect URI associated with a request token.
 
         :param token: The request token string.
         :param request: An oauthlib.common.Request object.
         :returns: The redirect URI associated with the request token.
+
+        It may be desirable to return a custom URI if the redirect is set to "oob".
+        In this case, the user will be redirected to the returned URI and at that 
+        endpoint the verifier can be displayed.
 
         This method is used by
 
