@@ -41,35 +41,39 @@ class AuthorizationEndpointTest(TestCase):
     def test_authorization_grant(self):
         uri = 'http://i.b/l?response_type=code&client_id=me&scope=all+of+them&state=xyz'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
-        uri, headers, body, status_code = self.endpoint.create_authorization_response(
+        headers, body, status_code = self.endpoint.create_authorization_response(
                 uri, scopes=['all', 'of', 'them'])
-        self.assertURLEqual(uri, 'http://back.to/me?code=abc&state=xyz')
+        self.assertIn('Location', headers)
+        self.assertURLEqual(headers['Location'], 'http://back.to/me?code=abc&state=xyz')
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_implicit_grant(self):
         uri = 'http://i.b/l?response_type=token&client_id=me&scope=all+of+them&state=xyz'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
-        uri, headers, body, status_code = self.endpoint.create_authorization_response(
+        headers, body, status_code = self.endpoint.create_authorization_response(
                 uri, scopes=['all', 'of', 'them'])
-        self.assertURLEqual(uri, 'http://back.to/me#access_token=abc&expires_in=' + str(self.expires_in) + '&token_type=Bearer&state=xyz&scope=all+of+them', parse_fragment=True)
+        self.assertIn('Location', headers)
+        self.assertURLEqual(headers['Location'], 'http://back.to/me#access_token=abc&expires_in=' + str(self.expires_in) + '&token_type=Bearer&state=xyz&scope=all+of+them', parse_fragment=True)
 
     def test_missing_type(self):
         uri = 'http://i.b/l?client_id=me&scope=all+of+them'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         self.mock_validator.validate_request = mock.MagicMock(
                 side_effect=errors.InvalidRequestError())
-        uri, headers, body, status_code = self.endpoint.create_authorization_response(
+        headers, body, status_code = self.endpoint.create_authorization_response(
                 uri, scopes=['all', 'of', 'them'])
-        self.assertURLEqual(uri, 'http://back.to/me?error=invalid_request&error_description=Missing+response_type+parameter.')
+        self.assertIn('Location', headers)
+        self.assertURLEqual(headers['Location'], 'http://back.to/me?error=invalid_request&error_description=Missing+response_type+parameter.')
 
     def test_invalid_type(self):
         uri = 'http://i.b/l?response_type=invalid&client_id=me&scope=all+of+them'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         self.mock_validator.validate_request = mock.MagicMock(
                 side_effect=errors.UnsupportedResponseTypeError())
-        uri, headers, body, status_code = self.endpoint.create_authorization_response(
+        headers, body, status_code = self.endpoint.create_authorization_response(
                 uri, scopes=['all', 'of', 'them'])
-        self.assertURLEqual(uri, 'http://back.to/me?error=unsupported_response_type')
+        self.assertIn('Location', headers)
+        self.assertURLEqual(headers['Location'], 'http://back.to/me?error=unsupported_response_type')
 
 
 class TokenEndpointTest(TestCase):
@@ -104,7 +108,7 @@ class TokenEndpointTest(TestCase):
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
         body = 'grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz'
-        uri, headers, body, status_code = self.endpoint.create_token_response(
+        headers, body, status_code = self.endpoint.create_token_response(
                 '', body=body)
         token = {
             'token_type': 'Bearer',
@@ -118,7 +122,7 @@ class TokenEndpointTest(TestCase):
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_password_grant(self):
         body = 'grant_type=password&username=a&password=hello&scope=all+of+them'
-        uri, headers, body, status_code = self.endpoint.create_token_response(
+        headers, body, status_code = self.endpoint.create_token_response(
                 '', body=body)
         token = {
             'token_type': 'Bearer',
@@ -132,7 +136,7 @@ class TokenEndpointTest(TestCase):
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_client_grant(self):
         body = 'grant_type=client_credentials&scope=all+of+them'
-        uri, headers, body, status_code = self.endpoint.create_token_response(
+        headers, body, status_code = self.endpoint.create_token_response(
                 '', body=body)
         token = {
             'token_type': 'Bearer',
@@ -143,13 +147,13 @@ class TokenEndpointTest(TestCase):
         self.assertEqual(json.loads(body), token)
 
     def test_missing_type(self):
-        _, _, body, _ = self.endpoint.create_token_response('', body='')
+        _, body, _ = self.endpoint.create_token_response('', body='')
         token = {'error': 'unsupported_grant_type'}
         self.assertEqual(json.loads(body), token)
 
     def test_invalid_type(self):
         body = 'grant_type=invalid'
-        _, _, body, _ = self.endpoint.create_token_response('', body=body)
+        _, body, _ = self.endpoint.create_token_response('', body=body)
         token = {'error': 'unsupported_grant_type'}
         self.assertEqual(json.loads(body), token)
 

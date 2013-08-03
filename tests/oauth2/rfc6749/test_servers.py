@@ -86,29 +86,34 @@ class TestScopeHandling(TestCase):
         token_uri = 'http://example.com/path'
 
         # authorization grant
-        uri, _, _, _ = self.web.create_authorization_response(
+        h, _, s = self.web.create_authorization_response(
                 auth_uri + 'code', scopes=decoded_scope.split(' '))
         self.validator.validate_code.side_effect = self.set_scopes(decoded_scope.split(' '))
-        code = get_query_credentials(uri)['code'][0]
-        _, _, body, _ = self.web.create_token_response(token_uri,
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        code = get_query_credentials(h['Location'])['code'][0]
+        _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # implicit grant
-        uri, _, _, _ = self.mobile.create_authorization_response(
+        h, _, s = self.mobile.create_authorization_response(
                 auth_uri + 'token', scopes=decoded_scope.split(' '))
-        self.assertEqual(get_fragment_credentials(uri)['scope'][0], decoded_scope)
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertEqual(get_fragment_credentials(h['Location'])['scope'][0], decoded_scope)
 
         # resource owner password credentials grant
         body = 'grant_type=password&username=abc&password=secret&scope=%s'
-        _, _, body, _ = self.legacy.create_token_response(token_uri,
+        
+        _, body, _ = self.legacy.create_token_response(token_uri,
                 body=body % scope)
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # client credentials grant
         body = 'grant_type=client_credentials&scope=%s'
         self.validator.authenticate_client.side_effect = self.set_user
-        _, _, body, _ = self.backend.create_token_response(token_uri,
+        _, body, _ = self.backend.create_token_response(token_uri,
                 body=body % scope)
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
@@ -120,24 +125,28 @@ class TestScopeHandling(TestCase):
         token_uri = 'http://example.com/path'
 
         # authorization grant
-        uri, _, _, _ = self.web.create_authorization_response(
+        h, _, s = self.web.create_authorization_response(
                 auth_uri + 'code', scopes=scopes)
-        code = get_query_credentials(uri)['code'][0]
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        code = get_query_credentials(h['Location'])['code'][0]
         self.validator.validate_code.side_effect = self.set_scopes(scopes)
-        _, _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # implicit grant
         self.validator.validate_scopes.side_effect = self.set_scopes(scopes)
-        uri, _, _, _ = self.mobile.create_authorization_response(
+        h, _, s = self.mobile.create_authorization_response(
                 auth_uri + 'token', scopes=scopes)
-        self.assertEqual(get_fragment_credentials(uri)['scope'][0], decoded_scope)
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertEqual(get_fragment_credentials(h['Location'])['scope'][0], decoded_scope)
 
         # resource owner password credentials grant
         self.validator.validate_scopes.side_effect = self.set_scopes(scopes)
         body = 'grant_type=password&username=abc&password=secret&scope=%s'
-        _, _, body, _ = self.legacy.create_token_response(token_uri,
+        _, body, _ = self.legacy.create_token_response(token_uri,
                 body=body % scope)
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
@@ -145,8 +154,9 @@ class TestScopeHandling(TestCase):
         self.validator.validate_scopes.side_effect = self.set_scopes(scopes)
         self.validator.authenticate_client.side_effect = self.set_user
         body = 'grant_type=client_credentials&scope=%s'
-        _, _, body, _ = self.backend.create_token_response(token_uri,
+        _, body, _ = self.backend.create_token_response(token_uri,
                 body=body % scope)
+        
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
     def test_invalid_scope(self):
@@ -157,27 +167,31 @@ class TestScopeHandling(TestCase):
         self.validator.validate_scopes.return_value = False
 
         # authorization grant
-        uri, _, _, _ = self.web.create_authorization_response(
+        h, _, s = self.web.create_authorization_response(
                 auth_uri + 'code', scopes=['invalid'])
-        error = get_query_credentials(uri)['error'][0]
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        error = get_query_credentials(h['Location'])['error'][0]
         self.assertEqual(error, 'invalid_scope')
 
         # implicit grant
-        uri, _, _, _ = self.mobile.create_authorization_response(
+        h, _, s = self.mobile.create_authorization_response(
                 auth_uri + 'token', scopes=['invalid'])
-        error = get_fragment_credentials(uri)['error'][0]
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        error = get_fragment_credentials(h['Location'])['error'][0]
         self.assertEqual(error, 'invalid_scope')
 
         # resource owner password credentials grant
         body = 'grant_type=password&username=abc&password=secret&scope=%s'
-        _, _, body, _ = self.legacy.create_token_response(token_uri,
+        _, body, _ = self.legacy.create_token_response(token_uri,
                 body=body % scope)
         self.assertEqual(json.loads(body)['error'], 'invalid_scope')
 
         # client credentials grant
         self.validator.authenticate_client.side_effect = self.set_user
         body = 'grant_type=client_credentials&scope=%s'
-        _, _, body, _ = self.backend.create_token_response(token_uri,
+        _, body, _ = self.backend.create_token_response(token_uri,
                 body=body % scope)
         self.assertEqual(json.loads(body)['error'], 'invalid_scope')
 
@@ -207,18 +221,22 @@ class PreservationTest(TestCase):
         token_uri = 'http://example.com/path'
 
         # authorization grant
-        uri, _, _, _ = self.web.create_authorization_response(
+        h, _, s = self.web.create_authorization_response(
                 auth_uri + 'code', scopes=['random'])
-        code = get_query_credentials(uri)['code'][0]
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        code = get_query_credentials(h['Location'])['code'][0]
         self.validator.validate_code.side_effect = self.set_state('xyz')
-        _, _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
         self.assertEqual(json.loads(body)['state'], 'xyz')
 
         # implicit grant
-        uri, _, _, _ = self.mobile.create_authorization_response(
+        h, _, s = self.mobile.create_authorization_response(
                 auth_uri + 'token', scopes=['random'])
-        self.assertEqual(get_fragment_credentials(uri)['state'][0], 'xyz')
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertEqual(get_fragment_credentials(h['Location'])['state'][0], 'xyz')
 
     def test_redirect_uri_preservation(self):
         auth_uri = 'http://example.com/path?redirect_uri=http%3A%2F%2Fi.b%2Fpath&client_id=abc'
@@ -226,22 +244,26 @@ class PreservationTest(TestCase):
         token_uri = 'http://example.com/path'
 
         # authorization grant
-        uri, _, _, _ = self.web.create_authorization_response(
+        h, _, s = self.web.create_authorization_response(
                 auth_uri + '&response_type=code', scopes=['random'])
-        self.assertTrue(uri.startswith(redirect_uri))
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertTrue(h['Location'].startswith(redirect_uri))
 
         # confirm_redirect_uri should return false if the redirect uri
         # was given in the authorization but not in the token request.
         self.validator.confirm_redirect_uri.return_value = False
-        code = get_query_credentials(uri)['code'][0]
-        _, _, body, _ = self.web.create_token_response(token_uri,
+        code = get_query_credentials(h['Location'])['code'][0]
+        _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
         self.assertEqual(json.loads(body)['error'], 'access_denied')
 
         # implicit grant
-        uri, _, _, _ = self.mobile.create_authorization_response(
+        h, _, s = self.mobile.create_authorization_response(
                 auth_uri + '&response_type=token', scopes=['random'])
-        self.assertTrue(uri.startswith(redirect_uri))
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertTrue(h['Location'].startswith(redirect_uri))
 
     def test_invalid_redirect_uri(self):
         auth_uri = 'http://example.com/path?redirect_uri=http%3A%2F%2Fi.b%2Fpath&client_id=abc'
@@ -313,13 +335,13 @@ class ClientAuthenticationTest(TestCase):
         # authorization code grant
         self.validator.authenticate_client.return_value = False
         self.validator.authenticate_client_id.return_value = False
-        _, _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=mock')
         self.assertEqual(json.loads(body)['error'], 'invalid_client')
 
         self.validator.authenticate_client_id.return_value = True
         self.validator.authenticate_client.side_effect = self.set_client
-        _, _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=mock')
         self.assertIn('access_token', json.loads(body))
 
@@ -329,8 +351,10 @@ class ClientAuthenticationTest(TestCase):
                 auth_uri, scopes=['random'])
 
         self.validator.validate_client_id.side_effect = self.set_client_id
-        uri, _, _, _ = self.mobile.create_authorization_response(auth_uri, scopes=['random'])
-        self.assertIn('access_token', get_fragment_credentials(uri))
+        h, _, s = self.mobile.create_authorization_response(auth_uri, scopes=['random'])
+        self.assertEqual(302, s)
+        self.assertIn('Location', h)
+        self.assertIn('access_token', get_fragment_credentials(h['Location']))
 
     def test_custom_authentication(self):
         token_uri = 'http://example.com/path'
@@ -397,16 +421,18 @@ class ResourceOwnerAssociationTest(TestCase):
 
     def test_web_application(self):
         # TODO: code generator + intercept test
-        uri, _, _, _ = self.web.create_authorization_response(
+        h, _, s = self.web.create_authorization_response(
                 self.auth_uri + '&response_type=code',
                 credentials={'user': 'test'}, scopes=['random'])
-        code = get_query_credentials(uri)['code'][0]
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        code = get_query_credentials(h['Location'])['code'][0]
         self.assertRaises(ValueError,
                 self.web.create_token_response, self.token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
 
         self.validator.validate_code.side_effect = self.set_user
-        _, _, body, _ = self.web.create_token_response(self.token_uri,
+        _, body, _ = self.web.create_token_response(self.token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
         self.assertEqual(json.loads(body)['access_token'], 'abc')
 
@@ -415,10 +441,12 @@ class ResourceOwnerAssociationTest(TestCase):
                 self.mobile.create_authorization_response,
                 self.auth_uri + '&response_type=token')
 
-        uri, _, _, _ = self.mobile.create_authorization_response(
+        h, _, s = self.mobile.create_authorization_response(
                 self.auth_uri + '&response_type=token',
                 credentials={'user': 'test'}, scopes=['random'])
-        self.assertEqual(get_fragment_credentials(uri)['access_token'][0], 'abc')
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertEqual(get_fragment_credentials(h['Location'])['access_token'][0], 'abc')
 
     def test_legacy_application(self):
         body = 'grant_type=password&username=abc&password=secret'
@@ -427,7 +455,7 @@ class ResourceOwnerAssociationTest(TestCase):
                 self.token_uri, body=body)
 
         self.validator.validate_user.side_effect = self.set_user_from_username
-        _, _, body, _ = self.legacy.create_token_response(
+        _, body, _ = self.legacy.create_token_response(
                 self.token_uri, body=body)
         self.assertEqual(json.loads(body)['access_token'], 'abc')
 
@@ -438,7 +466,7 @@ class ResourceOwnerAssociationTest(TestCase):
                 self.token_uri, body=body)
 
         self.validator.authenticate_client.side_effect = self.set_user_from_credentials
-        _, _, body, _ = self.backend.create_token_response(
+        _, body, _ = self.backend.create_token_response(
                 self.token_uri, body=body)
         self.assertEqual(json.loads(body)['access_token'], 'abc')
 
@@ -546,15 +574,17 @@ class ErrorResponseTest(TestCase):
             self.assertRaises(errors.InvalidRequestError,
                     self.web.validate_authorization_request,
                     uri.format('code'))
-            url, _, _, _ = self.web.create_authorization_response(
+            h, _, s = self.web.create_authorization_response(
                     uri.format('code'), scopes=['foo'])
-            self.assertIn('error=invalid_request', url)
+            self.assertEqual(s, 302)
+            self.assertIn('Location', h)
+            self.assertIn('error=invalid_request', h['Location'])
         invalid_bodies = [
             # duplicate params
             'grant_type=authorization_code&client_id=nope&client_id=nope&code=foo'
         ]
         for body in invalid_bodies:
-            _, _, body, _ = self.web.create_token_response(token_uri,
+            _, body, _ = self.web.create_token_response(token_uri,
                     body=body)
             self.assertEqual('invalid_request', json.loads(body)['error'])
 
@@ -563,9 +593,11 @@ class ErrorResponseTest(TestCase):
             self.assertRaises(errors.InvalidRequestError,
                     self.mobile.validate_authorization_request,
                     uri.format('token'))
-            url, _, _, _ = self.mobile.create_authorization_response(
+            h, _, s = self.mobile.create_authorization_response(
                     uri.format('token'), scopes=['foo'])
-            self.assertIn('error=invalid_request', url)
+            self.assertEqual(s, 302)
+            self.assertIn('Location', h)
+            self.assertIn('error=invalid_request', h['Location'])
 
         # Password credentials grant
         invalid_bodies = [
@@ -578,7 +610,7 @@ class ErrorResponseTest(TestCase):
         ]
         self.validator.authenticate_client.side_effect = self.set_client
         for body in invalid_bodies:
-            _, _, body, _ = self.legacy.create_token_response(token_uri,
+            _, body, _ = self.legacy.create_token_response(token_uri,
                     body=body)
             self.assertEqual('invalid_request', json.loads(body)['error'])
 
@@ -588,7 +620,7 @@ class ErrorResponseTest(TestCase):
             'grant_type=client_credentials&scope=foo&scope=bar'
         ]
         for body in invalid_bodies:
-            _, _, body, _ = self.backend.create_token_response(token_uri,
+            _, body, _ = self.backend.create_token_response(token_uri,
                     body=body)
             self.assertEqual('invalid_request', json.loads(body)['error'])
 
@@ -603,7 +635,7 @@ class ErrorResponseTest(TestCase):
         self.assertRaises(errors.UnauthorizedClientError,
                 self.web.validate_authorization_request,
                 'https://i.b/auth?response_type=code&client_id=foo')
-        _, _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=foo')
         self.assertEqual('unauthorized_client', json.loads(body)['error'])
 
@@ -613,12 +645,12 @@ class ErrorResponseTest(TestCase):
                 'https://i.b/auth?response_type=token&client_id=foo')
 
         # Password credentials grant
-        _, _, body, _ = self.legacy.create_token_response(token_uri,
+        _, body, _ = self.legacy.create_token_response(token_uri,
                 body='grant_type=password&username=foo&password=bar')
         self.assertEqual('unauthorized_client', json.loads(body)['error'])
 
         # Client credentials grant
-        _, _, body, _ = self.backend.create_token_response(token_uri,
+        _, body, _ = self.backend.create_token_response(token_uri,
                 body='grant_type=client_credentials')
         self.assertEqual('unauthorized_client', json.loads(body)['error'])
 
@@ -627,7 +659,7 @@ class ErrorResponseTest(TestCase):
         self.validator.confirm_redirect_uri.return_value = False
         token_uri = 'https://i.b/token'
         # Authorization code grant
-        _, _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=foo')
         self.assertEqual('access_denied', json.loads(body)['error'])
 
@@ -660,13 +692,13 @@ class ErrorResponseTest(TestCase):
                 'https://i.b/auth?response_type=token&client_id=foo')
 
         # Password credentials grant
-        _, _, body, _ = self.legacy.create_token_response(
+        _, body, _ = self.legacy.create_token_response(
                 'https://i.b/token',
                 body='grant_type=password&username=foo&password=bar')
         self.assertEqual('invalid_scope', json.loads(body)['error'])
 
         # Client credentials grant
-        _, _, body, _ = self.backend.create_token_response(
+        _, body, _ = self.backend.create_token_response(
                 'https://i.b/token',
                 body='grant_type=client_credentials')
         self.assertEqual('invalid_scope', json.loads(body)['error'])
@@ -681,11 +713,11 @@ class ErrorResponseTest(TestCase):
 
         # Authorization code grant
         self.web.catch_errors = True
-        _, _, _, s = self.web.create_authorization_response(
+        _, _, s = self.web.create_authorization_response(
                 'https://i.b/auth?client_id=foo&response_type=code',
                 scopes=['foo'])
         self.assertEqual(s, 500)
-        _, _, _, s = self.web.create_token_response(
+        _, _, s = self.web.create_token_response(
                 'https://i.b/token',
                 body='grant_type=authorization_code&code=foo',
                 scopes=['foo'])
@@ -693,21 +725,21 @@ class ErrorResponseTest(TestCase):
 
         # Implicit grant
         self.mobile.catch_errors = True
-        _, _, _, s = self.mobile.create_authorization_response(
+        _, _, s = self.mobile.create_authorization_response(
                 'https://i.b/auth?client_id=foo&response_type=token',
                 scopes=['foo'])
         self.assertEqual(s, 500)
 
         # Password credentials grant
         self.legacy.catch_errors = True
-        _, _, _, s = self.legacy.create_token_response(
+        _, _, s = self.legacy.create_token_response(
                 'https://i.b/token',
                 body='grant_type=password&username=foo&password=foo')
         self.assertEqual(s, 500)
 
         # Client credentials grant
         self.backend.catch_errors = True
-        _, _, _, s = self.backend.create_token_response(
+        _, _, s = self.backend.create_token_response(
                 'https://i.b/token',
                 body='grant_type=client_credentials')
         self.assertEqual(s, 500)
@@ -715,11 +747,11 @@ class ErrorResponseTest(TestCase):
     def test_temporarily_unavailable(self):
         # Authorization code grant
         self.web.available = False
-        _, _, _, s = self.web.create_authorization_response(
+        _, _, s = self.web.create_authorization_response(
                 'https://i.b/auth?client_id=foo&response_type=code',
                 scopes=['foo'])
         self.assertEqual(s, 503)
-        _, _, _, s = self.web.create_token_response(
+        _, _, s = self.web.create_token_response(
                 'https://i.b/token',
                 body='grant_type=authorization_code&code=foo',
                 scopes=['foo'])
@@ -727,21 +759,21 @@ class ErrorResponseTest(TestCase):
 
         # Implicit grant
         self.mobile.available = False
-        _, _, _, s = self.mobile.create_authorization_response(
+        _, _, s = self.mobile.create_authorization_response(
                 'https://i.b/auth?client_id=foo&response_type=token',
                 scopes=['foo'])
         self.assertEqual(s, 503)
 
         # Password credentials grant
         self.legacy.available = False
-        _, _, _, s = self.legacy.create_token_response(
+        _, _, s = self.legacy.create_token_response(
                 'https://i.b/token',
                 body='grant_type=password&username=foo&password=foo')
         self.assertEqual(s, 503)
 
         # Client credentials grant
         self.backend.available = False
-        _, _, _, s = self.backend.create_token_response(
+        _, _, s = self.backend.create_token_response(
                 'https://i.b/token',
                 body='grant_type=client_credentials')
         self.assertEqual(s, 503)
@@ -751,17 +783,17 @@ class ErrorResponseTest(TestCase):
         self.validator.authenticate_client_id.return_value = False
 
         # Authorization code grant
-        _, _, body, _ = self.web.create_token_response('https://i.b/token',
+        _, body, _ = self.web.create_token_response('https://i.b/token',
                 body='grant_type=authorization_code&code=foo')
         self.assertEqual('invalid_client', json.loads(body)['error'])
 
         # Password credentials grant
-        _, _, body, _ = self.legacy.create_token_response('https://i.b/token',
+        _, body, _ = self.legacy.create_token_response('https://i.b/token',
                 body='grant_type=password&username=foo&password=bar')
         self.assertEqual('invalid_client', json.loads(body)['error'])
 
         # Client credentials grant
-        _, _, body, _ = self.legacy.create_token_response('https://i.b/token',
+        _, body, _ = self.legacy.create_token_response('https://i.b/token',
                 body='grant_type=client_credentials')
         self.assertEqual('invalid_client', json.loads(body)['error'])
 
@@ -770,13 +802,13 @@ class ErrorResponseTest(TestCase):
 
         # Authorization code grant
         self.validator.validate_code.return_value = False
-        _, _, body, _ = self.web.create_token_response('https://i.b/token',
+        _, body, _ = self.web.create_token_response('https://i.b/token',
                 body='grant_type=authorization_code&code=foo')
         self.assertEqual('invalid_grant', json.loads(body)['error'])
 
         # Password credentials grant
         self.validator.validate_user.return_value = False
-        _, _, body, _ = self.legacy.create_token_response('https://i.b/token',
+        _, body, _ = self.legacy.create_token_response('https://i.b/token',
                 body='grant_type=password&username=foo&password=bar')
         self.assertEqual('invalid_grant', json.loads(body)['error'])
 
@@ -784,17 +816,17 @@ class ErrorResponseTest(TestCase):
         self.validator.authenticate_client.side_effect = self.set_client
 
         # Authorization code grant
-        _, _, body, _ = self.web.create_token_response('https://i.b/token',
+        _, body, _ = self.web.create_token_response('https://i.b/token',
                 body='grant_type=bar&code=foo')
         self.assertEqual('unsupported_grant_type', json.loads(body)['error'])
 
         # Password credentials grant
-        _, _, body, _ = self.legacy.create_token_response('https://i.b/token',
+        _, body, _ = self.legacy.create_token_response('https://i.b/token',
                 body='grant_type=bar&username=foo&password=bar')
         self.assertEqual('unsupported_grant_type', json.loads(body)['error'])
 
         # Client credentials grant
-        _, _, body, _ = self.backend.create_token_response('https://i.b/token',
+        _, body, _ = self.backend.create_token_response('https://i.b/token',
                 body='grant_type=bar')
         self.assertEqual('unsupported_grant_type', json.loads(body)['error'])
 

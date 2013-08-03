@@ -79,9 +79,8 @@ Grant and the Client Credentials Grant.
 
         except FatalClientError as e:
             # this is your custom error page
-            from your_views import authorization_error_page_uri
-            # Use in_uri to embed error code and description in the redirect uri
-            redirect(e.in_uri(authorization_error_page_uri))
+            from your_view_helpers import error_to_response
+            return error_to_response(e)
 
 
 **Post Authorization Request**
@@ -107,23 +106,22 @@ Grant and the Client Credentials Grant.
         scopes = request.POST.get('scopes')
 
         from oauthlib.oauth2 import FatalClientError, OAuth2Error
-        from your_framework import redirect
+        from your_framework import http_response
+        http_response(body, status=status, headers=headers)
         try:
-            uri, headers, body, status = server.create_authorization_response(
+            headers, body, status = server.create_authorization_response(
                 uri, http_method, body, headers, scopes, credentials)
-            # uri = https://foo.com/welcome_back?code=somerandomstring&state=xyz
-            # headers = {}, this might change to include suggested headers related
+            # headers = {'Location': 'https://foo.com/welcome_back?code=somerandomstring&state=xyz'}, this might change to include suggested headers related
             # to cache best practices etc.
             # body = '', this might be set in future custom grant types
             # status = 302, suggested HTTP status code
 
-            redirect(uri, headers=headers, status=status, body=body)
+            return http_response(body, status=status, headers=headers)
 
         except FatalClientError as e:
             # this is your custom error page
-            from your_views import authorization_error_page_uri
-            # Use in_uri to embed error code and description in the redirect uri
-            redirect(e.in_uri(authorization_error_page_uri))
+            from your_view_helpers import error_to_response
+            return error_to_response(e)
 
         except OAuth2Error as e:
             # Less grave errors will be reported back to client
@@ -181,10 +179,9 @@ tokens which unless you are certain you need them, are a bad idea.
         # Extra credentials you wish to include
         credentials = {'client_ip': '1.2.3.4'}
 
-        uri, headers, body, status = server.create_token_response(
+        headers, body, status = server.create_token_response(
             uri, http_method, body, headers, credentials)
 
-        # uri is not used by most grant types
         # headers will contain some suggested headers to add to your response
         {
             'Content-Type': 'application/json;charset=UTF-8',

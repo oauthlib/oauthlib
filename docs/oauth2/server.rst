@@ -260,7 +260,6 @@ as well as provide an interface for a backend to store tokens, clients, etc.
             def __init__(self):
                 # Using the server from previous section
                 self._authorization_endpoint = server
-                self._error_uri = '/error'
 
             def get(self, request):
                 # You need to define extract_params and make sure it does not
@@ -288,7 +287,7 @@ as well as provide an interface for a backend to store tokens, clients, etc.
 
                 # Errors that should be shown to the user on the provider website
                 except errors.FatalClientError as e:
-                    return HttpResponseRedirect(e.in_uri(self._error_uri))
+                    return response_from_error(e)
 
                 # Errors embedded in the redirect URI back to the client
                 except errors.OAuth2Error as e:
@@ -297,7 +296,7 @@ as well as provide an interface for a backend to store tokens, clients, etc.
             @csrf_exempt
             def post(self, request):
                 uri, http_method, body, headers = extract_params(request)
-                
+
                 # The scopes the user actually authorized, i.e. checkboxes
                 # that were selected.
                 scopes = request.POST.getlist(['scopes'])
@@ -309,15 +308,12 @@ as well as provide an interface for a backend to store tokens, clients, etc.
                 credentials.update(request.session.get('oauth2_credentials', {}))
 
                 try:
-                    url, headers, body, status = self._authorization_endpoint.create_authorization_response(
+                    headers, body, status = self._authorization_endpoint.create_authorization_response(
                             uri, http_method, body, headers, scopes, credentials)
-                    return HttpResponseRedirect(url)
+                    return response_from_return(headers, body, status)
 
                 except errors.FatalClientError as e:
-                    return HttpResponseRedirect(e.in_uri(self._error_uri))
-
-                except errors.OAuth2Error as e:
-                    return HttpResponseRedirect(e.in_uri(redirect_uri))
+                    return response_from_error(e)
 
         # Handles requests to /token
         class TokenView(View):
@@ -333,20 +329,22 @@ as well as provide an interface for a backend to store tokens, clients, etc.
                 # use in the validator, do so here.
                 credentials = {'foo': 'bar'}
 
-                url, headers, body, status = self._token_endpoint.create_token_response(
+                headers, body, status = self._token_endpoint.create_token_response(
                         uri, http_method, body, headers, credentials)
 
                 # All requests to /token will return a json response, no redirection.
-                response = HttpResponse(content=body, status=status)
-                for k, v in headers.items():
-                    response[k] = v
-                return response
+                return response_from_return(headers, body, status)
 
-
-        class ErrorView(View):
-            response = HttpResponse()
-            response.write('Evil client is unable to send a proper request.')
+        def response_from_return(headers, body, status):
+            response = HttpResponse(content=body, status=status)
+            for k, v in headers.items():
+                response[k] = v
             return response
+
+        def response_from_error(e)
+            return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
+
+
 
 **5. Protect your APIs using scopes**
 
