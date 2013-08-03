@@ -66,12 +66,12 @@ class ClientCredentialsGrant(GrantTypeBase):
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
             log.debug('Client error in token request. %s.', e)
-            return None, {}, e.json, e.status_code
+            return {}, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=False)
         log.debug('Issuing token to client id %r (%r), %r.',
                   request.client_id, request.client, token)
-        return None, {}, json.dumps(token), 200
+        return {}, json.dumps(token), 200
 
     def validate_token_request(self, request):
         if not getattr(request, 'grant_type'):

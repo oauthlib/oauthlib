@@ -220,12 +220,12 @@ class ImplicitGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
-            return common.add_params_to_uri(request.redirect_uri, e.twotuples,
-                    fragment=True), {}, None, e.status_code
+            return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
+                    fragment=True)}, None, 302
 
         token = token_handler.create_token(request, refresh_token=False)
-        return common.add_params_to_uri(request.redirect_uri, token.items(),
-                fragment=True), {}, None, 302
+        return {'Location': common.add_params_to_uri(request.redirect_uri, token.items(),
+                fragment=True)}, None, 302
 
     def validate_authorization_request(self, request):
         return self.validate_token_request(request)

@@ -70,7 +70,7 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
-        u, h, token, s = self.auth.create_token_response(self.request, bearer)
+        h, token, s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertIn('access_token', token)
         self.assertIn('refresh_token', token)
@@ -122,10 +122,12 @@ class ImplicitGrantTest(TestCase):
         orig_generate_token = common.generate_token
         self.addCleanup(setattr, common, 'generate_token', orig_generate_token)
         common.generate_token = lambda *args, **kwargs: '1234'
-        uri, headers, body, status_code = self.auth.create_token_response(
+        headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=1800&state=xyz&scope=hello+world'
-        self.assertURLEqual(uri, correct_uri, parse_fragment=True)
+        self.assertEqual(status_code, 302)
+        self.assertIn('Location', headers)
+        self.assertURLEqual(headers['Location'], correct_uri, parse_fragment=True)
 
     def test_error_response(self):
         pass
@@ -148,7 +150,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
-        uri, headers, body, status_code = self.auth.create_token_response(
+        headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertIn('access_token', token)
@@ -178,7 +180,7 @@ class ClientCredentialsGrantTest(TestCase):
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
-        uri, headers, body, status_code = self.auth.create_token_response(
+        headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertIn('access_token', token)
@@ -210,7 +212,7 @@ class RefreshTokenGrantTest(TestCase):
     def test_create_token_response(self):
         self.mock_validator.get_original_scopes.return_value = ['foo', 'bar']
         bearer = BearerToken(self.mock_validator)
-        uri, headers, body, status_code = self.auth.create_token_response(
+        headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertIn('access_token', token)
@@ -222,7 +224,7 @@ class RefreshTokenGrantTest(TestCase):
         self.request.scope = None
         self.mock_validator.get_original_scopes.return_value = ['foo', 'bar']
         bearer = BearerToken(self.mock_validator)
-        uri, headers, body, status_code = self.auth.create_token_response(
+        headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertIn('access_token', token)
@@ -233,7 +235,7 @@ class RefreshTokenGrantTest(TestCase):
     def test_invalid_scope(self):
         self.mock_validator.get_original_scopes.return_value = ['baz']
         bearer = BearerToken(self.mock_validator)
-        uri, headers, body, status_code = self.auth.create_token_response(
+        headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(token['error'], 'invalid_scope')
@@ -242,7 +244,7 @@ class RefreshTokenGrantTest(TestCase):
     def test_invalid_token(self):
         self.mock_validator.validate_refresh_token.return_value = False
         bearer = BearerToken(self.mock_validator)
-        uri, headers, body, status_code = self.auth.create_token_response(
+        headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(token['error'], 'invalid_grant')
@@ -251,7 +253,7 @@ class RefreshTokenGrantTest(TestCase):
     def test_invalid_client(self):
         self.mock_validator.authenticate_client.return_value = False
         bearer = BearerToken(self.mock_validator)
-        uri, headers, body, status_code = self.auth.create_token_response(
+        headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(token['error'], 'invalid_client')
