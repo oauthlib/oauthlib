@@ -222,7 +222,7 @@ class RequestValidator(object):
                             convenient, access control.
 
         A powerful way to use scopes would mimic UNIX ACLs and see a scope
-        as a group with certain privilegues. For a restful API these might
+        as a group with certain privileges. For a restful API these might
         map to HTTP verbs instead of read, write and execute.
 
         Note, the request.user attribute can be set to the resource owner
