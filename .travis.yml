@@ -7,8 +7,8 @@ python:
   - "pypy"
 
 install:
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install --use-mirrors unittest2; fi
   - pip install nose pycrypto mock
-  - python .travis_install.py
 
 script:
   - nosetests -w tests
