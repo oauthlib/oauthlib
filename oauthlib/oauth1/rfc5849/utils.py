@@ -66,17 +66,6 @@ def unescape(u):
     return unquote(u)
 
 
-def urlencode(query):
-    """Encode a sequence of two-element tuples or dictionary into a URL query string.
-
-    Operates using an OAuth-safe escape() method, in contrast to urllib.urlencode.
-    """
-    # Convert dictionaries to list of tuples
-    if isinstance(query, dict):
-        query = query.items()
-    return "&".join(['='.join([escape(k), escape(v)]) for k, v in query])
-
-
 def parse_keqv_list(l):
     """A unicode-safe version of urllib2.parse_keqv_list"""
     # With Python 2.6, parse_http_list handles unicode fine
