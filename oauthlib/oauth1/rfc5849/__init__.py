@@ -134,8 +134,7 @@ class Client(object):
         elif self.signature_method == SIGNATURE_RSA:
             sig = signature.sign_rsa_sha1(base_string, self.rsa_key)
         else:
-            sig = signature.sign_plaintext(self.client_secret,
-                self.resource_owner_secret)
+            raise ValueError('Invalid signature method.')
 
         log.debug("Signature: {0}".format(sig))
         return sig
