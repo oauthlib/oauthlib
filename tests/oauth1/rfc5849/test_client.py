@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+from oauthlib.oauth1 import SIGNATURE_RSA, SIGNATURE_PLAINTEXT
+from oauthlib.oauth1 import SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY
 from oauthlib.oauth1.rfc5849 import Client, bytes_type
 from ...unittest import TestCase
 
@@ -59,6 +61,93 @@ class ClientConstructorTests(TestCase):
             self.assertIsInstance(v, bytes_type)
 
 
+class SignatureMethodTest(TestCase):
+
+    def test_rsa_method(self):
+        private_key = (
+            "-----BEGIN RSA PRIVATE KEY-----\nMIICXgIBAAKBgQDk1/bxy"
+            "S8Q8jiheHeYYp/4rEKJopeQRRKKpZI4s5i+UPwVpupG\nAlwXWfzXw"
+            "SMaKPAoKJNdu7tqKRniqst5uoHXw98gj0x7zamu0Ck1LtQ4c7pFMVa"
+            "h\n5IYGhBi2E9ycNS329W27nJPWNCbESTu7snVlG8V8mfvGGg3xNjT"
+            "MO7IdrwIDAQAB\nAoGBAOQ2KuH8S5+OrsL4K+wfjoCi6MfxCUyqVU9"
+            "GxocdM1m30WyWRFMEz2nKJ8fR\np3vTD4w8yplTOhcoXdQZl0kRoaD"
+            "zrcYkm2VvJtQRrX7dKFT8dR8D/Tr7dNQLOXfC\nDY6xveQczE7qt7V"
+            "k7lp4FqmxBsaaEuokt78pOOjywZoInjZhAkEA9wz3zoZNT0/i\nrf6"
+            "qv2qTIeieUB035N3dyw6f1BGSWYaXSuerDCD/J1qZbAPKKhyHZbVaw"
+            "Ft3UMhe\n542UftBaxQJBAO0iJy1I8GQjGnS7B3yvyH3CcLYGy296+"
+            "XO/2xKp/d/ty1OIeovx\nC60pLNwuFNF3z9d2GVQAdoQ89hUkOtjZL"
+            "eMCQQD0JO6oPHUeUjYT+T7ImAv7UKVT\nSuy30sKjLzqoGw1kR+wv7"
+            "C5PeDRvscs4wa4CW9s6mjSrMDkDrmCLuJDtmf55AkEA\nkmaMg2PNr"
+            "jUR51F0zOEFycaaqXbGcFwe1/xx9zLmHzMDXd4bsnwt9kk+fe0hQzV"
+            "S\nJzatanQit3+feev1PN3QewJAWv4RZeavEUhKv+kLe95Yd0su7lT"
+            "LVduVgh4v5yLT\nGa6FHdjGPcfajt+nrpB1n8UQBEH9ZxniokR/IPv"
+            "dMlxqXA==\n-----END RSA PRIVATE KEY-----"
+        )
+        client = Client('client_key', signature_method=SIGNATURE_RSA,
+            rsa_key=private_key, timestamp='1234567890', nonce='abc')
+        u, h, b = client.sign('http://example.com')
+        correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
+                   'oauth_version="1.0", oauth_signature_method="RSA-SHA1", '
+                   'oauth_consumer_key="client_key", '
+                   'oauth_signature="ktvzkUhtrIawBcq21DRJrAyysTc3E1Zq5GdGu8EzH'
+                   'OtbeaCmOBDLGHAcqlm92mj7xp5E1Z6i2vbExPimYAJL7FzkLnkRE5YEJR4'
+                   'rNtIgAf1OZbYsIUmmBO%2BCLuStuu5Lg3tAluwC7XkkgoXCBaRKT1mUXzP'
+                   'HJILzZ8iFOvS6w5E%3D"')
+        self.assertEqual(h['Authorization'], correct)
+
+
+    def test_plaintext_method(self):
+        client = Client('client_key',
+                        signature_method=SIGNATURE_PLAINTEXT,
+                        timestamp='1234567890',
+                        nonce='abc',
+                        client_secret='foo',
+                        resource_owner_secret='bar')
+        u, h, b = client.sign('http://example.com')
+        correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
+                   'oauth_version="1.0", oauth_signature_method="PLAINTEXT", '
+                   'oauth_consumer_key="client_key", '
+                   'oauth_signature="foo%26bar"')
+        self.assertEqual(h['Authorization'], correct)
+
+    def test_invalid_method(self):
+        client = Client('client_key', signature_method='invalid')
+        self.assertRaises(ValueError, client.sign, 'http://example.com')
+
+
+class SignatureTypeTest(TestCase):
+
+    def test_params_in_body(self):
+        client = Client('client_key', signature_type=SIGNATURE_TYPE_BODY,
+                timestamp='1378988215', nonce='14205877133089081931378988215')
+        _, h, b = client.sign('http://i.b/path', http_method='POST', body='a=b',
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(h['Content-Type'], 'application/x-www-form-urlencoded')
+        correct = ('a=b&oauth_nonce=14205877133089081931378988215&'
+                   'oauth_timestamp=1378988215&'
+                   'oauth_version=1.0&'
+                   'oauth_signature_method=HMAC-SHA1&'
+                   'oauth_consumer_key=client_key&'
+                   'oauth_signature=2JAQomgbShqoscqKWBiYQZwWq94%3D')
+        self.assertEqual(b, correct)
+
+    def test_params_in_query(self):
+        client = Client('client_key', signature_type=SIGNATURE_TYPE_QUERY,
+                timestamp='1378988215', nonce='14205877133089081931378988215')
+        u, _, _ = client.sign('http://i.b/path', http_method='POST')
+        correct = ('http://i.b/path?oauth_nonce=14205877133089081931378988215&'
+                   'oauth_timestamp=1378988215&'
+                   'oauth_version=1.0&'
+                   'oauth_signature_method=HMAC-SHA1&'
+                   'oauth_consumer_key=client_key&'
+                   'oauth_signature=08G5Snvw%2BgDAzBF%2BCmT5KqlrPKo%3D')
+        self.assertEqual(u, correct)
+
+    def test_invalid_signature_type(self):
+        client = Client('client_key', signature_type='invalid')
+        self.assertRaises(ValueError, client.sign, 'http://i.b/path')
+
+
 class SigningTest(TestCase):
 
     def test_case_insensitive_headers(self):
@@ -89,7 +178,7 @@ class SigningTest(TestCase):
                 http_method='POST', body=None,
                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
 
-    def test_sign_empty_body(self):
+    def test_sign_body(self):
         client = Client('client_key')
         _, h, b = client.sign('http://i.b/path', http_method='POST', body='',
                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
