@@ -1,9 +1,13 @@
 from __future__ import absolute_import, unicode_literals
 
+import datetime
 import os
+
 from ...unittest import TestCase
 from oauthlib.oauth2.rfc6749.utils import escape, host_from_uri
+from oauthlib.oauth2.rfc6749.utils import generate_age
 from oauthlib.oauth2.rfc6749.utils import is_secure_transport
+from oauthlib.oauth2.rfc6749.utils import params_from_uri
 
 
 class UtilsTests(TestCase):
@@ -35,3 +39,12 @@ class UtilsTests(TestCase):
         os.environ['DEBUG'] = '1'
         self.assertTrue(is_secure_transport('http://example.com'))
         del os.environ['DEBUG']
+
+    def test_params_from_uri(self):
+        self.assertEqual(params_from_uri('http://i.b/?foo=bar&g&scope=a+d'),
+                         {'foo': 'bar', 'g': '', 'scope': ['a', 'd']})
+
+    def test_generate_age(self):
+        issue_time = datetime.datetime.now() - datetime.timedelta(
+                days=3, minutes=1, seconds=4)
+        self.assertGreater(float(generate_age(issue_time)), 259263.0)
