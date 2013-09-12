@@ -133,8 +133,8 @@ def normalize_base_string_uri(uri, host=None):
     #
     # .. _`RFC3986`: http://tools.ietf.org/html/rfc3986
 
-    if not scheme:
-        raise ValueError('uri must include a scheme')
+    if not scheme or not netloc:
+        raise ValueError('uri must include a scheme and netloc')
 
     # Per `RFC 2616 section 5.1.2`_:
     #
