@@ -330,22 +330,38 @@ class ClientValidator(RequestValidator):
         def get_request_token_secret(self, client_key, request_token, request):
             return 'even more secret'
 
+        def get_rsa_key(self, client_key, request):
+            return ("-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNA"
+                    "DCBiQKBgQDVLQCATX8iK+aZuGVdkGb6uiar\nLi/jqFwL1dYj0JLIsdQc"
+                    "KaMWtPC06K0+vI+RRZcjKc6sNB9/7kJcKN9Ekc9BUxyT\n/D09Cz47cmC"
+                    "YsUoiW7G8NSqbE4wPiVpGkJRzFAxaCWwOSSQ+lpC9vwxnvVQfOoZ1\nnp"
+                    "mWbCdA0iTxsMahwQIDAQAB\n-----END PUBLIC KEY-----")
+
 
 class SignatureVerificationTest(TestCase):
 
-    def test_signature_verification(self):
+    def setUp(self):
         v = ClientValidator()
-        e = BaseEndpoint(v)
+        self.e = BaseEndpoint(v)
 
-        uri = 'https://example.com/'
+        self.uri = 'https://example.com/'
+        self.sig = ('oauth_signature=%s&'
+                    'oauth_timestamp=1234567890&'
+                    'oauth_nonce=abcdefghijklmnopqrstuvwxyz&'
+                    'oauth_version=1.0&'
+                    'oauth_signature_method=%s&'
+                    'oauth_token=abcdefghijklmnopqrstuvxyz&'
+                    'oauth_consumer_key=foo')
+
+    def test_signature_too_short(self):
         short_sig = ('oauth_signature=fmrXnTF4lO4o%2BD0%2FlZaJHP%2FXqEY&'
               'oauth_timestamp=1234567890&'
               'oauth_nonce=abcdefghijklmnopqrstuvwxyz&'
               'oauth_version=1.0&oauth_signature_method=HMAC-SHA1&'
               'oauth_token=abcdefghijklmnopqrstuvxyz&'
               'oauth_consumer_key=foo')
-        r = e._create_request(uri, 'GET', short_sig, URLENCODED)
-        self.assertFalse(e._check_signature(r))
+        r = self.e._create_request(self.uri, 'GET', short_sig, URLENCODED)
+        self.assertFalse(self.e._check_signature(r))
 
         plain = ('oauth_signature=correctlengthbutthewrongcontent1111&'
               'oauth_timestamp=1234567890&'
@@ -353,5 +369,26 @@ class SignatureVerificationTest(TestCase):
               'oauth_version=1.0&oauth_signature_method=PLAINTEXT&'
               'oauth_token=abcdefghijklmnopqrstuvxyz&'
               'oauth_consumer_key=foo')
-        r = e._create_request(uri, 'GET', plain, URLENCODED)
-        self.assertFalse(e._check_signature(r))
+        r = self.e._create_request(self.uri, 'GET', plain, URLENCODED)
+        self.assertFalse(self.e._check_signature(r))
+
+    def test_hmac_signature(self):
+        hmac_sig = "fmrXnTF4lO4o%2BD0%2FlZaJHP%2FXqEY%3D"
+        sig = self.sig % (hmac_sig, "HMAC-SHA1")
+        r = self.e._create_request(self.uri, 'GET', sig, URLENCODED)
+        self.assertTrue(self.e._check_signature(r))
+
+    def test_rsa_signature(self):
+        rsa_sig = ("fxFvCx33oKlR9wDquJ%2FPsndFzJphyBa3RFPPIKi3flqK%2BJ7yIrMVbH"
+                   "YTM%2FLHPc7NChWz4F4%2FzRA%2BDN1k08xgYGSBoWJUOW6VvOQ6fbYhMA"
+                   "FkOGYbuGDbje487XMzsAcv6ZjqZHCROSCk5vofgLk2SN7RZ3OrgrFzf4in"
+                   "xetClqA%3D")
+        sig = self.sig % (rsa_sig, "RSA-SHA1")
+        r = self.e._create_request(self.uri, 'GET', sig, URLENCODED)
+        self.assertTrue(self.e._check_signature(r))
+
+    def test_plaintext_signature(self):
+        plain_sig = "super%252520secret%26even%252520more%252520secret"
+        sig = self.sig % (plain_sig, "PLAINTEXT")
+        r = self.e._create_request(self.uri, 'GET', sig, URLENCODED)
+        self.assertTrue(self.e._check_signature(r))
