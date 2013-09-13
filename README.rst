@@ -11,18 +11,22 @@ logic.*
 
 
 OAuth often seems complicated and difficult-to-implement. There are several
-prominent libraries for signing OAuth requests, but they all suffer from one or
+prominent libraries for handling OAuth requests, but they all suffer from one or
 both of the following:
 
 1. They predate the `OAuth 1.0 spec`_, AKA RFC 5849.
-2. They assume the usage of a specific HTTP request library.
+2. They predate the `OAuth 2.0 spec`_, AKA RFC 6749.
+3. They assume the usage of a specific HTTP request library.
 
 .. _`OAuth 1.0 spec`: http://tools.ietf.org/html/rfc5849
+.. _`OAuth 2.0 spec`: http://tools.ietf.org/html/rfc6749
 
 OAuthLib is a generic utility which implements the logic of OAuth without
-assuming a specific HTTP request object. Use it to graft OAuth support onto your
-favorite HTTP library. If you're a maintainer of such a library, write a thin
+assuming a specific HTTP request object or web framework. Use it to graft OAuth
+client support onto your favorite HTTP library, or provider support onto your
+favourite web framework. If you're a maintainer of such a library, write a thin
 veneer on top of OAuthLib and get OAuth support for very little effort.
+
 
 Documentation
 --------------
@@ -82,13 +86,14 @@ License
 OAuthLib is yours to use and abuse according to the terms of the BSD license.
 Check the LICENSE file for full details.
 
-
-
 Changelog
 ---------
 
-*OAuthLib is in active development, with most of OAuth1 complete and OAuth2
-already in the works.*
+*OAuthLib is in active development, with the core of both OAuth 1 and 2
+completed, for providers as well as clients.* See `supported features`_ for
+details.
+
+.. _`supported features`: http://oauthlib.readthedocs.org/en/latest/feature_matrix.html
 
 0.5.1: OAuth 1 provider fix for incorrect token param in nonce validation.
 
