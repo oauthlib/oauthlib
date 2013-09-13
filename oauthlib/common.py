@@ -244,10 +244,9 @@ def generate_client_id(length=30, chars=CLIENT_ID_CHARACTER_SET):
 
 def add_params_to_qs(query, params):
     """Extend a query with a list of two-tuples."""
-    if isinstance(query, dict):
-        queryparams = query.items()
-    else:
-        queryparams = urlparse.parse_qsl(query, keep_blank_values=True)
+    if isinstance(params, dict):
+        params = params.items()
+    queryparams = urlparse.parse_qsl(query, keep_blank_values=True)
     queryparams.extend(params)
     return urlencode(queryparams)
 
