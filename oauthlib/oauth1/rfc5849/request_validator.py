@@ -66,10 +66,10 @@ class RequestValidator(object):
     - get_request_token_secret
     - get_access_token_secret
     - get_rsa_key
-    
+
     Methods used to save credentials.
     The following methods must be implemented:
-    
+
     - save_request_token
     - save_verifier
     - save_access_token
@@ -374,7 +374,7 @@ class RequestValidator(object):
         :returns: The redirect URI associated with the request token.
 
         It may be desirable to return a custom URI if the redirect is set to "oob".
-        In this case, the user will be redirected to the returned URI and at that 
+        In this case, the user will be redirected to the returned URI and at that
         endpoint the verifier can be displayed.
 
         This method is used by
@@ -402,6 +402,20 @@ class RequestValidator(object):
         * AccessTokenEndpoint
         * RequestTokenEndpoint
         * ResourceEndpoint
+        """
+        raise NotImplementedError("Subclasses must implement this function.")
+
+    def invalidate_request_token(self, client_key, request_token, request):
+        """Invalidates a used request token.
+
+        :param client_key: The client/consumer key.
+        :param request_token: The request token string.
+        :param request: An oauthlib.common.Request object.
+        :returns: The rsa public key as a string.
+
+        This method is used by
+
+        * AccessTokenEndpoint
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -747,7 +761,7 @@ class RequestValidator(object):
         """Associate an authorization verifier with a request token.
 
         :param token: A request token string.
-        :param verifier A dictionary containing the oauth_verifier and 
+        :param verifier A dictionary containing the oauth_verifier and
                         oauth_token
         :param request: An oauthlib.common.Request object.
 

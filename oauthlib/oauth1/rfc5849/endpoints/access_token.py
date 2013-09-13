@@ -103,6 +103,10 @@ class AccessTokenEndpoint(BaseEndpoint):
                     request)
             if valid:
                 token = self.create_access_token(request, credentials or {})
+                self.request_validator.invalidate_request_token(
+                        request.client_key,
+                        request.resource_owner_key,
+                        request)
                 return resp_headers, token, 200
             else:
                 return {}, None, 401

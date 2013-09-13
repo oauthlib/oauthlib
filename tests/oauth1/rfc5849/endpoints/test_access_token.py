@@ -24,6 +24,7 @@ class AccessTokenEndpointTest(TestCase):
         self.validator.validate_request_token.return_value = True
         self.validator.validate_verifier.return_value = True
         self.validator.validate_timestamp_and_nonce.return_value = True
+        self.validator.invalidate_request_token.return_value = True
         self.validator.dummy_client = 'dummy'
         self.validator.dummy_secret = 'dummy'
         self.validator.dummy_request_token = 'dummy'
@@ -87,4 +88,6 @@ class AccessTokenEndpointTest(TestCase):
         self.validator.validate_timestamp_and_nonce.assert_called_once_with(
              self.client.client_key, ANY, ANY, ANY,
              request_token=self.client.resource_owner_key)
+        self.validator.invalidate_request_token.assert_called_once_with(
+                self.client.client_key, self.client.resource_owner_key, ANY)
 
