@@ -95,6 +95,18 @@ details.
 
 .. _`supported features`: http://oauthlib.readthedocs.org/en/latest/feature_matrix.html
 
+0.6.0: OAuth 1 & 2 provider API refactor with breaking changes
+
+* All endpoint methods change contract to return 3 values instead of 4. The new
+  signature is `headers`, `body`, `status code` where the initial `redirect_uri`
+  has been relocated to its rightful place inside headers as `Location`.
+
+* OAuth 1 Access Token Endpoint has a new required validator method 
+  `invalidate_request_token`.
+
+* OAuth 1 Authorization Endpoint now returns a 200 response instead of 302 on
+  `oob` callbacks. 
+
 0.5.1: OAuth 1 provider fix for incorrect token param in nonce validation.
 
 0.5.0: OAuth 1 provider refactor. OAuth 2 refresh token validation fix.

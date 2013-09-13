@@ -26,7 +26,7 @@ requires = []
 
 setup(
     name='oauthlib',
-    version='0.5.1',
+    version='0.6.0',
     description='A generic, spec-compliant, thorough implementation of the OAuth request-signing logic',
     long_description=fread('README.rst'),
     author='Idan Gazit',
