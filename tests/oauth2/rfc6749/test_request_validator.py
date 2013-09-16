@@ -43,3 +43,4 @@ class RequestValidatorTest(TestCase):
                 'client_id', 'scopes', 'client', 'request')
         self.assertRaises(NotImplementedError, v.validate_user,
                 'username', 'password', 'client', 'request')
+        self.assertRaises(NotImplementedError, v.client_authentication_required, 'r')
