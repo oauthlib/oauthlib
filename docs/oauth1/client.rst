@@ -1,6 +1,6 @@
-=========================
-OAuth 1: Using the Client
-=========================
+================
+Using the Client
+================
 
 **Are you using requests?**
 

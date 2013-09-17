@@ -33,7 +33,7 @@ class AuthorizationEndpoint(BaseEndpoint):
     validate the request, create a verifier as well as prepare the final
     redirection URI used to send the user back to the client.
 
-    See :doc:`validator` for details on which validator methods to implement
+    See :doc:`/oauth1/validator` for details on which validator methods to implement
     for this endpoint.
     """
 

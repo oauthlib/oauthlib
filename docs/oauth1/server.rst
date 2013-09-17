@@ -1,5 +1,6 @@
-OAuth 1: Creating a Provider
-============================
+===================
+Creating a Provider
+===================
 
 OAuthLib is a dependency free library that may be used with any web
 framework. That said, there are framework specific helper libraries

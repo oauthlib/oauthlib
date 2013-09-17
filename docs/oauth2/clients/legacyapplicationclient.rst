@@ -1,5 +1,5 @@
-Resource Owner Password Credentials Grant flow (LegacyApplicationClient)
-------------------------------------------------------------------------
+LegacyApplicationClient
+-----------------------
 
 .. autoclass:: oauthlib.oauth2.LegacyApplicationClient
     :members:

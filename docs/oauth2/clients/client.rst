@@ -1,6 +1,6 @@
-======================
-OAuth 2: Using Clients
-======================
+=============
+Using Clients
+=============
 
 OAuthLib supports all four core grant types defined in the OAuth 2 RFC and
 will continue to add more as they are defined. For more information on how

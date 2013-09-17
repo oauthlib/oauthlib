@@ -15,15 +15,18 @@ For news and discussions please check out our `G+ OAuthLib community`_.
 .. _`G+ OAuthLib community`: https://plus.google.com/communities/101889017375384052571
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   feature_matrix
+   faq
+   contributing
    oauth_1_versus_oauth_2
+
+.. toctree::
+   :maxdepth: 3
+
    oauth1/oauth1
    oauth2/oauth2
-   contributing
-   faq
-   feature_matrix
-
 
 Indices and tables
 ==================

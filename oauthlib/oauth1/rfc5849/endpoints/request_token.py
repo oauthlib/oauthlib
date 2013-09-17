@@ -22,7 +22,7 @@ class RequestTokenEndpoint(BaseEndpoint):
     Typical use is to instantiate with a request validator and invoke the
     ``create_request_token_response`` from a view function. The tuple returned
     has all information necessary (body, status, headers) to quickly form
-    and return a proper response. See :doc:`validator` for details on which
+    and return a proper response. See :doc:`/oauth1/validator` for details on which
     validator methods to implement for this endpoint.
     """
 

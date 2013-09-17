@@ -10,6 +10,12 @@ used either independently or in a combination. They depend on the use of a
 
 See :doc:`preconfigured_servers` for available composite endpoints/servers.
 
+RequestTokenEndpoint
+--------------------
+
+.. autoclass:: oauthlib.oauth1.RequestTokenEndpoint
+    :members:
+
 AuthorizationEndpoint
 ---------------------
 
@@ -20,12 +26,6 @@ AccessTokenEndpoint
 -------------------
 
 .. autoclass:: oauthlib.oauth1.AccessTokenEndpoint
-    :members:
-
-RequestTokenEndpoint
---------------------
-
-.. autoclass:: oauthlib.oauth1.RequestTokenEndpoint
     :members:
 
 ResourceEndpoint

@@ -6,4 +6,4 @@ OAuth 1.0
 
    client
    server
-
+   endpoints/endpoints

@@ -1,5 +1,5 @@
-Implicit Grant flow (MobileApplicationClient)
----------------------------------------------
+MobileApplicationClient
+-----------------------
 
 .. autoclass:: oauthlib.oauth2.MobileApplicationClient
     :members:

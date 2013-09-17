@@ -23,7 +23,7 @@ class ResourceEndpoint(BaseEndpoint):
     view. If invalid create and return an error response directly from the
     decorator.
 
-    See :doc:`validator` for details on which validator methods to implement
+    See :doc:`/oauth1/validator` for details on which validator methods to implement
     for this endpoint.
 
     An example decorator::

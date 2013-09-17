@@ -1,5 +1,5 @@
-Authorization Code Grant flow (WebApplicationClient)
-----------------------------------------------------
+WebApplicationClient
+--------------------
 
 .. autoclass:: oauthlib.oauth2.WebApplicationClient
     :members:
