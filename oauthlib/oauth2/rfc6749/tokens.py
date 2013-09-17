@@ -180,11 +180,18 @@ class BearerToken(TokenBase):
 
     def create_token(self, request, refresh_token=False):
         """Create a BearerToken, by default without refresh token."""
+
+        if callable(self.expires_in):
+            expires_in = self.expires_in(request)
+        else:
+            expires_in = self.expires_in
+
         token = {
             'access_token': self.token_generator(request),
-            'expires_in': self.expires_in,
+            'expires_in': expires_in,
             'token_type': 'Bearer',
         }
+
         if request.scopes is not None:
             token['scope'] = ' '.join(request.scopes)
 
