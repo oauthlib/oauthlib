@@ -12,6 +12,7 @@ for consuming and providing OAuth 2.0 RFC6749.
 from .authorization import AuthorizationEndpoint
 from .token import TokenEndpoint
 from .resource import ResourceEndpoint
+from .revocation import RevocationEndpoint
 from .pre_configured import Server
 from .pre_configured import WebApplicationServer
 from .pre_configured import MobileApplicationServer

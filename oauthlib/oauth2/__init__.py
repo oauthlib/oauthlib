@@ -17,6 +17,7 @@ from .rfc6749.clients import BackendApplicationClient
 from .rfc6749.endpoints import AuthorizationEndpoint
 from .rfc6749.endpoints import TokenEndpoint
 from .rfc6749.endpoints import ResourceEndpoint
+from .rfc6749.endpoints import RevocationEndpoint
 from .rfc6749.endpoints import Server
 from .rfc6749.endpoints import WebApplicationServer
 from .rfc6749.endpoints import MobileApplicationServer

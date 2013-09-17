@@ -135,6 +135,18 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
+        """Revoke an access or refresh token.
+
+        :param token: The token string.
+        :param token_type_hint: access_token or refresh_token.
+        :param request: The HTTP Request (oauthlib.common.Request)
+
+        Method is used by:
+            - Revocation Endpoint
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         """Persist the authorization_code.
 

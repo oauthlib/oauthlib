@@ -18,9 +18,11 @@ from ..grant_types import RefreshTokenGrant
 from .authorization import AuthorizationEndpoint
 from .token import TokenEndpoint
 from .resource import ResourceEndpoint
+from .revocation import RevocationEndpoint
 
 
-class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
+class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
+        RevocationEndpoint):
     """An all-in-one endpoint featuring all four major grant types."""
 
     def __init__(self, request_validator, token_expires_in=None,
@@ -48,9 +50,11 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
                 default_token_type=bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
                 token_types={'Bearer': bearer})
+        RevocationEndpoint.__init__(self, request_validator)
 
 
-class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):
+class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
+        RevocationEndpoint):
     """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
 
     def __init__(self, request_validator, token_generator=None,
@@ -77,9 +81,11 @@ class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoin
                 default_token_type=bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
                 token_types={'Bearer': bearer})
+        RevocationEndpoint.__init__(self, request_validator)
 
 
-class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint):
+class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint,
+        RevocationEndpoint):
     """An all-in-one endpoint featuring Implicit code grant and Bearer tokens."""
 
     def __init__(self, request_validator, token_generator=None,
@@ -92,9 +98,12 @@ class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint):
                 default_token_type=bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
                 token_types={'Bearer': bearer})
+        RevocationEndpoint.__init__(self, request_validator,
+                supported_token_types=['access_token'])
 
 
-class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint):
+class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint,
+        RevocationEndpoint):
     """An all-in-one endpoint featuring Resource Owner Password Credentials grant and Bearer tokens."""
 
     def __init__(self, request_validator, token_generator=None,
@@ -111,9 +120,11 @@ class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint):
                 default_token_type=bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
                 token_types={'Bearer': bearer})
+        RevocationEndpoint.__init__(self, request_validator)
 
 
-class BackendApplicationServer(TokenEndpoint, ResourceEndpoint):
+class BackendApplicationServer(TokenEndpoint, ResourceEndpoint,
+        RevocationEndpoint):
     """An all-in-one endpoint featuring Client Credentials grant and Bearer tokens."""
 
     def __init__(self, request_validator, token_generator=None,
@@ -126,3 +137,5 @@ class BackendApplicationServer(TokenEndpoint, ResourceEndpoint):
                 default_token_type=bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
                 token_types={'Bearer': bearer})
+        RevocationEndpoint.__init__(self, request_validator,
+                supported_token_types=['access_token'])

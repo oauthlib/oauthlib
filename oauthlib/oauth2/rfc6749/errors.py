@@ -210,6 +210,14 @@ class UnsupportedGrantTypeError(OAuth2Error):
     error = 'unsupported_grant_type'
 
 
+class UnsupportedTokenTypeError(OAuth2Error):
+    """The authorization server does not support the revocation of the
+    presented token type.  I.e. the client tried to revoke an access token
+    on a server not supporting this feature.
+    """
+    error = 'unsupported_token_type'
+
+
 def raise_from_error(error, params=None):
     import inspect
     import sys
