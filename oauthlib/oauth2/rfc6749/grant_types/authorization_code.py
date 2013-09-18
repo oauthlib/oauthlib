@@ -335,32 +335,34 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         if request.code is None:
             raise errors.InvalidRequestError(
-                    description='Missing code parameter.', request=request)
+                description='Missing code parameter.', request=request)
 
         for param in ('client_id', 'grant_type', 'redirect_uri'):
             if param in request.duplicate_params:
                 raise errors.InvalidRequestError(state=request.state,
-                        description='Duplicate %s parameter.' % param,
-                        request=request)
+                                                 description='Duplicate %s parameter.' % param,
+                                                 request=request)
 
-        # If the client type is confidential or the client was issued client
-        # credentials (or assigned other authentication requirements), the
-        # client MUST authenticate with the authorization server as described
-        # in Section 3.2.1.
-        # http://tools.ietf.org/html/rfc6749#section-3.2.1
-        if not self.request_validator.authenticate_client(request):
+        if self.request_validator.client_authentication_required():
+            # If the client type is confidential or the client was issued client
+            # credentials (or assigned other authentication requirements), the
+            # client MUST authenticate with the authorization server as described
+            # in Section 3.2.1.
+            # http://tools.ietf.org/html/rfc6749#section-3.2.1
+            if not self.request_validator.authenticate_client(request):
+                log.debug('Client authentication failed, %r.', request)
+                raise errors.InvalidClientError(request=request)
+        elif not self.request_validator.authenticate_client_id(request.client_id, request):
             # REQUIRED, if the client is not authenticating with the
             # authorization server as described in Section 3.2.1.
             # http://tools.ietf.org/html/rfc6749#section-3.2.1
-            if not self.request_validator.authenticate_client_id(
-                    request.client_id, request):
-                log.debug('Client authentication failed, %r.', request)
-                raise errors.InvalidClientError(request=request)
-        else:
-            if not hasattr(request.client, 'client_id'):
-                raise NotImplementedError('Authenticate client must set the '
-                                          'request.client.client_id attribute '
-                                          'in authenticate_client.')
+            log.debug('Client authentication failed, %r.', request)
+            raise errors.InvalidClientError(request=request)
+
+        if not hasattr(request.client, 'client_id'):
+            raise NotImplementedError('Authenticate client must set the '
+                                      'request.client.client_id attribute '
+                                      'in authenticate_client.')
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
@@ -368,7 +370,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # REQUIRED. The authorization code received from the
         # authorization server.
         if not self.request_validator.validate_code(request.client_id,
-                request.code, request.client, request):
+                                                    request.code, request.client, request):
             log.debug('Client, %r (%r), is not allowed access to scopes %r.',
                       request.client_id, request.client, request.scopes)
             raise errors.InvalidGrantError(request=request)
@@ -380,8 +382,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # REQUIRED, if the "redirect_uri" parameter was included in the
         # authorization request as described in Section 4.1.1, and their
         # values MUST be identical.
-        if not self.request_validator.confirm_redirect_uri(request.client_id,
-                request.code, request.redirect_uri, request.client):
+        if not self.request_validator.confirm_redirect_uri(request.client_id, request.code,
+                                                           request.redirect_uri, request.client):
             log.debug('Redirect_uri (%r) invalid for client %r (%r).',
                       request.redirect_uri, request.client_id, request.client)
             raise errors.AccessDeniedError(request=request)

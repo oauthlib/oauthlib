@@ -69,8 +69,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
 
-    def create_token_response(self, request, token_handler,
-            require_authentication=True):
+    def create_token_response(self, request, token_handler):
         """Return token or error in json format.
 
         If the access token request is valid and authorized, the
@@ -83,24 +82,19 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
         headers = {
-                'Content-Type': 'application/json;charset=UTF-8',
-                'Cache-Control': 'no-store',
-                'Pragma': 'no-cache',
+            'Content-Type': 'application/json;charset=UTF-8',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
         }
         try:
-            if require_authentication:
+            if self.request_validator.client_authentication_required(request):
                 log.debug('Authenticating client, %r.', request)
                 if not self.request_validator.authenticate_client(request):
                     log.debug('Client authentication failed, %r.', request)
                     raise errors.InvalidClientError(request=request)
-                else:
-                    if not hasattr(request.client, 'client_id'):
-                        raise NotImplementedError(
-                                'Authenticate client must set the '
-                                'request.client.client_id attribute '
-                                'in authenticate_client.')
-            else:
-                log.debug('Client authentication disabled, %r.', request)
+            elif not self.request_validator.authenticate_client_id(request.client_id, request):
+                log.debug('Client authentication failed, %r.', request)
+                raise errors.InvalidClientError(request=request)
             log.debug('Validating access token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
