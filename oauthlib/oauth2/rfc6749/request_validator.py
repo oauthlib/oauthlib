@@ -38,7 +38,7 @@ class RequestValidator(object):
         .. _`Section 4.1.3`: http://tools.ietf.org/html/rfc6749#section-4.1.3
         .. _`Section 6`: http://tools.ietf.org/html/rfc6749#section-6
         """
-        raise NotImplementedError('Subclasses must implement this method.')
+        return True
 
     def authenticate_client(self, request, *args, **kwargs):
         """Authenticate client through means outside the OAuth 2 spec.
