@@ -69,8 +69,8 @@ class RefreshTokenGrant(GrantTypeBase):
 
         if request.refresh_token is None:
             raise errors.InvalidRequestError(
-                    description='Missing refresh token parameter.',
-                    request=request)
+                description='Missing refresh token parameter.',
+                request=request)
 
         # Because refresh tokens are typically long-lasting credentials used to
         # request additional access tokens, the refresh token is bound to the
@@ -79,10 +79,14 @@ class RefreshTokenGrant(GrantTypeBase):
         # authentication requirements), the client MUST authenticate with the
         # authorization server as described in Section 3.2.1.
         # http://tools.ietf.org/html/rfc6749#section-3.2.1
-        log.debug('Authenticating client, %r.', request)
-        if not self.request_validator.authenticate_client(request):
-            log.debug('Invalid client (%r), denying access.', request)
-            raise errors.InvalidClientError(request=request, status_code=401)
+        if self.request_validator.client_authentication_required(request):
+            log.debug('Authenticating client, %r.', request)
+            if not self.request_validator.authenticate_client(request):
+                log.debug('Invalid client (%r), denying access.', request)
+                raise errors.InvalidClientError(request=request, status_code=401)
+        elif not self.request_validator.authenticate_client_id(request.client_id, request):
+            log.debug('Client authentication failed, %r.', request)
+            raise errors.InvalidClientError(request=request)
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
