@@ -17,6 +17,7 @@ For news and discussions please check out our `G+ OAuthLib community`_.
 .. toctree::
    :maxdepth: 1
 
+   installation
    feature_matrix
    faq
    contributing
