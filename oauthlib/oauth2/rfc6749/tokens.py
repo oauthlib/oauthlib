@@ -22,14 +22,20 @@ from oauthlib import common
 from . import utils
 
 
-def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
-        body=None, ext='', hash_algorithm='hmac-sha-1', issue_time=None,
-        draft=0):
+def prepare_mac_header(token, uri, key, http_method,
+                       nonce=None,
+                       headers=None,
+                       body=None,
+                       ext='',
+                       hash_algorithm='hmac-sha-1',
+                       issue_time=None,
+                       draft=0):
     """Add an `MAC Access Authentication`_ signature to headers.
 
-    Unlike OAuth 1, this HMAC signature does not require inclusion of the request
-    payload/body, neither does it use a combination of client_secret and
-    token_secret but rather a mac_key provided together with the access token.
+    Unlike OAuth 1, this HMAC signature does not require inclusion of the
+    request payload/body, neither does it use a combination of client_secret
+    and token_secret but rather a mac_key provided together with the access
+    token.
 
     Currently two algorithms are supported, "hmac-sha-1" and "hmac-sha-256",
     `extension algorithms`_ are not supported.
@@ -48,7 +54,7 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
     :param http_method: HTTP Request method.
     :param key: MAC given provided by token endpoint.
     :param hash_algorithm: HMAC algorithm provided by token endpoint.
-    :param issue_time: Time when the MAC credentials were issues as a datetime object.
+    :param issue_time: Time when the MAC credentials were issued (datetime).
     :param draft: MAC authentication specification version.
     :return: headers dictionary with the authorization field added.
     """
@@ -78,7 +84,8 @@ def prepare_mac_header(token, uri, key, http_method, nonce=None, headers=None,
 
     # Hash the body/payload
     if body is not None and draft == 0:
-        bodyhash = b2a_base64(h(body.encode('utf-8')).digest())[:-1].decode('utf-8')
+        body = body.encode('utf-8')
+        bodyhash = b2a_base64(h(body).digest())[:-1].decode('utf-8')
     else:
         bodyhash = ''
 
@@ -173,7 +180,7 @@ class TokenBase(object):
 class BearerToken(TokenBase):
 
     def __init__(self, request_validator=None, token_generator=None,
-            expires_in=None):
+                 expires_in=None):
         self.request_validator = request_validator
         self.token_generator = token_generator or random_token_generator
         self.expires_in = expires_in or 3600
@@ -199,7 +206,11 @@ class BearerToken(TokenBase):
             token['state'] = request.state
 
         if refresh_token:
-            token['refresh_token'] = self.token_generator(
+            if (request.refresh_token and
+                    not self.request_validator.rotate_refresh_token(request)):
+                token['refresh_token'] = request.refresh_token
+            else:
+                token['refresh_token'] = self.token_generator(
                     request, refresh_token=True)
 
         token.update(request.extra_credentials or {})
@@ -213,7 +224,8 @@ class BearerToken(TokenBase):
             token = request.headers.get('Authorization')[7:]
         else:
             token = request.access_token
-        return self.request_validator.validate_bearer_token(token, request.scopes, request)
+        return self.request_validator.validate_bearer_token(
+            token, request.scopes, request)
 
     def estimate_type(self, request):
         if request.headers.get('Authorization', '').startswith('Bearer'):
