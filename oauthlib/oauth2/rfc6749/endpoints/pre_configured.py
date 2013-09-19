@@ -27,6 +27,17 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
 
     def __init__(self, request_validator, token_expires_in=None,
             token_generator=None, *args, **kwargs):
+        """Construct a new all-grants-in-one server.
+
+        :param request_validator: An implementation of
+                                  oauthlib.oauth2.RequestValidator.
+        :param token_expires_in: An int or a function to generate a token
+                                 expiration offset (in seconds) given a
+                                 oauthlib.common.Request object.
+        :param token_generator: A function to generate a token from a request.
+        :param kwargs: Extra parameters to pass to authorization-,
+                       token-, resource-, and revocation-endpoint constructors.
+        """
         auth_grant = AuthorizationCodeGrant(request_validator)
         implicit_grant = ImplicitGrant(request_validator)
         password_grant = ResourceOwnerPasswordCredentialsGrant(request_validator)
@@ -61,10 +72,14 @@ class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoin
             token_expires_in=None, **kwargs):
         """Construct a new web application server.
 
-        :param request_validator: An implementation of oauthlib.oauth2.RequestValidator.
+        :param request_validator: An implementation of
+                                  oauthlib.oauth2.RequestValidator.
+        :param token_expires_in: An int or a function to generate a token
+                                 expiration offset (in seconds) given a
+                                 oauthlib.common.Request object.
         :param token_generator: A function to generate a token from a request.
-        :param kwargs: Extra parameters to pass to authorization endpoint,
-                       token endpoint and resource endpoint constructors.
+        :param kwargs: Extra parameters to pass to authorization-,
+                       token-, resource-, and revocation-endpoint constructors.
         """
         auth_grant = AuthorizationCodeGrant(request_validator)
         refresh_grant = RefreshTokenGrant(request_validator)
@@ -90,6 +105,17 @@ class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint,
 
     def __init__(self, request_validator, token_generator=None,
             token_expires_in=None, **kwargs):
+        """Construct a new implicit grant server.
+
+        :param request_validator: An implementation of
+                                  oauthlib.oauth2.RequestValidator.
+        :param token_expires_in: An int or a function to generate a token
+                                 expiration offset (in seconds) given a
+                                 oauthlib.common.Request object.
+        :param token_generator: A function to generate a token from a request.
+        :param kwargs: Extra parameters to pass to authorization-,
+                       token-, resource-, and revocation-endpoint constructors.
+        """
         implicit_grant = ImplicitGrant(request_validator)
         bearer = BearerToken(request_validator, token_generator,
                 expires_in=token_expires_in)
@@ -108,6 +134,17 @@ class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint,
 
     def __init__(self, request_validator, token_generator=None,
             token_expires_in=None, **kwargs):
+        """Construct a resource owner password credentials grant server.
+
+        :param request_validator: An implementation of
+                                  oauthlib.oauth2.RequestValidator.
+        :param token_expires_in: An int or a function to generate a token
+                                 expiration offset (in seconds) given a
+                                 oauthlib.common.Request object.
+        :param token_generator: A function to generate a token from a request.
+        :param kwargs: Extra parameters to pass to authorization-,
+                       token-, resource-, and revocation-endpoint constructors.
+        """
         password_grant = ResourceOwnerPasswordCredentialsGrant(request_validator)
         refresh_grant = RefreshTokenGrant(request_validator)
         bearer = BearerToken(request_validator, token_generator,
@@ -129,6 +166,17 @@ class BackendApplicationServer(TokenEndpoint, ResourceEndpoint,
 
     def __init__(self, request_validator, token_generator=None,
             token_expires_in=None, **kwargs):
+        """Construct a client credentials grant server.
+
+        :param request_validator: An implementation of
+                                  oauthlib.oauth2.RequestValidator.
+        :param token_expires_in: An int or a function to generate a token
+                                 expiration offset (in seconds) given a
+                                 oauthlib.common.Request object.
+        :param token_generator: A function to generate a token from a request.
+        :param kwargs: Extra parameters to pass to authorization-,
+                       token-, resource-, and revocation-endpoint constructors.
+        """
         credentials_grant = ClientCredentialsGrant(request_validator)
         bearer = BearerToken(request_validator, token_generator,
                 expires_in=token_expires_in)
