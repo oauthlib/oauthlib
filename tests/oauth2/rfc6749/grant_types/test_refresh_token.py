@@ -7,6 +7,11 @@ import mock
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.grant_types import RefreshTokenGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
+from oauthlib.oauth2.rfc6749.errors import (UnsupportedGrantTypeError,
+                                            InvalidClientError,
+                                            InvalidRequestError,
+                                            InvalidGrantError,
+                                            InvalidScopeError)
 
 
 class RefreshTokenGrantTest(TestCase):
@@ -72,3 +77,47 @@ class RefreshTokenGrantTest(TestCase):
         token = json.loads(body)
         self.assertEqual(token['error'], 'invalid_client')
         self.assertEqual(status_code, 401)
+
+    def test_validate_token_request(self):
+        # ensure client_authentication_required() is properly called
+        self.mock_validator.authenticate_client.return_value = False
+        self.mock_validator.authenticate_client_id.return_value = False
+        self.request.code = 'waffles'
+        self.assertRaises(InvalidClientError, self.auth.validate_token_request,
+                          self.request)
+        args, _ = self.mock_validator.client_authentication_required.call_args_list[0]
+        self.assertEqual(args, (self.request,))
+        # fail with wrong grant type
+        self.request.grant_type = 'wrong_type'
+        self.assertRaises(UnsupportedGrantTypeError,
+                          self.auth.validate_token_request, self.request)
+        # fail for not providing a refresh token
+        self.request.grant_type = 'refresh_token'
+        del self.request.refresh_token
+        self.assertRaises(InvalidRequestError,
+                          self.auth.validate_token_request, self.request)
+        # fail client_id authentication
+        self.mock_validator.client_authentication_required.return_value = False
+        self.request.refresh_token = mock.MagicMock()
+        self.mock_validator.authenticate_client_id.return_value = False
+        self.assertRaises(InvalidClientError,
+                          self.auth.validate_token_request, self.request)
+        # invalid refresh token
+        self.mock_validator.authenticate_client_id.return_value = True
+        self.mock_validator.validate_refresh_token.return_value = False
+        self.assertRaises(InvalidGrantError,
+                          self.auth.validate_token_request, self.request)
+        # fail scope error
+        self.mock_validator.validate_refresh_token.return_value = True
+        self.assertRaises(InvalidScopeError,
+                          self.auth.validate_token_request, self.request)
+        # all ok
+        self.request.scope = 'foo bar'
+        self.mock_validator.get_original_scopes = mock.Mock()
+        self.mock_validator.get_original_scopes.return_value = 'foo bar baz'
+        self.auth.validate_token_request(self.request)
+        self.assertEqual(self.request.scopes, self.request.scope.split())
+        # all ok but without request.scope
+        del self.request.scope
+        self.auth.validate_token_request(self.request)
+        self.assertEqual(self.request.scopes, 'foo bar baz'.split())

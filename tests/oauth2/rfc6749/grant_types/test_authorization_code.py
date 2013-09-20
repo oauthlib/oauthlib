@@ -11,6 +11,7 @@ from oauthlib.oauth2.rfc6749.errors import InvalidClientError
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
+from oauthlib.oauth2.rfc6749.request_validator import RequestValidator
 
 
 class AuthorizationCodeGrantTest(TestCase):
@@ -55,7 +56,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertIn('scope', token)
 
     def test_validate_token_request(self):
-        mock_validator = mock.MagicMock()
+        mock_validator = mock.MagicMock(spec=RequestValidator)
         auth = AuthorizationCodeGrant(request_validator=mock_validator)
         request = Request('http://a.b/path')
         self.assertRaises(UnsupportedGrantTypeError,
@@ -70,6 +71,8 @@ class AuthorizationCodeGrantTest(TestCase):
         request.code = 'waffles'
         self.assertRaises(InvalidClientError,
                 auth.validate_token_request, request)
+        args, _ = mock_validator.client_authentication_required.call_args_list[0]
+        self.assertEqual(args, (request,))
 
         request.client = 'batman'
         mock_validator.authenticate_client = self.set_client
