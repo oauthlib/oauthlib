@@ -382,7 +382,7 @@ class Request(object):
     @property
     def duplicate_params(self):
         seen_keys = collections.defaultdict(int)
-        all_keys = (p[0] for p in self.decoded_body or [] + self.uri_query_params)
+        all_keys = (p[0] for p in (self.decoded_body or []) + self.uri_query_params)
         for k in all_keys:
             seen_keys[k] += 1
         return [k for k, c in seen_keys.items() if c > 1]
