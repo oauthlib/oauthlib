@@ -11,6 +11,7 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 """
 
 import json
+import time
 try:
     import urlparse
 except ImportError:
@@ -222,6 +223,9 @@ def parse_implicit_response(uri, state=None, scope=None):
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
 
+    if 'expires_in' in params:
+        params['expires_at'] = time.time() + int(params['expires_in'])
+
     if state and params.get('state', None) != state:
         raise ValueError("Mismatching or missing state in params.")
 
@@ -293,6 +297,9 @@ def parse_token_response(body, scope=None):
 
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
+
+    if 'expires_in' in params:
+        params['expires_at'] = time.time() + int(params['expires_in'])
 
     validate_token_parameters(params, scope)
     return params

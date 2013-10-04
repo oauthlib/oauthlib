@@ -1,10 +1,13 @@
 from __future__ import absolute_import, unicode_literals
 
+from mock import patch
+
 from ...unittest import TestCase
 from oauthlib.oauth2.rfc6749.parameters import *
 from oauthlib.oauth2.rfc6749.errors import *
 
 
+@patch('time.time', new=lambda: 1000)
 class ParameterTests(TestCase):
 
     state = 'xyz'
@@ -82,6 +85,7 @@ class ParameterTests(TestCase):
         'state': state,
         'token_type': 'example',
         'expires_in': '3600',
+        'expires_at': 4600,
         'scope': ['abc']
     }
 
@@ -108,6 +112,7 @@ class ParameterTests(TestCase):
        'access_token': '2YotnFZFEjr1zCsicMWpAA',
        'token_type': 'example',
        'expires_in': 3600,
+       'expires_at': 4600,
        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
        'example_parameter': 'example_value',
        'scope': ['abc', 'def']

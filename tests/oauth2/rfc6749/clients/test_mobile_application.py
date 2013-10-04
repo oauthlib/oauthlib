@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ....unittest import TestCase
+
+from mock import patch
 
 from oauthlib.oauth2 import MobileApplicationClient
 
+from ....unittest import TestCase
 
+
+@patch('time.time', new=lambda: 1000)
 class MobileApplicationClientTest(TestCase):
 
     client_id = "someclientid"
@@ -34,6 +38,7 @@ class MobileApplicationClientTest(TestCase):
         "access_token": "2YotnFZFEjr1zCsicMWpAA",
         "token_type": "example",
         "expires_in": "3600",
+        "expires_at": 4600,
         "scope": scope,
         "example_parameter": "example_value"
     }
