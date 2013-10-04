@@ -5,10 +5,7 @@ from ....unittest import TestCase
 import json
 import mock
 from oauthlib.common import Request
-from oauthlib.oauth2.rfc6749.errors import UnsupportedGrantTypeError
-from oauthlib.oauth2.rfc6749.errors import InvalidRequestError
-from oauthlib.oauth2.rfc6749.errors import InvalidClientError
-from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
+from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
@@ -54,25 +51,59 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertIn('expires_in', token)
         self.assertIn('scope', token)
 
-    def test_validate_token_request(self):
-        mock_validator = mock.MagicMock()
-        auth = AuthorizationCodeGrant(request_validator=mock_validator)
-        request = Request('http://a.b/path')
-        self.assertRaises(UnsupportedGrantTypeError,
-                auth.validate_token_request, request)
+    def test_invalid_request(self):
+        del self.request.code
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
+                          self.request)
 
+    def test_invalid_request_duplicates(self):
+        request = mock.MagicMock(wraps=self.request)
         request.grant_type = 'authorization_code'
-        self.assertRaises(InvalidRequestError,
-                auth.validate_token_request, request)
+        request.duplicate_params = ['client_id']
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
+                          request)
 
-        mock_validator.authenticate_client.return_value = False
-        mock_validator.authenticate_client_id.return_value = False
-        request.code = 'waffles'
-        self.assertRaises(InvalidClientError,
-                auth.validate_token_request, request)
+    def test_authentication_required(self):
+        """
+        ensure client_authentication_required() is properly called
+        """
+        self.auth.validate_token_request(self.request)
+        self.mock_validator.client_authentication_required.assert_called_once_with(self.request)
 
-        request.client = 'batman'
-        mock_validator.authenticate_client = self.set_client
-        mock_validator.validate_code.return_value = False
-        self.assertRaises(InvalidGrantError,
-                auth.validate_token_request, request)
+    def test_authenticate_client(self):
+        self.mock_validator.authenticate_client.side_effect = None
+        self.mock_validator.authenticate_client.return_value = False
+        self.assertRaises(errors.InvalidClientError, self.auth.validate_token_request,
+                          self.request)
+
+    def test_client_id_missing(self):
+        self.mock_validator.authenticate_client.side_effect = None
+        request = mock.MagicMock(wraps=self.request)
+        request.grant_type = 'authorization_code'
+        del request.client.client_id
+        self.assertRaises(NotImplementedError, self.auth.validate_token_request,
+                          request)
+
+    def test_invalid_grant(self):
+        self.request.client = 'batman'
+        self.mock_validator.authenticate_client = self.set_client
+        self.mock_validator.validate_code.return_value = False
+        self.assertRaises(errors.InvalidGrantError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_invalid_grant_type(self):
+        self.request.grant_type = 'foo'
+        self.assertRaises(errors.UnsupportedGrantTypeError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_authenticate_client_id(self):
+        self.mock_validator.client_authentication_required.return_value = False
+        self.mock_validator.authenticate_client_id.return_value = False
+        self.request.state = 'abc'
+        self.assertRaises(errors.InvalidClientError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_invalid_redirect_uri(self):
+        self.mock_validator.confirm_redirect_uri.return_value = False
+        self.assertRaises(errors.AccessDeniedError,
+                          self.auth.validate_token_request, self.request)

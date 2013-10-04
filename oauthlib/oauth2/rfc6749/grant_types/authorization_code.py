@@ -343,7 +343,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                                                  description='Duplicate %s parameter.' % param,
                                                  request=request)
 
-        if self.request_validator.client_authentication_required():
+        if self.request_validator.client_authentication_required(request):
             # If the client type is confidential or the client was issued client
             # credentials (or assigned other authentication requirements), the
             # client MUST authenticate with the authorization server as described
