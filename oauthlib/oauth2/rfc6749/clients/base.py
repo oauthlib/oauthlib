@@ -8,7 +8,7 @@ oauthlib.oauth2.rfc6749
 This module is an implementation of various logic needed
 for consuming OAuth 2.0 RFC6749.
 """
-import datetime
+import time
 
 from oauthlib.oauth2.rfc6749 import tokens
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_request
@@ -114,7 +114,7 @@ class Client(object):
         if not self.access_token:
             raise ValueError("Missing access token.")
 
-        if self._expires_at and self._expires_at < datetime.datetime.now():
+        if self._expires_at and self._expires_at < time.time():
             raise TokenExpiredError()
 
         return case_insensitive_token_types[self.token_type.lower()](uri, http_method, body,
@@ -184,8 +184,10 @@ class Client(object):
 
         if 'expires_in' in response:
             self.expires_in = response.get('expires_in')
-            self._expires_at = datetime.datetime.now() + datetime.timedelta(
-                    seconds=int(self.expires_in))
+            self._expires_at = time.time() + int(self.expires_in)
+
+        if 'expires_at' in response:
+            self._expires_at = int(response.get('expires_at'))
 
         if 'code' in response:
             self.code = response.get('code')
