@@ -61,6 +61,11 @@ class ClientCredentialsGrant(GrantTypeBase):
         .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
+        headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Cache-Control': 'no-store',
+                'Pragma': 'no-cache',
+        }
         try:
             log.debug('Validating access token request, %r.', request)
             self.validate_token_request(request)
@@ -71,7 +76,7 @@ class ClientCredentialsGrant(GrantTypeBase):
         token = token_handler.create_token(request, refresh_token=False)
         log.debug('Issuing token to client id %r (%r), %r.',
                   request.client_id, request.client, token)
-        return {}, json.dumps(token), 200
+        return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
         if not getattr(request, 'grant_type'):
