@@ -53,7 +53,7 @@ tokens which unless you are certain you need them, are a bad idea.
 
         # headers will contain some suggested headers to add to your response
         {
-            'Content-Type': 'application/json;charset=UTF-8',
+            'Content-Type': 'application/json',
             'Cache-Control': 'no-store',
             'Pragma': 'no-cache',
         }

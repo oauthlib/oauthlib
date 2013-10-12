@@ -46,7 +46,7 @@ class RefreshTokenGrant(GrantTypeBase):
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
         headers = {
-                'Content-Type': 'application/json;charset=UTF-8',
+                'Content-Type': 'application/json',
                 'Cache-Control': 'no-store',
                 'Pragma': 'no-cache',
         }

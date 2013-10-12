@@ -220,7 +220,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         code is bound to the client identifier and redirection URI.
         """
         headers = {
-                'Content-Type': 'application/json;charset=UTF-8',
+                'Content-Type': 'application/json',
                 'Cache-Control': 'no-store',
                 'Pragma': 'no-cache',
         }
