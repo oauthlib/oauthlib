@@ -276,7 +276,7 @@ def parse_token_response(body, scope=None):
     .. code-block:: http
 
         HTTP/1.1 200 OK
-        Content-Type: application/json;charset=UTF-8
+        Content-Type: application/json
         Cache-Control: no-store
         Pragma: no-cache
 
