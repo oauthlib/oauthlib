@@ -326,6 +326,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 'redirect_uri': request.redirect_uri,
                 'response_type': request.response_type,
                 'state': request.state,
+                'request': request,
         }
 
     def validate_token_request(self, request):
