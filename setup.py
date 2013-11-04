@@ -10,6 +10,7 @@ import sys
 
 from os.path import dirname, join
 from setuptools import setup, find_packages
+import oauthlib
 
 
 def fread(fn):
@@ -26,11 +27,13 @@ requires = []
 
 setup(
     name='oauthlib',
-    version='0.6.0',
+    version=oauthlib.__version__,
     description='A generic, spec-compliant, thorough implementation of the OAuth request-signing logic',
     long_description=fread('README.rst'),
     author='Idan Gazit',
     author_email='idan@gazit.me',
+    maintainer='Ib Lundgren',
+    maintainer_email='ib.lundgren@gmail.com',
     url='https://github.com/idan/oauthlib',
     platforms='any',
     license='BSD',
