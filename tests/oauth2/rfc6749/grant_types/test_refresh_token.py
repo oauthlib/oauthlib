@@ -108,7 +108,7 @@ class RefreshTokenGrantTest(TestCase):
         self.assertRaises(errors.InvalidRequestError,
                           self.auth.validate_token_request, self.request)
 
-    def test_invalid_scope(self):
+    def test_invalid_scope_original_scopes_empty(self):
         self.mock_validator.validate_refresh_token.return_value = True
         self.assertRaises(errors.InvalidScopeError,
                           self.auth.validate_token_request, self.request)
