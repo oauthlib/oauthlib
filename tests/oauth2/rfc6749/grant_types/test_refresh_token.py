@@ -47,8 +47,21 @@ class RefreshTokenGrantTest(TestCase):
         self.assertIn('expires_in', token)
         self.assertEqual(token['scope'], 'foo bar')
 
+    def test_create_token_within_original_scope(self):
+        self.mock_validator.get_original_scopes.return_value = ['baz']
+        self.mock_validator.is_within_original_scope.return_value = True
+        bearer = BearerToken(self.mock_validator)
+        headers, body, status_code = self.auth.create_token_response(
+                self.request, bearer)
+        token = json.loads(body)
+        self.assertIn('access_token', token)
+        self.assertIn('token_type', token)
+        self.assertIn('expires_in', token)
+        self.assertEqual(token['scope'], 'foo')
+
     def test_invalid_scope(self):
         self.mock_validator.get_original_scopes.return_value = ['baz']
+        self.mock_validator.is_within_original_scope.return_value = False
         bearer = BearerToken(self.mock_validator)
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
@@ -110,6 +123,7 @@ class RefreshTokenGrantTest(TestCase):
 
     def test_invalid_scope(self):
         self.mock_validator.validate_refresh_token.return_value = True
+        self.mock_validator.is_within_original_scope.return_value = False
         self.assertRaises(errors.InvalidScopeError,
                           self.auth.validate_token_request, self.request)
 

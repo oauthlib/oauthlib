@@ -19,6 +19,8 @@ class RequestValidatorTest(TestCase):
                 'client_id', 'request')
         self.assertRaises(NotImplementedError, v.get_original_scopes,
                 'refresh_token', 'request')
+        self.assertFalse(v.is_within_original_scope(
+                ['scope'], 'refresh_token', 'request'))
         self.assertRaises(NotImplementedError, v.invalidate_authorization_code,
                 'client_id', 'code', 'request')
         self.assertRaises(NotImplementedError, v.save_authorization_code,
