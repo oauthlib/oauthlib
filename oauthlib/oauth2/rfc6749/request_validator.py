@@ -151,6 +151,27 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def is_within_original_scope(self, request_scopes, refresh_token, request, *args, **kwargs):
+        """Check if requested scopes are within a scope of the refresh token.
+
+        When access tokens are refreshed the scope of the new token
+        needs to be within the scope of the original token. This is
+        ensured by checking that all requested scopes strings are on
+        the list returned by the get_original_scopes. If this check
+        fails, is_withing_original_scope is called. The method can be
+        used in situations where returning all valid scopes from the
+        get_original_scopes is not practical.
+
+        :param request_scopes: A list of scopes that were requested by client
+        :param refresh_token: Unicode refresh_token
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - Refresh token grant
+        """
+        return False
+
     def invalidate_authorization_code(self, client_id, code, request, *args, **kwargs):
         """Invalidate an authorization code after use.
 

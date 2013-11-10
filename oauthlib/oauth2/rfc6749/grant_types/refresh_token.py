@@ -106,7 +106,9 @@ class RefreshTokenGrant(GrantTypeBase):
 
         if request.scope:
             request.scopes = utils.scope_to_list(request.scope)
-            if not all((s in original_scopes for s in request.scopes)):
+            if (not all((s in original_scopes for s in request.scopes))
+                and not self.request_validator.is_within_original_scope(
+                    request.scopes, request.refresh_token, request)):
                 log.debug('Refresh token %s lack requested scopes, %r.',
                         request.refresh_token, request.scopes)
                 raise errors.InvalidScopeError(
