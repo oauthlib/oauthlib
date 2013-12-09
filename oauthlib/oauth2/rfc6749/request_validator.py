@@ -158,7 +158,7 @@ class RequestValidator(object):
         needs to be within the scope of the original token. This is
         ensured by checking that all requested scopes strings are on
         the list returned by the get_original_scopes. If this check
-        fails, is_withing_original_scope is called. The method can be
+        fails, is_within_original_scope is called. The method can be
         used in situations where returning all valid scopes from the
         get_original_scopes is not practical.
 
