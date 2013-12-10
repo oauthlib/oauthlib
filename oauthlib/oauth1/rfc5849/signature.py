@@ -469,22 +469,23 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     with the server that included its RSA public key (in a manner that is
     beyond the scope of this specification).
 
-    NOTE: this method requires the python-rsa library.
+    NOTE: this method requires the tlslite library.
 
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
     .. _`RFC3447, Section 8.2`: http://tools.ietf.org/html/rfc3447#section-8.2
 
     """
     # TODO: finish RSA documentation
-    from Crypto.PublicKey import RSA
-    from Crypto.Signature import PKCS1_v1_5
-    from Crypto.Hash import SHA
-    key = RSA.importKey(rsa_private_key)
+    from tlslite.utils import keyfactory
+
+    private_key = keyfactory.parsePrivateKey(rsa_private_key)
+
     if isinstance(base_string, unicode_type):
         base_string = base_string.encode('utf-8')
-    h = SHA.new(base_string)
-    p = PKCS1_v1_5.new(key)
-    return binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
+
+    signature = private_key.hashAndSign(base_string)
+
+    return binascii.b2a_base64(signature)[:-1].decode('utf-8')
 
 
 def sign_plaintext(client_secret, resource_owner_secret):
