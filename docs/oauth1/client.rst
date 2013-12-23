@@ -133,7 +133,7 @@ Using the Client
             )
 
         >>> # Please set content-type to application/x-www-form-urlencoded
-        >>> headers = {'Authorization':oauthlib.oauth1.CONTENT_TYPE_FORM_URLENCODED}
+        >>> headers = {'Content-Type':oauthlib.oauth1.CONTENT_TYPE_FORM_URLENCODED}
         >>> uri, headers, body = client.sign('http://example.com/path?query=hello',
                                              headers=headers)
         >>> body
