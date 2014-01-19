@@ -30,9 +30,19 @@ class ClientCredentialsGrantTest(TestCase):
         self.assertIn('access_token', token)
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
+        self.assertIn('Content-Type', headers)
+        self.assertEqual(headers['Content-Type'], 'application/json')
 
     def test_error_response(self):
-        pass
+        bearer = BearerToken(self.mock_validator)
+        self.mock_validator.authenticate_client.return_value = False
+        headers, body, status_code = self.auth.create_token_response(
+            self.request, bearer)
+        error_msg = json.loads(body)
+        self.assertIn('error', error_msg)
+        self.assertEqual(error_msg['error'], 'invalid_client')
+        self.assertIn('Content-Type', headers)
+        self.assertEqual(headers['Content-Type'], 'application/json')
 
     def test_validate_token_response(self):
         # wrong grant type, scope
