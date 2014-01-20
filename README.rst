@@ -95,6 +95,27 @@ details.
 
 .. _`supported features`: http://oauthlib.readthedocs.org/en/latest/feature_matrix.html
 
+0.6.1: Draft revocation endpoint features and numerous fixes including
+
+* (OAuth 2 Provider) is_within_original_scope to check whether a refresh token
+  is trying to aquire a new set of scopes that are a subset of the original scope.
+
+* (OAuth 2 Provider) expires_in token lifetime can be set per request.
+
+* (OAuth 2 Provider) client_authentication_required method added to differentiate
+  between public and confidential clients.
+
+* (OAuth 2 Provider) rotate_refresh_token now indicates whether a new refresh
+  token should be generated during token refresh or if old should be kept.
+
+* (OAuth 2 Provider) returned JSON headers no longer include charset.
+
+* (OAuth 2 Provider) validate_authorizatoin_request now also includes the
+  internal request object in the returned dictionary. Note that this is
+  not meant to be relied upon heavily and its interface might change.
+
+* and many style and typo fixes.
+
 0.6.0: OAuth 1 & 2 provider API refactor with breaking changes
 
 * All endpoint methods change contract to return 3 values instead of 4. The new
