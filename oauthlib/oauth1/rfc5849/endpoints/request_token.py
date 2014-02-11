@@ -108,7 +108,9 @@ class RequestTokenEndpoint(BaseEndpoint):
 
         :param request: An oauthlib.common.Request object.
         :raises: OAuth1Error if the request is invalid.
-        :returns: True or False
+        :returns: A tuple of 2 elements.
+                  1. The validation result (True or False).
+                  2. The request object.
         """
         self._check_transport_security(request)
         self._check_mandatory_parameters(request)
