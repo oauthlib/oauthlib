@@ -3,9 +3,9 @@ Token creation
 ==============
 
 Token endpoints issue tokens to clients who have already been authorized access,
-be it by explicit actions from the user or implicitely. The token response is
-well defined and typically consist of an unguessable access token, the token
-type, its expiration from now in seconds and depending on the scenario, a
+be it by explicit actions from the user or implicitly. The token response is
+well defined and typically consists of an unguessable access token, the token
+type, its expiration from now in seconds, and depending on the scenario, a
 refresh token to be used to fetch new access tokens without authorization.
 
 One argument for OAuth 2 being more scalable than OAuth 1 is that tokens may

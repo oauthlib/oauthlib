@@ -3,7 +3,7 @@ Installing OAuthLib
 
 The recommended way to install OAuthLib is from PyPI but if you are running
 into a bug or want to try out recently implemented features you will want to
-try the installing directly from the GitHub master branch.
+try installing directly from the GitHub master branch.
 
 For various reasons you may wish to install using your OS packaging system and
 install instructions for a few are shown below. Please send a PR to add a
@@ -24,7 +24,7 @@ Bleeding edge from GitHub master
 
     pip install -e git+https://github.com/idan/oauthlib.git#egg=oauthlib
 
-Debian and derivaties like Ubuntu, Mint, etc.
+Debian and derivatives like Ubuntu, Mint, etc.
 ---------------------------------------------
 
 .. code-block:: bash

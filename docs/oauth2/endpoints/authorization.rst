@@ -58,7 +58,7 @@ Grant and the Client Credentials Grant.
             }
             # these credentials will be needed in the post authorization view and
             # should be persisted between. None of them are secret but take care
-            # to ensure their integrety if embedding them in the form or cookies.
+            # to ensure their integrity if embedding them in the form or cookies.
             from your_datastore import persist_credentials
             persist_credentials(credentials)
 

@@ -161,7 +161,7 @@ obtain an access token.
 **Authorization Verifier**:
     An unguessable unique string of characters. This code asserts that the user
     has given the client authorization to access the requested realms. It is
-    initial nil when the client obtains the request token in the first step, and
+    initially nil when the client obtains the request token in the first step, and
     set after user authorization is given in the second step::
 
         verifier = sqlalchemy.Column(sqlalchemy.String)
@@ -178,7 +178,7 @@ The user and realms will need to be transferred from the request token to the
 access token. It is possible that the list of authorized realms is smaller
 than the list of requested realms. Clients can observe whether this is the case
 by comparing the `oauth_realms` parameter given in the token reponse. This way
-of indicated change of realms is backported from OAuth2 scope behaviour and is
+of indicating change of realms is backported from OAuth2 scope behaviour and is
 not in the OAuth 1 spec.
 
 **Client**:

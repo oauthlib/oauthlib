@@ -159,7 +159,7 @@ request reduces our test coverage because it lacks tests then it will be
 
 Also, keep your tests as simple as possible. Complex tests end up requiring
 their own tests. We would rather see duplicated assertions across test methods
-then cunning utility methods that magically determine which assertions are
+than cunning utility methods that magically determine which assertions are
 needed at a particular stage. Remember: `Explicit is better than implicit`.
 
 Don't mix code changes with whitespace cleanup
