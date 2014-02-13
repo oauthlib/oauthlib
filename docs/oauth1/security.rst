@@ -11,7 +11,7 @@ A few important facts regarding OAuth security
         nonce/timestamp pairs for each request, allowing an attacker who
         intercept your request to replay it later, overriding your initial
         request. **Server defaults to fail all requests which are not made over
-        HTTPS**, you can explicitely disable this using the enforce_ssl
+        HTTPS**, you can explicitly disable this using the enforce_ssl
         property.
 
     * **Tokens must be random**, OAuthLib provides a method for generating
@@ -19,7 +19,7 @@ A few important facts regarding OAuth security
         use it. If you decide to roll your own, use ``random.SystemRandom``
         which is based on ``os.urandom`` rather than the default ``random``
         based on the effecient but not truly random Mersenne Twister.
-        Predicatble tokens allow attackers to bypass virtually all defences
+        Predictable tokens allow attackers to bypass virtually all defences
         OAuth provides.
 
     * **Timing attacks are real** and more than possible if you host your

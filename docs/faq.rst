@@ -1,7 +1,7 @@
 F.A.Q
 =====
 
-What parts of OAuth 1 & 2 is supported?
+What parts of OAuth 1 & 2 are supported?
     See :doc:`feature_matrix`.
 
 What is the difference between a client and a consumer?

@@ -5,10 +5,10 @@ Endpoints in OAuth 2 are targets with a specific responsibility and often
 associated with a particular URL. Because of this the word endpoint might be
 used interchangably from the endpoint url.
 
-There main three responsibilities in an OAuth 2 flow is to authorize access to a
+The main three responsibilities in an OAuth 2 flow is to authorize access to a
 certain users resources to a client, to supply said client with a token
 embodying this authorization and to verify that the token is valid when the
-client attempts to access thee user resources on their behalf.
+client attempts to access the user resources on their behalf.
 
 .. toctree::
     :maxdepth: 2

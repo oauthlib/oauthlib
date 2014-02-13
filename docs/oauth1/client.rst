@@ -59,7 +59,7 @@ Using the Client
 
     * a dictionary
     * an iterable of 2-tuples
-    * a properly-formated x-www-url-formencoded string
+    * a properly-formatted x-www-url-formencoded string
 
 **RSA Signatures**
 
