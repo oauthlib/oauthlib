@@ -5,3 +5,4 @@ pycrypto
 mock
 nose
 sphinx
+python-jwt

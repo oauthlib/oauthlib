@@ -23,7 +23,7 @@ else:
     tests_require = ['nose', 'unittest2', 'pycrypto', 'mock']
 rsa_require = ['pycrypto']
 
-requires = []
+requires = ['pycrypto', 'python-jwt']
 
 setup(
     name='oauthlib',
