@@ -262,8 +262,7 @@ class CryptoTokenEndpointTest(TestCase):
 
         access_token = json.loads(body)['access_token']
 
-        header, claims = common.verify_crypto_token(self.private_pem,
-                                                    access_token)
+        claims = common.verify_crypto_token(self.private_pem, access_token)
 
         self.assertEqual(claims['scope'], 'all of them')
 

@@ -240,13 +240,14 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 def generate_crypto_token(private_pem, request):
     private_key = RSA.importKey(private_pem)
 
+    now = datetime.datetime.utcnow()
     payload = {
         'scope': request.scope,
+        'exp': now + datetime.timedelta(seconds=request.expires_in)
     }
     request.payload.update(payload)
 
-    token = jwt.generate_jwt(request.payload, private_key, 'PS256',
-                             datetime.timedelta(seconds=request.expires_in))
+    token = jwt.encode(request.payload, private_key, 'RS256')
 
     return token
 
@@ -255,7 +256,8 @@ def verify_crypto_token(private_pem, token):
     public_key = RSA.importKey(private_pem).publickey()
 
     try:
-        return jwt.verify_jwt(token.encode(), public_key)
+        #return jwt.verify_jwt(token.encode(), public_key)
+        return jwt.decode(token, public_key)
     except:
         raise Exception
 
