@@ -165,6 +165,16 @@ def random_token_generator(request, refresh_token=False):
     return common.generate_token()
 
 
+def crypto_token_generator(private_pem):
+    def crypto_token_generator(request, refresh_token=False):
+        if not refresh_token:
+            return common.generate_crypto_token(private_pem, request)
+        else:
+            return common.generate_token()
+
+    return crypto_token_generator
+
+
 class TokenBase(object):
 
     def __call__(self, request, refresh_token=False):
