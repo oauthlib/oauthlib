@@ -18,12 +18,12 @@ def fread(fn):
         return f.read()
 
 if sys.version_info[0] == 3:
-    tests_require = ['nose', 'pycrypto']
+    tests_require = ['nose', 'pycrypto', 'python-jwt']
 else:
-    tests_require = ['nose', 'unittest2', 'pycrypto', 'mock']
+    tests_require = ['nose', 'unittest2', 'pycrypto', 'mock', 'python-jwt']
 rsa_require = ['pycrypto']
 
-requires = ['pycrypto', 'python-jwt']
+requires = []
 
 setup(
     name='oauthlib',
