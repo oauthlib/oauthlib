@@ -170,8 +170,6 @@ class CryptoTokenEndpointTest(TestCase):
             request.user = mock.MagicMock()
             request.client = mock.MagicMock()
             request.client.client_id = 'mocked_client_id'
-            request.expires_in = self.expires_in
-            request.payload = {}
             return True
 
         self.mock_validator = mock.MagicMock()
@@ -220,7 +218,7 @@ class CryptoTokenEndpointTest(TestCase):
         )
         token = tokens.BearerToken(self.mock_validator,
                 token_generator=tokens.crypto_token_generator(self.private_pem),
-                expires_in=self.expires_in)
+                expires_in=self.expires_in, user_id=123)
         self.endpoint = TokenEndpoint('authorization_code',
                 default_token_type=token, grant_types=supported_types)
 
@@ -255,7 +253,7 @@ class CryptoTokenEndpointTest(TestCase):
         self.assertEqual(body, token)
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
-    def test_scopes_stored_in_access_token(self):
+    def test_scopes_and_user_id_stored_in_access_token(self):
         body = 'grant_type=password&username=a&password=hello&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
                 '', body=body)
@@ -265,6 +263,7 @@ class CryptoTokenEndpointTest(TestCase):
         claims = common.verify_crypto_token(self.private_pem, access_token)
 
         self.assertEqual(claims['scope'], 'all of them')
+        self.assertEqual(claims['user_id'], 123)
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_client_grant(self):

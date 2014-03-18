@@ -190,10 +190,12 @@ class TokenBase(object):
 class BearerToken(TokenBase):
 
     def __init__(self, request_validator=None, token_generator=None,
-                 expires_in=None):
+                 expires_in=None, **kwargs):
         self.request_validator = request_validator
         self.token_generator = token_generator or random_token_generator
         self.expires_in = expires_in or 3600
+        # Claims to be stored when using a crypto token
+        self.claims = kwargs
 
     def create_token(self, request, refresh_token=False):
         """Create a BearerToken, by default without refresh token."""
@@ -202,6 +204,9 @@ class BearerToken(TokenBase):
             expires_in = self.expires_in(request)
         else:
             expires_in = self.expires_in
+
+        request.expires_in = expires_in
+        request.claims = self.claims
 
         token = {
             'access_token': self.token_generator(request),

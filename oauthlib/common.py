@@ -241,13 +241,15 @@ def generate_crypto_token(private_pem, request):
     private_key = RSA.importKey(private_pem)
 
     now = datetime.datetime.utcnow()
-    payload = {
+
+    claims = {
         'scope': request.scope,
         'exp': now + datetime.timedelta(seconds=request.expires_in)
     }
-    request.payload.update(payload)
 
-    token = jwt.encode(request.payload, private_key, 'RS256')
+    claims.update(request.claims)
+
+    token = jwt.encode(claims, private_key, 'RS256')
     token = to_unicode(token, "UTF-8")
 
     return token
