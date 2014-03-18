@@ -247,8 +247,8 @@ def generate_crypto_token(private_pem, request):
     }
     request.payload.update(payload)
 
-    token = jwt.encode(request.payload,
-                       private_key, 'RS256').decode(encoding='UTF-8')
+    token = jwt.encode(request.payload, private_key, 'RS256')
+    token = to_unicode(token, "UTF-8")
 
     return token
 
