@@ -21,9 +21,8 @@ if sys.version_info[0] == 3:
     tests_require = ['nose', 'pycrypto', 'pyjwt']
 else:
     tests_require = ['nose', 'unittest2', 'pycrypto', 'mock', 'pyjwt']
-rsa_require = ['pycrypto']
 
-requires = []
+requires = ['pycrypto', 'pyjwt']
 
 setup(
     name='oauthlib',
@@ -40,7 +39,7 @@ setup(
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
     test_suite='nose.collector',
     tests_require=tests_require,
-    extras_require={'test': tests_require, 'rsa': rsa_require},
+    extras_require={'test': tests_require},
     install_requires=requires,
     classifiers=[
         'Development Status :: 4 - Beta',
