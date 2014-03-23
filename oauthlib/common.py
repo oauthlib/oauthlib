@@ -9,10 +9,8 @@ This module provides data structures and utilities common
 to all implementations of OAuth.
 """
 
-import Crypto.PublicKey.RSA as RSA
 import collections
 import datetime
-import jwt
 import logging
 import random
 import re
@@ -238,6 +236,9 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 
 
 def generate_crypto_token(private_pem, request):
+    import Crypto.PublicKey.RSA as RSA
+    import jwt
+
     private_key = RSA.importKey(private_pem)
 
     now = datetime.datetime.utcnow()
@@ -256,6 +257,9 @@ def generate_crypto_token(private_pem, request):
 
 
 def verify_crypto_token(private_pem, token):
+    import Crypto.PublicKey.RSA as RSA
+    import jwt
+
     public_key = RSA.importKey(private_pem).publickey()
 
     try:
