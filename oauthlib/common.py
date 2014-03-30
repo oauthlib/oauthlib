@@ -235,7 +235,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     return ''.join(rand.choice(chars) for x in range(length))
 
 
-def generate_crypto_token(private_pem, request):
+def generate_signed_token(private_pem, request):
     import Crypto.PublicKey.RSA as RSA
     import jwt
 
@@ -256,7 +256,7 @@ def generate_crypto_token(private_pem, request):
     return token
 
 
-def verify_crypto_token(private_pem, token):
+def verify_signed_token(private_pem, token):
     import Crypto.PublicKey.RSA as RSA
     import jwt
 

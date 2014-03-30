@@ -7,6 +7,7 @@ import jwt
 import mock
 
 from oauthlib import common
+from oauthlib.oauth2.rfc6749.endpoints import Server
 from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.resource import ResourceEndpoint
@@ -161,7 +162,7 @@ class TokenEndpointTest(TestCase):
         self.assertEqual(json.loads(body), token)
 
 
-class CryptoTokenEndpointTest(TestCase):
+class SignedTokenEndpointTest(TestCase):
 
     def setUp(self):
         self.expires_in = 1800
@@ -175,17 +176,6 @@ class CryptoTokenEndpointTest(TestCase):
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = set_user
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
-        auth_code = AuthorizationCodeGrant(
-                request_validator=self.mock_validator)
-        password = ResourceOwnerPasswordCredentialsGrant(
-                request_validator=self.mock_validator)
-        client = ClientCredentialsGrant(
-                request_validator=self.mock_validator)
-        supported_types = {
-                'authorization_code': auth_code,
-                'password': password,
-                'client_credentials': client,
-        }
 
         self.private_pem = (
             "-----BEGIN RSA PRIVATE KEY-----\n"
@@ -216,11 +206,15 @@ class CryptoTokenEndpointTest(TestCase):
             "c6MxSWgsa+2Ld5SWSNbGtpPcmEM3Fl5ttMCNCKtNc0UE16oHwaPAIw==\n"
             "-----END RSA PRIVATE KEY-----"
         )
-        token = tokens.BearerToken(self.mock_validator,
-                token_generator=tokens.crypto_token_generator(self.private_pem),
-                expires_in=self.expires_in, user_id=123)
-        self.endpoint = TokenEndpoint('authorization_code',
-                default_token_type=token, grant_types=supported_types)
+
+        signed_token = tokens.signed_token_generator(self.private_pem,
+                                                     user_id=123)
+        self.endpoint = Server(
+            self.mock_validator,
+            token_expires_in=self.expires_in,
+            token_generator=signed_token,
+            refresh_token_generator=tokens.random_token_generator
+        )
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
@@ -260,7 +254,7 @@ class CryptoTokenEndpointTest(TestCase):
 
         access_token = json.loads(body)['access_token']
 
-        claims = common.verify_crypto_token(self.private_pem, access_token)
+        claims = common.verify_signed_token(self.private_pem, access_token)
 
         self.assertEqual(claims['scope'], 'all of them')
         self.assertEqual(claims['user_id'], 123)

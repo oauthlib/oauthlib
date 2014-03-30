@@ -165,14 +165,12 @@ def random_token_generator(request, refresh_token=False):
     return common.generate_token()
 
 
-def crypto_token_generator(private_pem):
-    def crypto_token_generator(request, refresh_token=False):
-        if not refresh_token:
-            return common.generate_crypto_token(private_pem, request)
-        else:
-            return common.generate_token()
+def signed_token_generator(private_pem, **kwargs):
+    def signed_token_generator(request):
+        request.claims = kwargs
+        return common.generate_signed_token(private_pem, request)
 
-    return crypto_token_generator
+    return signed_token_generator
 
 
 class TokenBase(object):
@@ -190,12 +188,13 @@ class TokenBase(object):
 class BearerToken(TokenBase):
 
     def __init__(self, request_validator=None, token_generator=None,
-                 expires_in=None, **kwargs):
+                 expires_in=None, refresh_token_generator=None):
         self.request_validator = request_validator
         self.token_generator = token_generator or random_token_generator
+        self.refresh_token_generator = (
+            refresh_token_generator or self.token_generator
+        )
         self.expires_in = expires_in or 3600
-        # Claims to be stored when using a crypto token
-        self.claims = kwargs
 
     def create_token(self, request, refresh_token=False):
         """Create a BearerToken, by default without refresh token."""
@@ -206,7 +205,6 @@ class BearerToken(TokenBase):
             expires_in = self.expires_in
 
         request.expires_in = expires_in
-        request.claims = self.claims
 
         token = {
             'access_token': self.token_generator(request),
@@ -225,8 +223,7 @@ class BearerToken(TokenBase):
                     not self.request_validator.rotate_refresh_token(request)):
                 token['refresh_token'] = request.refresh_token
             else:
-                token['refresh_token'] = self.token_generator(
-                    request, refresh_token=True)
+                token['refresh_token'] = self.refresh_token_generator(request)
 
         token.update(request.extra_credentials or {})
 
