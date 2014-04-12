@@ -4,10 +4,28 @@ import datetime
 import os
 
 from ...unittest import TestCase
+from oauthlib.common import PY3
 from oauthlib.oauth2.rfc6749.utils import escape, host_from_uri
 from oauthlib.oauth2.rfc6749.utils import generate_age
 from oauthlib.oauth2.rfc6749.utils import is_secure_transport
 from oauthlib.oauth2.rfc6749.utils import params_from_uri
+from oauthlib.oauth2.rfc6749.utils import list_to_scope, scope_to_list
+
+
+class ScopeObject:
+    """
+    Fixture for testing list_to_scope()/scope_to_list() with objects other
+    than regular strings.
+    """
+    def __init__(self, scope):
+        self.scope = scope
+
+    if PY3:
+        def __str__(self):
+            return self.scope
+    else:
+        def __unicode__(self):
+            return self.scope
 
 
 class UtilsTests(TestCase):
@@ -48,3 +66,28 @@ class UtilsTests(TestCase):
         issue_time = datetime.datetime.now() - datetime.timedelta(
                 days=3, minutes=1, seconds=4)
         self.assertGreater(float(generate_age(issue_time)), 259263.0)
+
+    def test_list_to_scope(self):
+        expected = 'foo bar baz'
+
+        string_list = ['foo', 'bar', 'baz']
+        self.assertEqual(list_to_scope(string_list), expected)
+
+        obj_list = [ScopeObject('foo'), ScopeObject('bar'), ScopeObject('baz')]
+        self.assertEqual(list_to_scope(obj_list), expected)
+
+    def test_scope_to_list(self):
+        expected = ['foo', 'bar', 'baz']
+
+        string_scopes = 'foo bar baz'
+        self.assertEqual(scope_to_list(string_scopes), expected)
+
+        string_list_scopes = ['foo', 'bar', 'baz']
+        self.assertEqual(scope_to_list(string_list_scopes), expected)
+
+        obj_list_scopes = [ScopeObject('foo'), ScopeObject('bar'), ScopeObject('baz')]
+        self.assertEqual(scope_to_list(obj_list_scopes), expected)
+
+
+
+
