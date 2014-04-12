@@ -115,6 +115,25 @@ class SignatureMethodTest(TestCase):
         self.assertRaises(ValueError, client.sign, 'http://example.com')
 
 
+    def test_register_method(self):
+        Client.register_signature_method('PIZZA',
+            lambda base_string, client: 'PIZZA')
+
+        self.assertTrue('PIZZA' in Client.SIGNATURE_METHODS)
+
+        client = Client('client_key', signature_method='PIZZA',
+            timestamp='1234567890', nonce='abc')
+
+        u, h, b = client.sign('http://example.com')
+
+        self.assertEquals(h['Authorization'], (
+            'OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
+            'oauth_version="1.0", oauth_signature_method="PIZZA", '
+            'oauth_consumer_key="client_key", '
+            'oauth_signature="PIZZA"'
+        ))
+
+
 class SignatureTypeTest(TestCase):
 
     def test_params_in_body(self):

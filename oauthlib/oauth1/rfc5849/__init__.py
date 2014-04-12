@@ -40,6 +40,16 @@ CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 
 
 class Client(object):
+    SIGNATURE_METHODS = {
+        SIGNATURE_HMAC: signature.sign_hmac_sha1_with_client,
+        SIGNATURE_RSA: signature.sign_rsa_sha1_with_client,
+        SIGNATURE_PLAINTEXT: signature.sign_plaintext_with_client
+    }
+
+    @classmethod
+    def register_signature_method(cls, method_name, method_callback):
+        cls.SIGNATURE_METHODS[method_name] = method_callback
+
     """A client used to sign OAuth 1.0 RFC 5849 requests"""
     def __init__(self, client_key,
             client_secret=None,
@@ -128,13 +138,10 @@ class Client(object):
 
         log.debug("Base signing string: {0}".format(base_string))
 
-        if self.signature_method == SIGNATURE_HMAC:
-            sig = signature.sign_hmac_sha1(base_string, self.client_secret,
-                self.resource_owner_secret)
-        elif self.signature_method == SIGNATURE_RSA:
-            sig = signature.sign_rsa_sha1(base_string, self.rsa_key)
-        else:
+        if self.signature_method not in self.SIGNATURE_METHODS:
             raise ValueError('Invalid signature method.')
+
+        sig = self.SIGNATURE_METHODS[self.signature_method](base_string, self)
 
         log.debug("Signature: {0}".format(sig))
         return sig

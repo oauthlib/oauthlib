@@ -407,6 +407,12 @@ def normalize_parameters(params):
     return '&'.join(parameter_parts)
 
 
+def sign_hmac_sha1_with_client(base_string, client):
+    return sign_hmac_sha1(base_string, 
+        client.client_secret,
+        client.resource_owner_secret
+    )
+
 def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     """**HMAC-SHA1**
 
@@ -487,6 +493,10 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     return binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
 
 
+def sign_rsa_sha1_with_client(base_string, client):
+    return sign_rsa_sha1(base_string, client.rsa_key)
+
+
 def sign_plaintext(client_secret, resource_owner_secret):
     """Sign a request using plaintext.
 
@@ -521,6 +531,9 @@ def sign_plaintext(client_secret, resource_owner_secret):
 
     return signature
 
+
+def sign_plaintext_with_client(base_string, client):
+    return sign_plaintext(client.client_secret, client.resource_owner_secret)
 
 def verify_hmac_sha1(request, client_secret=None,
     resource_owner_secret=None):
