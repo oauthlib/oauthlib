@@ -10,11 +10,13 @@ to all implementations of OAuth.
 """
 
 import collections
+import datetime
 import logging
 import random
 import re
 import sys
 import time
+
 try:
     from urllib import quote as _quote
     from urllib import unquote as _unquote
@@ -231,6 +233,40 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     """
     rand = random.SystemRandom()
     return ''.join(rand.choice(chars) for x in range(length))
+
+
+def generate_signed_token(private_pem, request):
+    import Crypto.PublicKey.RSA as RSA
+    import jwt
+
+    private_key = RSA.importKey(private_pem)
+
+    now = datetime.datetime.utcnow()
+
+    claims = {
+        'scope': request.scope,
+        'exp': now + datetime.timedelta(seconds=request.expires_in)
+    }
+
+    claims.update(request.claims)
+
+    token = jwt.encode(claims, private_key, 'RS256')
+    token = to_unicode(token, "UTF-8")
+
+    return token
+
+
+def verify_signed_token(private_pem, token):
+    import Crypto.PublicKey.RSA as RSA
+    import jwt
+
+    public_key = RSA.importKey(private_pem).publickey()
+
+    try:
+        #return jwt.verify_jwt(token.encode(), public_key)
+        return jwt.decode(token, public_key)
+    except:
+        raise Exception
 
 
 def generate_client_id(length=30, chars=CLIENT_ID_CHARACTER_SET):
