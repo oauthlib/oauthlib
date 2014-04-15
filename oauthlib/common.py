@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.common
 ~~~~~~~~~~~~~~
@@ -8,6 +6,7 @@ oauthlib.common
 This module provides data structures and utilities common
 to all implementations of OAuth.
 """
+from __future__ import absolute_import, unicode_literals
 
 import collections
 import datetime

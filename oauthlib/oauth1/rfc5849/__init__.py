@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.oauth1.rfc5849
 ~~~~~~~~~~~~~~
@@ -8,6 +6,7 @@ oauthlib.oauth1.rfc5849
 This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
 """
+from __future__ import absolute_import, unicode_literals
 
 import logging
 log = logging.getLogger("oauthlib")
@@ -40,6 +39,7 @@ CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 
 
 class Client(object):
+    """A client used to sign OAuth 1.0 RFC 5849 requests."""
     SIGNATURE_METHODS = {
         SIGNATURE_HMAC: signature.sign_hmac_sha1_with_client,
         SIGNATURE_RSA: signature.sign_rsa_sha1_with_client,
@@ -50,7 +50,6 @@ class Client(object):
     def register_signature_method(cls, method_name, method_callback):
         cls.SIGNATURE_METHODS[method_name] = method_callback
 
-    """A client used to sign OAuth 1.0 RFC 5849 requests"""
     def __init__(self, client_key,
             client_secret=None,
             resource_owner_key=None,

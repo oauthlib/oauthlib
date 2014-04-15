@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
 """
 oauthlib.oauth1.rfc5849.signature
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -22,6 +21,8 @@ Steps for signing a request:
 
 .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
 """
+from __future__ import absolute_import, unicode_literals
+
 import binascii
 import hashlib
 import hmac
