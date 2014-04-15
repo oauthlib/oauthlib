@@ -6,7 +6,6 @@ OAuthLib is a dependency free library that may be used with any web
 framework. That said, there are framework specific helper libraries
 to make your life easier.
 
-- For Django there is `django-oauth-toolkit`_.
 - For Flask there is `flask-oauthlib`_.
 
 If there is no support for your favourite framework and you are interested
@@ -15,7 +14,6 @@ the OAuth logic and leave you to support a few framework and setup specific
 tasks such as marshalling request objects into URI, headers and body arguments
 as well as provide an interface for a backend to store tokens, clients, etc.
 
-.. _`django-oauth-toolkit`: https://github.com/evonove/django-oauth-toolkit
 .. _`flask-oauthlib`: https://github.com/lepture/flask-oauthlib
 
 .. contents:: Tutorial Contents
