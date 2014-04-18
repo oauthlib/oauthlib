@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.oauth1.rfc5849.endpoints.resource
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8,6 +6,8 @@ oauthlib.oauth1.rfc5849.endpoints.resource
 This module is an implementation of the resource protection provider logic of
 OAuth 1.0 RFC 5849.
 """
+from __future__ import absolute_import, unicode_literals
+
 from oauthlib.common import log
 
 from .base import BaseEndpoint

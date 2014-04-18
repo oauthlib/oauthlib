@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.utils
 ~~~~~~~~~~~~~~
 
 This module contains utility methods used by various parts of the OAuth 2 spec.
 """
+from __future__ import absolute_import, unicode_literals
 
 import os
 import datetime

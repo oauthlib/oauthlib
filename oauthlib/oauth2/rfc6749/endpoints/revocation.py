@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.oauth2.rfc6749.endpoint.revocation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -9,6 +7,7 @@ An implementation of the OAuth 2 `Token Revocation`_ spec (draft 11).
 
 .. _`Token Revocation`: http://tools.ietf.org/html/draft-ietf-oauth-revocation-11
 """
+from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import Request, log
 

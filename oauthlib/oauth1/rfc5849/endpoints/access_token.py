@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.oauth1.rfc5849.endpoints.access_token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -10,6 +8,8 @@ OAuth 1.0 RFC 5849. It validates the correctness of access token requests,
 creates and persists tokens as well as create the proper response to be
 returned to the client.
 """
+from __future__ import absolute_import, unicode_literals
+
 from oauthlib.common import log, urlencode
 
 from .base import BaseEndpoint

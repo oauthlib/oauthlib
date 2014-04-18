@@ -1,4 +1,3 @@
-from __future__ import absolute_import, unicode_literals
 """
 oauthlib.oauth2.rfc6749.tokens
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -9,6 +8,8 @@ This module contains methods for adding two types of access tokens to requests.
 - MAC http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
 
 """
+from __future__ import absolute_import, unicode_literals
+
 from binascii import b2a_base64
 import hashlib
 import hmac

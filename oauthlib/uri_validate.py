@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-import re
 """
 Regex for URIs
 
@@ -10,6 +8,8 @@ They should be processed with re.VERBOSE.
 
 Thanks Mark Nottingham for this code - https://gist.github.com/138549
 """
+from __future__ import unicode_literals
+import re
 
 ### basics
 

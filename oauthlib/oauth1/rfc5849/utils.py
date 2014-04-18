@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.utils
 ~~~~~~~~~~~~~~
@@ -8,6 +6,7 @@ oauthlib.utils
 This module contains utility methods used by various parts of the OAuth
 spec.
 """
+from __future__ import absolute_import, unicode_literals
 
 try:
     import urllib2

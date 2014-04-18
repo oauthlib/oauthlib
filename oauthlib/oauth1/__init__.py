@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.oauth1
 ~~~~~~~~~~~~~~
@@ -8,6 +6,7 @@ oauthlib.oauth1
 This module is a wrapper for the most recent implementation of OAuth 1.0 Client
 and Server classes.
 """
+from __future__ import absolute_import, unicode_literals
 
 from .rfc5849 import Client
 from .rfc5849 import SIGNATURE_HMAC, SIGNATURE_RSA, SIGNATURE_PLAINTEXT

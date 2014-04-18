@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 """
 oauthlib.oauth1.rfc5849.endpoints.authorization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8,6 +6,7 @@ oauthlib.oauth1.rfc5849.endpoints.authorization
 This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
 """
+from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import Request, add_params_to_uri
 
