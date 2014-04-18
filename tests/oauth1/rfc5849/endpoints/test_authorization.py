@@ -8,7 +8,7 @@ from oauthlib.oauth1.rfc5849 import errors
 from oauthlib.oauth1.rfc5849.endpoints import AuthorizationEndpoint
 
 
-class ResourceEndpointTest(TestCase):
+class AuthorizationEndpointTest(TestCase):
 
     def setUp(self):
         self.validator = MagicMock(wraps=RequestValidator())
@@ -42,10 +42,11 @@ class ResourceEndpointTest(TestCase):
         h, b, s = self.endpoint.create_authorization_response(self.uri)
         self.assertEqual(s, 302)
         self.assertIn('Location', h)
+        location = h['Location']
         self.assertTrue(location.startswith('https://c.b/cb'))
         self.assertIn('oauth_verifier', location)
 
-    def test_create_authorization_response(self):
+    def test_create_authorization_response_oob(self):
         self.validator.get_redirect_uri.return_value = 'oob'
         h, b, s = self.endpoint.create_authorization_response(self.uri)
         self.assertEqual(s, 200)

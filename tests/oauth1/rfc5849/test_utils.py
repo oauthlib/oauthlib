@@ -51,7 +51,7 @@ class UtilsTests(TestCase):
 
     def test_filter_params(self):
 
-        # The following is an isolated test functon used to test the filter_params decorator.
+        # The following is an isolated test function used to test the filter_params decorator.
         @filter_params
         def special_test_function(params, realm=None):
             """ I am a special test function """
