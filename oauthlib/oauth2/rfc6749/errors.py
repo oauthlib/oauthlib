@@ -13,8 +13,9 @@ from oauthlib.common import urlencode, add_params_to_uri
 
 class OAuth2Error(Exception):
     error = None
+    status_code = 400
 
-    def __init__(self, description=None, uri=None, state=None, status_code=400,
+    def __init__(self, description=None, uri=None, state=None, status_code=None,
                  request=None):
         """
         description:    A human-readable ASCII [USASCII] text providing
@@ -38,7 +39,9 @@ class OAuth2Error(Exception):
         self.description = description
         self.uri = uri
         self.state = state
-        self.status_code = status_code
+
+        if status_code:
+            self.status_code = status_code
 
         if request:
             self.redirect_uri = request.redirect_uri
@@ -141,6 +144,7 @@ class InvalidRequestError(OAuth2Error):
 class AccessDeniedError(OAuth2Error):
     """The resource owner or authorization server denied the request."""
     error = 'access_denied'
+    status_code = 401
 
 
 class UnsupportedResponseTypeError(OAuth2Error):
@@ -153,6 +157,7 @@ class UnsupportedResponseTypeError(OAuth2Error):
 class InvalidScopeError(OAuth2Error):
     """The requested scope is invalid, unknown, or malformed."""
     error = 'invalid_scope'
+    status_code = 401
 
 
 class ServerError(OAuth2Error):
@@ -185,6 +190,7 @@ class InvalidClientError(OAuth2Error):
     client.
     """
     error = 'invalid_client'
+    status_code = 401
 
 
 class InvalidGrantError(OAuth2Error):
@@ -194,6 +200,7 @@ class InvalidGrantError(OAuth2Error):
     issued to another client.
     """
     error = 'invalid_grant'
+    status_code = 401
 
 
 class UnauthorizedClientError(OAuth2Error):
@@ -201,6 +208,7 @@ class UnauthorizedClientError(OAuth2Error):
     grant type.
     """
     error = 'unauthorized_client'
+    status_code = 401
 
 
 class UnsupportedGrantTypeError(OAuth2Error):

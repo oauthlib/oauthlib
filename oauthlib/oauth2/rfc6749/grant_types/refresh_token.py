@@ -83,7 +83,7 @@ class RefreshTokenGrant(GrantTypeBase):
             log.debug('Authenticating client, %r.', request)
             if not self.request_validator.authenticate_client(request):
                 log.debug('Invalid client (%r), denying access.', request)
-                raise errors.InvalidClientError(request=request, status_code=401)
+                raise errors.InvalidClientError(request=request)
         elif not self.request_validator.authenticate_client_id(request.client_id, request):
             log.debug('Client authentication failed, %r.', request)
             raise errors.InvalidClientError(request=request)
@@ -112,6 +112,6 @@ class RefreshTokenGrant(GrantTypeBase):
                 log.debug('Refresh token %s lack requested scopes, %r.',
                         request.refresh_token, request.scopes)
                 raise errors.InvalidScopeError(
-                        state=request.state, request=request, status_code=401)
+                        state=request.state, request=request)
         else:
             request.scopes = original_scopes
