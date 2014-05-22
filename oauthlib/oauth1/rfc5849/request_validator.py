@@ -44,9 +44,9 @@ class RequestValidator(object):
     * @verifier_length -> (min, max)
     * @realms -> [list, of, realms]
 
-    Methods used to validate input parameters. These checks usually hit either
-    persistent or temporary storage such as databases or the filesystem. See
-    each methods documentation for detailed usage.
+    Methods used to validate/invalidate input parameters. These checks usually
+    hit either persistent or temporary storage such as databases or the
+    filesystem. See each methods documentation for detailed usage.
     The following methods must be implemented:
 
     - validate_client_key
@@ -57,6 +57,7 @@ class RequestValidator(object):
     - validate_requested_realms
     - validate_realms
     - validate_verifier
+    - invalidate_request_token
 
     Methods used to retrieve sensitive information from storage.
     The following methods must be implemented:
@@ -65,6 +66,9 @@ class RequestValidator(object):
     - get_request_token_secret
     - get_access_token_secret
     - get_rsa_key
+    - get_realms
+    - get_default_realms
+    - get_redirect_uri
 
     Methods used to save credentials.
     The following methods must be implemented:
@@ -72,6 +76,15 @@ class RequestValidator(object):
     - save_request_token
     - save_verifier
     - save_access_token
+
+    Methods used to verify input parameters. This methods are used during
+    authorizing request token by user (AuthorizationEndpoint), to check if
+    parameters are valid. During token authorization request is not signed,
+    thus 'validation' methods can not be used. The following methods must be
+    implemented:
+
+    - verify_realms
+    - verify_request_token
 
     To prevent timing attacks it is necessary to not exit early even if the
     client key or resource owner key is invalid. Instead dummy values should
