@@ -375,6 +375,7 @@ class RequestValidator(object):
         This method is used by
 
         * AuthorizationEndpoint
+        * AccessTokenEndpoint
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
