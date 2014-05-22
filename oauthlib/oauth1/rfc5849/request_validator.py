@@ -426,6 +426,18 @@ class RequestValidator(object):
         :param request: An oauthlib.common.Request object.
         :returns: The rsa public key as a string.
 
+        Per `Section 2.3`__ of the spec:
+
+        "The server MUST (...) ensure that the temporary
+        credentials have not expired or been used before."
+
+        .. _`Section 2.3`: http://tools.ietf.org/html/rfc5849#section-2.3
+
+        This method should ensure that provided token won't validate anymore.
+        It can be simply removing RequestToken from storage or setting
+        specific flag that makes it invalid (note that such flag should be
+        also validated during request token validation).
+
         This method is used by
 
         * AccessTokenEndpoint
@@ -654,6 +666,15 @@ class RequestValidator(object):
         realms is a convenience parameter which can be used to provide
         a per view method pre-defined list of allowed realms.
 
+        Can be as simple as::
+
+            from your_datastore import RequestToken
+            request_token = RequestToken.get(token, None)
+
+            if not request_token:
+                return False
+            return set(request_token.realms).issuperset(set(realms))
+
         This method is used by
 
         * ResourceEndpoint
@@ -697,6 +718,11 @@ class RequestValidator(object):
         :param token: A request token string.
         :param request: An oauthlib.common.Request object.
         :returns: True or False
+
+        This method is used only in AuthorizationEndpoint to check whether the
+        oauth_token given in the authorization URL is valid or not.
+        This request is not signed and thus similar ``validate_request_token``
+        method can not be used.
 
         This method is used by
 
