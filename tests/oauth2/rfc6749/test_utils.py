@@ -48,15 +48,15 @@ class UtilsTests(TestCase):
 
     def test_is_secure_transport(self):
         """Test check secure uri."""
-        if 'DEBUG' in os.environ:
-            del os.environ['DEBUG']
+        if 'OAUTHLIB_INSECURE_TRANSPORT' in os.environ:
+            del os.environ['OAUTHLIB_INSECURE_TRANSPORT']
 
         self.assertTrue(is_secure_transport('https://example.com'))
         self.assertFalse(is_secure_transport('http://example.com'))
 
-        os.environ['DEBUG'] = '1'
+        os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
         self.assertTrue(is_secure_transport('http://example.com'))
-        del os.environ['DEBUG']
+        del os.environ['OAUTHLIB_INSECURE_TRANSPORT']
 
     def test_params_from_uri(self):
         self.assertEqual(params_from_uri('http://i.b/?foo=bar&g&scope=a+d'),
