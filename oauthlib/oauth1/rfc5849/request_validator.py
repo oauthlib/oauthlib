@@ -44,9 +44,9 @@ class RequestValidator(object):
     * @verifier_length -> (min, max)
     * @realms -> [list, of, realms]
 
-    Methods used to validate input parameters. These checks usually hit either
-    persistent or temporary storage such as databases or the filesystem. See
-    each methods documentation for detailed usage.
+    Methods used to validate/invalidate input parameters. These checks usually
+    hit either persistent or temporary storage such as databases or the
+    filesystem. See each methods documentation for detailed usage.
     The following methods must be implemented:
 
     - validate_client_key
@@ -57,6 +57,7 @@ class RequestValidator(object):
     - validate_requested_realms
     - validate_realms
     - validate_verifier
+    - invalidate_request_token
 
     Methods used to retrieve sensitive information from storage.
     The following methods must be implemented:
@@ -65,6 +66,9 @@ class RequestValidator(object):
     - get_request_token_secret
     - get_access_token_secret
     - get_rsa_key
+    - get_realms
+    - get_default_realms
+    - get_redirect_uri
 
     Methods used to save credentials.
     The following methods must be implemented:
@@ -72,6 +76,15 @@ class RequestValidator(object):
     - save_request_token
     - save_verifier
     - save_access_token
+
+    Methods used to verify input parameters. This methods are used during
+    authorizing request token by user (AuthorizationEndpoint), to check if
+    parameters are valid. During token authorization request is not signed,
+    thus 'validation' methods can not be used. The following methods must be
+    implemented:
+
+    - verify_realms
+    - verify_request_token
 
     To prevent timing attacks it is necessary to not exit early even if the
     client key or resource owner key is invalid. Instead dummy values should
@@ -362,6 +375,7 @@ class RequestValidator(object):
         This method is used by
 
         * AuthorizationEndpoint
+        * AccessTokenEndpoint
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -411,6 +425,18 @@ class RequestValidator(object):
         :param request_token: The request token string.
         :param request: An oauthlib.common.Request object.
         :returns: The rsa public key as a string.
+
+        Per `Section 2.3`__ of the spec:
+
+        "The server MUST (...) ensure that the temporary
+        credentials have not expired or been used before."
+
+        .. _`Section 2.3`: http://tools.ietf.org/html/rfc5849#section-2.3
+
+        This method should ensure that provided token won't validate anymore.
+        It can be simply removing RequestToken from storage or setting
+        specific flag that makes it invalid (note that such flag should be
+        also validated during request token validation).
 
         This method is used by
 
@@ -640,6 +666,15 @@ class RequestValidator(object):
         realms is a convenience parameter which can be used to provide
         a per view method pre-defined list of allowed realms.
 
+        Can be as simple as::
+
+            from your_datastore import RequestToken
+            request_token = RequestToken.get(token, None)
+
+            if not request_token:
+                return False
+            return set(request_token.realms).issuperset(set(realms))
+
         This method is used by
 
         * ResourceEndpoint
@@ -683,6 +718,11 @@ class RequestValidator(object):
         :param token: A request token string.
         :param request: An oauthlib.common.Request object.
         :returns: True or False
+
+        This method is used only in AuthorizationEndpoint to check whether the
+        oauth_token given in the authorization URL is valid or not.
+        This request is not signed and thus similar ``validate_request_token``
+        method can not be used.
 
         This method is used by
 
