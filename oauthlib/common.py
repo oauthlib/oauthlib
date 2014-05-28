@@ -133,7 +133,12 @@ def urldecode(query):
     """
     # Check if query contains invalid characters
     if query and not set(query) <= urlencoded:
-        raise ValueError('Not a valid urlencoded string.')
+        error = ("Error trying to decode a non urlencoded string. "
+                 "Found invalid characters: %s "
+                 "in the string: '%s'. "
+                 "Please ensure the request/response body is "
+                 "x-www-form-urlencoded.")
+        raise ValueError(error % (set(query) - urlencoded, query))
 
     # Check for correctly hex encoded values using a regular expression
     # All encoded values begin with % followed by two hex characters
