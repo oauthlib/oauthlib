@@ -145,7 +145,7 @@ class Client(object):
         log.debug("Signature: {0}".format(sig))
         return sig
 
-    def get_oauth_params(self):
+    def get_oauth_params(self, request):
         """Get the basic OAuth parameters to be used in generating a signature.
         """
         nonce = (generate_nonce()
@@ -280,7 +280,7 @@ class Client(object):
             raise ValueError('GET/HEAD requests should not include body.')
 
         # generate the basic OAuth parameters
-        request.oauth_params = self.get_oauth_params()
+        request.oauth_params = self.get_oauth_params(request)
 
         # generate the signature
         request.oauth_params.append(('oauth_signature', self.get_oauth_signature(request)))
