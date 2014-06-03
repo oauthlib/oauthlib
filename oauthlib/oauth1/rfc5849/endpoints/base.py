@@ -70,7 +70,7 @@ class BaseEndpoint(object):
         # Only include body data from x-www-form-urlencoded requests
         headers = headers or {}
         if ("Content-Type" in headers and
-                headers["Content-Type"] == CONTENT_TYPE_FORM_URLENCODED):
+                CONTENT_TYPE_FORM_URLENCODED in headers["Content-Type"]):
             request = Request(uri, http_method, body, headers)
         else:
             request = Request(uri, http_method, '', headers)
