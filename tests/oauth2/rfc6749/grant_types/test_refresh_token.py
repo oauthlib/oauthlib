@@ -76,7 +76,7 @@ class RefreshTokenGrantTest(TestCase):
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(token['error'], 'invalid_grant')
-        self.assertEqual(status_code, 400)
+        self.assertEqual(status_code, 401)
 
     def test_invalid_client(self):
         self.mock_validator.authenticate_client.return_value = False

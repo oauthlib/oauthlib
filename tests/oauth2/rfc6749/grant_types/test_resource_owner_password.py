@@ -45,12 +45,12 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         self.mock_validator.validate_user.return_value = True
         self.mock_validator.authenticate_client.return_value = False
         status_code = self.auth.create_token_response(self.request, bearer)[2]
-        self.assertEqual(status_code, 400)
+        self.assertEqual(status_code, 401)
         # mock client_authentication_required() returning False then fail
         self.mock_validator.client_authentication_required.return_value = False
         self.mock_validator.authenticate_client_id.return_value = False
         status_code = self.auth.create_token_response(self.request, bearer)[2]
-        self.assertEqual(status_code, 400)
+        self.assertEqual(status_code, 401)
 
     def test_error_response(self):
         pass
