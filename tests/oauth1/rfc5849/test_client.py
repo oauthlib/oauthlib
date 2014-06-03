@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+from oauthlib.common import Request
 from oauthlib.oauth1 import SIGNATURE_RSA, SIGNATURE_PLAINTEXT
 from oauthlib.oauth1 import SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY
 from oauthlib.oauth1.rfc5849 import Client, bytes_type
@@ -41,12 +42,12 @@ class ClientConstructorTests(TestCase):
 
     def test_give_explicit_timestamp(self):
         client = Client('client-key', timestamp='1')
-        params = dict(client.get_oauth_params())
+        params = dict(client.get_oauth_params(Request('http://example.com')))
         self.assertEqual(params['oauth_timestamp'], '1')
 
     def test_give_explicit_nonce(self):
         client = Client('client-key', nonce='1')
-        params = dict(client.get_oauth_params())
+        params = dict(client.get_oauth_params(Request('http://example.com')))
         self.assertEqual(params['oauth_nonce'], '1')
 
     def test_decoding(self):
