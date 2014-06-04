@@ -103,6 +103,13 @@ class Client(object):
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
             raise ValueError('rsa_key is required when using RSA signature method.')
 
+    def __repr__(self):
+        attrs = vars(self)
+        attrs['client_secret'] = '****' if attrs['client_secret'] else None
+        attrs['resource_owner_secret'] = '****' if attrs['resource_owner_secret'] else None
+        attribute_str = ', '.join('%s=%s' % (k, v) for k, v in attrs.items())
+        return '<%s %s>' % (self.__class__.__name__, attribute_str)
+
     def get_oauth_signature(self, request):
         """Get an OAuth signature to be used in signing a request
 
