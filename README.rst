@@ -95,6 +95,31 @@ details.
 
 .. _`supported features`: http://oauthlib.readthedocs.org/en/latest/feature_matrix.html
 
+0.6.2: 
+
+* Numerous OAuth2 provider errors now suggest a status code of 401 instead
+  of 400 (#247.
+
+* Added support for JSON web tokens with oauthlib.common.generate_signed_token.
+  Install extra dependency with oauthlib[signedtoken] (#237).
+
+* OAuth2 scopes can be arbitrary objects with __str__ defined (#240).
+
+* OAuth 1 Clients can now register custom signature methods (#239).
+
+* Exposed new method oauthlib.oauth2.is_secure_transport that checks whether
+  the given URL is HTTPS. Checks using this method can be disabled by setting
+  the environment variable OAUTHLIB_INSECURE_TRANSPORT (#249).
+
+* OAuth1 clients now has __repr__ and will be printed with secrets scrubbed.
+
+* OAuth1 Client.get_oauth_params now takes an oauthlib.Request as an argument.
+  
+* urldecode will now raise a much more informative error message on
+  incorrectly encoded strings.
+
+* Plenty of typo and other doc fixes.
+
 0.6.1: Draft revocation endpoint features and numerous fixes including
 
 * (OAuth 2 Provider) is_within_original_scope to check whether a refresh token
