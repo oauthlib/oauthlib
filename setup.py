@@ -22,7 +22,7 @@ if sys.version_info[0] == 3:
 else:
     tests_require = ['nose', 'unittest2', 'pycrypto', 'mock', 'pyjwt']
 rsa_require = ['pycrypto']
-cryptotoken_require = ['pycrypto', 'pyjwt']
+signedtoken_require = ['pycrypto', 'pyjwt']
 
 requires = []
 
@@ -41,7 +41,7 @@ setup(
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
     test_suite='nose.collector',
     tests_require=tests_require,
-    extras_require={'test': tests_require, 'rsa': rsa_require, 'cryptotoken': cryptotoken_require},
+    extras_require={'test': tests_require, 'rsa': rsa_require, 'signedtoken': signedtoken_require},
     install_requires=requires,
     classifiers=[
         'Development Status :: 4 - Beta',
