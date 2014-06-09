@@ -104,7 +104,7 @@ class Client(object):
             raise ValueError('rsa_key is required when using RSA signature method.')
 
     def __repr__(self):
-        attrs = vars(self)
+        attrs = vars(self).copy()
         attrs['client_secret'] = '****' if attrs['client_secret'] else None
         attrs['resource_owner_secret'] = '****' if attrs['resource_owner_secret'] else None
         attribute_str = ', '.join('%s=%s' % (k, v) for k, v in attrs.items())
