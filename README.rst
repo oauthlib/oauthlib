@@ -95,6 +95,9 @@ details.
 
 .. _`supported features`: http://oauthlib.readthedocs.org/en/latest/feature_matrix.html
 
+0.6.3: Quick fix. OAuth 1 client repr in 0.6.2 overwrote secrets when
+       scrubbing for print.
+
 0.6.2: 
 
 * Numerous OAuth2 provider errors now suggest a status code of 401 instead
