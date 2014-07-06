@@ -77,6 +77,12 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         """
         self.request_validator = request_validator or RequestValidator()
         self.refresh_token = refresh_token
+        # NEW-FOR-OPENID
+        self._token_modifiers = []
+
+    def register_token_modifier(self, modifier):
+        self._token_modifiers.append(modifier)
+    # END-NEW-FOR-OPENID
 
     def create_token_response(self, request, token_handler):
         """Return token or error in json format.
@@ -111,6 +117,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, self.refresh_token)
+        # NEW-FOR-OPENID
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token, request)
+        # END-NEW-FOR-OPENID
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
                   token, request.client_id, request.client, request.username)
         return headers, json.dumps(token), 200

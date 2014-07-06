@@ -229,6 +229,11 @@ class ImplicitGrant(GrantTypeBase):
                                                          fragment=True)}, None, 302
 
         token = token_handler.create_token(request, refresh_token=False)
+        # NEW-FOR-OPENID
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token, request)
+        # END-NEW-FOR-OPENID
         return {'Location': common.add_params_to_uri(request.redirect_uri, token.items(),
                                                      fragment=True)}, None, 302
 

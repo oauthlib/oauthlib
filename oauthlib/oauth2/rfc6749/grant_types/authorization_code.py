@@ -98,6 +98,21 @@ class AuthorizationCodeGrant(GrantTypeBase):
     def __init__(self, request_validator=None, refresh_token=True):
         self.request_validator = request_validator or RequestValidator()
         self.refresh_token = refresh_token
+        # NEW-FOR-OPENID
+        self._authorization_validators = []
+        self._token_modifiers = []
+        self.response_types = ['code']
+
+    def register_response_type(self, response_type):
+        self.response_types.append(response_type)
+
+    def register_authorization_validator(self, validator):
+        self._authorization_validators.append(validator)
+
+    def register_token_modifier(self, modifier):
+        self._token_modifiers.append(modifier)
+
+    # END-NEW-FOR-OPENID
 
     def create_authorization_code(self, request):
         """Generates an authorization grant represented as a dictionary."""
@@ -239,6 +254,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=self.refresh_token)
+        # NEW-FOR-OPENID
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token)
+        # END-NEW-FOR-OPENID
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
         return headers, json.dumps(token), 200
@@ -334,13 +354,19 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
-        return request.scopes, {
+        request_info = {
             'client_id': request.client_id,
             'redirect_uri': request.redirect_uri,
             'response_type': request.response_type,
             'state': request.state,
             'request': request,
         }
+
+        # NEW-FOR-OPENID
+        for validator in self._authorization_validators:
+            request_info.update(validator(request))
+
+        return request.scopes, request_info
 
     def validate_token_request(self, request):
         # REQUIRED. Value MUST be set to "authorization_code".
