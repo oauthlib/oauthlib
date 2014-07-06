@@ -49,6 +49,7 @@ class OAuth2Error(Exception):
             self.scopes = request.scopes
             self.response_type = request.response_type
             self.grant_type = request.grant_type
+            self.state = request.state
 
     def in_uri(self, uri):
         return add_params_to_uri(uri, self.twotuples)
@@ -224,6 +225,60 @@ class UnsupportedTokenTypeError(OAuth2Error):
     on a server not supporting this feature.
     """
     error = 'unsupported_token_type'
+
+
+class FatalOpenIDClientError(FatalClientError):
+    pass
+
+class OpenIDClientError(OAuth2Error):
+    pass
+
+
+class InteractionRequired(OpenIDClientError):
+    """The Authorization Server requires End-User interaction to proceed.
+
+    This error MAY be returned when the prompt parameter value in the
+    Authentication Request is none, but the Authentication Request cannot be
+    completed without displaying a user interface for End-User interaction.
+    """
+    error = 'interaction_required'
+    status_code = 401
+
+
+class LoginRequired(OpenIDClientError):
+    """The Authorization Server requires End-User authentication.
+
+    This error MAY be returned when the prompt parameter value in the
+    Authentication Request is none, but the Authentication Request cannot be
+    completed without displaying a user interface for End-User authentication.
+    """
+    error = 'login_required'
+    status_code = 401
+
+
+class AccountSelectionRequried(OpenIDClientError):
+    """The End-User is REQUIRED to select a session at the Authorization Server.
+
+    The End-User MAY be authenticated at the Authorization Server with
+    different associated accounts, but the End-User did not select a session.
+    This error MAY be returned when the prompt parameter value in the
+    Authentication Request is none, but the Authentication Request cannot be
+    completed without displaying a user interface to prompt for a session to
+    use.
+    """
+    error = 'account_selection_required'
+
+
+class ConsentRequired(OpenIDClientError):
+
+    """The Authorization Server requires End-User consent.
+
+    This error MAY be returned when the prompt parameter value in the
+    Authentication Request is none, but the Authentication Request cannot be
+    completed without displaying a user interface for End-User consent.
+    """
+    error = 'consent_required'
+    status_code = 401
 
 
 def raise_from_error(error, params=None):
