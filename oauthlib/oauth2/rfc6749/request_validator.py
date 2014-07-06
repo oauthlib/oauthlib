@@ -235,6 +235,13 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def save_token(self, token, request, *args, **kwargs):
+        """Persist the token with a token type specific method.
+
+        Currently, only save_bearer_token is supported.
+        """
+        return self.save_bearer_token(token, request, *args, **kwargs)
+
     def save_bearer_token(self, token, request, *args, **kwargs):
         """Persist the Bearer token.
 
@@ -440,6 +447,42 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def validate_silent_authorization(self, request):
+        """Ensure the logged in user has authorized silent OpenID authorization.
+
+        Silent OpenID authorization allows access tokens and id tokens to be
+        granted to clients without any user prompt or interaction.
+
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - OpenIDConnectAuthCode
+            - OpenIDConnectImplicit
+            - OpenIDConnectHybrid
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_silent_login(self, request):
+        """Ensure session user has authorized silent OpenID login.
+
+        If no user is logged in or has not authorized silent login, this
+        method should return False.
+
+        If the user is logged in but associated with multiple accounts and
+        not selected which one to link to the token then this method should
+        raise an oauthlib.oauth2.AccountSelectionRequired error.
+
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - OpenIDConnectAuthCode
+            - OpenIDConnectImplicit
+            - OpenIDConnectHybrid
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def validate_user(self, username, password, client, request, *args, **kwargs):
         """Ensure the username and password is valid.
 
@@ -456,5 +499,24 @@ class RequestValidator(object):
 
         Method is used by:
             - Resource Owner Password Credentials Grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_user_match(self, id_token_hint, scopes, claims, request):
+        """Ensure client supplied user id hint matches session user.
+
+        If the sub claim or id_token_hint is supplied then the session
+        user must match the given ID.
+
+        :param id_token_hint: User identifier string.
+        :param scopes: List of OAuth 2 scopes and OpenID claims (strings).
+        :param claims: OpenID Connect claims dict.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - OpenIDConnectAuthCode
+            - OpenIDConnectImplicit
+            - OpenIDConnectHybrid
         """
         raise NotImplementedError('Subclasses must implement this method.')
