@@ -114,6 +114,14 @@ class ImplicitGrant(GrantTypeBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+        self._token_modifiers = []
+        self.response_types = ['token']
+
+    def register_response_type(self, response_type):
+        self.response_types.append(response_type)
+
+    def register_token_modifier(self, modifier):
+        self._token_modifiers.append(modifier)
 
     def create_authorization_response(self, request, token_handler):
         """Create an authorization response.
@@ -224,6 +232,9 @@ class ImplicitGrant(GrantTypeBase):
                     fragment=True)}, None, 302
 
         token = token_handler.create_token(request, refresh_token=False)
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token, request)
         return {'Location': common.add_params_to_uri(request.redirect_uri, token.items(),
                 fragment=True)}, None, 302
 
@@ -311,7 +322,7 @@ class ImplicitGrant(GrantTypeBase):
                         description='Duplicate %s parameter.' % param, request=request)
 
         # REQUIRED. Value MUST be set to "token".
-        if request.response_type != 'token':
+        if request.response_type not in self.response_types:
             raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
 
         log.debug('Validating use of response_type token for client %r (%r).',

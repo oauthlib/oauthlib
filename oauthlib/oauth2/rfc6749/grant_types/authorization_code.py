@@ -92,6 +92,18 @@ class AuthorizationCodeGrant(GrantTypeBase):
     """
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+        self._authorization_validators = []
+        self._token_modifiers = []
+        self.response_types = ['code']
+
+    def register_response_type(self, response_type):
+        self.response_types.append(response_type)
+
+    def register_authorization_validator(self, validator):
+        self._authorization_validators.append(validator)
+
+    def register_token_modifier(self, modifier):
+        self._token_modifiers.append(modifier)
 
     def create_authorization_code(self, request):
         """Generates an authorization grant represented as a dictionary."""
@@ -232,6 +244,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=True)
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token)
         self.request_validator.invalidate_authorization_code(
                 request.client_id, request.code, request)
         return headers, json.dumps(token), 200
@@ -307,27 +322,32 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 raise errors.InvalidRequestError(state=request.state,
                         description='Duplicate %s parameter.' % param, request=request)
 
+        # REQUIRED. Value MUST be set to "code".
+        if request.response_type not in self.response_types:
+            raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
+
         if not self.request_validator.validate_response_type(request.client_id,
                 request.response_type, request.client, request):
             log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
             raise errors.UnauthorizedClientError(request=request)
 
-        # REQUIRED. Value MUST be set to "code".
-        if request.response_type != 'code':
-            raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
-
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
-        return request.scopes, {
-                'client_id': request.client_id,
-                'redirect_uri': request.redirect_uri,
-                'response_type': request.response_type,
-                'state': request.state,
-                'request': request,
+        request_info = {
+            'client_id': request.client_id,
+            'redirect_uri': request.redirect_uri,
+            'response_type': request.response_type,
+            'state': request.state,
+            'request': request,
         }
+
+        for validator in self._authorization_validators:
+            request_info.update(validator(request))
+
+        return request.scopes, request_info
 
     def validate_token_request(self, request):
         # REQUIRED. Value MUST be set to "authorization_code".

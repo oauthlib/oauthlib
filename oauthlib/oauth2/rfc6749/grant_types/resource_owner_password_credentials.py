@@ -68,6 +68,10 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+        self._token_modifiers = []
+
+    def register_token_modifier(self, modifier):
+        self._token_modifiers.append(modifier)
 
     def create_token_response(self, request, token_handler):
         """Return token or error in json format.
@@ -102,6 +106,9 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=True)
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token, request)
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
                   token, request.client_id, request.client, request.username)
         return headers, json.dumps(token), 200

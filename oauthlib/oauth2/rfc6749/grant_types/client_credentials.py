@@ -48,6 +48,10 @@ class ClientCredentialsGrant(GrantTypeBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+        self._token_modifiers = []
+
+    def register_token_modifier(self, modifier):
+        self._token_modifiers.append(modifier)
 
     def create_token_response(self, request, token_handler):
         """Return token or error in JSON format.
@@ -74,6 +78,9 @@ class ClientCredentialsGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=False)
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token, request)
         log.debug('Issuing token to client id %r (%r), %r.',
                   request.client_id, request.client, token)
         return headers, json.dumps(token), 200
