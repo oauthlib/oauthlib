@@ -15,5 +15,5 @@ from .rfc5849 import SIGNATURE_TYPE_BODY
 from .rfc5849.request_validator import RequestValidator
 from .rfc5849.endpoints import RequestTokenEndpoint, AuthorizationEndpoint
 from .rfc5849.endpoints import AccessTokenEndpoint, ResourceEndpoint
-from .rfc5849.endpoints import WebApplicationServer
+from .rfc5849.endpoints import SignatureOnlyEndpoint, WebApplicationServer
 from .rfc5849.errors import *

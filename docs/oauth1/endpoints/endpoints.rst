@@ -14,3 +14,4 @@ See :doc:`../preconfigured_servers` for available composite endpoints/servers.
     authorization
     access_token
     resource
+    signature_only
