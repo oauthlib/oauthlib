@@ -216,6 +216,7 @@ class RequestValidator(object):
         * AccessTokenEndpoint
         * RequestTokenEndpoint
         * ResourceEndpoint
+        * SignatureOnlyEndpoint
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -282,6 +283,7 @@ class RequestValidator(object):
         * AccessTokenEndpoint
         * RequestTokenEndpoint
         * ResourceEndpoint
+        * SignatureOnlyEndpoint
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -415,6 +417,7 @@ class RequestValidator(object):
         * AccessTokenEndpoint
         * RequestTokenEndpoint
         * ResourceEndpoint
+        * SignatureOnlyEndpoint
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -476,6 +479,7 @@ class RequestValidator(object):
         * AccessTokenEndpoint
         * RequestTokenEndpoint
         * ResourceEndpoint
+        * SignatureOnlyEndpoint
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
@@ -593,6 +597,7 @@ class RequestValidator(object):
         * AccessTokenEndpoint
         * RequestTokenEndpoint
         * ResourceEndpoint
+        * SignatureOnlyEndpoint
         """
         raise NotImplementedError("Subclasses must implement this function.")
 
