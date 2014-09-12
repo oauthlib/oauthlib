@@ -322,4 +322,9 @@ def validate_token_parameters(params, scope=None):
     new_scope = params.get('scope', None)
     scope = scope_to_list(scope)
     if scope and new_scope and set(scope) != set(new_scope):
-        raise Warning("Scope has changed to %s." % new_scope)
+        w = Warning("Scope has changed from {old} to {new}.".format(
+            old=scope, new=new_scope,
+        ))
+        w.old_scope = scope
+        w.new_scope = new_scope
+        raise w
