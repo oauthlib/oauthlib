@@ -232,7 +232,7 @@ def parse_implicit_response(uri, state=None, scope=None):
     return params
 
 
-def parse_token_response(body, scope=None):
+def parse_token_response(body, scope=None, raise_on_scope_change=True):
     """Parse the JSON token response body into a dict.
 
     The authorization server issues an access token and optional refresh
@@ -269,6 +269,9 @@ def parse_token_response(body, scope=None):
 
     :param body: The full json encoded response body.
     :param scope: The scope requested during authorization.
+    :param raise_on_scope_change: By default, this function raises a Warning
+        if the token scope is different from the requested scope. To disable
+        this warning, set this to False.
 
     For example:
 
@@ -300,11 +303,11 @@ def parse_token_response(body, scope=None):
     if 'expires_in' in params:
         params['expires_at'] = time.time() + int(params['expires_in'])
 
-    validate_token_parameters(params, scope)
+    validate_token_parameters(params, scope, raise_on_scope_change=raise_on_scope_change)
     return params
 
 
-def validate_token_parameters(params, scope=None):
+def validate_token_parameters(params, scope=None, raise_on_scope_change=True):
     """Ensures token precence, token type, expiration and scope in params."""
     if 'error' in params:
         raise_from_error(params.get('error'), params)
@@ -314,6 +317,9 @@ def validate_token_parameters(params, scope=None):
 
     if not 'token_type' in params:
         raise MissingTokenTypeError()
+
+    if not raise_on_scope_change:
+        return
 
     # If the issued access token scope is different from the one requested by
     # the client, the authorization server MUST include the "scope" response

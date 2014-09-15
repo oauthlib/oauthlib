@@ -59,7 +59,7 @@ class BackendApplicationClient(Client):
         return prepare_token_request('client_credentials', body=body,
                                      scope=scope, **kwargs)
 
-    def parse_request_body_response(self, body, scope=None):
+    def parse_request_body_response(self, body, scope=None, raise_on_scope_change=True):
         """Parse the JSON response body.
 
         If the access token request is valid and authorized, the
@@ -70,8 +70,12 @@ class BackendApplicationClient(Client):
 
         :param body: The response body from the token request.
         :param scope: Scopes originally requested.
+        :param raise_on_scope_change: By default, this function raises a Warning
+            if the token scope is different from the requested scope. To disable
+            this warning, set this to False.
         :return: Dictionary of token parameters.
-        :raises: Warning if scope has changed. OAuth2Error if response is invalid.
+        :raises: Warning if scope has changed and raise_on_scope_change is True.
+            OAuth2Error if response is invalid.
 
         These response are json encoded and could easily be parsed without
         the assistance of OAuthLib. However, there are a few subtle issues
@@ -153,6 +157,9 @@ class BackendApplicationClient(Client):
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
         """
-        self.token = parse_token_response(body, scope=scope)
+        self.token = parse_token_response(
+            body, scope=scope,
+            raise_on_scope_change=raise_on_scope_change,
+        )
         self._populate_attributes(self.token)
         return self.token
