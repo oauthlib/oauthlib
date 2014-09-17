@@ -118,6 +118,21 @@ class ParameterTests(TestCase):
        'scope': ['abc', 'def']
     }
 
+    url_encoded_response = ('access_token=2YotnFZFEjr1zCsicMWpAA'
+                            '&token_type=example'
+                            '&expires_in=3600'
+                            '&refresh_token=tGzv3JOkF0XG5Qx2TlKWIA'
+                            '&example_parameter=example_value'
+                            '&scope=abc def')
+
+    url_encoded_error = 'error=invalid_request'
+
+    url_encoded_notoken = ('token_type=example'
+                           '&expires_in=3600'
+                           '&refresh_token=tGzv3JOkF0XG5Qx2TlKWIA'
+                           '&example_parameter=example_value')
+
+
     def test_prepare_grant_uri(self):
         """Verify correct authorization URI construction."""
         self.assertURLEqual(prepare_grant_uri(**self.auth_grant), self.auth_grant_uri)
@@ -166,3 +181,10 @@ class ParameterTests(TestCase):
         self.assertRaises(InvalidRequestError, parse_token_response, self.json_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.json_notoken)
         self.assertRaises(Warning, parse_token_response, self.json_response, scope='aaa')
+
+    def test_url_encoded_token_response(self):
+        """Verify correct parameter parsing and validation for token responses. """
+        self.assertEqual(parse_token_response(self.url_encoded_response), self.json_dict)
+        self.assertRaises(InvalidRequestError, parse_token_response, self.url_encoded_error)
+        self.assertRaises(MissingTokenError, parse_token_response, self.url_encoded_notoken)
+        self.assertRaises(Warning, parse_token_response, self.url_encoded_response, scope='aaa')
