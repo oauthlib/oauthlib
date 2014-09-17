@@ -10,6 +10,7 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 from __future__ import absolute_import, unicode_literals
 
 import json
+import os
 import time
 try:
     import urlparse
@@ -327,7 +328,8 @@ def validate_token_parameters(params, scope=None):
         raise MissingTokenError(description="Missing access token parameter.")
 
     if not 'token_type' in params:
-        raise MissingTokenTypeError()
+        if os.environ.get('OAUTHLIB_STRICT_TOKEN_TYPE'):
+            raise MissingTokenTypeError()
 
     # If the issued access token scope is different from the one requested by
     # the client, the authorization server MUST include the "scope" response
