@@ -108,6 +108,13 @@ class ParameterTests(TestCase):
                    '   "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                    '   "example_parameter": "example_value" }')
 
+    json_expires = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
+                    '  "token_type": "example",'
+                    '  "expires": 3600,'
+                    '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
+                    '  "example_parameter": "example_value",'
+                    '  "scope":"abc def"}')
+
     json_dict = {
        'access_token': '2YotnFZFEjr1zCsicMWpAA',
        'token_type': 'example',
@@ -188,3 +195,7 @@ class ParameterTests(TestCase):
         self.assertRaises(InvalidRequestError, parse_token_response, self.url_encoded_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.url_encoded_notoken)
         self.assertRaises(Warning, parse_token_response, self.url_encoded_response, scope='aaa')
+
+    def test_token_response_with_expires(self):
+        """Verify fallback for alternate spelling of expires_in. """
+        self.assertEqual(parse_token_response(self.json_expires), self.json_dict)
