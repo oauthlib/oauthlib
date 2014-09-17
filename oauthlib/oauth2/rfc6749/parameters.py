@@ -292,7 +292,18 @@ def parse_token_response(body, scope=None):
     .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
     .. _`RFC4627`: http://tools.ietf.org/html/rfc4627
     """
-    params = json.loads(body)
+    try:
+        params = json.loads(body)
+    except ValueError:
+
+        # Fall back to URL-encoded string, to support old implementations,
+        # including (at time of writing) Facebook. See:
+        #   https://github.com/idan/oauthlib/issues/267
+
+        params = dict(urlparse.parse_qsl(body))
+        for key in ('expires_in', 'expires'):
+            if key in params:  # cast a couple things to int
+                params[key] = int(params[key])
 
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])

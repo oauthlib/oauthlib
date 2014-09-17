@@ -183,7 +183,7 @@ class ParameterTests(TestCase):
         self.assertRaises(Warning, parse_token_response, self.json_response, scope='aaa')
 
     def test_url_encoded_token_response(self):
-        """Verify correct parameter parsing and validation for token responses. """
+        """Verify fallback parameter parsing and validation for token responses. """
         self.assertEqual(parse_token_response(self.url_encoded_response), self.json_dict)
         self.assertRaises(InvalidRequestError, parse_token_response, self.url_encoded_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.url_encoded_notoken)
