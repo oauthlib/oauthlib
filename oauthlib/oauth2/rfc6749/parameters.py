@@ -308,6 +308,9 @@ def parse_token_response(body, scope=None):
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
 
+    if 'expires' in params:
+        params['expires_in'] = params.pop('expires')
+
     if 'expires_in' in params:
         params['expires_at'] = time.time() + int(params['expires_in'])
 
