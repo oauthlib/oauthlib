@@ -108,6 +108,13 @@ class ParameterTests(TestCase):
                    '   "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                    '   "example_parameter": "example_value" }')
 
+    json_expires = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
+                    '  "token_type": "example",'
+                    '  "expires": 3600,'
+                    '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
+                    '  "example_parameter": "example_value",'
+                    '  "scope":"abc def"}')
+
     json_dict = {
        'access_token': '2YotnFZFEjr1zCsicMWpAA',
        'token_type': 'example',
@@ -117,6 +124,29 @@ class ParameterTests(TestCase):
        'example_parameter': 'example_value',
        'scope': ['abc', 'def']
     }
+
+    json_notype_dict = {
+       'access_token': '2YotnFZFEjr1zCsicMWpAA',
+       'expires_in': 3600,
+       'expires_at': 4600,
+       'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
+       'example_parameter': 'example_value',
+    }
+
+    url_encoded_response = ('access_token=2YotnFZFEjr1zCsicMWpAA'
+                            '&token_type=example'
+                            '&expires_in=3600'
+                            '&refresh_token=tGzv3JOkF0XG5Qx2TlKWIA'
+                            '&example_parameter=example_value'
+                            '&scope=abc def')
+
+    url_encoded_error = 'error=invalid_request'
+
+    url_encoded_notoken = ('token_type=example'
+                           '&expires_in=3600'
+                           '&refresh_token=tGzv3JOkF0XG5Qx2TlKWIA'
+                           '&example_parameter=example_value')
+
 
     def test_prepare_grant_uri(self):
         """Verify correct authorization URI construction."""
@@ -153,8 +183,6 @@ class ParameterTests(TestCase):
                 self.implicit_dict)
         self.assertRaises(MissingTokenError, parse_implicit_response,
                 self.implicit_notoken)
-        self.assertRaises(MissingTokenTypeError, parse_implicit_response,
-                self.implicit_notype)
         self.assertRaises(ValueError, parse_implicit_response,
                 self.implicit_nostate, state=self.state)
         self.assertRaises(ValueError, parse_implicit_response,
@@ -166,3 +194,23 @@ class ParameterTests(TestCase):
         self.assertRaises(InvalidRequestError, parse_token_response, self.json_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.json_notoken)
         self.assertRaises(Warning, parse_token_response, self.json_response, scope='aaa')
+
+    def test_json_token_notype(self):
+        """Verify strict token type parsing only when configured. """
+        self.assertEqual(parse_token_response(self.json_notype), self.json_notype_dict)
+        try:
+            os.environ['OAUTHLIB_STRICT_TOKEN_TYPE'] = '1'
+            self.assertRaises(MissingTokenTypeError, parse_token_response, self.json_notype)
+        finally:
+            del os.environ['OAUTHLIB_STRICT_TOKEN_TYPE']
+
+    def test_url_encoded_token_response(self):
+        """Verify fallback parameter parsing and validation for token responses. """
+        self.assertEqual(parse_token_response(self.url_encoded_response), self.json_dict)
+        self.assertRaises(InvalidRequestError, parse_token_response, self.url_encoded_error)
+        self.assertRaises(MissingTokenError, parse_token_response, self.url_encoded_notoken)
+        self.assertRaises(Warning, parse_token_response, self.url_encoded_response, scope='aaa')
+
+    def test_token_response_with_expires(self):
+        """Verify fallback for alternate spelling of expires_in. """
+        self.assertEqual(parse_token_response(self.json_expires), self.json_dict)
