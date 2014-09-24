@@ -14,6 +14,7 @@ from oauthlib.common import urlencode, add_params_to_uri
 class OAuth2Error(Exception):
     error = None
     status_code = 400
+    description = ''
 
     def __init__(self, description=None, uri=None, state=None, status_code=None,
                  request=None):
@@ -36,7 +37,12 @@ class OAuth2Error(Exception):
 
         request:  Oauthlib Request object
         """
-        self.description = description
+        self.description = description or self.description
+        message = '(%s) %s' % (self.error, self.description)
+        if request:
+            message += ' ' + repr(request)
+        super(OAuth2Error, self).__init__(message)
+
         self.uri = uri
         self.state = state
 

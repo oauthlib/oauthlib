@@ -393,6 +393,11 @@ class Request(object):
     def __getattr__(self, name):
         return self._params.get(name, None)
 
+
+    def __repr__(self):
+        return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
+                self.uri, self.http_method, self.headers, self.body)
+
     @property
     def uri_query(self):
         return urlparse.urlparse(self.uri).query
