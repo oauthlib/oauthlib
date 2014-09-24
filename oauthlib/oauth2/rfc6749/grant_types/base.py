@@ -5,8 +5,11 @@ oauthlib.oauth2.rfc6749.grant_types
 """
 from __future__ import unicode_literals, absolute_import
 
-from oauthlib.common import log
+import logging
+
 from oauthlib.oauth2.rfc6749 import errors, utils
+
+log = logging.getLogger(__name__)
 
 
 class GrantTypeBase(object):

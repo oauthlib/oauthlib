@@ -10,10 +10,14 @@ returned to the client.
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import log, urlencode
+import logging
+
+from oauthlib.common import urlencode
 
 from .base import BaseEndpoint
 from .. import errors
+
+log = logging.getLogger(__name__)
 
 
 class RequestTokenEndpoint(BaseEndpoint):

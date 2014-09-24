@@ -4,12 +4,15 @@ oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import unicode_literals, absolute_import
+
 import json
-from oauthlib.common import log
+import logging
 
 from .base import GrantTypeBase
 from .. import errors
 from ..request_validator import RequestValidator
+
+log = logging.getLogger(__name__)
 
 
 class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):

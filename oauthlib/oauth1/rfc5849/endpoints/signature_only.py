@@ -8,10 +8,12 @@ This module is an implementation of the signing logic of OAuth 1.0 RFC 5849.
 
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import log
+import logging
 
 from .base import BaseEndpoint
 from .. import errors
+
+log = logging.getLogger(__name__)
 
 
 class SignatureOnlyEndpoint(BaseEndpoint):

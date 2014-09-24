@@ -9,7 +9,7 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 from __future__ import absolute_import, unicode_literals
 
 import logging
-log = logging.getLogger("oauthlib")
+log = logging.getLogger(__name__)
 
 import sys
 try:

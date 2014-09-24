@@ -4,10 +4,10 @@ oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import unicode_literals, absolute_import
+
 import logging
 
-
-log = logging.getLogger('oauthlib')
+log = logging.getLogger(__name__)
 
 
 class RequestValidator(object):
