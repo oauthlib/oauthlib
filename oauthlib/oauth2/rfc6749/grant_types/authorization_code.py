@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 
 class AuthorizationCodeGrant(GrantTypeBase):
+
     """`Authorization Code Grant`_
 
     The authorization code grant type is used to obtain both access
@@ -93,6 +94,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
     .. _`Authorization Code Grant`: http://tools.ietf.org/html/rfc6749#section-4.1
     """
+
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
 
@@ -210,7 +212,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         grant = self.create_authorization_code(request)
         log.debug('Saving grant %r for %r.', grant, request)
-        self.request_validator.save_authorization_code(request.client_id, grant, request)
+        self.request_validator.save_authorization_code(
+            request.client_id, grant, request)
         return {'Location': common.add_params_to_uri(request.redirect_uri, grant.items())}, None, 302
 
     def create_token_response(self, request, token_handler):
@@ -223,9 +226,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         code is bound to the client identifier and redirection URI.
         """
         headers = {
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-store',
-                'Pragma': 'no-cache',
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
         }
         try:
             self.validate_token_request(request)
@@ -236,7 +239,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         token = token_handler.create_token(request, refresh_token=True)
         self.request_validator.invalidate_authorization_code(
-                request.client_id, request.code, request)
+            request.client_id, request.code, request)
         return headers, json.dumps(token), 200
 
     def validate_authorization_request(self, request):
@@ -264,10 +267,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # REQUIRED. The client identifier as described in Section 2.2.
         # http://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
-            raise errors.MissingClientIdError(state=request.state, request=request)
+            raise errors.MissingClientIdError(
+                state=request.state, request=request)
 
         if not self.request_validator.validate_client_id(request.client_id, request):
-            raise errors.InvalidClientIdError(state=request.state, request=request)
+            raise errors.InvalidClientIdError(
+                state=request.state, request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
         # http://tools.ietf.org/html/rfc6749#section-3.1.2
@@ -277,18 +282,21 @@ class AuthorizationCodeGrant(GrantTypeBase):
             request.using_default_redirect_uri = False
             log.debug('Using provided redirect_uri %s', request.redirect_uri)
             if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(state=request.state, request=request)
+                raise errors.InvalidRedirectURIError(
+                    state=request.state, request=request)
 
             if not self.request_validator.validate_redirect_uri(
                     request.client_id, request.redirect_uri, request):
-                raise errors.MismatchingRedirectURIError(state=request.state, request=request)
+                raise errors.MismatchingRedirectURIError(
+                    state=request.state, request=request)
         else:
             request.redirect_uri = self.request_validator.get_default_redirect_uri(
-                    request.client_id, request)
+                request.client_id, request)
             request.using_default_redirect_uri = True
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
-                raise errors.MissingRedirectURIError(state=request.state, request=request)
+                raise errors.MissingRedirectURIError(
+                    state=request.state, request=request)
 
         # Then check for normal errors.
 
@@ -303,33 +311,34 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # populated through the use of specific exceptions.
         if request.response_type is None:
             raise errors.InvalidRequestError(state=request.state,
-                    description='Missing response_type parameter.', request=request)
+                                             description='Missing response_type parameter.', request=request)
 
         for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
             if param in request.duplicate_params:
                 raise errors.InvalidRequestError(state=request.state,
-                        description='Duplicate %s parameter.' % param, request=request)
+                                                 description='Duplicate %s parameter.' % param, request=request)
 
         if not self.request_validator.validate_response_type(request.client_id,
-                request.response_type, request.client, request):
+                                                             request.response_type, request.client, request):
             log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
             raise errors.UnauthorizedClientError(request=request)
 
         # REQUIRED. Value MUST be set to "code".
         if request.response_type != 'code':
-            raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
+            raise errors.UnsupportedResponseTypeError(
+                state=request.state, request=request)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
         return request.scopes, {
-                'client_id': request.client_id,
-                'redirect_uri': request.redirect_uri,
-                'response_type': request.response_type,
-                'state': request.state,
-                'request': request,
+            'client_id': request.client_id,
+            'redirect_uri': request.redirect_uri,
+            'response_type': request.response_type,
+            'state': request.state,
+            'request': request,
         }
 
     def validate_token_request(self, request):

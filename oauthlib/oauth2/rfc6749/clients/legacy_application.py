@@ -14,6 +14,7 @@ from ..parameters import parse_token_response
 
 
 class LegacyApplicationClient(Client):
+
     """A public client using the resource owner password and username directly.
 
     The resource owner password credentials grant type is suitable in
@@ -69,7 +70,7 @@ class LegacyApplicationClient(Client):
         .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         return prepare_token_request('password', body=body, username=username,
-                password=password, scope=scope, **kwargs)
+                                     password=password, scope=scope, **kwargs)
 
     def parse_request_body_response(self, body, scope=None):
         """Parse the JSON response body.

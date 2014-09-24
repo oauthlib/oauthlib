@@ -39,6 +39,7 @@ CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 
 
 class Client(object):
+
     """A client used to sign OAuth 1.0 RFC 5849 requests."""
     SIGNATURE_METHODS = {
         SIGNATURE_HMAC: signature.sign_hmac_sha1_with_client,
@@ -51,15 +52,15 @@ class Client(object):
         cls.SIGNATURE_METHODS[method_name] = method_callback
 
     def __init__(self, client_key,
-            client_secret=None,
-            resource_owner_key=None,
-            resource_owner_secret=None,
-            callback_uri=None,
-            signature_method=SIGNATURE_HMAC,
-            signature_type=SIGNATURE_TYPE_AUTH_HEADER,
-            rsa_key=None, verifier=None, realm=None,
-            encoding='utf-8', decoding=None,
-            nonce=None, timestamp=None):
+                 client_secret=None,
+                 resource_owner_key=None,
+                 resource_owner_secret=None,
+                 callback_uri=None,
+                 signature_method=SIGNATURE_HMAC,
+                 signature_type=SIGNATURE_TYPE_AUTH_HEADER,
+                 rsa_key=None, verifier=None, realm=None,
+                 encoding='utf-8', decoding=None,
+                 nonce=None, timestamp=None):
         """Create an OAuth 1 client.
 
         :param client_key: Client key (consumer key), mandatory.
@@ -101,12 +102,14 @@ class Client(object):
         self.timestamp = encode(timestamp)
 
         if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
-            raise ValueError('rsa_key is required when using RSA signature method.')
+            raise ValueError(
+                'rsa_key is required when using RSA signature method.')
 
     def __repr__(self):
         attrs = vars(self).copy()
         attrs['client_secret'] = '****' if attrs['client_secret'] else None
-        attrs['resource_owner_secret'] = '****' if attrs['resource_owner_secret'] else None
+        attrs[
+            'resource_owner_secret'] = '****' if attrs['resource_owner_secret'] else None
         attribute_str = ', '.join('%s=%s' % (k, v) for k, v in attrs.items())
         return '<%s %s>' % (self.__class__.__name__, attribute_str)
 
@@ -123,7 +126,7 @@ class Client(object):
         if self.signature_method == SIGNATURE_PLAINTEXT:
             # fast-path
             return signature.sign_plaintext(self.client_secret,
-                self.resource_owner_secret)
+                                            self.resource_owner_secret)
 
         uri, headers, body = self._render(request)
 
@@ -135,12 +138,12 @@ class Client(object):
 
         normalized_params = signature.normalize_parameters(collected_params)
         normalized_uri = signature.normalize_base_string_uri(uri,
-            headers.get('Host', None))
+                                                             headers.get('Host', None))
         log.debug("Normalized params: {0}".format(normalized_params))
         log.debug("Normalized URI: {0}".format(normalized_uri))
 
         base_string = signature.construct_base_string(request.http_method,
-            normalized_uri, normalized_params)
+                                                      normalized_uri, normalized_params)
 
         log.debug("Base signing string: {0}".format(base_string))
 
@@ -196,14 +199,17 @@ class Client(object):
         # like the spec requires. This would be a fundamental change though, and
         # I'm not sure how I feel about it.
         if self.signature_type == SIGNATURE_TYPE_AUTH_HEADER:
-            headers = parameters.prepare_headers(request.oauth_params, request.headers, realm=realm)
+            headers = parameters.prepare_headers(
+                request.oauth_params, request.headers, realm=realm)
         elif self.signature_type == SIGNATURE_TYPE_BODY and request.decoded_body is not None:
-            body = parameters.prepare_form_encoded_body(request.oauth_params, request.decoded_body)
+            body = parameters.prepare_form_encoded_body(
+                request.oauth_params, request.decoded_body)
             if formencode:
                 body = urlencode(body)
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
         elif self.signature_type == SIGNATURE_TYPE_QUERY:
-            uri = parameters.prepare_request_uri_query(request.oauth_params, request.uri)
+            uri = parameters.prepare_request_uri_query(
+                request.oauth_params, request.uri)
         else:
             raise ValueError('Unknown signature type specified.')
 
@@ -253,16 +259,19 @@ class Client(object):
         # if [...]:
         #    *  The entity-body is single-part.
         if multipart and has_params:
-            raise ValueError("Headers indicate a multipart body but body contains parameters.")
+            raise ValueError(
+                "Headers indicate a multipart body but body contains parameters.")
         #    *  The entity-body follows the encoding requirements of the
         #       "application/x-www-form-urlencoded" content-type as defined by
         #       [W3C.REC-html40-19980424].
         elif should_have_params and not has_params:
-            raise ValueError("Headers indicate a formencoded body but body was not decodable.")
+            raise ValueError(
+                "Headers indicate a formencoded body but body was not decodable.")
         #    *  The HTTP request entity-header includes the "Content-Type"
         #       header field set to "application/x-www-form-urlencoded".
         elif not should_have_params and has_params:
-            raise ValueError("Body contains parameters but Content-Type header was not set.")
+            raise ValueError(
+                "Body contains parameters but Content-Type header was not set.")
 
         # 3.5.2.  Form-Encoded Body
         # Protocol parameters can be transmitted in the HTTP request entity-
@@ -275,7 +284,8 @@ class Client(object):
         #    field set to "application/x-www-form-urlencoded".
         elif self.signature_type == SIGNATURE_TYPE_BODY and not (
                 should_have_params and has_params and not multipart):
-            raise ValueError('Body signatures may only be used with form-urlencoded content')
+            raise ValueError(
+                'Body signatures may only be used with form-urlencoded content')
 
         # We amend http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
         # with the clause that parameters from body should only be included
@@ -290,11 +300,12 @@ class Client(object):
         request.oauth_params = self.get_oauth_params(request)
 
         # generate the signature
-        request.oauth_params.append(('oauth_signature', self.get_oauth_signature(request)))
+        request.oauth_params.append(
+            ('oauth_signature', self.get_oauth_signature(request)))
 
         # render the signed request and return it
         uri, headers, body = self._render(request, formencode=True,
-                realm=(realm or self.realm))
+                                          realm=(realm or self.realm))
 
         if self.decoding:
             log.debug('Encoding URI, headers and body to %s.', self.decoding)

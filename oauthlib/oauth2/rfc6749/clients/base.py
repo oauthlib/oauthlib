@@ -23,6 +23,7 @@ BODY = 'body'
 
 
 class Client(object):
+
     """Base OAuth2 client responsible for access tokens.
 
     While this class can be used to simply append tokens onto requests
@@ -30,14 +31,14 @@ class Client(object):
     """
 
     def __init__(self, client_id,
-            default_token_placement=AUTH_HEADER,
-            token_type='Bearer',
-            access_token=None,
-            refresh_token=None,
-            mac_key=None,
-            mac_algorithm=None,
-            token=None,
-            **kwargs):
+                 default_token_placement=AUTH_HEADER,
+                 token_type='Bearer',
+                 access_token=None,
+                 refresh_token=None,
+                 mac_key=None,
+                 mac_algorithm=None,
+                 token=None,
+                 **kwargs):
         """Initialize a client with commonly used attributes."""
 
         self.client_id = client_id
@@ -68,7 +69,7 @@ class Client(object):
         }
 
     def add_token(self, uri, http_method='GET', body=None, headers=None,
-            token_placement=None, **kwargs):
+                  token_placement=None, **kwargs):
         """Add token to the request uri, body or authorization header.
 
         The access token type provides the client with the information
@@ -107,7 +108,8 @@ class Client(object):
 
         token_placement = token_placement or self.default_token_placement
 
-        case_insensitive_token_types = dict((k.lower(), v) for k, v in self.token_types.items())
+        case_insensitive_token_types = dict(
+            (k.lower(), v) for k, v in self.token_types.items())
         if not self.token_type.lower() in case_insensitive_token_types:
             raise ValueError("Unsupported token type: %s" % self.token_type)
 
@@ -118,7 +120,7 @@ class Client(object):
             raise TokenExpiredError()
 
         return case_insensitive_token_types[self.token_type.lower()](uri, http_method, body,
-                    headers, token_placement, **kwargs)
+                                                                     headers, token_placement, **kwargs)
 
     def prepare_refresh_body(self, body='', refresh_token=None, scope=None, **kwargs):
         """Prepare an access token request, using a refresh token.
@@ -141,10 +143,10 @@ class Client(object):
         """
         refresh_token = refresh_token or self.refresh_token
         return prepare_token_request('refresh_token', body=body, scope=scope,
-                refresh_token=refresh_token, **kwargs)
+                                     refresh_token=refresh_token, **kwargs)
 
     def _add_bearer_token(self, uri, http_method='GET', body=None,
-            headers=None, token_placement=None):
+                          headers=None, token_placement=None):
         """Add a bearer token to the request uri, body or authorization header."""
         if token_placement == AUTH_HEADER:
             headers = tokens.prepare_bearer_headers(self.access_token, headers)
@@ -160,14 +162,14 @@ class Client(object):
         return uri, headers, body
 
     def _add_mac_token(self, uri, http_method='GET', body=None,
-            headers=None, token_placement=AUTH_HEADER, ext=None, **kwargs):
+                       headers=None, token_placement=AUTH_HEADER, ext=None, **kwargs):
         """Add a MAC token to the request authorization header.
 
         Warning: MAC token support is experimental as the spec is not yet stable.
         """
         headers = tokens.prepare_mac_header(self.access_token, uri,
-                self.mac_key, http_method, headers=headers, body=body, ext=ext,
-                hash_algorithm=self.mac_algorithm, **kwargs)
+                                            self.mac_key, http_method, headers=headers, body=body, ext=ext,
+                                            hash_algorithm=self.mac_algorithm, **kwargs)
         return uri, headers, body
 
     def _populate_attributes(self, response):

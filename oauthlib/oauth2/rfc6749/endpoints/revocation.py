@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 
 
 class RevocationEndpoint(BaseEndpoint):
+
     """Token revocation endpoint.
 
     Endpoint used by authenticated clients to revoke access and refresh tokens.
@@ -37,11 +38,11 @@ class RevocationEndpoint(BaseEndpoint):
         BaseEndpoint.__init__(self)
         self.request_validator = request_validator
         self._supported_token_types = (
-                supported_token_types or self.valid_token_types)
+            supported_token_types or self.valid_token_types)
 
     @catch_errors_and_unavailability
     def create_revocation_response(self, uri, http_method='POST', body=None,
-            headers=None):
+                                   headers=None):
         """Revoke supplied access or refresh token.
 
 
@@ -60,7 +61,8 @@ class RevocationEndpoint(BaseEndpoint):
         An invalid token type hint value is ignored by the authorization server
         and does not influence the revocation response.
         """
-        request = Request(uri, http_method=http_method, body=body, headers=headers)
+        request = Request(
+            uri, http_method=http_method, body=body, headers=headers)
         try:
             self.validate_revocation_request(request)
             log.debug('Token revocation valid for %r.', request)
@@ -69,7 +71,7 @@ class RevocationEndpoint(BaseEndpoint):
             return {}, e.json, e.status_code
 
         self.request_validator.revoke_token(request.token,
-                request.token_type_hint, request)
+                                            request.token_type_hint, request)
         response_body = request.callback + '()' if request.callback else None
         return {}, response_body, 200
 
@@ -112,7 +114,7 @@ class RevocationEndpoint(BaseEndpoint):
         """
         if not request.token:
             raise InvalidRequestError(request=request,
-                    description='Missing token parameter.')
+                                      description='Missing token parameter.')
 
         if not self.request_validator.authenticate_client(request):
             raise InvalidClientError(request=request)

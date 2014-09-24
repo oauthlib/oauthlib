@@ -14,6 +14,7 @@ from ..parameters import parse_implicit_response
 
 
 class MobileApplicationClient(Client):
+
     """A public client utilizing the implicit code grant workflow.
 
     A user-agent-based application is a public client in which the
@@ -47,7 +48,7 @@ class MobileApplicationClient(Client):
     """
 
     def prepare_request_uri(self, uri, redirect_uri=None, scope=None,
-            state=None, **kwargs):
+                            state=None, **kwargs):
         """Prepare the implicit grant request URI.
 
         The client constructs the request URI by adding the following
@@ -92,7 +93,7 @@ class MobileApplicationClient(Client):
         .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
         """
         return prepare_grant_uri(uri, self.client_id, 'token',
-                redirect_uri=redirect_uri, state=state, scope=scope, **kwargs)
+                                 redirect_uri=redirect_uri, state=state, scope=scope, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None, scope=None):
         """Parse the response URI fragment.

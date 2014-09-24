@@ -24,7 +24,7 @@ from .utils import list_to_scope, scope_to_list, is_secure_transport
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
-            scope=None, state=None, **kwargs):
+                      scope=None, state=None, **kwargs):
     """Prepare the authorization grant request URI.
 
     The client constructs the request URI by adding the following

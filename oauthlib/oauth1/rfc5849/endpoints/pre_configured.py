@@ -5,7 +5,7 @@ from . import AccessTokenEndpoint, ResourceEndpoint
 
 
 class WebApplicationServer(RequestTokenEndpoint, AuthorizationEndpoint,
-        AccessTokenEndpoint, ResourceEndpoint):
+                           AccessTokenEndpoint, ResourceEndpoint):
 
     def __init__(self, request_validator):
         RequestTokenEndpoint.__init__(self, request_validator)

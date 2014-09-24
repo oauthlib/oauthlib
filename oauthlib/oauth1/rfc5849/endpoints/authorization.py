@@ -17,7 +17,9 @@ try:
 except ImportError:
     from urllib.parse import urlencode
 
+
 class AuthorizationEndpoint(BaseEndpoint):
+
     """An endpoint responsible for letting authenticated users authorize access
     to their protected resources to a client.
 
@@ -49,11 +51,11 @@ class AuthorizationEndpoint(BaseEndpoint):
         }
         verifier.update(credentials)
         self.request_validator.save_verifier(
-                request.resource_owner_key, verifier, request)
+            request.resource_owner_key, verifier, request)
         return verifier
 
     def create_authorization_response(self, uri, http_method='GET', body=None,
-            headers=None, realms=None, credentials=None):
+                                      headers=None, realms=None, credentials=None):
         """Create an authorization response, with a new request token if valid.
 
         :param uri: The full URI of the token request.
@@ -105,11 +107,11 @@ class AuthorizationEndpoint(BaseEndpoint):
             200
         """
         request = self._create_request(uri, http_method=http_method, body=body,
-                headers=headers)
+                                       headers=headers)
 
         if not request.resource_owner_key:
             raise errors.InvalidRequestError(
-                    'Missing mandatory parameter oauth_token.')
+                'Missing mandatory parameter oauth_token.')
         if not self.request_validator.verify_request_token(
                 request.resource_owner_key, request):
             raise errors.InvalidClientError()
@@ -118,22 +120,24 @@ class AuthorizationEndpoint(BaseEndpoint):
         if (request.realms and not self.request_validator.verify_realms(
                 request.resource_owner_key, request.realms, request)):
             raise errors.InvalidRequestError(
-                    description=('User granted access to realms outside of '
-                                 'what the client may request.'))
+                description=('User granted access to realms outside of '
+                             'what the client may request.'))
 
         verifier = self.create_verifier(request, credentials or {})
         redirect_uri = self.request_validator.get_redirect_uri(
-                request.resource_owner_key, request)
+            request.resource_owner_key, request)
         if redirect_uri == 'oob':
-            response_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            response_headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'}
             response_body = urlencode(verifier)
             return response_headers, response_body, 200
         else:
-            populated_redirect = add_params_to_uri(redirect_uri, verifier.items())
+            populated_redirect = add_params_to_uri(
+                redirect_uri, verifier.items())
             return {'Location': populated_redirect}, None, 302
 
     def get_realms_and_credentials(self, uri, http_method='GET', body=None,
-            headers=None):
+                                   headers=None):
         """Fetch realms and credentials for the presented request token.
 
         :param uri: The full URI of the token request.
@@ -146,12 +150,12 @@ class AuthorizationEndpoint(BaseEndpoint):
                   authorization form.
         """
         request = self._create_request(uri, http_method=http_method, body=body,
-                headers=headers)
+                                       headers=headers)
 
         if not self.request_validator.verify_request_token(
                 request.resource_owner_key, request):
             raise errors.InvalidClientError()
 
         realms = self.request_validator.get_realms(
-                request.resource_owner_key, request)
+            request.resource_owner_key, request)
         return realms, {'resource_owner_key': request.resource_owner_key}

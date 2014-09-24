@@ -15,6 +15,7 @@ from ..parameters import parse_token_response
 
 
 class WebApplicationClient(Client):
+
     """A client utilizing the authorization code grant workflow.
 
     A web application is a confidential client running on a web
@@ -37,7 +38,7 @@ class WebApplicationClient(Client):
         self.code = code
 
     def prepare_request_uri(self, uri, redirect_uri=None, scope=None,
-            state=None, **kwargs):
+                            state=None, **kwargs):
         """Prepare the authorization code request URI
 
         The client constructs the request URI by adding the following
@@ -82,10 +83,10 @@ class WebApplicationClient(Client):
         .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
         """
         return prepare_grant_uri(uri, self.client_id, 'code',
-                redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
+                                 redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
 
     def prepare_request_body(self, client_id=None, code=None, body='',
-            redirect_uri=None, **kwargs):
+                             redirect_uri=None, **kwargs):
         """Prepare the access token request body.
 
         The client makes a request to the token endpoint by adding the
@@ -124,7 +125,7 @@ class WebApplicationClient(Client):
         """
         code = code or self.code
         return prepare_token_request('authorization_code', code=code, body=body,
-                client_id=self.client_id, redirect_uri=redirect_uri, **kwargs)
+                                     client_id=self.client_id, redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
         """Parse the URI query for code and state.
