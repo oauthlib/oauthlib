@@ -6,6 +6,7 @@ import datetime
 from oauthlib import common
 from oauthlib.oauth2.rfc6749 import utils
 from oauthlib.oauth2 import Client
+from oauthlib.oauth2 import InsecureTransportError
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, URI_QUERY, BODY
 
 
@@ -158,3 +159,35 @@ class ClientTest(TestCase):
         self.assertEqual(uri, self.uri)
         self.assertEqual(body, self.body)
         self.assertEqual(headers, self.mac_01_header)
+
+
+    def test_revocation_request(self):
+        client = Client(self.client_id)
+
+        url = 'https://example.com/revoke'
+        token = 'foobar'
+
+        # Valid request
+        u, h, b = client.prepare_token_revocation_request(url, token)
+        self.assertEqual(u, url)
+        self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(b, 'token=%s&token_type_hint=access_token' % token)
+
+        # Non-HTTPS revocation endpoint
+        self.assertRaises(InsecureTransportError,
+                          client.prepare_token_revocation_request,
+                          'http://example.com/revoke', token)
+
+
+        u, h, b = client.prepare_token_revocation_request(
+            url, token, token_type_hint='refresh_token')
+        self.assertEqual(u, url)
+        self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(b, 'token=%s&token_type_hint=refresh_token' % token)
+
+        # JSONP
+        u, h, b = client.prepare_token_revocation_request(
+            url, token, callback='hello.world')
+        self.assertURLEqual(u, url + '?callback=hello.world&token=%s&token_type_hint=access_token' % token)
+        self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(b, '')
