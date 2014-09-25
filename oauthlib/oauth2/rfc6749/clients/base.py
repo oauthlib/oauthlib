@@ -10,6 +10,7 @@ from __future__ import absolute_import, unicode_literals
 
 import time
 
+from oauthlib.common import generate_token
 from oauthlib.oauth2.rfc6749 import tokens
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_request
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_revocation_request
@@ -22,13 +23,28 @@ AUTH_HEADER = 'auth_header'
 URI_QUERY = 'query'
 BODY = 'body'
 
+FORM_ENC_HEADERS = {
+    'Content-Type': 'application/x-www-form-urlencoded'
+}
 
 class Client(object):
 
-    """Base OAuth2 client responsible for access tokens.
+    """Base OAuth2 client responsible for access token management.
 
-    While this class can be used to simply append tokens onto requests
-    it is often more useful to use a client targeted at a specific workflow.
+    This class also acts as a generic interface providing methods common to all
+    client types such as ``prepare_authorization_request`` and
+    ``prepare_token_revocation_request``. The ``prepare_x_request`` methods are
+    the recommended way of interacting with clients (as opposed to the abstract
+    prepare uri/body/etc methods). They are recommended over the older set
+    because they are easier to use (more consistent) and add a few additional
+    security checks, such as HTTPS and state checking.
+
+    Some of these methods require further implementation only provided by the
+    specific purpose clients such as
+    :py:class:`oauthlib.oauth2.MobileApplicationClient` and thus you should always
+    seek to use the client class matching the OAuth workflow you need. For
+    Python, this is usually :py:class:`oauthlib.oauth2.WebApplicationClient`.
+
     """
 
     def __init__(self, client_id,
@@ -39,8 +55,49 @@ class Client(object):
                  mac_key=None,
                  mac_algorithm=None,
                  token=None,
+                 scope=None,
+                 state=None,
+                 redirect_url=None,
+                 state_generator=generate_token,
                  **kwargs):
-        """Initialize a client with commonly used attributes."""
+        """Initialize a client with commonly used attributes.
+
+        :param client_id: Client identifier given by the OAuth provider upon
+        registration.
+
+        :param default_token_placement: Tokens can be supplied in the Authorization
+        header (default), the URL query component (``query``) or the request
+        body (``body``).
+
+        :param token_type: OAuth 2 token type. Defaults to Bearer. Change this
+        if you specify the ``access_token`` parameter and know it is of a
+        different token type, such as a MAC, JWT or SAML token. Can
+        also be supplied as ``token_type`` inside the ``token`` dict parameter.
+
+        :param access_token: An access token (string) used to authenticate
+        requests to protected resources. Can also be supplied inside the
+        ``token`` dict parameter.
+
+        :param refresh_token: A refresh token (string) used to refresh expired
+        tokens. Can also be supplide inside the ``token`` dict parameter.
+
+        :param mac_key: Encryption key used with MAC tokens.
+
+        :param mac_algorithm:  Hashing algorithm for MAC tokens.
+
+        :param token: A dict of token attributes such as ``access_token``,
+        ``token_type`` and ``expires_at``.
+
+        :param scope: A list of default scopes to request authorization for.
+
+        :param state: A CSRF protection string used during authorization.
+
+        :param redirect_url: The redirection endpoint on the client side to which
+        the user returns after authorization.
+
+        :param state_generator: A no argument state generation callable. Defaults
+        to :py:meth:`oauthlib.common.generate_token`.
+        """
 
         self.client_id = client_id
         self.default_token_placement = default_token_placement
@@ -50,6 +107,10 @@ class Client(object):
         self.mac_key = mac_key
         self.mac_algorithm = mac_algorithm
         self.token = token or {}
+        self.scope = scope
+        self.state_generator = state_generator
+        self.state = state
+        self.redirect_url = redirect_url
         self._expires_at = None
         self._populate_attributes(self.token)
 
@@ -68,6 +129,20 @@ class Client(object):
             'Bearer': self._add_bearer_token,
             'MAC': self._add_mac_token
         }
+
+    def prepare_request_uri(self, *args, **kwargs):
+        """Abstract method used to create request URIs."""
+        raise NotImplementedError("Must be implemented by inheriting classes.")
+
+    def prepare_request_body(self, *args, **kwargs):
+        """Abstract method used to create request bodies."""
+        raise NotImplementedError("Must be implemented by inheriting classes.")
+
+    def parse_request_uri_response(self, *args, **kwargs):
+        """Abstract method used to parse redirection responses."""
+
+    def parse_request_body_response(self, *args, **kwargs):
+        """Abstract method used to parse JSON responses."""
 
     def add_token(self, uri, http_method='GET', body=None, headers=None,
                   token_placement=None, **kwargs):
@@ -122,6 +197,170 @@ class Client(object):
 
         return case_insensitive_token_types[self.token_type.lower()](uri, http_method, body,
                                                                      headers, token_placement, **kwargs)
+
+    def prepare_authorization_request(self, authorization_url, state=None,
+            redirect_url=None, scope=None, **kwargs):
+        """Prepare the authorization request.
+
+        This is the first step in many OAuth flows in which the user is
+        redirected to a certain authorization URL. This method adds
+        required parameters to the authorization URL.
+
+        :param authorization_url: Provider authorization endpoint URL.
+
+        :param state: CSRF protection string. Will be automatically created if
+        not provided. The generated state is available via the ``state``
+        attribute. Clients should verify that the state is unchanged and
+        present in the authorization response. This verification is done
+        automatically if using the ``authorization_response`` parameter
+        with ``prepare_token_request``.
+
+        :param redirect_url: Redirect URL to which the user will be returned
+        after authorization. Must be provided unless previously setup with
+        the provider. If provided then it must also be provided in the
+        token request.
+
+        :param kwargs: Additional parameters to included in the request.
+
+        :returns: The prepared request tuple with (url, headers, body).
+        """
+        if not is_secure_transport(authorization_url):
+            raise InsecureTransportError()
+
+        self.state = state or self.state_generator()
+        self.redirect_url = redirect_url or self.redirect_url
+        self.scope = scope or self.scope
+        auth_url = self.prepare_request_uri(
+                authorization_url, redirect_uri=self.redirect_uri,
+                scope=self.scope, state=self.state, **kwargs)
+        return auth_url, FORM_ENC_HEADERS, ''
+
+    def prepare_token_request(self, token_url, authorization_response=None,
+            redirect_url=None, state=None, body='', **kwargs):
+        """Prepare a token creation request.
+
+        Note that these requests usually require client authentication, either
+        by including client_id or a set of provider specific authentication
+        credentials.
+
+        :param token_url: Provider token creation endpoint URL.
+
+        :param authorization_response: The full redirection URL string, i.e.
+        the location to which the user was redirected after successfull
+        authorization. Used to mine credentials needed to obtain a token
+        in this step, such as authorization code.
+
+        :param redirect_url: The redirect_url supplied with the authorization
+        request (if there was one).
+
+        :param body: Request body (URL encoded string).
+
+        :param kwargs: Additional parameters to included in the request.
+
+        :returns: The prepared request tuple with (url, headers, body).
+        """
+        if not is_secure_transport(token_url):
+            raise InsecureTransportError()
+
+        state = state or self.state
+        if authorization_response:
+            self.parse_request_uri_response(
+                    authorization_response, state=state)
+        self.redirect_url = redirect_url or self.redirect_url
+        body = self.prepare_request_body(body=body,
+                redirect_uri=self.redirect_url, **kwargs)
+
+        return token_url, FORM_ENC_HEADERS, body
+
+    def prepare_refresh_token_request(self, token_url, refresh_token=None,
+            body='', scope=None, **kwargs):
+        """Prepare an access token refresh request.
+
+        Expired access tokens can be replaced by new access tokens without
+        going through the OAuth dance if the client obtained a refresh token.
+        This refresh token and authentication credentials can be used to
+        obtain a new access token, and possibly a new refresh token.
+
+        :param token_url: Provider token refresh endpoint URL.
+
+        :param refresh_token: Refresh token string.
+
+        :param body: Request body (URL encoded string).
+
+        :param scope: List of scopes to request. Must be equal to
+        or a subset of the scopes granted when obtaining the refresh
+        token.
+
+        :param kwargs: Additional parameters to included in the request.
+
+        :returns: The prepared request tuple with (url, headers, body).
+        """
+        if not is_secure_transport(token_url):
+            raise InsecureTransportError()
+
+        self.scope = scope or self.scope
+        body = self._client.prepare_refresh_body(body=body,
+                refresh_token=refresh_token, scope=self.scope, **kwargs)
+        return token_url, FORM_ENC_HEADERS, body
+
+    def prepare_token_revocation_request(self, revocation_url, token,
+            token_type_hint="access_token", body='', callback=None, **kwargs):
+        """Prepare a token revocation request.
+
+        :param revocation_url: Provider token revocation endpoint URL.
+
+        :param token: The access or refresh token to be revoked (string).
+
+        :param token_type_hint: ``"access_token"`` (default) or
+        ``"refresh_token"``. This is optional and if you wish to not pass it you
+        must provide ``token_type_hint=None``.
+
+        :param callback: A jsonp callback such as ``package.callback`` to be invoked
+        upon receiving the response. Not that it should not include a () suffix.
+
+        :param kwargs: Additional parameters to included in the request.
+
+        :returns: The prepared request tuple with (url, headers, body).
+
+        Note that JSONP request may use GET requests as the parameters will
+        be added to the request URL query as opposed to the request body.
+
+        An example of a revocation request
+
+        .. code-block: http
+
+            POST /revoke HTTP/1.1
+            Host: server.example.com
+            Content-Type: application/x-www-form-urlencoded
+            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+
+            token=45ghiukldjahdnhzdauz&token_type_hint=refresh_token
+
+        An example of a jsonp revocation request
+
+        .. code-block: http
+
+            GET /revoke?token=agabcdefddddafdd&callback=package.myCallback HTTP/1.1
+            Host: server.example.com
+            Content-Type: application/x-www-form-urlencoded
+            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+
+        and an error response
+
+        .. code-block: http
+
+        package.myCallback({"error":"unsupported_token_type"});
+
+        Note that these requests usually require client credentials, client_id in
+        the case for public clients and provider specific authentication
+        credentials for confidential clients.
+        """
+        if not is_secure_transport(revocation_url):
+            raise InsecureTransportError()
+
+        return prepare_token_revocation_request(revocation_url, token,
+                token_type_hint=token_type_hint, body=body, callback=callback,
+                **kwargs)
 
     def prepare_refresh_body(self, body='', refresh_token=None, scope=None, **kwargs):
         """Prepare an access token request, using a refresh token.
@@ -201,72 +440,3 @@ class Client(object):
         if 'mac_algorithm' in response:
             self.mac_algorithm = response.get('mac_algorithm')
 
-    def prepare_token_revocation_request(self, url, token,
-            token_type_hint="access_token", body='', callback=None, **kwargs):
-        """Prepare a token revocation request.
-
-        :param url: The token revocation endpoint url.
-
-        :param token: The access or refresh token to be revoked (string).
-
-        :param token_type_hint: ``"access_token"`` (default) or
-        ``"refresh_token"``. This is optional and if you wish to not pass it you
-        must provide ``token_type_hint=None``.
-
-        :param callback: A jsonp callback such as ``package.callback`` to be invoked
-        upon receiving the response. Not that it should not include a () suffix.
-
-        :param kwargs: Additional parameters to send with the request.
-
-        :return: A prepared request tuple of (uri, headers, body)
-
-        Note that JSONP request may use GET requests as the parameters will
-        be added to the request URL query as opposed to the request body.
-
-        An example of a revocation request
-
-        .. code-block: http
-
-            POST /revoke HTTP/1.1
-            Host: server.example.com
-            Content-Type: application/x-www-form-urlencoded
-            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
-
-            token=45ghiukldjahdnhzdauz&token_type_hint=refresh_token
-
-        An example of a jsonp revocation request
-
-        .. code-block: http
-
-            GET /revoke?token=agabcdefddddafdd&callback=package.myCallback HTTP/1.1
-            Host: server.example.com
-            Content-Type: application/x-www-form-urlencoded
-            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
-
-        and an error response
-
-        .. code-block: http
-
-        package.myCallback({"error":"unsupported_token_type"});
-
-        Note that these requests usually require client credentials, client_id in
-        the case for public clients and provider specific authentication
-        credentials for confidential clients.
-        """
-        return prepare_token_revocation_request(url, token,
-                token_type_hint=token_type_hint, body=body, callback=callback,
-                **kwargs)
-
-    def prepare_request_uri(self, *args, **kwargs):
-        """Abstract method used to create request URIs."""
-        raise NotImplementedError("Must be implemented by inheriting classes.")
-
-    def prepare_request_body(self, *args, **kwargs):
-        """Abstract method used to create request bodies."""
-        raise NotImplementedError("Must be implemented by inheriting classes.")
-
-    def parse_request_uri_response(self, *args, **kwargs):
-        """Abstract method used to parse redirection responses."""
-
-    def parse_request_body_response(self, *args, **kwargs):
-        """Abstract method used to parse JSON responses."""
