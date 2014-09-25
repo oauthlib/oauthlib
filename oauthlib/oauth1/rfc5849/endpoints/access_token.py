@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 
 
 class AccessTokenEndpoint(BaseEndpoint):
+
     """An endpoint responsible for providing OAuth 1 access tokens.
 
     Typical use is to instantiate with a request validator and invoke the
@@ -40,7 +41,7 @@ class AccessTokenEndpoint(BaseEndpoint):
         :returns: The token as an urlencoded string.
         """
         request.realms = self.request_validator.get_realms(
-                request.resource_owner_key, request)
+            request.resource_owner_key, request)
         token = {
             'oauth_token': self.token_generator(),
             'oauth_token_secret': self.token_generator(),
@@ -52,8 +53,7 @@ class AccessTokenEndpoint(BaseEndpoint):
         return urlencode(token.items())
 
     def create_access_token_response(self, uri, http_method='GET', body=None,
-            headers=None, credentials=None):
-
+                                     headers=None, credentials=None):
         """Create an access token response, with a new request token if valid.
 
         :param uri: The full URI of the token request.
@@ -104,13 +104,13 @@ class AccessTokenEndpoint(BaseEndpoint):
         try:
             request = self._create_request(uri, http_method, body, headers)
             valid, processed_request = self.validate_access_token_request(
-                    request)
+                request)
             if valid:
                 token = self.create_access_token(request, credentials or {})
                 self.request_validator.invalidate_request_token(
-                        request.client_key,
-                        request.resource_owner_key,
-                        request)
+                    request.client_key,
+                    request.resource_owner_key,
+                    request)
                 return resp_headers, token, 200
             else:
                 return {}, None, 401
@@ -131,20 +131,20 @@ class AccessTokenEndpoint(BaseEndpoint):
 
         if not request.resource_owner_key:
             raise errors.InvalidRequestError(
-                    description='Missing resource owner.')
+                description='Missing resource owner.')
 
         if not self.request_validator.check_request_token(
                 request.resource_owner_key):
             raise errors.InvalidRequestError(
-                    description='Invalid resource owner key format.')
+                description='Invalid resource owner key format.')
 
         if not request.verifier:
             raise errors.InvalidRequestError(
-                    description='Missing verifier.')
+                description='Missing verifier.')
 
         if not self.request_validator.check_verifier(request.verifier):
             raise errors.InvalidRequestError(
-                    description='Invalid verifier format.')
+                description='Invalid verifier format.')
 
         if not self.request_validator.validate_timestamp_and_nonce(
                 request.client_key, request.timestamp, request.nonce, request,
@@ -159,7 +159,7 @@ class AccessTokenEndpoint(BaseEndpoint):
         #
         # Note that early exit would enable client enumeration
         valid_client = self.request_validator.validate_client_key(
-                request.client_key, request)
+            request.client_key, request)
         if not valid_client:
             request.client_key = self.request_validator.dummy_client
 
@@ -185,10 +185,10 @@ class AccessTokenEndpoint(BaseEndpoint):
         # Note that early exit would enable resource owner authorization
         # verifier enumertion.
         valid_verifier = self.request_validator.validate_verifier(
-                request.client_key,
-                request.resource_owner_key,
-                request.verifier,
-                request)
+            request.client_key,
+            request.resource_owner_key,
+            request.verifier,
+            request)
 
         valid_signature = self._check_signature(request, is_token_request=True)
 

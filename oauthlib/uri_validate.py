@@ -11,7 +11,7 @@ Thanks Mark Nottingham for this code - https://gist.github.com/138549
 from __future__ import unicode_literals
 import re
 
-### basics
+# basics
 
 DIGIT = r"[\x30-\x39]"
 
@@ -25,7 +25,7 @@ pct_encoded = r" %% %(HEXDIG)s %(HEXDIG)s" % locals()
 #   unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
 unreserved = r"(?: %(ALPHA)s | %(DIGIT)s | \- | \. | _ | ~ )" % locals()
 
-#   gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+# gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
 gen_delims = r"(?: : | / | \? | \# | \[ | \] | @ )"
 
 #   sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
@@ -34,19 +34,20 @@ sub_delims = r"""(?: ! | \$ | & | ' | \( | \) |
                      \* | \+ | , | ; | = )"""
 
 #   pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-pchar = r"(?: %(unreserved)s | %(pct_encoded)s | %(sub_delims)s | : | @ )" % locals()
+pchar = r"(?: %(unreserved)s | %(pct_encoded)s | %(sub_delims)s | : | @ )" % locals(
+)
 
 #   reserved      = gen-delims / sub-delims
 reserved = r"(?: %(gen_delims)s | %(sub_delims)s )" % locals()
 
 
-### scheme
+# scheme
 
 #   scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
 scheme = r"%(ALPHA)s (?: %(ALPHA)s | %(DIGIT)s | \+ | \- | \. )*" % locals()
 
 
-### authority
+# authority
 
 #   dec-octet     = DIGIT                 ; 0-9
 #                 / %x31-39 DIGIT         ; 10-99
@@ -62,7 +63,8 @@ dec_octet = r"""(?: %(DIGIT)s |
 """ % locals()
 
 #  IPv4address   = dec-octet "." dec-octet "." dec-octet "." dec-octet
-IPv4address = r"%(dec_octet)s \. %(dec_octet)s \. %(dec_octet)s \. %(dec_octet)s" % locals()
+IPv4address = r"%(dec_octet)s \. %(dec_octet)s \. %(dec_octet)s \. %(dec_octet)s" % locals(
+)
 
 #  h16           = 1*4HEXDIG
 h16 = r"(?: %(HEXDIG)s ){1,4}" % locals()
@@ -101,7 +103,8 @@ IP_literal = r"\[ (?: %(IPv6address)s | %(IPvFuture)s ) \]" % locals()
 reg_name = r"(?: %(unreserved)s | %(pct_encoded)s | %(sub_delims)s )*" % locals()
 
 #   userinfo      = *( unreserved / pct-encoded / sub-delims / ":" )
-userinfo = r"(?: %(unreserved)s | %(pct_encoded)s | %(sub_delims)s | : )" % locals()
+userinfo = r"(?: %(unreserved)s | %(pct_encoded)s | %(sub_delims)s | : )" % locals(
+)
 
 #   host          = IP-literal / IPv4address / reg-name
 host = r"(?: %(IP_literal)s | %(IPv4address)s | %(reg_name)s )" % locals()
@@ -160,7 +163,7 @@ query = r"(?: %(pchar)s | / | \? )*" % locals()
 #   fragment      = *( pchar / "/" / "?" )
 fragment = r"(?: %(pchar)s | / | \? )*" % locals()
 
-### URIs
+# URIs
 
 #   hier-part     = "//" authority path-abempty
 #                 / path-absolute
@@ -184,17 +187,20 @@ relative_part = r"""(?: (?: // %(authority)s %(path_abempty)s ) |
                     )
 """ % locals()
 
-#   relative-ref  = relative-part [ "?" query ] [ "#" fragment ]
-relative_ref = r"%(relative_part)s (?: \? %(query)s)? (?: \# %(fragment)s)?" % locals()
+# relative-ref  = relative-part [ "?" query ] [ "#" fragment ]
+relative_ref = r"%(relative_part)s (?: \? %(query)s)? (?: \# %(fragment)s)?" % locals(
+)
 
-#   URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
-URI = r"^(?: %(scheme)s : %(hier_part)s (?: \? %(query)s )? (?: \# %(fragment)s )? )$" % locals()
+# URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+URI = r"^(?: %(scheme)s : %(hier_part)s (?: \? %(query)s )? (?: \# %(fragment)s )? )$" % locals(
+)
 
 #   URI-reference = URI / relative-ref
 URI_reference = r"^(?: %(URI)s | %(relative_ref)s )$" % locals()
 
 #   absolute-URI  = scheme ":" hier-part [ "?" query ]
-absolute_URI = r"^(?: %(scheme)s : %(hier_part)s (?: \? %(query)s )? )$" % locals()
+absolute_URI = r"^(?: %(scheme)s : %(hier_part)s (?: \? %(query)s )? )$" % locals(
+)
 
 
 def is_uri(uri):

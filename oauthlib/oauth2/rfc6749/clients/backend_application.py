@@ -14,6 +14,7 @@ from ..parameters import parse_token_response
 
 
 class BackendApplicationClient(Client):
+
     """A public client utilizing the client credentials grant workflow.
 
     The client can request an access token using only its client

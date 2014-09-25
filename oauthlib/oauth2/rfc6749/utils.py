@@ -80,7 +80,8 @@ def escape(u):
 def generate_age(issue_time):
     """Generate a age parameter for MAC authentication draft 00."""
     td = datetime.datetime.now() - issue_time
-    age = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
+    age = (td.microseconds + (td.seconds + td.days * 24 * 3600)
+           * 10 ** 6) / 10 ** 6
     return unicode_type(age)
 
 

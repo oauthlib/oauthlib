@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 
 class TokenEndpoint(BaseEndpoint):
+
     """Token issuing endpoint.
 
     The token endpoint is used by the client to obtain an access token by
@@ -85,14 +86,15 @@ class TokenEndpoint(BaseEndpoint):
 
     @catch_errors_and_unavailability
     def create_token_response(self, uri, http_method='GET', body=None,
-            headers=None, credentials=None):
+                              headers=None, credentials=None):
         """Extract grant_type and route to the designated handler."""
-        request = Request(uri, http_method=http_method, body=body, headers=headers)
+        request = Request(
+            uri, http_method=http_method, body=body, headers=headers)
         request.scopes = None
         request.extra_credentials = credentials
         grant_type_handler = self.grant_types.get(request.grant_type,
-                self.default_grant_type_handler)
+                                                  self.default_grant_type_handler)
         log.debug('Dispatching grant_type %s request to %r.',
                   request.grant_type, grant_type_handler)
         return grant_type_handler.create_token_response(
-                request, self.default_token_type)
+            request, self.default_token_type)

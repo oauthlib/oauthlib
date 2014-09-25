@@ -89,7 +89,7 @@ class RequestValidator(object):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client,
-            *args, **kwargs):
+                             *args, **kwargs):
         """Ensure client is authorized to redirect to the redirect_uri requested.
 
         If the client specifies a redirect_uri when obtaining code then

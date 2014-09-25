@@ -17,10 +17,11 @@ log = logging.getLogger(__name__)
 
 
 class SignatureOnlyEndpoint(BaseEndpoint):
+
     """An endpoint only responsible for verifying an oauth signature."""
 
     def validate_request(self, uri, http_method='GET',
-            body=None, headers=None):
+                         body=None, headers=None):
         """Validate a signed OAuth request.
 
         :param uri: The full URI of the token request.
@@ -54,7 +55,7 @@ class SignatureOnlyEndpoint(BaseEndpoint):
         #
         # Note that early exit would enable client enumeration
         valid_client = self.request_validator.validate_client_key(
-                request.client_key, request)
+            request.client_key, request)
         if not valid_client:
             request.client_key = self.request_validator.dummy_client
 

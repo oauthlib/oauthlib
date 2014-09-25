@@ -106,6 +106,7 @@ class MissingTokenTypeError(OAuth2Error):
 
 
 class FatalClientError(OAuth2Error):
+
     """Errors during authorization where user should not be redirected back.
 
     If the request fails due to a missing, invalid, or mismatching
@@ -140,6 +141,7 @@ class InvalidClientIdError(FatalClientError):
 
 
 class InvalidRequestError(OAuth2Error):
+
     """The request is missing a required parameter, includes an invalid
     parameter value, includes a parameter more than once, or is
     otherwise malformed.
@@ -148,12 +150,14 @@ class InvalidRequestError(OAuth2Error):
 
 
 class AccessDeniedError(OAuth2Error):
+
     """The resource owner or authorization server denied the request."""
     error = 'access_denied'
     status_code = 401
 
 
 class UnsupportedResponseTypeError(OAuth2Error):
+
     """The authorization server does not support obtaining an authorization
     code using this method.
     """
@@ -161,12 +165,14 @@ class UnsupportedResponseTypeError(OAuth2Error):
 
 
 class InvalidScopeError(OAuth2Error):
+
     """The requested scope is invalid, unknown, or malformed."""
     error = 'invalid_scope'
     status_code = 401
 
 
 class ServerError(OAuth2Error):
+
     """The authorization server encountered an unexpected condition that
     prevented it from fulfilling the request.  (This error code is needed
     because a 500 Internal Server Error HTTP status code cannot be returned
@@ -176,6 +182,7 @@ class ServerError(OAuth2Error):
 
 
 class TemporarilyUnavailableError(OAuth2Error):
+
     """The authorization server is currently unable to handle the request
     due to a temporary overloading or maintenance of the server.
     (This error code is needed because a 503 Service Unavailable HTTP
@@ -185,6 +192,7 @@ class TemporarilyUnavailableError(OAuth2Error):
 
 
 class InvalidClientError(OAuth2Error):
+
     """Client authentication failed (e.g. unknown client, no client
     authentication included, or unsupported authentication method).
     The authorization server MAY return an HTTP 401 (Unauthorized) status
@@ -200,6 +208,7 @@ class InvalidClientError(OAuth2Error):
 
 
 class InvalidGrantError(OAuth2Error):
+
     """The provided authorization grant (e.g. authorization code, resource
     owner credentials) or refresh token is invalid, expired, revoked, does
     not match the redirection URI used in the authorization request, or was
@@ -210,6 +219,7 @@ class InvalidGrantError(OAuth2Error):
 
 
 class UnauthorizedClientError(OAuth2Error):
+
     """The authenticated client is not authorized to use this authorization
     grant type.
     """
@@ -218,6 +228,7 @@ class UnauthorizedClientError(OAuth2Error):
 
 
 class UnsupportedGrantTypeError(OAuth2Error):
+
     """The authorization grant type is not supported by the authorization
     server.
     """
@@ -225,6 +236,7 @@ class UnsupportedGrantTypeError(OAuth2Error):
 
 
 class UnsupportedTokenTypeError(OAuth2Error):
+
     """The authorization server does not support the revocation of the
     presented token type.  I.e. the client tried to revoke an access token
     on a server not supporting this feature.
@@ -240,6 +252,6 @@ def raise_from_error(error, params=None):
         'uri': params.get('error_uri'),
         'state': params.get('state')
     }
-    for _, cls in  inspect.getmembers(sys.modules[__name__], inspect.isclass):
+    for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
         if cls.error == error:
             raise cls(**kwargs)

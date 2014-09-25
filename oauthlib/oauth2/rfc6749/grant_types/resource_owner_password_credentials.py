@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
+
     """`Resource Owner Password Credentials Grant`_
 
     The resource owner password credentials grant type is suitable in
@@ -156,12 +157,12 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         for param in ('grant_type', 'username', 'password'):
             if not getattr(request, param):
                 raise errors.InvalidRequestError(
-                        'Request is missing %s parameter.' % param, request=request)
+                    'Request is missing %s parameter.' % param, request=request)
 
         for param in ('grant_type', 'username', 'password', 'scope'):
             if param in request.duplicate_params:
                 raise errors.InvalidRequestError(state=request.state,
-                        description='Duplicate %s parameter.' % param, request=request)
+                                                 description='Duplicate %s parameter.' % param, request=request)
 
         # This error should rarely (if ever) occur if requests are routed to
         # grant type handlers based on the grant_type parameter.
@@ -170,14 +171,15 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
 
         log.debug('Validating username %s.', request.username)
         if not self.request_validator.validate_user(request.username,
-                request.password, request.client, request):
-            raise errors.InvalidGrantError('Invalid credentials given.', request=request)
+                                                    request.password, request.client, request):
+            raise errors.InvalidGrantError(
+                'Invalid credentials given.', request=request)
         else:
             if not hasattr(request.client, 'client_id'):
                 raise NotImplementedError(
-                        'Validate user must set the '
-                        'request.client.client_id attribute '
-                        'in authenticate_client.')
+                    'Validate user must set the '
+                    'request.client.client_id attribute '
+                    'in authenticate_client.')
         log.debug('Authorizing access to user %r.', request.user)
 
         # Ensure client is authorized use of this grant type

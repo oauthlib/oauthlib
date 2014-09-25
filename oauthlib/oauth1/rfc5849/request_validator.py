@@ -12,6 +12,7 @@ from . import SIGNATURE_METHODS, utils
 
 
 class RequestValidator(object):
+
     """A validator/datastore interaction base class for OAuth 1 providers.
 
     OAuth providers should inherit from RequestValidator and implement the
@@ -552,7 +553,7 @@ class RequestValidator(object):
         raise NotImplementedError("Subclasses must implement this function.")
 
     def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
-            request, request_token=None, access_token=None):
+                                     request, request_token=None, access_token=None):
         """Validates that the nonce has not been used before.
 
         :param client_key: The client/consumer key.
@@ -653,7 +654,7 @@ class RequestValidator(object):
         raise NotImplementedError("Subclasses must implement this function.")
 
     def validate_realms(self, client_key, token, request, uri=None,
-            realms=None):
+                        realms=None):
         """Validates access to the request realm.
 
         :param client_key: The client/consumer key.
