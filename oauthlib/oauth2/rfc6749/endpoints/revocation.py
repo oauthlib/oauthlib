@@ -30,15 +30,13 @@ class RevocationEndpoint(BaseEndpoint):
 
     valid_token_types = ('access_token', 'refresh_token')
 
-    @property
-    def supported_token_types(self):
-        return self._supported_token_types
-
-    def __init__(self, request_validator, supported_token_types=None):
+    def __init__(self, request_validator, supported_token_types=None,
+            enable_jsonp=False):
         BaseEndpoint.__init__(self)
         self.request_validator = request_validator
-        self._supported_token_types = (
+        self.supported_token_types = (
             supported_token_types or self.valid_token_types)
+        self.enable_jsonp = enable_jsonp
 
     @catch_errors_and_unavailability
     def create_revocation_response(self, uri, http_method='POST', body=None,
@@ -68,11 +66,17 @@ class RevocationEndpoint(BaseEndpoint):
             log.debug('Token revocation valid for %r.', request)
         except OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
-            return {}, e.json, e.status_code
+            response_body = e.json
+            if self.enable_jsonp and request.callback:
+                response_body = '%s(%s);' % (request.callback, response_body)
+            return {}, response_body, e.status_code
 
         self.request_validator.revoke_token(request.token,
                                             request.token_type_hint, request)
-        response_body = request.callback + '()' if request.callback else None
+
+        response_body = None
+        if self.enable_jsonp and request.callback:
+            response_body = request.callback + '();'
         return {}, response_body, 200
 
     def validate_revocation_request(self, request):
@@ -119,6 +123,6 @@ class RevocationEndpoint(BaseEndpoint):
         if not self.request_validator.authenticate_client(request):
             raise InvalidClientError(request=request)
 
-        if (request.token_type_hint in self.valid_token_types and
+        if (request.token_type_hint and
                 request.token_type_hint not in self.supported_token_types):
             raise UnsupportedTokenTypeError(request=request)
