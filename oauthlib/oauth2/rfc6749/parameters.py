@@ -120,6 +120,60 @@ def prepare_token_request(grant_type, body='', **kwargs):
     return add_params_to_qs(body, params)
 
 
+def prepare_token_revocation_request(url, token, token_type_hint="access_token",
+        callback=None, body='', **kwargs):
+    """Prepare a token revocation request.
+
+    The client constructs the request by including the following parameters
+    using the "application/x-www-form-urlencoded" format in the HTTP request
+    entity-body:
+
+    token   REQUIRED.  The token that the client wants to get revoked.
+
+    token_type_hint  OPTIONAL.  A hint about the type of the token submitted
+    for revocation.  Clients MAY pass this parameter in order to help the
+    authorization server to optimize the token lookup.  If the server is unable
+    to locate the token using the given hint, it MUST extend its search across
+    all of its supported token types.  An authorization server MAY ignore this
+    parameter, particularly if it is able to detect the token type
+    automatically.  This specification defines two such values:
+
+        * access_token: An access token as defined in [RFC6749],
+             `Section 1.4`_
+
+        * refresh_token: A refresh token as defined in [RFC6749],
+             `Section 1.5`_
+
+        Specific implementations, profiles, and extensions of this
+        specification MAY define other values for this parameter using the
+        registry defined in `Section 4.1.2`_.
+
+    .. _`Section 1.4`: http://tools.ietf.org/html/rfc6749#section-1.4
+    .. _`Section 1.5`: http://tools.ietf.org/html/rfc6749#section-1.5
+    .. _`Section 4.1.2`: http://tools.ietf.org/html/rfc7009#section-4.1.2
+
+    """
+    if not is_secure_transport(url):
+        raise InsecureTransportError()
+
+    params = [('token', token)]
+
+    if token_type_hint:
+        params.append(('token_type_hint', token_type_hint))
+
+    for k in kwargs:
+        if kwargs[k]:
+            params.append((unicode_type(k), kwargs[k]))
+
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+
+    if callback:
+        params.append(('callback', callback))
+        return add_params_to_uri(url, params), headers, body
+    else:
+        return url, headers, add_params_to_qs(body, params)
+
+
 def parse_authorization_code_response(uri, state=None):
     """Parse authorization grant response URI into a dict.
 

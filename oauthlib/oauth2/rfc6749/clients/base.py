@@ -12,6 +12,7 @@ import time
 
 from oauthlib.oauth2.rfc6749 import tokens
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_request
+from oauthlib.oauth2.rfc6749.parameters import prepare_token_revocation_request
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import InsecureTransportError
 from oauthlib.oauth2.rfc6749.utils import is_secure_transport
@@ -199,6 +200,62 @@ class Client(object):
 
         if 'mac_algorithm' in response:
             self.mac_algorithm = response.get('mac_algorithm')
+
+    def prepare_token_revocation_request(self, url, token,
+            token_type_hint="access_token", body='', callback=None, **kwargs):
+        """Prepare a token revocation request.
+
+        :param url: The token revocation endpoint url.
+
+        :param token: The access or refresh token to be revoked (string).
+
+        :param token_type_hint: ``"access_token"`` (default) or
+        ``"refresh_token"``. This is optional and if you wish to not pass it you
+        must provide ``token_type_hint=None``.
+
+        :param callback: A jsonp callback such as ``package.callback`` to be invoked
+        upon receiving the response. Not that it should not include a () suffix.
+
+        :param kwargs: Additional parameters to send with the request.
+
+        :return: A prepared request tuple of (uri, headers, body)
+
+        Note that JSONP request may use GET requests as the parameters will
+        be added to the request URL query as opposed to the request body.
+
+        An example of a revocation request
+
+        .. code-block: http
+
+            POST /revoke HTTP/1.1
+            Host: server.example.com
+            Content-Type: application/x-www-form-urlencoded
+            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+
+            token=45ghiukldjahdnhzdauz&token_type_hint=refresh_token
+
+        An example of a jsonp revocation request
+
+        .. code-block: http
+
+            GET /revoke?token=agabcdefddddafdd&callback=package.myCallback HTTP/1.1
+            Host: server.example.com
+            Content-Type: application/x-www-form-urlencoded
+            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+
+        and an error response
+
+        .. code-block: http
+
+        package.myCallback({"error":"unsupported_token_type"});
+
+        Note that these requests usually require client credentials, client_id in
+        the case for public clients and provider specific authentication
+        credentials for confidential clients.
+        """
+        return prepare_token_revocation_request(url, token,
+                token_type_hint=token_type_hint, body=body, callback=callback,
+                **kwargs)
 
     def prepare_request_uri(self, *args, **kwargs):
         """Abstract method used to create request URIs."""
