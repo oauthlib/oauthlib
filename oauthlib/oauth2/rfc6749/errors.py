@@ -122,24 +122,32 @@ class FatalClientError(OAuth2Error):
     pass
 
 
-class InvalidRedirectURIError(FatalClientError):
-    error = 'invalid_redirect_uri'
+class InvalidRequestFatalError(FatalClientError):
+    """For fatal errors, the request is missing a required parameter, includes
+    an invalid parameter value, includes a parameter more than once, or is
+    otherwise malformed.
+    """
+    error = 'invalid_request'
 
 
-class MissingRedirectURIError(FatalClientError):
-    error = 'missing_redirect_uri'
+class InvalidRedirectURIError(InvalidRequestFatalError):
+    description = 'Invalid redirect URI.'
 
 
-class MismatchingRedirectURIError(FatalClientError):
-    error = 'mismatching_redirect_uri'
+class MissingRedirectURIError(InvalidRequestFatalError):
+    description = 'Missing redirect URI.'
 
 
-class MissingClientIdError(FatalClientError):
-    error = 'invalid_client_id'
+class MismatchingRedirectURIError(InvalidRequestFatalError):
+    description = 'Mismatching redirect URI.'
 
 
-class InvalidClientIdError(FatalClientError):
-    error = 'invalid_client_id'
+class InvalidClientIdError(InvalidRequestFatalError):
+    description = 'Invalid client_id parameter value.'
+
+
+class MissingClientIdError(InvalidRequestFatalError):
+    description = 'Missing client_id parameter.'
 
 
 class InvalidRequestError(OAuth2Error):
@@ -149,6 +157,10 @@ class InvalidRequestError(OAuth2Error):
     otherwise malformed.
     """
     error = 'invalid_request'
+
+
+class MissingResponseTypeError(InvalidRequestError):
+    description = 'Missing response_type parameter.'
 
 
 class AccessDeniedError(OAuth2Error):
