@@ -264,6 +264,20 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # error and MUST NOT automatically redirect the user-agent to the
         # invalid redirection URI.
 
+        # First check duplicate parameters
+        for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
+            if param in request.duplicate_params:
+                raise errors.InvalidRequestFatalError(state=request.state,
+                                               description='Duplicate %s parameter.' % param,
+                                               request=request)
+
+        # REQUIRED.
+        if request.response_type is None:
+            raise errors.MissingResponseTypeError(state=request.state, request=request)
+        # Value MUST be set to "code".
+        elif request.response_type != 'code':
+            raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
+
         # REQUIRED. The client identifier as described in Section 2.2.
         # http://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
@@ -309,25 +323,14 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions.
-        if request.response_type is None:
-            raise errors.InvalidRequestError(state=request.state,
-                                             description='Missing response_type parameter.', request=request)
-
-        for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
-            if param in request.duplicate_params:
-                raise errors.InvalidRequestError(state=request.state,
-                                                 description='Duplicate %s parameter.' % param, request=request)
 
         if not self.request_validator.validate_response_type(request.client_id,
-                                                             request.response_type, request.client, request):
+                                                             request.response_type,
+                                                             request.client, request):
+
             log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
             raise errors.UnauthorizedClientError(request=request)
-
-        # REQUIRED. Value MUST be set to "code".
-        if request.response_type != 'code':
-            raise errors.UnsupportedResponseTypeError(
-                state=request.state, request=request)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3

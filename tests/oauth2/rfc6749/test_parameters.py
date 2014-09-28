@@ -96,7 +96,7 @@ class ParameterTests(TestCase):
                      '  "example_parameter": "example_value",'
                      '  "scope":"abc def"}')
 
-    json_error = '{ "error": "invalid_request" }'
+    json_error = '{ "error": "access_denied" }'
 
     json_notoken = ('{ "token_type": "example",'
                     '  "expires_in": 3600,'
@@ -191,7 +191,7 @@ class ParameterTests(TestCase):
     def test_json_token_response(self):
         """Verify correct parameter parsing and validation for token responses. """
         self.assertEqual(parse_token_response(self.json_response), self.json_dict)
-        self.assertRaises(InvalidRequestError, parse_token_response, self.json_error)
+        self.assertRaises(AccessDeniedError, parse_token_response, self.json_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.json_notoken)
         self.assertRaises(Warning, parse_token_response, self.json_response, scope='aaa')
 
@@ -207,7 +207,7 @@ class ParameterTests(TestCase):
     def test_url_encoded_token_response(self):
         """Verify fallback parameter parsing and validation for token responses. """
         self.assertEqual(parse_token_response(self.url_encoded_response), self.json_dict)
-        self.assertRaises(InvalidRequestError, parse_token_response, self.url_encoded_error)
+        self.assertRaises(InvalidRedirectURIError, parse_token_response, self.url_encoded_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.url_encoded_notoken)
         self.assertRaises(Warning, parse_token_response, self.url_encoded_response, scope='aaa')
 

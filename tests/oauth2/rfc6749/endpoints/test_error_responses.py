@@ -28,98 +28,87 @@ class ErrorResponseTest(TestCase):
         self.backend = BackendApplicationServer(self.validator)
 
     def test_invalid_redirect_uri(self):
-        uri = 'https://example.com/authorize?client_id=foo&redirect_uri=wrong'
+        uri = 'https://example.com/authorize?response_type={0}&client_id=foo&redirect_uri=wrong'
+
         # Authorization code grant
         self.assertRaises(errors.InvalidRedirectURIError,
-                self.web.validate_authorization_request, uri)
+                self.web.validate_authorization_request, uri.format('code'))
         self.assertRaises(errors.InvalidRedirectURIError,
-                self.web.create_authorization_response, uri, scopes=['foo'])
+                self.web.create_authorization_response, uri.format('code'), scopes=['foo'])
 
         # Implicit grant
         self.assertRaises(errors.InvalidRedirectURIError,
-                self.mobile.validate_authorization_request, uri)
+                self.mobile.validate_authorization_request, uri.format('token'))
         self.assertRaises(errors.InvalidRedirectURIError,
-                self.mobile.create_authorization_response, uri, scopes=['foo'])
+                self.mobile.create_authorization_response, uri.format('token'), scopes=['foo'])
 
     def test_missing_redirect_uri(self):
-        uri = 'https://example.com/authorize?client_id=foo'
+        uri = 'https://example.com/authorize?response_type={0}&client_id=foo'
+
         # Authorization code grant
         self.assertRaises(errors.MissingRedirectURIError,
-                self.web.validate_authorization_request, uri)
+                self.web.validate_authorization_request, uri.format('code'))
         self.assertRaises(errors.MissingRedirectURIError,
-                self.web.create_authorization_response, uri, scopes=['foo'])
+                self.web.create_authorization_response, uri.format('code'), scopes=['foo'])
 
         # Implicit grant
         self.assertRaises(errors.MissingRedirectURIError,
-                self.mobile.validate_authorization_request, uri)
+                self.mobile.validate_authorization_request, uri.format('token'))
         self.assertRaises(errors.MissingRedirectURIError,
-                self.mobile.create_authorization_response, uri, scopes=['foo'])
+                self.mobile.create_authorization_response, uri.format('token'), scopes=['foo'])
 
     def test_mismatching_redirect_uri(self):
-        uri = 'https://example.com/authorize?client_id=foo&redirect_uri=https%3A%2F%2Fi.b%2Fback'
+        uri = 'https://example.com/authorize?response_type={0}&client_id=foo&redirect_uri=https%3A%2F%2Fi.b%2Fback'
+
         # Authorization code grant
         self.validator.validate_redirect_uri.return_value = False
         self.assertRaises(errors.MismatchingRedirectURIError,
-                self.web.validate_authorization_request, uri)
+                self.web.validate_authorization_request, uri.format('code'))
         self.assertRaises(errors.MismatchingRedirectURIError,
-                self.web.create_authorization_response, uri, scopes=['foo'])
+                self.web.create_authorization_response, uri.format('code'), scopes=['foo'])
 
         # Implicit grant
         self.assertRaises(errors.MismatchingRedirectURIError,
-                self.mobile.validate_authorization_request, uri)
+                self.mobile.validate_authorization_request, uri.format('token'))
         self.assertRaises(errors.MismatchingRedirectURIError,
-                self.mobile.create_authorization_response, uri, scopes=['foo'])
+                self.mobile.create_authorization_response, uri.format('token'), scopes=['foo'])
 
     def test_missing_client_id(self):
-        uri = 'https://example.com/authorize?redirect_uri=https%3A%2F%2Fi.b%2Fback'
+        uri = 'https://example.com/authorize?response_type={0}&redirect_uri=https%3A%2F%2Fi.b%2Fback'
+
         # Authorization code grant
         self.validator.validate_redirect_uri.return_value = False
         self.assertRaises(errors.MissingClientIdError,
-                self.web.validate_authorization_request, uri)
+                self.web.validate_authorization_request, uri.format('code'))
         self.assertRaises(errors.MissingClientIdError,
-                self.web.create_authorization_response, uri, scopes=['foo'])
+                self.web.create_authorization_response, uri.format('code'), scopes=['foo'])
 
         # Implicit grant
         self.assertRaises(errors.MissingClientIdError,
-                self.mobile.validate_authorization_request, uri)
+                self.mobile.validate_authorization_request, uri.format('token'))
         self.assertRaises(errors.MissingClientIdError,
-                self.mobile.create_authorization_response, uri, scopes=['foo'])
+                self.mobile.create_authorization_response, uri.format('token'), scopes=['foo'])
 
     def test_invalid_client_id(self):
-        uri = 'https://example.com/authorize?client_id=foo&redirect_uri=https%3A%2F%2Fi.b%2Fback'
+        uri = 'https://example.com/authorize?response_type={0}&client_id=foo&redirect_uri=https%3A%2F%2Fi.b%2Fback'
+
         # Authorization code grant
         self.validator.validate_client_id.return_value = False
         self.assertRaises(errors.InvalidClientIdError,
-                self.web.validate_authorization_request, uri)
+                self.web.validate_authorization_request, uri.format('code'))
         self.assertRaises(errors.InvalidClientIdError,
-                self.web.create_authorization_response, uri, scopes=['foo'])
+                self.web.create_authorization_response, uri.format('code'), scopes=['foo'])
 
         # Implicit grant
         self.assertRaises(errors.InvalidClientIdError,
-                self.mobile.validate_authorization_request, uri)
+                self.mobile.validate_authorization_request, uri.format('token'))
         self.assertRaises(errors.InvalidClientIdError,
-                self.mobile.create_authorization_response, uri, scopes=['foo'])
+                self.mobile.create_authorization_response, uri.format('token'), scopes=['foo'])
 
     def test_invalid_request(self):
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
         token_uri = 'https://i.b/token'
-        invalid_uris = [
-            # Duplicate parameters
-            'https://i.b/auth?client_id=foo&client_id=bar&response_type={0}',
-            # Missing response type
-            'https://i.b/auth?client_id=foo',
-        ]
 
-        # Authorization code grant
-        for uri in invalid_uris:
-            self.assertRaises(errors.InvalidRequestError,
-                    self.web.validate_authorization_request,
-                    uri.format('code'))
-            h, _, s = self.web.create_authorization_response(
-                    uri.format('code'), scopes=['foo'])
-            self.assertEqual(s, 302)
-            self.assertIn('Location', h)
-            self.assertIn('error=invalid_request', h['Location'])
         invalid_bodies = [
             # duplicate params
             'grant_type=authorization_code&client_id=nope&client_id=nope&code=foo'
@@ -128,17 +117,6 @@ class ErrorResponseTest(TestCase):
             _, body, _ = self.web.create_token_response(token_uri,
                     body=body)
             self.assertEqual('invalid_request', json.loads(body)['error'])
-
-        # Implicit grant
-        for uri in invalid_uris:
-            self.assertRaises(errors.InvalidRequestError,
-                    self.mobile.validate_authorization_request,
-                    uri.format('token'))
-            h, _, s = self.mobile.create_authorization_response(
-                    uri.format('token'), scopes=['foo'])
-            self.assertEqual(s, 302)
-            self.assertIn('Location', h)
-            self.assertIn('error=invalid_request', h['Location'])
 
         # Password credentials grant
         invalid_bodies = [
@@ -164,6 +142,50 @@ class ErrorResponseTest(TestCase):
             _, body, _ = self.backend.create_token_response(token_uri,
                     body=body)
             self.assertEqual('invalid_request', json.loads(body)['error'])
+
+    def test_invalid_request_duplicate_params(self):
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+        uri = 'https://i.b/auth?client_id=foo&client_id=bar&response_type={0}'
+        description = 'Duplicate client_id parameter.$'
+
+        # Authorization code
+        self.assertRaisesRegexp(errors.InvalidRequestFatalError,
+                              description,
+                              self.web.validate_authorization_request,
+                              uri.format('code'))
+        self.assertRaisesRegexp(errors.InvalidRequestFatalError,
+                              description,
+                              self.web.create_authorization_response,
+                              uri.format('code'), scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaisesRegexp(errors.InvalidRequestFatalError,
+                              description,
+                              self.mobile.validate_authorization_request,
+                              uri.format('token'))
+        self.assertRaisesRegexp(errors.InvalidRequestFatalError,
+                              description,
+                              self.mobile.create_authorization_response,
+                              uri.format('token'), scopes=['foo'])
+
+    def test_invalid_request_missing_response_type(self):
+        uri = 'https://i.b/auth?client_id=foo'
+
+        # Authorization code
+        self.assertRaises(errors.MissingResponseTypeError,
+                          self.web.validate_authorization_request,
+                          uri)
+        self.assertRaises(errors.MissingResponseTypeError,
+                          self.web.create_authorization_response,
+                          uri, scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaises(errors.MissingResponseTypeError,
+                          self.mobile.validate_authorization_request,
+                          uri)
+        self.assertRaises(errors.MissingResponseTypeError,
+                          self.mobile.create_authorization_response,
+                          uri, scopes=['foo'])
 
     def test_unauthorized_client(self):
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
