@@ -106,7 +106,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             log.debug('Client error in token request, %s.', e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=True)
+        token = token_handler.create_token(request, self.refresh_token)
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
                   token, request.client_id, request.client, request.username)
         return headers, json.dumps(token), 200
