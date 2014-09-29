@@ -78,9 +78,6 @@ class OAuth2Error(Exception):
     def json(self):
         return json.dumps(dict(self.twotuples))
 
-    def __str__(self):
-        return self.description or ""
-
 
 class TokenExpiredError(OAuth2Error):
     error = 'token_expired'
@@ -123,17 +120,9 @@ class FatalClientError(OAuth2Error):
     pass
 
 
-class MissingClientIdError(FatalClientError):
-    error = 'invalid_client_id'
-
-
-class InvalidClientIdError(FatalClientError):
-    error = 'invalid_client_id'
-
-
 class InvalidRequestFatalError(FatalClientError):
-    """The request is missing a required parameter, includes an invalid
-    parameter value, includes a parameter more than once, or is
+    """For fatal errors, the request is missing a required parameter, includes
+    an invalid parameter value, includes a parameter more than once, or is
     otherwise malformed.
     """
     error = 'invalid_request'
@@ -149,6 +138,14 @@ class MissingRedirectURIError(InvalidRequestFatalError):
 
 class MismatchingRedirectURIError(InvalidRequestFatalError):
     description = 'Mismatching redirect URI.'
+
+
+class InvalidClientIdError(InvalidRequestFatalError):
+    description = 'Invalid client_id parameter value.'
+
+
+class MissingClientIdError(InvalidRequestFatalError):
+    description = 'Missing client_id parameter.'
 
 
 class InvalidRequestError(OAuth2Error):

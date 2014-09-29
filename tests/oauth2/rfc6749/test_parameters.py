@@ -140,7 +140,7 @@ class ParameterTests(TestCase):
                             '&example_parameter=example_value'
                             '&scope=abc def')
 
-    url_encoded_error = 'error=invalid_request'
+    url_encoded_error = 'error=access_denied'
 
     url_encoded_notoken = ('token_type=example'
                            '&expires_in=3600'
@@ -207,7 +207,7 @@ class ParameterTests(TestCase):
     def test_url_encoded_token_response(self):
         """Verify fallback parameter parsing and validation for token responses. """
         self.assertEqual(parse_token_response(self.url_encoded_response), self.json_dict)
-        self.assertRaises(InvalidRedirectURIError, parse_token_response, self.url_encoded_error)
+        self.assertRaises(AccessDeniedError, parse_token_response, self.url_encoded_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.url_encoded_notoken)
         self.assertRaises(Warning, parse_token_response, self.url_encoded_response, scope='aaa')
 

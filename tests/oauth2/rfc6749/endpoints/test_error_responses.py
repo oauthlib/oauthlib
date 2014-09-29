@@ -146,7 +146,7 @@ class ErrorResponseTest(TestCase):
     def test_invalid_request_duplicate_params(self):
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
         uri = 'https://i.b/auth?client_id=foo&client_id=bar&response_type={0}'
-        description = 'Duplicate client_id parameter.$'
+        description = 'Duplicate client_id parameter.'
 
         # Authorization code
         self.assertRaisesRegexp(errors.InvalidRequestFatalError,
