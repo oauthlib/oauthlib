@@ -151,10 +151,6 @@ class MismatchingRedirectURIError(InvalidRequestFatalError):
     description = 'Mismatching redirect URI.'
 
 
-class MissingResponseTypeError(InvalidRequestFatalError):
-    description = 'Missing response_type parameter.'
-
-
 class InvalidRequestError(OAuth2Error):
 
     """The request is missing a required parameter, includes an invalid
@@ -162,6 +158,10 @@ class InvalidRequestError(OAuth2Error):
     otherwise malformed.
     """
     error = 'invalid_request'
+
+
+class MissingResponseTypeError(InvalidRequestError):
+    description = 'Missing response_type parameter.'
 
 
 class AccessDeniedError(OAuth2Error):

@@ -169,23 +169,28 @@ class ErrorResponseTest(TestCase):
                               uri.format('token'), scopes=['foo'])
 
     def test_invalid_request_missing_response_type(self):
+
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+
         uri = 'https://i.b/auth?client_id=foo'
 
         # Authorization code
         self.assertRaises(errors.MissingResponseTypeError,
                           self.web.validate_authorization_request,
-                          uri)
-        self.assertRaises(errors.MissingResponseTypeError,
-                          self.web.create_authorization_response,
-                          uri, scopes=['foo'])
+                          uri.format('code'))
+        h, _, s = self.web.create_authorization_response(uri, scopes=['foo'])
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertIn('error=invalid_request', h['Location'])
 
         # Implicit grant
         self.assertRaises(errors.MissingResponseTypeError,
                           self.mobile.validate_authorization_request,
-                          uri)
-        self.assertRaises(errors.MissingResponseTypeError,
-                          self.mobile.create_authorization_response,
-                          uri, scopes=['foo'])
+                          uri.format('token'))
+        h, _, s = self.mobile.create_authorization_response(uri, scopes=['foo'])
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertIn('error=invalid_request', h['Location'])
 
     def test_unauthorized_client(self):
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'

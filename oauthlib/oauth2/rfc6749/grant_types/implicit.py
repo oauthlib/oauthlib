@@ -267,13 +267,6 @@ class ImplicitGrant(GrantTypeBase):
                                                description='Duplicate %s parameter.' % param,
                                                request=request)
 
-        # REQUIRED.
-        if request.response_type is None:
-            raise errors.MissingResponseTypeError(state=request.state, request=request)
-        # Value MUST be set to "token".
-        elif request.response_type != 'token':
-            raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
-
         # REQUIRED. The client identifier as described in Section 2.2.
         # http://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
@@ -325,6 +318,13 @@ class ImplicitGrant(GrantTypeBase):
 
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions
+
+        # REQUIRED.
+        if request.response_type is None:
+            raise errors.MissingResponseTypeError(state=request.state, request=request)
+        # Value MUST be set to "token".
+        elif request.response_type != 'token':
+            raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
 
         log.debug('Validating use of response_type token for client %r (%r).',
                   request.client_id, request.client)
