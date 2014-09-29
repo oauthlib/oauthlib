@@ -71,6 +71,10 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     """
 
     def __init__(self, request_validator=None, refresh_token=True):
+        """
+        If the refresh_token keyword argument is False, do not return
+        a refresh token in the response.
+        """
         self.request_validator = request_validator or RequestValidator()
         self.refresh_token = refresh_token
 
