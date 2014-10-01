@@ -93,6 +93,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
         self._authorization_validators = []
+        self._token_validators = []
+        self._code_modifiers = []
         self._token_modifiers = []
         self.response_types = ['code']
 
@@ -101,6 +103,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
     def register_authorization_validator(self, validator):
         self._authorization_validators.append(validator)
+
+    def register_token_validator(self, validator):
+        self._token_validators.append(validator)
+
+    def register_code_modifier(self, modifier):
+        self._code_modifiers.append(modifier)
 
     def register_token_modifier(self, modifier):
         self._token_modifiers.append(modifier)
@@ -218,6 +226,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples)}, None, 302
 
         grant = self.create_authorization_code(request)
+        for modifier in self._code_modifiers:
+            grant = modifier(grant, token_handler, request)
         log.debug('Saving grant %r for %r.', grant, request)
         self.request_validator.save_authorization_code(request.client_id, grant, request)
         return {'Location': common.add_params_to_uri(request.redirect_uri, grant.items())}, None, 302
@@ -245,7 +255,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         token = token_handler.create_token(request, refresh_token=True)
         for modifier in self._token_modifiers:
-            token = modifier(token)
+            token = modifier(token, token_handler, request)
         self.request_validator.save_token(token)
         self.request_validator.invalidate_authorization_code(
                 request.client_id, request.code, request)
@@ -408,3 +418,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Redirect_uri (%r) invalid for client %r (%r).',
                       request.redirect_uri, request.client_id, request.client)
             raise errors.AccessDeniedError(request=request)
+
+        for validator in self._token_validators:
+            validator(request)
+
