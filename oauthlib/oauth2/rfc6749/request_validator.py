@@ -105,6 +105,23 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def get_auth_code_scopes(self, client_id, code, client, request, *args, **kwargs):
+        """Get the scopes associated with the authorization code.
+
+        :param client_id: Unicode client identifier
+        :param code: Unicode authorization code
+        :param client: Client object set by you, see authenticate_client.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: List of associated scopes
+
+        Method is used by OAuth 2 and OpenID grant types:
+            - Authorization Code Grant (code)
+            - Hybrid Authorization Grant (code id_token)
+            - Hybrid Authorization Grant (code token)
+            - Hybrid Authorization Grant (code id_token token)
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         """Get the default redirect URI for the client.
 
