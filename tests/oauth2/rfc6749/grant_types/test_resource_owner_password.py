@@ -52,6 +52,32 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         status_code = self.auth.create_token_response(self.request, bearer)[2]
         self.assertEqual(status_code, 401)
 
+    def test_create_token_response_without_refresh_token(self):
+        # self.auth.refresh_token = False so we don't generate a refresh token
+        self.auth = ResourceOwnerPasswordCredentialsGrant(
+                request_validator=self.mock_validator, refresh_token=False)
+        bearer = BearerToken(self.mock_validator)
+        headers, body, status_code = self.auth.create_token_response(
+                self.request, bearer)
+        token = json.loads(body)
+        self.assertIn('access_token', token)
+        self.assertIn('token_type', token)
+        self.assertIn('expires_in', token)
+        # ensure no refresh token is generated
+        self.assertNotIn('refresh_token', token)
+        # ensure client_authentication_required() is properly called
+        self.mock_validator.client_authentication_required.assert_called_once_with(self.request)
+        # fail client authentication
+        self.mock_validator.validate_user.return_value = True
+        self.mock_validator.authenticate_client.return_value = False
+        status_code = self.auth.create_token_response(self.request, bearer)[2]
+        self.assertEqual(status_code, 401)
+        # mock client_authentication_required() returning False then fail
+        self.mock_validator.client_authentication_required.return_value = False
+        self.mock_validator.authenticate_client_id.return_value = False
+        status_code = self.auth.create_token_response(self.request, bearer)[2]
+        self.assertEqual(status_code, 401)
+
     def test_error_response(self):
         pass
 
