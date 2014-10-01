@@ -16,13 +16,31 @@ from ..request_validator import RequestValidator
 
 class OpenIDConnectBase(GrantTypeBase):
 
-    def add_id_token(self, token, request):
+    def add_token(self, token, token_handler, request):
         # Treat it as normal OAuth 2 auth code request if openid is not present
         if not 'openid' in request.scopes:
             return token
 
+        # Only add a hybrid access token on auth step if asked for
+        if not 'token' in request.response_type:
+            return token
+
+        token.update(token_handler.create_token(request, refresh_token=False))
+        return token
+
+    def add_id_token(self, token, token_handler, request):
+        # Treat it as normal OAuth 2 auth code request if openid is not present
+        if not 'openid' in request.scopes:
+            return token
+
+        # Only add an id token on auth/token step if asked for.
+        if not 'id_token' in request.response_type:
+            return token
+
         # TODO: if max_age, then we must include auth_time here
         # TODO: acr claims
+        token['id_token'] = 'TODO'
+        return token
 
     def openid_authorization_validator(self, request):
         """Perform OpenID Connect specific authorization request validation.
@@ -187,6 +205,26 @@ class OpenIDConnectBase(GrantTypeBase):
 
         return request_info
 
+    def openid_implicit_authorization_validator(self, request):
+        """Additional validation when following the implicit flow.
+        """
+        # Undefined in OpenID Connect, fall back to OAuth2 definition.
+        if request.response_type == 'token':
+            return
+
+        if not 'openid' in request.scopes:
+            return
+
+        # REQUIRED. String value used to associate a Client session with an ID
+        # Token, and to mitigate replay attacks. The value is passed through
+        # unmodified from the Authentication Request to the ID Token.
+        # Sufficient entropy MUST be present in the nonce values used to
+        # prevent attackers from guessing values. For implementation notes, see
+        # Section 15.5.2.
+        if not request.nonce:
+            desc = 'Request is missing mandatory nonce parameter.'
+            raise InvalidRequestError(request=request, description=desc)
+
 
 class OpenIDConnectAuthCode(OpenIDConnectBase):
 
@@ -196,6 +234,8 @@ class OpenIDConnectAuthCode(OpenIDConnectBase):
             request_validator=request_validator)
         self.auth_code.register_authorization_validator(
             self.openid_authorization_validator)
+        self.auth_code.register_token_validator(
+            self.openid_token_validator)
         self.auth_code.register_token_modifier(self.add_id_token)
 
     def create_authorization_response(self, request, token_handler):
@@ -209,15 +249,14 @@ class OpenIDConnectAuthCode(OpenIDConnectBase):
         """Validates the OpenID Connect authorization request parameters.
 
         :returns: (list of scopes, dict of request info)
-
-        Note: If request_info['prompt'] is 'none' then no login/authorization
-        form should be presented to the user. Instead, a silent
-        login/authorization should be performed, e.g. by calling
-        create_authorization_response directly.
         """
-        return self.auth_code.validate_authorization_request(request)
-
-    # TODO: finish current and not yet existing methods
+        # If request.prompt is 'none' then no login/authorization form should
+        # be presented to the user. Instead, a silent login/authorization
+        # should be performed.
+        if request.prompt == 'none':
+            return self.create_authorization_response(request)
+        else:
+            return self.auth_code.validate_authorization_request(request)
 
 
 class OpenIDConnectImplicit(OpenIDConnectBase):
@@ -234,13 +273,35 @@ class OpenIDConnectImplicit(OpenIDConnectBase):
             self.openid_implicit_authorization_validator)
         self.implicit.register_token_modifier(self.create_id_token)
 
+    def create_authorization_response(self, request, token_handler):
+        return self.create_token_response(request, token_handler)
 
-    def openid_implicit_authorization_validator(self, request):
-        # Undefined in OpenID Connect, fall back to OAuth2 definition.
-        if request.response_type == 'token':
-            return
+    def create_token_response(self, request, token_handler):
+        return self.implicit.create_authorization_response(
+            request, token_handler)
 
-    # TODO: the other methods
+    def validate_authorization_request(self, request):
+        """Validates the OpenID Connect authorization request parameters.
+
+        :returns: (list of scopes, dict of request info)
+        """
+        # If request.prompt is 'none' then no login/authorization form should
+        # be presented to the user. Instead, a silent login/authorization
+        # should be performed.
+        if request.prompt == 'none':
+            return self.create_authorization_response(request)
+        else:
+            return self.auth_code.validate_authorization_request(request)
+
+    def openid_token_validator(self, request):
+        """Additional token request validation required for OpenID.
+
+        Verify that the Authorization Code used was issued in response to an
+        OpenID Connect Authentication Request (so that an ID Token will be
+        returned from the Token Endpoint).
+        """
+        request.scopes = self.request_validator.get_auth_code_scopes(
+            request.client_id, request.scope, request.client, request)
 
 
 class OpenIDConnectHybrid(OpenIDConnectBase):
@@ -255,19 +316,26 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
         self.auth_code.register_response_type('code id_token token')
         self.auth_code.register_authorization_validator(
             self.openid_authorization_validator)
+        self.auth_code.register_code_modifier(self.add_token)
+        self.auth_code.register_code_modifier(self.add_id_token)
         self.auth_code.register_token_modifier(self.add_id_token)
 
-        self.implicit = ImplicitGrant(
-            request_validator=request_validator)
-        self.implicit.register_response_type('id_token')
-        self.implicit.register_response_type('id_token token')
-        self.implicit.register_authorization_validator(
-            self.openid_authorization_validator)
-        self.implicit.register_authorization_validator(
-            self.openid_implicit_authorization_validator)
-        self.implicit.register_token_modifier(self.create_id_token)
+    def create_authorization_response(self, request, token_handler):
+        return self.auth_code.create_authorization_response(
+            request, token_handler)
 
-    # TODO: find out what gotchas there is to hybrid version
-    # that sets it apart from merging the two others...
+    def create_token_response(self, request, token_handler):
+        return self.auth_code.create_token_response(request, token_handler)
 
-    # TODO: the other methods
+    def validate_authorization_request(self, request):
+        """Validates the OpenID Connect authorization request parameters.
+
+        :returns: (list of scopes, dict of request info)
+        """
+        # If request.prompt is 'none' then no login/authorization form should
+        # be presented to the user. Instead, a silent login/authorization
+        # should be performed.
+        if request.prompt == 'none':
+            return self.create_authorization_response(request)
+        else:
+            return self.auth_code.validate_authorization_request(request)
