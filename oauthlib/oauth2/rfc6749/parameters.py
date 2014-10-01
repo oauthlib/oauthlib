@@ -9,9 +9,11 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 """
 from __future__ import absolute_import, unicode_literals
 
+import os
 import json
 import os
 import time
+import warnings
 try:
     import urlparse
 except ImportError:
@@ -385,6 +387,9 @@ def validate_token_parameters(params, scope=None):
         if os.environ.get('OAUTHLIB_STRICT_TOKEN_TYPE'):
             raise MissingTokenTypeError()
 
+    if os.environ.get("OAUTHLIB_IGNORE_SCOPE_CHANGE"):
+        return
+
     # If the issued access token scope is different from the one requested by
     # the client, the authorization server MUST include the "scope" response
     # parameter to inform the client of the actual scope granted.
@@ -392,9 +397,7 @@ def validate_token_parameters(params, scope=None):
     new_scope = params.get('scope', None)
     scope = scope_to_list(scope)
     if scope and new_scope and set(scope) != set(new_scope):
-        w = Warning("Scope has changed from {old} to {new}.".format(
+        msg = "Scope has changed from {old} to {new}.".format(
             old=scope, new=new_scope,
-        ))
-        w.old_scope = scope
-        w.new_scope = new_scope
-        raise w
+        )
+        warnings.warn(msg)
