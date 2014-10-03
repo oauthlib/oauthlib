@@ -95,6 +95,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
     .. _`Authorization Code Grant`: http://tools.ietf.org/html/rfc6749#section-4.1
     """
 
+    default_response_mode = 'query'
+
     def __init__(self, request_validator=None, refresh_token=True):
         self.request_validator = request_validator or RequestValidator()
         self.refresh_token = refresh_token
@@ -240,7 +242,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         log.debug('Saving grant %r for %r.', grant, request)
         self.request_validator.save_authorization_code(
             request.client_id, grant, request)
-        return {'Location': common.add_params_to_uri(request.redirect_uri, grant.items())}, None, 302
+        return self.prepare_authorization_response(
+            request, grant, {}, None, 302)
 
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.

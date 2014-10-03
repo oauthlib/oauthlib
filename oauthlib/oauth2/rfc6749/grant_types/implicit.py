@@ -119,6 +119,18 @@ class ImplicitGrant(GrantTypeBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+        self._authorization_validators = []
+        self._token_modifiers = []
+        self.response_types = ['token']
+
+    def register_response_type(self, response_type):
+        self.response_types.append(response_type)
+
+    def register_authorization_validator(self, validator):
+        self._authorization_validators.append(validator)
+
+    def register_token_modifier(self, modifier):
+        self._token_modifiers.append(modifier)
 
     def create_authorization_response(self, request, token_handler):
         """Create an authorization response.
@@ -231,11 +243,10 @@ class ImplicitGrant(GrantTypeBase):
         token = token_handler.create_token(request, refresh_token=False)
         # NEW-FOR-OPENID
         for modifier in self._token_modifiers:
-            token = modifier(token)
+            token = modifier(token, token_handler, request)
         self.request_validator.save_token(token, request)
-        # END-NEW-FOR-OPENID
-        return {'Location': common.add_params_to_uri(request.redirect_uri, token.items(),
-                                                     fragment=True)}, None, 302
+        return self.prepare_authorization_response(
+            request, token, {}, None, 302)
 
     def validate_authorization_request(self, request):
         return self.validate_token_request(request)
@@ -341,10 +352,15 @@ class ImplicitGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
-        return request.scopes, {
-            'client_id': request.client_id,
-            'redirect_uri': request.redirect_uri,
-            'response_type': request.response_type,
-            'state': request.state,
-            'request': request,
+        request_info = {
+                'client_id': request.client_id,
+                'redirect_uri': request.redirect_uri,
+                'response_type': request.response_type,
+                'state': request.state,
+                'request': request,
         }
+
+        for validator in self._authorization_validators:
+            request_info.update(validator(request))
+
+        return request.scopes, request_info
