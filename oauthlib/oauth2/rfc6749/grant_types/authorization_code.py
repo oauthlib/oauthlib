@@ -90,6 +90,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
     .. _`Authorization Code Grant`: http://tools.ietf.org/html/rfc6749#section-4.1
     """
+
+    default_response_mode = 'query'
+
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
         self._authorization_validators = []
@@ -229,8 +232,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         for modifier in self._code_modifiers:
             grant = modifier(grant, token_handler, request)
         log.debug('Saving grant %r for %r.', grant, request)
-        self.request_validator.save_authorization_code(request.client_id, grant, request)
-        return {'Location': common.add_params_to_uri(request.redirect_uri, grant.items())}, None, 302
+        self.request_validator.save_authorization_code(
+            request.client_id, grant, request)
+        return self.prepare_authorization_response(
+            request, grant, {}, None, 302)
 
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.
@@ -400,8 +405,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # REQUIRED. The authorization code received from the
         # authorization server.
-        if not self.request_validator.validate_code(request.client_id,
-                                                    request.code, request.client, request):
+        if not self.request_validator.validate_code(
+            request.client_id, request.code, request.client, request):
             log.debug('Client, %r (%r), is not allowed access to scopes %r.',
                       request.client_id, request.client, request.scopes)
             raise errors.InvalidGrantError(request=request)
