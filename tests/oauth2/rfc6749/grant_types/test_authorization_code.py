@@ -21,6 +21,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.request.code = '1234'
         self.request.response_type = 'code'
         self.request.grant_type = 'authorization_code'
+        self.request.redirect_uri = 'https://example.com/cb'
 
         self.request_state = Request('http://a.b/path')
         self.request_state.state = 'abc'
@@ -41,6 +42,16 @@ class AuthorizationCodeGrantTest(TestCase):
         grant = self.auth.create_authorization_code(self.request_state)
         self.assertIn('code', grant)
         self.assertIn('state', grant)
+
+    @mock.patch('oauthlib.common.generate_token')
+    def test_create_authorization_response(self, generate_token):
+        generate_token.return_value = 'abc'
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], 'https://example.com/cb?code=abc')
+        self.request.response_mode = 'fragment'
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], 'https://example.com/cb#code=abc')
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
