@@ -10,3 +10,8 @@ from .implicit import ImplicitGrant
 from .resource_owner_password_credentials import ResourceOwnerPasswordCredentialsGrant
 from .client_credentials import ClientCredentialsGrant
 from .refresh_token import RefreshTokenGrant
+from .openid_connect import OpenIDConnectBase
+from .openid_connect import OpenIDConnectAuthCode
+from .openid_connect import OpenIDConnectImplicit
+from .openid_connect import OpenIDConnectHybrid
+from .openid_connect import OIDCNoPrompt
