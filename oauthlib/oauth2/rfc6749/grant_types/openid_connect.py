@@ -14,19 +14,44 @@ from ..errors import InvalidRequestError, LoginRequired, ConsentRequired
 from ..request_validator import RequestValidator
 
 
+class OIDCNoPrompt(Exception):
+    """Exception used to inform users that no explicit authorization is needed.
+
+    Normally users authorize requests after validation of the request is done.
+    Then post-authorization validation is again made and a response containing
+    an auth code or token is created. However, when OIDC clients request
+    no prompting of user authorization the final response is created directly.
+
+    Example (without the shortcut for no prompt)
+
+    scopes, req_info = endpoint.validate_authorization_request(url, ...)
+    authorization_view = create_fancy_auth_form(scopes, req_info)
+    return authorization_view
+
+    Example (with the no prompt shortcut)
+    try:
+        scopes, req_info = endpoint.validate_authorization_request(url, ...)
+        authorization_view = create_fancy_auth_form(scopes, req_info)
+        return authorization_view
+    except OIDCNoPrompt:
+        # Note: Location will be set for you
+        headers, body, status = endpoint.create_authorization_response(url, ...)
+        redirect_view = create_redirect(headers, body, status)
+        return redirect_view
+    """
+
+    def __init__(self):
+        msg = ("OIDC request for no user interaction received. Do not ask user "
+               "for authorization, it should been done using silent "
+               "authentication through create_authorization_response. "
+               "See OIDCNoPrompt.__doc__ for more details.")
+        super(OIDCNoPrompt, self).__init__(msg)
+
+
 class OpenIDConnectBase(GrantTypeBase):
 
-    def add_token(self, token, token_handler, request):
-        # Treat it as normal OAuth 2 auth code request if openid is not present
-        if not 'openid' in request.scopes:
-            return token
-
-        # Only add a hybrid access token on auth step if asked for
-        if not 'token' in request.response_type:
-            return token
-
-        token.update(token_handler.create_token(request, refresh_token=False))
-        return token
+    def __init__(self, request_validator=None):
+        self.request_validator = request_validator or RequestValidator()
 
     def add_id_token(self, token, token_handler, request):
         # Treat it as normal OAuth 2 auth code request if openid is not present
@@ -34,8 +59,11 @@ class OpenIDConnectBase(GrantTypeBase):
             return token
 
         # Only add an id token on auth/token step if asked for.
-        if not 'id_token' in request.response_type:
+        if request.response_type and not 'id_token' in request.response_type:
             return token
+
+        if not 'state' in token:
+            token['state'] = request.state
 
         # TODO: if max_age, then we must include auth_time here
         # TODO: acr claims
@@ -176,7 +204,7 @@ class OpenIDConnectBase(GrantTypeBase):
 
         # Treat it as normal OAuth 2 auth code request if openid is not present
         if not 'openid' in request.scopes:
-            return
+            return {}
 
         if request.prompt == 'none' and not request.id_token_hint:
             msg = "Prompt is set to none yet id_token_hint is missing."
@@ -210,10 +238,10 @@ class OpenIDConnectBase(GrantTypeBase):
         """
         # Undefined in OpenID Connect, fall back to OAuth2 definition.
         if request.response_type == 'token':
-            return
+            return {}
 
         if not 'openid' in request.scopes:
-            return
+            return {}
 
         # REQUIRED. String value used to associate a Client session with an ID
         # Token, and to mitigate replay attacks. The value is passed through
@@ -225,18 +253,22 @@ class OpenIDConnectBase(GrantTypeBase):
             desc = 'Request is missing mandatory nonce parameter.'
             raise InvalidRequestError(request=request, description=desc)
 
+        return {'nonce': request.nonce}
 
 class OpenIDConnectAuthCode(OpenIDConnectBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+        super(OpenIDConnectAuthCode, self).__init__(
+            request_validator=self.request_validator)
         self.auth_code = AuthorizationCodeGrant(
-            request_validator=request_validator)
+            request_validator=self.request_validator)
         self.auth_code.register_authorization_validator(
             self.openid_authorization_validator)
-        self.auth_code.register_token_validator(
-            self.openid_token_validator)
         self.auth_code.register_token_modifier(self.add_id_token)
+
+    def create_authorization_code(self, request):
+        return self.auth_code.create_authorization_code(request)
 
     def create_authorization_response(self, request, token_handler):
         return self.auth_code.create_authorization_response(
@@ -254,15 +286,20 @@ class OpenIDConnectAuthCode(OpenIDConnectBase):
         # be presented to the user. Instead, a silent login/authorization
         # should be performed.
         if request.prompt == 'none':
-            return self.create_authorization_response(request)
+            raise OIDCNoPrompt()
         else:
             return self.auth_code.validate_authorization_request(request)
+
+    def validate_token_request(self, request):
+        return self.auth_code.validate_token_request(request)
 
 
 class OpenIDConnectImplicit(OpenIDConnectBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+        super(OpenIDConnectImplicit, self).__init__(
+            request_validator=self.request_validator)
         self.implicit = ImplicitGrant(
             request_validator=request_validator)
         self.implicit.register_response_type('id_token')
@@ -271,7 +308,7 @@ class OpenIDConnectImplicit(OpenIDConnectBase):
             self.openid_authorization_validator)
         self.implicit.register_authorization_validator(
             self.openid_implicit_authorization_validator)
-        self.implicit.register_token_modifier(self.create_id_token)
+        self.implicit.register_token_modifier(self.add_id_token)
 
     def create_authorization_response(self, request, token_handler):
         return self.create_token_response(request, token_handler)
@@ -289,19 +326,9 @@ class OpenIDConnectImplicit(OpenIDConnectBase):
         # be presented to the user. Instead, a silent login/authorization
         # should be performed.
         if request.prompt == 'none':
-            return self.create_authorization_response(request)
+            raise OIDCNoPrompt()
         else:
-            return self.auth_code.validate_authorization_request(request)
-
-    def openid_token_validator(self, request):
-        """Additional token request validation required for OpenID.
-
-        Verify that the Authorization Code used was issued in response to an
-        OpenID Connect Authentication Request (so that an ID Token will be
-        returned from the Token Endpoint).
-        """
-        request.scopes = self.request_validator.get_auth_code_scopes(
-            request.client_id, request.scope, request.client, request)
+            return self.implicit.validate_authorization_request(request)
 
 
 class OpenIDConnectHybrid(OpenIDConnectBase):
@@ -320,6 +347,9 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
         self.auth_code.register_code_modifier(self.add_id_token)
         self.auth_code.register_token_modifier(self.add_id_token)
 
+    def create_authorization_code(self, request):
+        return self.auth_code.create_authorization_code(request)
+
     def create_authorization_response(self, request, token_handler):
         return self.auth_code.create_authorization_response(
             request, token_handler)
@@ -336,6 +366,10 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
         # be presented to the user. Instead, a silent login/authorization
         # should be performed.
         if request.prompt == 'none':
-            return self.create_authorization_response(request)
+            raise OIDCNoPrompt()
         else:
             return self.auth_code.validate_authorization_request(request)
+
+    def validate_token_request(self, request):
+        return self.auth_code.validate_token_request(request)
+
