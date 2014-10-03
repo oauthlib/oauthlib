@@ -55,6 +55,16 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertTrue(self.mock_validator.validate_response_type.called)
         self.assertTrue(self.mock_validator.validate_scopes.called)
 
+    @mock.patch('oauthlib.common.generate_token')
+    def test_create_authorization_response(self, generate_token):
+        generate_token.return_value = 'abc'
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], 'https://example.com/cb?code=abc')
+        self.request.response_mode = 'fragment'
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], 'https://example.com/cb#code=abc')
+
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
         h, token, s = self.auth.create_token_response(self.request, bearer)
