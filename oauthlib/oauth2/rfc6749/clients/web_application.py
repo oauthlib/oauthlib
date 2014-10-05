@@ -187,7 +187,7 @@ class WebApplicationClient(Client):
         :param body: The response body from the token request.
         :param scope: Scopes originally requested.
         :return: Dictionary of token parameters.
-        :raises: Warning if scope has changed. OAuth2Error if response is invalid.
+        :raises: OAuth2Error if response is invalid.
 
         These response are json encoded and could easily be parsed without
         the assistance of OAuthLib. However, there are a few subtle issues
@@ -238,18 +238,19 @@ class WebApplicationClient(Client):
                     'scope': ['hello', 'world'],    # note the list
             }
 
-        If there was a scope change you will be notified with a warning::
+        If there was a scope change, a "scope changed" signal will be dispatched
+        using the `blinker`_ library, if installed. (If blinker is not installed,
+        there will be no notification on scope change.) To be automatically
+        notified when the returned scope is different from the requested scope,
+        simply connect a function to the ``oauthlib.signals.scope_changed``
+        dispatcher::
 
+            >>> def alert_scope_changed(message, old, new):
+            ...     print(message, old, new)
+            ...
+            >>> oauthlib.signals.scope_changed.connect(alert_scope_changed)
             >>> client.parse_request_body_response(response_body, scope=['images'])
-            Traceback (most recent call last):
-                File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/rfc6749/__init__.py", line 421, in parse_request_body_response
-                    .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
-                File "oauthlib/oauth2/rfc6749/parameters.py", line 263, in parse_token_response
-                    validate_token_parameters(params, scope)
-                File "oauthlib/oauth2/rfc6749/parameters.py", line 285, in validate_token_parameters
-                    raise Warning("Scope has changed to %s." % new_scope)
-            Warning: Scope has changed to [u'hello', u'world'].
+            ('Scope has changed from "images" to "hello world".', ['images'], ['hello', 'world'])
 
         If there was an error on the providers side you will be notified with
         an error. For example, if there was no ``token_type`` provided::
@@ -268,6 +269,7 @@ class WebApplicationClient(Client):
         .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
+        .. _`blinker`: http://pythonhosted.org/blinker/
         """
         self.token = parse_token_response(body, scope=scope)
         self._populate_attributes(self.token)
