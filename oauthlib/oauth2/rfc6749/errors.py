@@ -55,6 +55,8 @@ class OAuth2Error(Exception):
             self.scopes = request.scopes
             self.response_type = request.response_type
             self.grant_type = request.grant_type
+            if not state:
+                self.state = request.state
 
     def in_uri(self, uri):
         return add_params_to_uri(uri, self.twotuples)
