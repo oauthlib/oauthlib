@@ -24,7 +24,7 @@ class RevocationEndpointTest(TestCase):
         }
 
     def test_revoke_token(self):
-        for token_type in ('access_token', 'refresh_token'):
+        for token_type in ('access_token', 'refresh_token', 'invalid'):
             body = urlencode([('token', 'foo'),
                               ('token_type_hint', token_type)])
             h, b, s = self.endpoint.create_revocation_response(self.uri,
@@ -36,7 +36,7 @@ class RevocationEndpointTest(TestCase):
     def test_revoke_with_callback(self):
         endpoint = RevocationEndpoint(self.validator, enable_jsonp=True)
         callback = 'package.hello_world'
-        for token_type in ('access_token', 'refresh_token'):
+        for token_type in ('access_token', 'refresh_token', 'invalid'):
             body = urlencode([('token', 'foo'),
                               ('token_type_hint', token_type),
                               ('callback', callback)])
@@ -45,15 +45,6 @@ class RevocationEndpointTest(TestCase):
             self.assertEqual(h, {})
             self.assertEqual(b, callback + '();')
             self.assertEqual(s, 200)
-
-        body = urlencode([('token', 'foo'),
-                            ('token_type_hint', 'invalid'),
-                            ('callback', callback)])
-        h, b, s = endpoint.create_revocation_response(self.uri,
-                headers=self.headers, body=body)
-        self.assertEqual(h, {})
-        self.assertEqual(b, callback + '({"error": "unsupported_token_type"});')
-        self.assertEqual(s, 400)
 
     def test_revoke_unsupported_token(self):
         endpoint = RevocationEndpoint(self.validator,
