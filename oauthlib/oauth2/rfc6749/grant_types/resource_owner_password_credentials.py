@@ -166,8 +166,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
 
         for param in ('grant_type', 'username', 'password', 'scope'):
             if param in request.duplicate_params:
-                raise errors.InvalidRequestError(state=request.state,
-                                                 description='Duplicate %s parameter.' % param, request=request)
+                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param, request=request)
 
         # This error should rarely (if ever) occur if requests are routed to
         # grant type handlers based on the grant_type parameter.

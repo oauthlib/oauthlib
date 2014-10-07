@@ -92,8 +92,7 @@ class ClientCredentialsGrant(GrantTypeBase):
 
         for param in ('grant_type', 'scope'):
             if param in request.duplicate_params:
-                raise errors.InvalidRequestError(state=request.state,
-                                                 description='Duplicate %s parameter.' % param,
+                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param,
                                                  request=request)
 
         log.debug('Authenticating client, %r.', request)

@@ -37,5 +37,4 @@ class GrantTypeBase(object):
                   request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,
                                                       request.scopes, request.client, request):
-            raise errors.InvalidScopeError(
-                state=request.state, request=request)
+            raise errors.InvalidScopeError(request=request)
