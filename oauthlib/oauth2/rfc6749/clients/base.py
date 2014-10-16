@@ -12,6 +12,7 @@ import time
 
 from oauthlib.common import generate_token
 from oauthlib.oauth2.rfc6749 import tokens
+from oauthlib.oauth2.rfc6749.parameters import parse_token_response
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_request
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_revocation_request
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
@@ -140,9 +141,6 @@ class Client(object):
 
     def parse_request_uri_response(self, *args, **kwargs):
         """Abstract method used to parse redirection responses."""
-
-    def parse_request_body_response(self, *args, **kwargs):
-        """Abstract method used to parse JSON responses."""
 
     def add_token(self, uri, http_method='GET', body=None, headers=None,
                   token_placement=None, **kwargs):
@@ -361,6 +359,56 @@ class Client(object):
         return prepare_token_revocation_request(revocation_url, token,
                 token_type_hint=token_type_hint, body=body, callback=callback,
                 **kwargs)
+
+    def parse_request_body_response(self, body, scope=None, **kwargs):
+        """Parse the JSON response body.
+
+        If the access token request is valid and authorized, the
+        authorization server issues an access token as described in
+        `Section 5.1`_.  A refresh token SHOULD NOT be included.  If the request
+        failed client authentication or is invalid, the authorization server
+        returns an error response as described in `Section 5.2`_.
+
+        :param body: The response body from the token request.
+        :param scope: Scopes originally requested.
+        :return: Dictionary of token parameters.
+        :raises: Warning if scope has changed. OAuth2Error if response is invalid.
+
+        These response are json encoded and could easily be parsed without
+        the assistance of OAuthLib. However, there are a few subtle issues
+        to be aware of regarding the response which are helpfully addressed
+        through the raising of various errors.
+
+        A successful response should always contain
+
+        **access_token**
+                The access token issued by the authorization server. Often
+                a random string.
+
+        **token_type**
+            The type of the token issued as described in `Section 7.1`_.
+            Commonly ``Bearer``.
+
+        While it is not mandated it is recommended that the provider include
+
+        **expires_in**
+            The lifetime in seconds of the access token.  For
+            example, the value "3600" denotes that the access token will
+            expire in one hour from the time the response was generated.
+            If omitted, the authorization server SHOULD provide the
+            expiration time via other means or document the default value.
+
+        **scope**
+            Providers may supply this in all responses but are required to only
+            if it has changed since the authorization request.
+
+        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
+        """
+        self.token = parse_token_response(body, scope=scope)
+        self._populate_attributes(self.token)
+        return self.token
 
     def prepare_refresh_body(self, body='', refresh_token=None, scope=None, **kwargs):
         """Prepare an access token request, using a refresh token.
