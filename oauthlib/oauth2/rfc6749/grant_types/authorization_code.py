@@ -267,12 +267,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # REQUIRED. The client identifier as described in Section 2.2.
         # http://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
-            raise errors.MissingClientIdError(
-                state=request.state, request=request)
+            raise errors.MissingClientIdError(request=request)
 
         if not self.request_validator.validate_client_id(request.client_id, request):
-            raise errors.InvalidClientIdError(
-                state=request.state, request=request)
+            raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
         # http://tools.ietf.org/html/rfc6749#section-3.1.2
@@ -282,21 +280,18 @@ class AuthorizationCodeGrant(GrantTypeBase):
             request.using_default_redirect_uri = False
             log.debug('Using provided redirect_uri %s', request.redirect_uri)
             if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(
-                    state=request.state, request=request)
+                raise errors.InvalidRedirectURIError(request=request)
 
             if not self.request_validator.validate_redirect_uri(
                     request.client_id, request.redirect_uri, request):
-                raise errors.MismatchingRedirectURIError(
-                    state=request.state, request=request)
+                raise errors.MismatchingRedirectURIError(request=request)
         else:
             request.redirect_uri = self.request_validator.get_default_redirect_uri(
                 request.client_id, request)
             request.using_default_redirect_uri = True
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
-                raise errors.MissingRedirectURIError(
-                    state=request.state, request=request)
+                raise errors.MissingRedirectURIError(request=request)
 
         # Then check for normal errors.
 
@@ -310,13 +305,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions.
         if request.response_type is None:
-            raise errors.InvalidRequestError(state=request.state,
-                                             description='Missing response_type parameter.', request=request)
+            raise errors.InvalidRequestError(description='Missing response_type parameter.', request=request)
 
         for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
             if param in request.duplicate_params:
-                raise errors.InvalidRequestError(state=request.state,
-                                                 description='Duplicate %s parameter.' % param, request=request)
+                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param, request=request)
 
         if not self.request_validator.validate_response_type(request.client_id,
                                                              request.response_type, request.client, request):
@@ -326,8 +319,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # REQUIRED. Value MUST be set to "code".
         if request.response_type != 'code':
-            raise errors.UnsupportedResponseTypeError(
-                state=request.state, request=request)
+            raise errors.UnsupportedResponseTypeError(request=request)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # http://tools.ietf.org/html/rfc6749#section-3.3
@@ -352,8 +344,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         for param in ('client_id', 'grant_type', 'redirect_uri'):
             if param in request.duplicate_params:
-                raise errors.InvalidRequestError(state=request.state,
-                                                 description='Duplicate %s parameter.' % param,
+                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param,
                                                  request=request)
 
         if self.request_validator.client_authentication_required(request):

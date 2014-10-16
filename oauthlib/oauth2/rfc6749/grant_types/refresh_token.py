@@ -114,7 +114,6 @@ class RefreshTokenGrant(GrantTypeBase):
                     request.scopes, request.refresh_token, request)):
                 log.debug('Refresh token %s lack requested scopes, %r.',
                           request.refresh_token, request.scopes)
-                raise errors.InvalidScopeError(
-                    state=request.state, request=request)
+                raise errors.InvalidScopeError(request=request)
         else:
             request.scopes = original_scopes
