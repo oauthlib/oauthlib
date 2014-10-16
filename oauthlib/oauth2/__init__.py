@@ -13,6 +13,7 @@ from .rfc6749.clients import WebApplicationClient
 from .rfc6749.clients import MobileApplicationClient
 from .rfc6749.clients import LegacyApplicationClient
 from .rfc6749.clients import BackendApplicationClient
+from .rfc6749.clients import ServiceApplicationClient
 from .rfc6749.endpoints import AuthorizationEndpoint
 from .rfc6749.endpoints import TokenEndpoint
 from .rfc6749.endpoints import ResourceEndpoint

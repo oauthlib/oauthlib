@@ -13,3 +13,4 @@ from .web_application import WebApplicationClient
 from .mobile_application import MobileApplicationClient
 from .legacy_application import LegacyApplicationClient
 from .backend_application import BackendApplicationClient
+from .service_application import ServiceApplicationClient
