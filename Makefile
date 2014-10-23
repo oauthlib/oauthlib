@@ -26,7 +26,7 @@ test:
 	rm -rf flask-oauthlib
 	#---------------------------
 	# Library: evonove/django-oauth-toolkit
-	# Contacts: lepture,masci
+	# Contacts: evonove,masci
 	# (note: has tox.ini already)
 	git clone https://github.com/evonove/django-oauth-toolkit.git
 	cd django-oauth-toolkit && tox -e "$(PYS)"
