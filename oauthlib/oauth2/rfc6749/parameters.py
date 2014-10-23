@@ -17,6 +17,7 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
+from oauthlib.signals import scope_changed
 from .errors import raise_from_error, MissingTokenError, MissingTokenTypeError
 from .errors import MismatchingStateError, MissingCodeError
 from .errors import InsecureTransportError
@@ -390,11 +391,9 @@ def validate_token_parameters(params, scope=None):
     # parameter to inform the client of the actual scope granted.
     # http://tools.ietf.org/html/rfc6749#section-3.3
     new_scope = params.get('scope', None)
-    scope = scope_to_list(scope)
-    if scope and new_scope and set(scope) != set(new_scope):
-        w = Warning("Scope has changed from {old} to {new}.".format(
-            old=scope, new=new_scope,
-        ))
-        w.old_scope = scope
-        w.new_scope = new_scope
-        raise w
+    old_scope = scope_to_list(scope)
+    if old_scope and new_scope and set(old_scope) != set(new_scope):
+        message = 'Scope has changed from "{old}" to "{new}".'.format(
+            old=scope, new=list_to_scope(new_scope),
+        )
+        scope_changed.send(message=message, old=old_scope, new=new_scope)

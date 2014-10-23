@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 
 from mock import patch
 
+from oauthlib import signals
 from oauthlib.oauth2 import MobileApplicationClient
 
 from ....unittest import TestCase
@@ -77,4 +78,17 @@ class MobileApplicationClientTest(TestCase):
         self.assertEqual(client.token_type, response.get("token_type"))
 
         # Mismatching scope
-        self.assertRaises(Warning, client.parse_request_uri_response, self.response_uri, scope="invalid")
+        scope_changes_recorded = []
+        def record_scope_change(sender, message, old, new):
+            scope_changes_recorded.append((message, old, new))
+
+        signals.scope_changed.connect(record_scope_change)
+        try:
+            client.parse_request_uri_response(self.response_uri, scope="invalid")
+            self.assertEqual(len(scope_changes_recorded), 1)
+            message, old, new = scope_changes_recorded[0]
+            self.assertEqual(message, 'Scope has changed from "invalid" to "/profile".')
+            self.assertEqual(old, ['invalid'])
+            self.assertEqual(new, ['/profile'])
+        finally:
+            signals.scope_changed.disconnect(record_scope_change)

@@ -5,7 +5,7 @@ import datetime
 
 from mock import patch
 
-from oauthlib import common
+from oauthlib import common, signals
 from oauthlib.oauth2.rfc6749 import utils, errors
 from oauthlib.oauth2 import Client
 from oauthlib.oauth2 import WebApplicationClient
@@ -128,4 +128,17 @@ class WebApplicationClientTest(TestCase):
         self.assertEqual(client.token_type, response.get("token_type"))
 
         # Mismatching state
-        self.assertRaises(Warning, client.parse_request_body_response, self.token_json, scope="invalid")
+        scope_changes_recorded = []
+        def record_scope_change(sender, message, old, new):
+            scope_changes_recorded.append((message, old, new))
+
+        signals.scope_changed.connect(record_scope_change)
+        try:
+            client.parse_request_body_response(self.token_json, scope="invalid")
+            self.assertEqual(len(scope_changes_recorded), 1)
+            message, old, new = scope_changes_recorded[0]
+            self.assertEqual(message, 'Scope has changed from "invalid" to "/profile".')
+            self.assertEqual(old, ['invalid'])
+            self.assertEqual(new, ['/profile'])
+        finally:
+            signals.scope_changed.disconnect(record_scope_change)
