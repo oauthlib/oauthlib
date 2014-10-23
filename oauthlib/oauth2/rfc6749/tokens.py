@@ -6,7 +6,6 @@ This module contains methods for adding two types of access tokens to requests.
 
 - Bearer http://tools.ietf.org/html/rfc6750
 - MAC http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
-
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -20,7 +19,39 @@ except ImportError:
 
 from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
 from oauthlib import common
+
 from . import utils
+
+
+class OAuth2Token(dict):
+
+    def __init__(self, params, old_scope=None):
+        super(OAuth2Token, self).__init__(params)
+        self.new_scope = set(utils.scope_to_list(params.get('scope', '')))
+        if old_scope is not None:
+            self.old_scope = set(utils.scope_to_list(old_scope))
+        else:
+            self.old_scope = self.new_scope
+
+    @property
+    def scope_changed(self):
+        return self.new_scope != self.old_scope
+
+    @property
+    def old_scopes(self):
+        return list(self.old_scope)
+
+    @property
+    def scopes(self):
+        return list(self.new_scope)
+
+    @property
+    def missing_scopes(self):
+        return list(self.old_scope - self.new_scope)
+
+    @property
+    def additional_scopes(self):
+        return list(self.new_scope - self.old_scope)
 
 
 def prepare_mac_header(token, uri, key, http_method,

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+import os
+
 from mock import patch
 
 from oauthlib import signals
@@ -78,6 +80,12 @@ class MobileApplicationClientTest(TestCase):
         self.assertEqual(client.token_type, response.get("token_type"))
 
         # Mismatching scope
+        self.assertRaises(Warning, client.parse_request_uri_response, self.response_uri, scope="invalid")
+        os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '4'
+        token = client.parse_request_uri_response(self.response_uri, scope='invalid')
+        self.assertTrue(token.scope_changed)
+        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
+
         scope_changes_recorded = []
         def record_scope_change(sender, message, old, new):
             scope_changes_recorded.append((message, old, new))
