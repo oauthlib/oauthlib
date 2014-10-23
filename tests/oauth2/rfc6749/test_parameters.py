@@ -1,5 +1,4 @@
-from __future__ import absolute_import, unicode_literals
-
+from __future__ import absolute_import, unicode_literals 
 from mock import patch
 
 from ...unittest import TestCase
@@ -199,6 +198,7 @@ class ParameterTests(TestCase):
         def record_scope_change(sender, message, old, new):
             scope_changes_recorded.append((message, old, new))
 
+        os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
         signals.scope_changed.connect(record_scope_change)
         try:
             parse_token_response(self.json_response, scope='aaa')
@@ -209,6 +209,7 @@ class ParameterTests(TestCase):
             self.assertEqual(new, ['abc', 'def'])
         finally:
             signals.scope_changed.disconnect(record_scope_change)
+        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
 
     def test_json_token_notype(self):
         """Verify strict token type parsing only when configured. """
@@ -229,16 +230,19 @@ class ParameterTests(TestCase):
         def record_scope_change(sender, message, old, new):
             scope_changes_recorded.append((message, old, new))
 
+        os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
         signals.scope_changed.connect(record_scope_change)
         try:
-            parse_token_response(self.url_encoded_response, scope='aaa')
+            token = parse_token_response(self.url_encoded_response, scope='aaa')
             self.assertEqual(len(scope_changes_recorded), 1)
             message, old, new = scope_changes_recorded[0]
-            self.assertEqual(message, 'Scope has changed from "aaa" to "abc def".')
+            self.assertIn(token.scope, message)
+            self.assertIn(token.old_scope, message)
             self.assertEqual(old, ['aaa'])
-            self.assertEqual(new, ['abc', 'def'])
+            self.assertEqual(set(new), set(['abc', 'def']))
         finally:
             signals.scope_changed.disconnect(record_scope_change)
+        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
 
     def test_token_response_with_expires(self):
         """Verify fallback for alternate spelling of expires_in. """

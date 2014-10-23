@@ -27,31 +27,39 @@ class OAuth2Token(dict):
 
     def __init__(self, params, old_scope=None):
         super(OAuth2Token, self).__init__(params)
-        self.new_scope = set(utils.scope_to_list(params.get('scope', '')))
+        self._new_scope = set(utils.scope_to_list(params.get('scope', '')))
         if old_scope is not None:
-            self.old_scope = set(utils.scope_to_list(old_scope))
+            self._old_scope = set(utils.scope_to_list(old_scope))
         else:
-            self.old_scope = self.new_scope
+            self._old_scope = self._new_scope
 
     @property
     def scope_changed(self):
-        return self.new_scope != self.old_scope
+        return self._new_scope != self._old_scope
+
+    @property
+    def old_scope(self):
+        return utils.list_to_scope(self._old_scope)
 
     @property
     def old_scopes(self):
-        return list(self.old_scope)
+        return list(self._old_scope)
+
+    @property
+    def scope(self):
+        return utils.list_to_scope(self._new_scope)
 
     @property
     def scopes(self):
-        return list(self.new_scope)
+        return list(self._new_scope)
 
     @property
     def missing_scopes(self):
-        return list(self.old_scope - self.new_scope)
+        return list(self._old_scope - self._new_scope)
 
     @property
     def additional_scopes(self):
-        return list(self.new_scope - self.old_scope)
+        return list(self._new_scope - self._old_scope)
 
 
 def prepare_mac_header(token, uri, key, http_method,

@@ -395,9 +395,9 @@ def validate_token_parameters(params):
     # http://tools.ietf.org/html/rfc6749#section-3.3
     if params.scope_changed:
         message = 'Scope has changed from "{old}" to "{new}".'.format(
-            old=params.old_scopes, new=params.new_scope,
+            old=params.old_scope, new=params.scope,
         )
-        scope_changed.send(message=message, old=params.old_scopes, new=params.new_scopes)
+        scope_changed.send(message=message, old=params.old_scopes, new=params.scopes)
         if not os.environ.get('OAUTHLIB_RELAX_TOKEN_SCOPE', None):
             w = Warning(message)
             w.token = params

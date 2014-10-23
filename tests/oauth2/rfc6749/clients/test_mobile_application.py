@@ -84,7 +84,6 @@ class MobileApplicationClientTest(TestCase):
         os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '4'
         token = client.parse_request_uri_response(self.response_uri, scope='invalid')
         self.assertTrue(token.scope_changed)
-        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
 
         scope_changes_recorded = []
         def record_scope_change(sender, message, old, new):
@@ -100,3 +99,4 @@ class MobileApplicationClientTest(TestCase):
             self.assertEqual(new, ['/profile'])
         finally:
             signals.scope_changed.disconnect(record_scope_change)
+        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']

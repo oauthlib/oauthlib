@@ -70,7 +70,6 @@ class BackendApplicationClientTest(TestCase):
         os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '3'
         token = client.parse_request_body_response(self.token_json, scope="invalid")
         self.assertTrue(token.scope_changed)
-        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
 
         scope_changes_recorded = []
         def record_scope_change(sender, message, old, new):
@@ -86,3 +85,4 @@ class BackendApplicationClientTest(TestCase):
             self.assertEqual(new, ['/profile'])
         finally:
             signals.scope_changed.disconnect(record_scope_change)
+        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
