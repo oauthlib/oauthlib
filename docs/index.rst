@@ -7,9 +7,11 @@ Welcome to OAuthLib's documentation!
 ====================================
 
 If you can't find what you need or have suggestions for improvement, don't
-hesitate to open a `new issue on GitHub`_!
+hesitate to open a `new issue on GitHub`_!  
 
-For news and discussions please check out our `G+ OAuthLib community`_.
+Check out :doc:`error_reporting` for details on how to be an awesome bug reporter.
+
+For news and discussions please head over to our `G+ OAuthLib community`_.
 
 .. _`new issue on GitHub`: https://github.com/idan/oauthlib/issues/new
 .. _`G+ OAuthLib community`: https://plus.google.com/communities/101889017375384052571
@@ -18,9 +20,11 @@ For news and discussions please check out our `G+ OAuthLib community`_.
    :maxdepth: 1
 
    installation
-   feature_matrix
    faq
+   feature_matrix
+   error_reporting
    contributing
+   release_process
    oauth_1_versus_oauth_2
 
 .. toctree::
