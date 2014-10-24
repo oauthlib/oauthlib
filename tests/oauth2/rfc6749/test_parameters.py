@@ -236,8 +236,8 @@ class ParameterTests(TestCase):
             token = parse_token_response(self.url_encoded_response, scope='aaa')
             self.assertEqual(len(scope_changes_recorded), 1)
             message, old, new = scope_changes_recorded[0]
-            self.assertIn(token.scope, message)
-            self.assertIn(token.old_scope, message)
+            for scope in new + old:
+                self.assertIn(scope, message)
             self.assertEqual(old, ['aaa'])
             self.assertEqual(set(new), set(['abc', 'def']))
         finally:
