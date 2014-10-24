@@ -266,7 +266,7 @@ class BearerToken(TokenBase):
                 token['refresh_token'] = self.refresh_token_generator(request)
 
         token.update(request.extra_credentials or {})
-
+        token = OAuth2Token(token)
         self.request_validator.save_bearer_token(token, request)
         return token
 
