@@ -10,6 +10,7 @@ from __future__ import absolute_import, unicode_literals
 
 import collections
 import datetime
+import logging
 import random
 import re
 import sys
@@ -39,6 +40,8 @@ CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                'abcdefghijklmnopqrstuvwxyz'
                '0123456789' '_.-')
+
+log = logging.getLogger('oauthlib')
 
 PY3 = sys.version_info[0] == 3
 
