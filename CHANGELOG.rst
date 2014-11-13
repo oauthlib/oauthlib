@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.7.2:
+
+* (Quick fix) Unpushed locally modified files got included in the PyPI 0.7.1
+  release. Doing a new clean release to address this. Please upgrade quickly
+  and report any issues you are running into.
+
+0.7.1:
+
+* (Quick fix) Add oauthlib.common.log object back in for libraries using it.
+
 0.7.0:
 
 * (Change) OAuth2 clients will not raise a Warning on scope change if
@@ -24,7 +34,7 @@ Changelog
 0.6.3: Quick fix. OAuth 1 client repr in 0.6.2 overwrote secrets when
        scrubbing for print.
 
-0.6.2: 
+0.6.2:
 
 * Numerous OAuth2 provider errors now suggest a status code of 401 instead
   of 400 (#247.
@@ -43,7 +53,7 @@ Changelog
 * OAuth1 clients now has __repr__ and will be printed with secrets scrubbed.
 
 * OAuth1 Client.get_oauth_params now takes an oauthlib.Request as an argument.
-  
+
 * urldecode will now raise a much more informative error message on
   incorrectly encoded strings.
 
@@ -76,11 +86,11 @@ Changelog
   signature is `headers`, `body`, `status code` where the initial `redirect_uri`
   has been relocated to its rightful place inside headers as `Location`.
 
-* OAuth 1 Access Token Endpoint has a new required validator method 
+* OAuth 1 Access Token Endpoint has a new required validator method
   `invalidate_request_token`.
 
 * OAuth 1 Authorization Endpoint now returns a 200 response instead of 302 on
-  `oob` callbacks. 
+  `oob` callbacks.
 
 0.5.1: OAuth 1 provider fix for incorrect token param in nonce validation.
 
