@@ -17,9 +17,11 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
+from oauthlib.signals import scope_changed
 from .errors import raise_from_error, MissingTokenError, MissingTokenTypeError
 from .errors import MismatchingStateError, MissingCodeError
 from .errors import InsecureTransportError
+from .tokens import OAuth2Token
 from .utils import list_to_scope, scope_to_list, is_secure_transport
 
 
@@ -283,7 +285,8 @@ def parse_implicit_response(uri, state=None, scope=None):
     if state and params.get('state', None) != state:
         raise ValueError("Mismatching or missing state in params.")
 
-    validate_token_parameters(params, scope)
+    params = OAuth2Token(params, old_scope=scope)
+    validate_token_parameters(params)
     return params
 
 
@@ -369,11 +372,12 @@ def parse_token_response(body, scope=None):
     if 'expires_in' in params:
         params['expires_at'] = time.time() + int(params['expires_in'])
 
-    validate_token_parameters(params, scope)
+    params = OAuth2Token(params, old_scope=scope)
+    validate_token_parameters(params)
     return params
 
 
-def validate_token_parameters(params, scope=None):
+def validate_token_parameters(params):
     """Ensures token precence, token type, expiration and scope in params."""
     if 'error' in params:
         raise_from_error(params.get('error'), params)
@@ -389,12 +393,14 @@ def validate_token_parameters(params, scope=None):
     # the client, the authorization server MUST include the "scope" response
     # parameter to inform the client of the actual scope granted.
     # http://tools.ietf.org/html/rfc6749#section-3.3
-    new_scope = params.get('scope', None)
-    scope = scope_to_list(scope)
-    if scope and new_scope and set(scope) != set(new_scope):
-        w = Warning("Scope has changed from {old} to {new}.".format(
-            old=scope, new=new_scope,
-        ))
-        w.old_scope = scope
-        w.new_scope = new_scope
-        raise w
+    if params.scope_changed:
+        message = 'Scope has changed from "{old}" to "{new}".'.format(
+            old=params.old_scope, new=params.scope,
+        )
+        scope_changed.send(message=message, old=params.old_scopes, new=params.scopes)
+        if not os.environ.get('OAUTHLIB_RELAX_TOKEN_SCOPE', None):
+            w = Warning(message)
+            w.token = params
+            w.old_scope = params.old_scopes
+            w.new_scope = params.scopes
+            raise w

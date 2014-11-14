@@ -26,6 +26,8 @@ def list_to_scope(scope):
         return scope
     elif isinstance(scope, list):
         return " ".join([unicode_type(s) for s in scope])
+    elif isinstance(scope, set):
+        return list_to_scope(list(scope))
     else:
         raise ValueError("Invalid scope, must be string or list.")
 
@@ -34,6 +36,8 @@ def scope_to_list(scope):
     """Convert a space separated string to a list of scopes."""
     if isinstance(scope, list):
         return [unicode_type(s) for s in scope]
+    if isinstance(scope, set):
+        scope_to_list(list(scope))
     elif scope is None:
         return None
     else:

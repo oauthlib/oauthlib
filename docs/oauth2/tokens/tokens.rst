@@ -23,5 +23,4 @@ setting ``OAUTHLIB_STRICT_TOKEN_TYPE`` in the environment.
 
     bearer
     saml
-    jwt
     mac

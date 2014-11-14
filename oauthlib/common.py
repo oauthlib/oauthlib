@@ -10,6 +10,7 @@ from __future__ import absolute_import, unicode_literals
 
 import collections
 import datetime
+import logging
 import random
 import re
 import sys
@@ -39,6 +40,8 @@ CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                'abcdefghijklmnopqrstuvwxyz'
                '0123456789' '_.-')
+
+log = logging.getLogger('oauthlib')
 
 PY3 = sys.version_info[0] == 3
 
@@ -281,7 +284,7 @@ def add_params_to_uri(uri, params, fragment=False):
     """Add a list of two-tuples to the uri query components."""
     sch, net, path, par, query, fra = urlparse.urlparse(uri)
     if fragment:
-        fra = add_params_to_qs(query, params)
+        fra = add_params_to_qs(fra, params)
     else:
         query = add_params_to_qs(query, params)
     return urlparse.urlunparse((sch, net, path, par, query, fra))

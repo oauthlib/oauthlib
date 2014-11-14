@@ -263,19 +263,16 @@ class ImplicitGrant(GrantTypeBase):
         # First check duplicate parameters
         for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
             if param in request.duplicate_params:
-                raise errors.InvalidRequestFatalError(state=request.state,
-                                               description='Duplicate %s parameter.' % param,
-                                               request=request)
+                raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param,
+                                                      request=request)
 
         # REQUIRED. The client identifier as described in Section 2.2.
         # http://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
-            raise errors.MissingClientIdError(state=request.state,
-                                              request=request)
+            raise errors.MissingClientIdError(request=request)
 
         if not self.request_validator.validate_client_id(request.client_id, request):
-            raise errors.InvalidClientIdError(
-                state=request.state, request=request)
+            raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
         # http://tools.ietf.org/html/rfc6749#section-3.1.2
@@ -283,8 +280,7 @@ class ImplicitGrant(GrantTypeBase):
             request.using_default_redirect_uri = False
             log.debug('Using provided redirect_uri %s', request.redirect_uri)
             if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(
-                    state=request.state, request=request)
+                raise errors.InvalidRedirectURIError(request=request)
 
             # The authorization server MUST verify that the redirection URI
             # to which it will redirect the access token matches a
@@ -293,19 +289,16 @@ class ImplicitGrant(GrantTypeBase):
             # http://tools.ietf.org/html/rfc6749#section-3.1.2
             if not self.request_validator.validate_redirect_uri(
                     request.client_id, request.redirect_uri, request):
-                raise errors.MismatchingRedirectURIError(
-                    state=request.state, request=request)
+                raise errors.MismatchingRedirectURIError(request=request)
         else:
             request.redirect_uri = self.request_validator.get_default_redirect_uri(
                 request.client_id, request)
             request.using_default_redirect_uri = True
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
-                raise errors.MissingRedirectURIError(
-                    state=request.state, request=request)
+                raise errors.MissingRedirectURIError(request=request)
             if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(
-                    state=request.state, request=request)
+                raise errors.InvalidRedirectURIError(request=request)
 
         # Then check for normal errors.
 
@@ -321,10 +314,10 @@ class ImplicitGrant(GrantTypeBase):
 
         # REQUIRED.
         if request.response_type is None:
-            raise errors.MissingResponseTypeError(state=request.state, request=request)
+            raise errors.MissingResponseTypeError(request=request)
         # Value MUST be set to "token".
         elif request.response_type != 'token':
-            raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
+            raise errors.UnsupportedResponseTypeError(request=request)
 
         log.debug('Validating use of response_type token for client %r (%r).',
                   request.client_id, request.client)

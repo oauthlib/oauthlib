@@ -21,9 +21,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.request.code = '1234'
         self.request.response_type = 'code'
         self.request.grant_type = 'authorization_code'
-
-        self.request_state = Request('http://a.b/path')
-        self.request_state.state = 'abc'
+        self.request.redirect_uri = 'https://a.b/cb'
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
@@ -35,12 +33,27 @@ class AuthorizationCodeGrantTest(TestCase):
         return True
 
     def test_create_authorization_grant(self):
-        grant = self.auth.create_authorization_code(self.request)
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        grant = dict(Request(h['Location']).uri_query_params)
         self.assertIn('code', grant)
+        self.assertTrue(self.mock_validator.validate_redirect_uri.called)
+        self.assertTrue(self.mock_validator.validate_response_type.called)
+        self.assertTrue(self.mock_validator.validate_scopes.called)
 
-        grant = self.auth.create_authorization_code(self.request_state)
+    def test_create_authorization_grant_state(self):
+        self.request.state = 'abc'
+        self.request.redirect_uri = None
+        self.mock_validator.get_default_redirect_uri.return_value = 'https://a.b/cb'
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        grant = dict(Request(h['Location']).uri_query_params)
         self.assertIn('code', grant)
         self.assertIn('state', grant)
+        self.assertFalse(self.mock_validator.validate_redirect_uri.called)
+        self.assertTrue(self.mock_validator.get_default_redirect_uri.called)
+        self.assertTrue(self.mock_validator.validate_response_type.called)
+        self.assertTrue(self.mock_validator.validate_scopes.called)
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
@@ -50,6 +63,12 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertIn('refresh_token', token)
         self.assertIn('expires_in', token)
         self.assertIn('scope', token)
+        self.assertTrue(self.mock_validator.client_authentication_required.called)
+        self.assertTrue(self.mock_validator.authenticate_client.called)
+        self.assertTrue(self.mock_validator.validate_code.called)
+        self.assertTrue(self.mock_validator.confirm_redirect_uri.called)
+        self.assertTrue(self.mock_validator.validate_grant_type.called)
+        self.assertTrue(self.mock_validator.invalidate_authorization_code.called)
 
     def test_invalid_request(self):
         del self.request.code

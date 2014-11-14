@@ -13,6 +13,7 @@ from .rfc6749.clients import WebApplicationClient
 from .rfc6749.clients import MobileApplicationClient
 from .rfc6749.clients import LegacyApplicationClient
 from .rfc6749.clients import BackendApplicationClient
+from .rfc6749.clients import ServiceApplicationClient
 from .rfc6749.endpoints import AuthorizationEndpoint
 from .rfc6749.endpoints import TokenEndpoint
 from .rfc6749.endpoints import ResourceEndpoint
@@ -29,5 +30,5 @@ from .rfc6749.grant_types import ResourceOwnerPasswordCredentialsGrant
 from .rfc6749.grant_types import ClientCredentialsGrant
 from .rfc6749.grant_types import RefreshTokenGrant
 from .rfc6749.request_validator import RequestValidator
-from .rfc6749.tokens import BearerToken
+from .rfc6749.tokens import BearerToken, OAuth2Token
 from .rfc6749.utils import is_secure_transport

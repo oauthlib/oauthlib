@@ -9,6 +9,7 @@ Grant types
     implicit
     password
     credentials
+    jwt
 
 Grant types are what make OAuth 2 so flexible. The Authorization Code grant is
 very similar to OAuth 1 (with less crypto), the Implicit grant serves less

@@ -1,10 +1,10 @@
-from __future__ import absolute_import, unicode_literals
-
+from __future__ import absolute_import, unicode_literals 
 from mock import patch
 
 from ...unittest import TestCase
 from oauthlib.oauth2.rfc6749.parameters import *
 from oauthlib.oauth2.rfc6749.errors import *
+from oauthlib import signals
 
 
 @patch('time.time', new=lambda: 1000)
@@ -193,7 +193,24 @@ class ParameterTests(TestCase):
         self.assertEqual(parse_token_response(self.json_response), self.json_dict)
         self.assertRaises(AccessDeniedError, parse_token_response, self.json_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.json_notoken)
-        self.assertRaises(Warning, parse_token_response, self.json_response, scope='aaa')
+
+        scope_changes_recorded = []
+        def record_scope_change(sender, message, old, new):
+            scope_changes_recorded.append((message, old, new))
+
+        os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
+        signals.scope_changed.connect(record_scope_change)
+        try:
+            parse_token_response(self.json_response, scope='aaa')
+            self.assertEqual(len(scope_changes_recorded), 1)
+            message, old, new = scope_changes_recorded[0]
+            for scope in new + old:
+                self.assertIn(scope, message)
+            self.assertEqual(old, ['aaa'])
+            self.assertEqual(set(new), set(['abc', 'def']))
+        finally:
+            signals.scope_changed.disconnect(record_scope_change)
+        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
 
     def test_json_token_notype(self):
         """Verify strict token type parsing only when configured. """
@@ -209,7 +226,24 @@ class ParameterTests(TestCase):
         self.assertEqual(parse_token_response(self.url_encoded_response), self.json_dict)
         self.assertRaises(AccessDeniedError, parse_token_response, self.url_encoded_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.url_encoded_notoken)
-        self.assertRaises(Warning, parse_token_response, self.url_encoded_response, scope='aaa')
+
+        scope_changes_recorded = []
+        def record_scope_change(sender, message, old, new):
+            scope_changes_recorded.append((message, old, new))
+
+        os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
+        signals.scope_changed.connect(record_scope_change)
+        try:
+            token = parse_token_response(self.url_encoded_response, scope='aaa')
+            self.assertEqual(len(scope_changes_recorded), 1)
+            message, old, new = scope_changes_recorded[0]
+            for scope in new + old:
+                self.assertIn(scope, message)
+            self.assertEqual(old, ['aaa'])
+            self.assertEqual(set(new), set(['abc', 'def']))
+        finally:
+            signals.scope_changed.disconnect(record_scope_change)
+        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
 
     def test_token_response_with_expires(self):
         """Verify fallback for alternate spelling of expires_in. """
