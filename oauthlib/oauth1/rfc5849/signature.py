@@ -477,8 +477,6 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     with the server that included its RSA public key (in a manner that is
     beyond the scope of this specification).
 
-    NOTE: this method requires the python-rsa library.
-
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
     .. _`RFC3447, Section 8.2`: http://tools.ietf.org/html/rfc3447#section-8.2
 
