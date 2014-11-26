@@ -74,7 +74,7 @@ class RevocationEndpoint(BaseEndpoint):
         self.request_validator.revoke_token(request.token,
                                             request.token_type_hint, request)
 
-        response_body = None
+        response_body = ''
         if self.enable_jsonp and request.callback:
             response_body = request.callback + '();'
         return {}, response_body, 200
