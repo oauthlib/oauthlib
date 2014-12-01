@@ -1,20 +1,20 @@
 Changelog
 =========
 
-0.7.2
------
+0.7.2 (2014-11-13)
+------------------
 
 * (Quick fix) Unpushed locally modified files got included in the PyPI 0.7.1
   release. Doing a new clean release to address this. Please upgrade quickly
   and report any issues you are running into.
 
-0.7.1
------
+0.7.1 (2014-10-27)
+------------------
 
 * (Quick fix) Add oauthlib.common.log object back in for libraries using it.
 
-0.7.0
------
+0.7.0 (2014-10-27)
+------------------
 
 * (Change) OAuth2 clients will not raise a Warning on scope change if
   the environment variable ``OAUTHLIB_RELAX_TOKEN_SCOPE`` is set. The token
@@ -34,13 +34,13 @@ Changelog
 * (Fix/Security) OAuth2 logs will now strip client provided password, if present.
 * Allow unescaped @ in urlencoded parameters.
 
-0.6.3
------
+0.6.3 (2014-06-10)
+-----------------
 
 Quick fix. OAuth 1 client repr in 0.6.2 overwrote secrets when scrubbing for print.
 
-0.6.2
------
+0.6.2 (2014-06-06)
+------------------
 
 * Numerous OAuth2 provider errors now suggest a status code of 401 instead
   of 400 (#247.
@@ -65,8 +65,8 @@ Quick fix. OAuth 1 client repr in 0.6.2 overwrote secrets when scrubbing for pri
 
 * Plenty of typo and other doc fixes.
 
-0.6.1
------
+0.6.1 (2014-01-20)
+------------------
 
 Draft revocation endpoint features and numerous fixes including:
 
