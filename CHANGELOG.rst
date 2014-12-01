@@ -1,17 +1,20 @@
 Changelog
 =========
 
-0.7.2:
+0.7.2
+-----
 
 * (Quick fix) Unpushed locally modified files got included in the PyPI 0.7.1
   release. Doing a new clean release to address this. Please upgrade quickly
   and report any issues you are running into.
 
-0.7.1:
+0.7.1
+-----
 
 * (Quick fix) Add oauthlib.common.log object back in for libraries using it.
 
-0.7.0:
+0.7.0
+-----
 
 * (Change) OAuth2 clients will not raise a Warning on scope change if
   the environment variable ``OAUTHLIB_RELAX_TOKEN_SCOPE`` is set. The token
@@ -31,10 +34,13 @@ Changelog
 * (Fix/Security) OAuth2 logs will now strip client provided password, if present.
 * Allow unescaped @ in urlencoded parameters.
 
-0.6.3: Quick fix. OAuth 1 client repr in 0.6.2 overwrote secrets when
-       scrubbing for print.
+0.6.3
+-----
 
-0.6.2:
+Quick fix. OAuth 1 client repr in 0.6.2 overwrote secrets when scrubbing for print.
+
+0.6.2
+-----
 
 * Numerous OAuth2 provider errors now suggest a status code of 401 instead
   of 400 (#247.
@@ -59,7 +65,10 @@ Changelog
 
 * Plenty of typo and other doc fixes.
 
-0.6.1: Draft revocation endpoint features and numerous fixes including
+0.6.1
+-----
+
+Draft revocation endpoint features and numerous fixes including:
 
 * (OAuth 2 Provider) is_within_original_scope to check whether a refresh token
   is trying to aquire a new set of scopes that are a subset of the original scope.
@@ -80,7 +89,10 @@ Changelog
 
 * and many style and typo fixes.
 
-0.6.0: OAuth 1 & 2 provider API refactor with breaking changes
+0.6.0
+-----
+
+OAuth 1 & 2 provider API refactor with breaking changes:
 
 * All endpoint methods change contract to return 3 values instead of 4. The new
   signature is `headers`, `body`, `status code` where the initial `redirect_uri`
@@ -92,44 +104,107 @@ Changelog
 * OAuth 1 Authorization Endpoint now returns a 200 response instead of 302 on
   `oob` callbacks.
 
-0.5.1: OAuth 1 provider fix for incorrect token param in nonce validation.
+0.5.1
+-----
 
-0.5.0: OAuth 1 provider refactor. OAuth 2 refresh token validation fix.
+OAuth 1 provider fix for incorrect token param in nonce validation.
 
-0.4.2: OAuth 2 draft to RFC. Removed OAuth 2 framework decorators.
+0.5.0
+-----
 
-0.4.1: Documentation corrections and various small code fixes.
+OAuth 1 provider refactor. OAuth 2 refresh token validation fix.
 
-0.4.0: OAuth 2 Provider support (experimental).
+0.4.2
+-----
 
-0.3.8: OAuth 2 Client now uses custom errors and raise on expire
+OAuth 2 draft to RFC. Removed OAuth 2 framework decorators.
 
-0.3.7: OAuth 1 optional encoding of Client.sign return values
+0.4.1
+-----
 
-0.3.6: Revert default urlencoding.
+Documentation corrections and various small code fixes.
 
-0.3.5: Default unicode conversion (utf-8) and urlencoding of input.
+0.4.0
+-----
 
-0.3.4: A number of small features and bug fixes.
+OAuth 2 Provider support (experimental).
 
-0.3.3: OAuth 1 Provider verify now return useful params
+0.3.8
+-----
 
-0.3.2: Fixed #62, all Python 3 tests pass.
+OAuth 2 Client now uses custom errors and raise on expire.
 
-0.3.1: Python 3.1, 3.2, 3.3 support (experimental)
+0.3.7
+-----
 
-0.3.0: Initial OAuth 2 client support
+OAuth 1 optional encoding of Client.sign return values.
 
-0.2.1: Exclude non urlencoded bodies during request verification
+0.3.6
+-----
 
-0.2.0: OAuth provider support
+Revert default urlencoding.
 
-0.1.4: soft dependency on PyCrypto
+0.3.5
+-----
 
-0.1.3: use python-rsa instead of pycrypto.
+Default unicode conversion (utf-8) and urlencoding of input.
 
-0.1.1 / 0.1.2: Fix installation of pycrypto dependency.
+0.3.4
+-----
 
-0.1.0: OAuth 1 client functionality seems to be working. Hooray!
+A number of small features and bug fixes.
 
-0.0.x: In the beginning, there was the word.
+0.3.3
+-----
+
+OAuth 1 Provider verify now return useful params.
+
+0.3.2
+-----
+
+Fixed #62, all Python 3 tests pass.
+
+0.3.1
+-----
+
+Python 3.1, 3.2, 3.3 support (experimental).
+
+0.3.0
+-----
+
+Initial OAuth 2 client support.
+
+0.2.1
+-----
+
+Exclude non urlencoded bodies during request verification.
+
+0.2.0
+-----
+
+OAuth provider support.
+
+0.1.4
+-----
+
+Soft dependency on PyCrypto.
+
+0.1.3
+-----
+
+Use python-rsa instead of pycrypto.
+
+0.1.1 / 0.1.2
+-----
+
+Fix installation of pycrypto dependency.
+
+0.1.0
+-----
+
+OAuth 1 client functionality seems to be working. Hooray!
+
+0.0.x
+-----
+
+In the beginning, there was the word.
