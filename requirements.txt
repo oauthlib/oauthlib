@@ -1,8 +1,3 @@
-docutils
-python-creole
--e git+https://github.com/ternstor/pycco.git#egg=pycco
-pycrypto
-mock
-nose
-sphinx
-pyjwt
+pycrypto==2.6.1
+pyjwt==0.3.2
+blinker==1.3
