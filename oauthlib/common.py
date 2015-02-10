@@ -229,10 +229,13 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 
 
 def generate_signed_token(private_pem, request):
-    import Crypto.PublicKey.RSA as RSA
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.backends import default_backend
     import jwt
 
-    private_key = RSA.importKey(private_pem)
+    private_key = serialization.load_pem_private_key(
+        private_pem.encode('utf-8'), password=None, backend=default_backend(),
+    )
 
     now = datetime.datetime.utcnow()
 
@@ -250,10 +253,14 @@ def generate_signed_token(private_pem, request):
 
 
 def verify_signed_token(private_pem, token):
-    import Crypto.PublicKey.RSA as RSA
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.backends import default_backend
     import jwt
 
-    public_key = RSA.importKey(private_pem).publickey()
+    private_key = serialization.load_pem_private_key(
+        private_pem.encode('utf-8'), password=None, backend=default_backend(),
+    )
+    public_key = private_key.public_key()
 
     try:
         # return jwt.verify_jwt(token.encode(), public_key)
