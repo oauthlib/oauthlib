@@ -225,10 +225,11 @@ class RequestValidator(object):
 
             {'code': 'sdf345jsdf0934f'}
 
+        Any other values should be ignored.
+
         :param client_id: Unicode client identifier
         :param code: A dict of the authorization code grant.
         :param request: The HTTP Request (oauthlib.common.Request)
-        :rtype: The default redirect URI for the client
 
         Method is used by:
             - Authorization Code Grant
