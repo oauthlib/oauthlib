@@ -90,14 +90,14 @@ class RequestValidator(object):
 
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client,
                              *args, **kwargs):
-        """Ensure client is authorized to redirect to the redirect_uri requested.
+        """Ensure that the authorization process represented by this authorization
+        code began with this 'redirect_uri'.
 
-        If the client specifies a redirect_uri when obtaining code then
-        that redirect URI must be bound to the code and verified equal
-        in this method.
-
-        All clients should register the absolute URIs of all URIs they intend
-        to redirect to. The registration is outside of the scope of oauthlib.
+        If the client specifies a redirect_uri when obtaining code then that
+        redirect URI must be bound to the code and verified equal in this
+        method, according to RFC 6749 section 4.1.3.  Do not compare against
+        the client's allowed redirect URIs, but against the URI used when the
+        code was saved.
 
         :param client_id: Unicode client identifier
         :param code: Unicode authorization_code.
@@ -214,21 +214,24 @@ class RequestValidator(object):
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         """Persist the authorization_code.
 
-        The code should at minimum be associated with:
-            - a client and it's client_id
+        The code should at minimum be stored with:
+            - the client_id (client_id)
             - the redirect URI used (request.redirect_uri)
-            - whether the redirect URI used is the client default or not
             - a resource owner / user (request.user)
-            - authorized scopes (request.scopes)
+            - the authorized scopes (request.scopes)
+            - the client state, if given (code.get('state'))
 
-        The authorization code grant dict (code) holds at least the key 'code'::
+        The 'code' argument is actually a dictionary, containing at least a
+        'code' key with the actual authorization code:
 
             {'code': 'sdf345jsdf0934f'}
 
-        Any other values should be ignored.
+        It may also have a 'state' key containing a nonce for the client, if it
+        chose to send one.  That value should be saved and used in
+        'validate_code'.
 
         :param client_id: Unicode client identifier
-        :param code: A dict of the authorization code grant.
+        :param code: A dict of the authorization code grant and, optionally, state.
         :param request: The HTTP Request (oauthlib.common.Request)
 
         Method is used by:
@@ -340,11 +343,15 @@ class RequestValidator(object):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
-        """Ensure the authorization_code is valid and assigned to client.
+        """Verify that the authorization_code is valid and assigned to the given
+        client.
 
-        OBS! The request.user attribute should be set to the resource owner
-        associated with this authorization code. Similarly request.scopes
-        must also be set.
+        Before returning true, set the following based on the information stored
+        with the code in 'save_authorization_code':
+
+            - request.user
+            - request.state (if given)
+            - request.scopes
 
         :param client_id: Unicode client identifier
         :param code: Unicode authorization code
