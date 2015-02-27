@@ -95,6 +95,11 @@ class ParameterTests(TestCase):
                      '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                      '  "example_parameter": "example_value",'
                      '  "scope":"abc def"}')
+    json_response_noscope = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
+                     '  "token_type": "example",'
+                     '  "expires_in": 3600,'
+                     '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
+                     '  "example_parameter": "example_value" }')
 
     json_error = '{ "error": "invalid_request" }'
 
@@ -123,6 +128,15 @@ class ParameterTests(TestCase):
        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
        'example_parameter': 'example_value',
        'scope': ['abc', 'def']
+    }
+
+    json_noscope_dict = {
+       'access_token': '2YotnFZFEjr1zCsicMWpAA',
+       'token_type': 'example',
+       'expires_in': 3600,
+       'expires_at': 4600,
+       'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
+       'example_parameter': 'example_value'
     }
 
     json_notype_dict = {
@@ -194,6 +208,9 @@ class ParameterTests(TestCase):
         self.assertRaises(InvalidRequestError, parse_token_response, self.json_error)
         self.assertRaises(MissingTokenError, parse_token_response, self.json_notoken)
 
+        self.assertEqual(parse_token_response(self.json_response_noscope,
+            scope=['all', 'the', 'scopes']), self.json_noscope_dict)
+
         scope_changes_recorded = []
         def record_scope_change(sender, message, old, new):
             scope_changes_recorded.append((message, old, new))
@@ -211,6 +228,7 @@ class ParameterTests(TestCase):
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
+
 
     def test_json_token_notype(self):
         """Verify strict token type parsing only when configured. """
