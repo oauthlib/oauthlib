@@ -6,3 +6,4 @@ mock
 nose
 sphinx
 pyjwt
+cryptography
