@@ -364,11 +364,13 @@ Let's define a decorator we can use to protect the views.
         def wrapper(f):
             @functools.wraps(f)
             def verify_oauth(*args, **kwargs):
+                validator = OAuthValidator()  # your validator class
+                provider = ResourceEndpoint(validator)
                 v, r = provider.validate_protected_resource_request(request.url,
                         http_method=request.method,
                         body=request.data,
                         headers=request.headers,
-                        valid_realms=realms or [])
+                        realms=realms or [])
                 if v:
                     return f(*args, **kwargs)
                 else:
