@@ -84,7 +84,7 @@ class BaseEndpoint(object):
         # receiving a request with duplicated protocol parameters.
         if len(dict(oauth_params)) != len(oauth_params):
             raise errors.InvalidRequestError(
-                description='Duplicate OAuth2 entries.')
+                description='Duplicate OAuth1 entries.')
 
         oauth_params = dict(oauth_params)
         request.signature = oauth_params.get('oauth_signature')
