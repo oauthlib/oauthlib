@@ -4,16 +4,19 @@ oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import unicode_literals, absolute_import
-import json
 
-from oauthlib.common import log
+import json
+import logging
 
 from .base import GrantTypeBase
 from .. import errors, utils
 from ..request_validator import RequestValidator
 
+log = logging.getLogger(__name__)
+
 
 class RefreshTokenGrant(GrantTypeBase):
+
     """`Refresh token grant`_
 
     .. _`Refresh token grant`: http://tools.ietf.org/html/rfc6749#section-6
@@ -50,9 +53,9 @@ class RefreshTokenGrant(GrantTypeBase):
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
         headers = {
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-store',
-                'Pragma': 'no-cache',
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
         }
         try:
             log.debug('Validating refresh token request, %r.', request)
@@ -61,7 +64,7 @@ class RefreshTokenGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request,
-                refresh_token=self.issue_new_refresh_tokens)
+                                           refresh_token=self.issue_new_refresh_tokens)
         for modifier in self._token_modifiers:
             token = modifier(token)
         self.request_validator.save_token(token, request)
@@ -108,8 +111,8 @@ class RefreshTokenGrant(GrantTypeBase):
             raise errors.InvalidGrantError(request=request)
 
         original_scopes = utils.scope_to_list(
-                self.request_validator.get_original_scopes(
-                    request.refresh_token, request))
+            self.request_validator.get_original_scopes(
+                request.refresh_token, request))
 
         if request.scope:
             request.scopes = utils.scope_to_list(request.scope)
@@ -117,8 +120,7 @@ class RefreshTokenGrant(GrantTypeBase):
                 and not self.request_validator.is_within_original_scope(
                     request.scopes, request.refresh_token, request)):
                 log.debug('Refresh token %s lack requested scopes, %r.',
-                        request.refresh_token, request.scopes)
-                raise errors.InvalidScopeError(
-                        state=request.state, request=request)
+                          request.refresh_token, request.scopes)
+                raise errors.InvalidScopeError(request=request)
         else:
             request.scopes = original_scopes

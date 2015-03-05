@@ -4,16 +4,21 @@ oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import unicode_literals, absolute_import
+
+import logging
+
 from oauthlib import common
-from oauthlib.common import log
 from oauthlib.uri_validate import is_absolute_uri
 
 from .base import GrantTypeBase
 from .. import errors
 from ..request_validator import RequestValidator
 
+log = logging.getLogger(__name__)
+
 
 class ImplicitGrant(GrantTypeBase):
+
     """`Implicit Grant`_
 
     The implicit grant type is used to obtain access tokens (it does not
@@ -233,7 +238,7 @@ class ImplicitGrant(GrantTypeBase):
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
-                    fragment=True)}, None, 302
+                                                         fragment=True)}, None, 302
 
         token = self.add_token({}, token_handler, request)
         for modifier in self._token_modifiers:
@@ -273,10 +278,10 @@ class ImplicitGrant(GrantTypeBase):
         # REQUIRED. The client identifier as described in Section 2.2.
         # http://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
-            raise errors.MissingClientIdError(state=request.state, request=request)
+            raise errors.MissingClientIdError(request=request)
 
         if not self.request_validator.validate_client_id(request.client_id, request):
-            raise errors.InvalidClientIdError(state=request.state, request=request)
+            raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
         # http://tools.ietf.org/html/rfc6749#section-3.1.2
@@ -284,7 +289,7 @@ class ImplicitGrant(GrantTypeBase):
             request.using_default_redirect_uri = False
             log.debug('Using provided redirect_uri %s', request.redirect_uri)
             if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(state=request.state, request=request)
+                raise errors.InvalidRedirectURIError(request=request)
 
             # The authorization server MUST verify that the redirection URI
             # to which it will redirect the access token matches a
@@ -293,16 +298,16 @@ class ImplicitGrant(GrantTypeBase):
             # http://tools.ietf.org/html/rfc6749#section-3.1.2
             if not self.request_validator.validate_redirect_uri(
                     request.client_id, request.redirect_uri, request):
-                raise errors.MismatchingRedirectURIError(state=request.state, request=request)
+                raise errors.MismatchingRedirectURIError(request=request)
         else:
             request.redirect_uri = self.request_validator.get_default_redirect_uri(
-                    request.client_id, request)
+                request.client_id, request)
             request.using_default_redirect_uri = True
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
-                raise errors.MissingRedirectURIError(state=request.state, request=request)
+                raise errors.MissingRedirectURIError(request=request)
             if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(state=request.state, request=request)
+                raise errors.InvalidRedirectURIError(request=request)
 
         # Then check for normal errors.
 
@@ -316,23 +321,21 @@ class ImplicitGrant(GrantTypeBase):
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions.
         if request.response_type is None:
-            raise errors.InvalidRequestError(state=request.state,
-                    description='Missing response_type parameter.',
-                    request=request)
+            raise errors.InvalidRequestError(description='Missing response_type parameter.',
+                                             request=request)
 
         for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
             if param in request.duplicate_params:
-                raise errors.InvalidRequestError(state=request.state,
-                        description='Duplicate %s parameter.' % param, request=request)
+                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param, request=request)
 
         # REQUIRED. Value MUST be set to "token".
         if request.response_type not in self.response_types:
-            raise errors.UnsupportedResponseTypeError(state=request.state, request=request)
+            raise errors.UnsupportedResponseTypeError(request=request)
 
         log.debug('Validating use of response_type token for client %r (%r).',
                   request.client_id, request.client)
         if not self.request_validator.validate_response_type(request.client_id,
-                request.response_type, request.client, request):
+                                                             request.response_type, request.client, request):
             log.debug('Client %s is not authorized to use response_type %s.',
                       request.client_id, request.response_type)
             raise errors.UnauthorizedClientError(request=request)
@@ -342,11 +345,11 @@ class ImplicitGrant(GrantTypeBase):
         self.validate_scopes(request)
 
         request_info = {
-                'client_id': request.client_id,
-                'redirect_uri': request.redirect_uri,
-                'response_type': request.response_type,
-                'state': request.state,
-                'request': request,
+            'client_id': request.client_id,
+            'redirect_uri': request.redirect_uri,
+            'response_type': request.response_type,
+            'state': request.state,
+            'request': request,
         }
 
         for validator in self._authorization_validators:

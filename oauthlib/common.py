@@ -34,28 +34,16 @@ UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                '0123456789')
 
 CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
-                            'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}')
+                           'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}')
 
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                'abcdefghijklmnopqrstuvwxyz'
                '0123456789' '_.-')
 
-PY3 = sys.version_info[0] == 3
-
-# Logger used throughout oauthlib
 log = logging.getLogger('oauthlib')
-# Add a NullHandler to prevent warnings for users who don't wish
-# to configure logging.
-try:
-    log.addHandler(logging.NullHandler())
-# NullHandler gracefully backported to 2.6
-except AttributeError:
-    class NullHandler(logging.Handler):
 
-        def emit(self, record):
-            pass
-    log.addHandler(NullHandler())
+PY3 = sys.version_info[0] == 3
 
 if PY3:
     unicode_type = str
@@ -119,7 +107,7 @@ def decode_params_utf8(params):
     return decoded
 
 
-urlencoded = set(always_safe) | set('=&;%+~,*')
+urlencoded = set(always_safe) | set('=&;%+~,*@')
 
 
 def urldecode(query):
@@ -162,7 +150,8 @@ def urldecode(query):
     # Python 3.3 however
     # >>> urllib.parse.parse_qsl(u'%E5%95%A6%E5%95%A6')
     # u'\u5566\u5566'
-    query = query.encode('utf-8') if not PY3 and isinstance(query, unicode_type) else query
+    query = query.encode(
+        'utf-8') if not PY3 and isinstance(query, unicode_type) else query
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
     params = urlparse.parse_qsl(query, keep_blank_values=True)
@@ -267,7 +256,7 @@ def verify_signed_token(private_pem, token):
     public_key = RSA.importKey(private_pem).publickey()
 
     try:
-        #return jwt.verify_jwt(token.encode(), public_key)
+        # return jwt.verify_jwt(token.encode(), public_key)
         return jwt.decode(token, public_key)
     except:
         raise Exception
@@ -295,7 +284,7 @@ def add_params_to_uri(uri, params, fragment=False):
     """Add a list of two-tuples to the uri query components."""
     sch, net, path, par, query, fra = urlparse.urlparse(uri)
     if fragment:
-        fra = add_params_to_qs(query, params)
+        fra = add_params_to_qs(fra, params)
     else:
         query = add_params_to_qs(query, params)
     return urlparse.urlunparse((sch, net, path, par, query, fra))
@@ -345,6 +334,7 @@ def to_unicode(data, encoding='UTF-8'):
 
 
 class CaseInsensitiveDict(dict):
+
     """Basic case insensitive dict with strings only keys."""
 
     proxy = {}
@@ -375,6 +365,7 @@ class CaseInsensitiveDict(dict):
 
 
 class Request(object):
+
     """A malleable representation of a signable HTTP request.
 
     Body argument may contain any data, but parameters will only be decoded if
@@ -389,7 +380,7 @@ class Request(object):
     """
 
     def __init__(self, uri, http_method='GET', body=None, headers=None,
-            encoding='utf-8'):
+                 encoding='utf-8'):
         # Convert to unicode using encoding if given, else assume unicode
         encode = lambda x: to_unicode(x, encoding) if encoding else x
 
@@ -408,6 +399,10 @@ class Request(object):
     def __getattr__(self, name):
         return self._params.get(name, None)
 
+    def __repr__(self):
+        return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
+            self.uri, self.http_method, self.headers, self.body)
+
     @property
     def uri_query(self):
         return urlparse.urlparse(self.uri).query
@@ -422,7 +417,8 @@ class Request(object):
     @property
     def duplicate_params(self):
         seen_keys = collections.defaultdict(int)
-        all_keys = (p[0] for p in (self.decoded_body or []) + self.uri_query_params)
+        all_keys = (p[0]
+                    for p in (self.decoded_body or []) + self.uri_query_params)
         for k in all_keys:
             seen_keys[k] += 1
         return [k for k, c in seen_keys.items() if c > 1]

@@ -10,13 +10,18 @@ returned to the client.
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import log, urlencode
+import logging
+
+from oauthlib.common import urlencode
 
 from .base import BaseEndpoint
 from .. import errors
 
+log = logging.getLogger(__name__)
+
 
 class RequestTokenEndpoint(BaseEndpoint):
+
     """An endpoint responsible for providing OAuth 1 request tokens.
 
     Typical use is to instantiate with a request validator and invoke the
@@ -43,7 +48,7 @@ class RequestTokenEndpoint(BaseEndpoint):
         return urlencode(token.items())
 
     def create_request_token_response(self, uri, http_method='GET', body=None,
-            headers=None, credentials=None):
+                                      headers=None, credentials=None):
         """Create a request token response, with a new request token if valid.
 
         :param uri: The full URI of the token request.
@@ -94,7 +99,7 @@ class RequestTokenEndpoint(BaseEndpoint):
         try:
             request = self._create_request(uri, http_method, body, headers)
             valid, processed_request = self.validate_request_token_request(
-                    request)
+                request)
             if valid:
                 token = self.create_request_token(request, credentials or {})
                 return resp_headers, token, 200
@@ -119,15 +124,15 @@ class RequestTokenEndpoint(BaseEndpoint):
             request.realms = request.realm.split(' ')
         else:
             request.realms = self.request_validator.get_default_realms(
-                    request.client_key, request)
+                request.client_key, request)
         if not self.request_validator.check_realms(request.realms):
             raise errors.InvalidRequestError(
-                    description='Invalid realm %s. Allowed are %r.' % (
-                        request.realms, self.request_validator.realms))
+                description='Invalid realm %s. Allowed are %r.' % (
+                    request.realms, self.request_validator.realms))
 
         if not request.redirect_uri:
             raise errors.InvalidRequestError(
-                    description='Missing callback URI.')
+                description='Missing callback URI.')
 
         if not self.request_validator.validate_timestamp_and_nonce(
                 request.client_key, request.timestamp, request.nonce, request,
@@ -142,7 +147,7 @@ class RequestTokenEndpoint(BaseEndpoint):
         #
         # Note that early exit would enable client enumeration
         valid_client = self.request_validator.validate_client_key(
-                request.client_key, request)
+            request.client_key, request)
         if not valid_client:
             request.client_key = self.request_validator.dummy_client
 
@@ -169,13 +174,13 @@ class RequestTokenEndpoint(BaseEndpoint):
         # that the realm is now tied to the access token and not provided by
         # the client.
         valid_realm = self.request_validator.validate_requested_realms(
-                request.client_key, request.realms, request)
+            request.client_key, request.realms, request)
 
         # Callback is normally never required, except for requests for
         # a Temporary Credential as described in `Section 2.1`_
         # .._`Section 2.1`: http://tools.ietf.org/html/rfc5849#section-2.1
         valid_redirect = self.request_validator.validate_redirect_uri(
-                request.client_key, request.redirect_uri, request)
+            request.client_key, request.redirect_uri, request)
         if not request.redirect_uri:
             raise NotImplementedError('Redirect URI must either be provided '
                                       'or set to a default during validation.')

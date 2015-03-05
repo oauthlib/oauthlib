@@ -34,7 +34,7 @@ class GrantTypeBase(object):
 
     def validate_grant_type(self, request):
         if not self.request_validator.validate_grant_type(request.client_id,
-                request.grant_type, request.client, request):
+                                                          request.grant_type, request.client, request):
             log.debug('Unauthorized from %r (%r) access to grant type %s.',
                       request.client_id, request.client, request.grant_type)
             raise errors.UnauthorizedClientError(request=request)
@@ -42,12 +42,12 @@ class GrantTypeBase(object):
     def validate_scopes(self, request):
         if not request.scopes:
             request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                    self.request_validator.get_default_scopes(request.client_id, request))
+                self.request_validator.get_default_scopes(request.client_id, request))
         log.debug('Validating access to scopes %r for client %r (%r).',
                   request.scopes, request.client_id, request.client)
         if not self.request_validator.validate_scopes(request.client_id,
                 request.scopes, request.client, request):
-            raise errors.InvalidScopeError(state=request.state, request=request)
+            raise errors.InvalidScopeError(request=request)
 
     def prepare_authorization_response(self, request, token, headers, body, status):
         """Place token according to response mode.

@@ -34,15 +34,16 @@ class RevocationEndpointTest(TestCase):
             self.assertEqual(s, 200)
 
     def test_revoke_with_callback(self):
+        endpoint = RevocationEndpoint(self.validator, enable_jsonp=True)
         callback = 'package.hello_world'
         for token_type in ('access_token', 'refresh_token', 'invalid'):
             body = urlencode([('token', 'foo'),
                               ('token_type_hint', token_type),
                               ('callback', callback)])
-            h, b, s = self.endpoint.create_revocation_response(self.uri,
+            h, b, s = endpoint.create_revocation_response(self.uri,
                     headers=self.headers, body=body)
             self.assertEqual(h, {})
-            self.assertEqual(b, callback + '()')
+            self.assertEqual(b, callback + '();')
             self.assertEqual(s, 200)
 
     def test_revoke_unsupported_token(self):

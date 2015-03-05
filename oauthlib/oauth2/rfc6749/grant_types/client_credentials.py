@@ -4,15 +4,19 @@ oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import unicode_literals, absolute_import
+
 import json
-from oauthlib.common import log
+import logging
 
 from .base import GrantTypeBase
 from .. import errors
 from ..request_validator import RequestValidator
 
+log = logging.getLogger(__name__)
+
 
 class ClientCredentialsGrant(GrantTypeBase):
+
     """`Client Credentials Grant`_
 
     The client can request an access token using only its client
@@ -66,9 +70,9 @@ class ClientCredentialsGrant(GrantTypeBase):
         .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
         """
         headers = {
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-store',
-                'Pragma': 'no-cache',
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
         }
         try:
             log.debug('Validating access token request, %r.', request)
@@ -95,9 +99,8 @@ class ClientCredentialsGrant(GrantTypeBase):
 
         for param in ('grant_type', 'scope'):
             if param in request.duplicate_params:
-                raise errors.InvalidRequestError(state=request.state,
-                        description='Duplicate %s parameter.' % param,
-                        request=request)
+                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param,
+                                                 request=request)
 
         log.debug('Authenticating client, %r.', request)
         if not self.request_validator.authenticate_client(request):

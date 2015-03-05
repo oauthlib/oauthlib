@@ -1,9 +1,9 @@
 # coding=utf-8
 """
-oauthlib.oauth2.rfc6749.errors
+oauthlib.oauth1.rfc5849.errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Error used both by OAuth 2 clients and provicers to represent the spec
+Error used both by OAuth 1 clients and provicers to represent the spec
 defined error responses for all four core grant types.
 """
 from __future__ import unicode_literals
@@ -13,6 +13,7 @@ from oauthlib.common import urlencode, add_params_to_uri
 
 class OAuth1Error(Exception):
     error = None
+    description = ''
 
     def __init__(self, description=None, uri=None, status_code=400,
                  request=None):
@@ -35,7 +36,12 @@ class OAuth1Error(Exception):
 
         request:  Oauthlib Request object
         """
-        self.description = description
+        self.description = description or self.description
+        message = '(%s) %s' % (self.error, self.description)
+        if request:
+            message += ' ' + repr(request)
+        super(OAuth1Error, self).__init__(message)
+
         self.uri = uri
         self.status_code = status_code
 

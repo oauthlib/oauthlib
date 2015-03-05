@@ -30,13 +30,14 @@ class BaseEndpoint(object):
         """Extracts parameters from query, headers and body. Signature type
         is set to the source in which parameters were found.
         """
-        # Per RFC5849, only the Authorization header may contain the 'realm' optional parameter.
+        # Per RFC5849, only the Authorization header may contain the 'realm'
+        # optional parameter.
         header_params = signature.collect_parameters(headers=request.headers,
-                exclude_oauth_signature=False, with_realm=True)
+                                                     exclude_oauth_signature=False, with_realm=True)
         body_params = signature.collect_parameters(body=request.body,
-                exclude_oauth_signature=False)
+                                                   exclude_oauth_signature=False)
         query_params = signature.collect_parameters(uri_query=request.uri_query,
-                exclude_oauth_signature=False)
+                                                    exclude_oauth_signature=False)
 
         params = []
         params.extend(header_params)
@@ -54,15 +55,16 @@ class BaseEndpoint(object):
         if len(signature_types_with_oauth_params) > 1:
             found_types = [s[0] for s in signature_types_with_oauth_params]
             raise errors.InvalidRequestError(
-                    description=('oauth_ params must come from only 1 signature'
-                                 'type but were found in %s',
-                                 ', '.join(found_types)))
+                description=('oauth_ params must come from only 1 signature'
+                             'type but were found in %s',
+                             ', '.join(found_types)))
 
         try:
-            signature_type, params, oauth_params = signature_types_with_oauth_params[0]
+            signature_type, params, oauth_params = signature_types_with_oauth_params[
+                0]
         except IndexError:
             raise errors.InvalidRequestError(
-                    description='Missing mandatory OAuth parameters.')
+                description='Missing mandatory OAuth parameters.')
 
         return signature_type, params, oauth_params
 
@@ -76,13 +78,13 @@ class BaseEndpoint(object):
             request = Request(uri, http_method, '', headers)
 
         signature_type, params, oauth_params = (
-                self._get_signature_type_and_params(request))
+            self._get_signature_type_and_params(request))
 
         # The server SHOULD return a 400 (Bad Request) status code when
         # receiving a request with duplicated protocol parameters.
         if len(dict(oauth_params)) != len(oauth_params):
             raise errors.InvalidRequestError(
-                    description='Duplicate OAuth2 entries.')
+                description='Duplicate OAuth2 entries.')
 
         oauth_params = dict(oauth_params)
         request.signature = oauth_params.get('oauth_signature')
@@ -101,7 +103,8 @@ class BaseEndpoint(object):
         request.params = [(k, v) for k, v in params if k != "oauth_signature"]
 
         if 'realm' in request.headers.get('Authorization', ''):
-            request.params = [(k, v) for k, v in request.params if k != "realm"]
+            request.params = [(k, v)
+                              for k, v in request.params if k != "realm"]
 
         return request
 
@@ -118,7 +121,7 @@ class BaseEndpoint(object):
                     request.nonce, request.timestamp,
                     request.signature_method)):
             raise errors.InvalidRequestError(
-                    description='Missing mandatory OAuth parameters.')
+                description='Missing mandatory OAuth parameters.')
 
         # OAuth does not mandate a particular signature method, as each
         # implementation can have its own unique requirements.  Servers are
@@ -131,31 +134,31 @@ class BaseEndpoint(object):
         if (not request.signature_method in
                 self.request_validator.allowed_signature_methods):
             raise errors.InvalidSignatureMethodError(
-                    description="Invalid signature, %s not in %r." % (
-                        request.signature_method,
-                        self.request_validator.allowed_signature_methods))
+                description="Invalid signature, %s not in %r." % (
+                    request.signature_method,
+                    self.request_validator.allowed_signature_methods))
 
         # Servers receiving an authenticated request MUST validate it by:
         #   If the "oauth_version" parameter is present, ensuring its value is
         #   "1.0".
         if ('oauth_version' in request.oauth_params and
-            request.oauth_params['oauth_version'] != '1.0'):
+                request.oauth_params['oauth_version'] != '1.0'):
             raise errors.InvalidRequestError(
-                    description='Invalid OAuth version.')
+                description='Invalid OAuth version.')
 
         # The timestamp value MUST be a positive integer. Unless otherwise
         # specified by the server's documentation, the timestamp is expressed
         # in the number of seconds since January 1, 1970 00:00:00 GMT.
         if len(request.timestamp) != 10:
             raise errors.InvalidRequestError(
-                    description='Invalid timestamp size')
+                description='Invalid timestamp size')
 
         try:
             ts = int(request.timestamp)
 
         except ValueError:
             raise errors.InvalidRequestError(
-                    description='Timestamp must be an integer.')
+                description='Timestamp must be an integer.')
 
         else:
             # To avoid the need to retain an infinite number of nonce values for
@@ -163,19 +166,19 @@ class BaseEndpoint(object):
             # which a request with an old timestamp is rejected.
             if abs(time.time() - ts) > self.request_validator.timestamp_lifetime:
                 raise errors.InvalidRequestError(
-                        description=('Timestamp given is invalid, differ from '
-                            'allowed by over %s seconds.' % (
-                                self.request_validator.timestamp_lifetime)))
+                    description=('Timestamp given is invalid, differ from '
+                                 'allowed by over %s seconds.' % (
+                                     self.request_validator.timestamp_lifetime)))
 
         # Provider specific validation of parameters, used to enforce
         # restrictions such as character set and length.
         if not self.request_validator.check_client_key(request.client_key):
             raise errors.InvalidRequestError(
-                    description='Invalid client key format.')
+                description='Invalid client key format.')
 
         if not self.request_validator.check_nonce(request.nonce):
             raise errors.InvalidRequestError(
-                    description='Invalid nonce format.')
+                description='Invalid nonce format.')
 
     def _check_signature(self, request, is_token_request=False):
         # ---- RSA Signature verification ----
@@ -183,7 +186,7 @@ class BaseEndpoint(object):
             # The server verifies the signature per `[RFC3447] section 8.2.2`_
             # .. _`[RFC3447] section 8.2.2`: http://tools.ietf.org/html/rfc3447#section-8.2.1
             rsa_key = self.request_validator.get_rsa_key(
-                    request.client_key, request)
+                request.client_key, request)
             valid_signature = signature.verify_rsa_sha1(request, rsa_key)
 
         # ---- HMAC or Plaintext Signature verification ----
@@ -194,7 +197,7 @@ class BaseEndpoint(object):
             #   client via the "oauth_signature" parameter.
             # .. _`Section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
             client_secret = self.request_validator.get_client_secret(
-                    request.client_key, request)
+                request.client_key, request)
             resource_owner_secret = None
             if request.resource_owner_key:
                 if is_token_request:
@@ -206,8 +209,8 @@ class BaseEndpoint(object):
 
             if request.signature_method == SIGNATURE_HMAC:
                 valid_signature = signature.verify_hmac_sha1(request,
-                    client_secret, resource_owner_secret)
+                                                             client_secret, resource_owner_secret)
             else:
                 valid_signature = signature.verify_plaintext(request,
-                    client_secret, resource_owner_secret)
+                                                             client_secret, resource_owner_secret)
         return valid_signature

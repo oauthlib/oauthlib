@@ -4,15 +4,19 @@ oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import unicode_literals, absolute_import
+
 import json
-from oauthlib.common import log
+import logging
 
 from .base import GrantTypeBase
 from .. import errors
 from ..request_validator import RequestValidator
 
+log = logging.getLogger(__name__)
+
 
 class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
+
     """`Resource Owner Password Credentials Grant`_
 
     The resource owner password credentials grant type is suitable in
@@ -66,9 +70,14 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     .. _`Resource Owner Password Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.3
     """
 
-    def __init__(self, request_validator=None):
+    def __init__(self, request_validator=None, refresh_token=True):
+        """
+        If the refresh_token keyword argument is False, do not return
+        a refresh token in the response.
+        """
         self.request_validator = request_validator or RequestValidator()
         self._token_modifiers = []
+        self.refresh_token = refresh_token
 
     def register_token_modifier(self, modifier):
         self._token_modifiers.append(modifier)
@@ -105,7 +114,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             log.debug('Client error in token request, %s.', e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=True)
+        token = token_handler.create_token(request, self.refresh_token)
         for modifier in self._token_modifiers:
             token = modifier(token)
         self.request_validator.save_token(token, request)
@@ -160,29 +169,28 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         for param in ('grant_type', 'username', 'password'):
             if not getattr(request, param):
                 raise errors.InvalidRequestError(
-                        'Request is missing %s parameter.' % param, request=request)
+                    'Request is missing %s parameter.' % param, request=request)
 
         for param in ('grant_type', 'username', 'password', 'scope'):
             if param in request.duplicate_params:
-                raise errors.InvalidRequestError(state=request.state,
-                        description='Duplicate %s parameter.' % param, request=request)
+                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param, request=request)
 
         # This error should rarely (if ever) occur if requests are routed to
         # grant type handlers based on the grant_type parameter.
         if not request.grant_type == 'password':
             raise errors.UnsupportedGrantTypeError(request=request)
 
-        log.debug('Validating username %s and password %s.',
-                  request.username, request.password)
+        log.debug('Validating username %s.', request.username)
         if not self.request_validator.validate_user(request.username,
-                request.password, request.client, request):
-            raise errors.InvalidGrantError('Invalid credentials given.', request=request)
+                                                    request.password, request.client, request):
+            raise errors.InvalidGrantError(
+                'Invalid credentials given.', request=request)
         else:
             if not hasattr(request.client, 'client_id'):
                 raise NotImplementedError(
-                        'Validate user must set the '
-                        'request.client.client_id attribute '
-                        'in authenticate_client.')
+                    'Validate user must set the '
+                    'request.client.client_id attribute '
+                    'in authenticate_client.')
         log.debug('Authorizing access to user %r.', request.user)
 
         # Ensure client is authorized use of this grant type

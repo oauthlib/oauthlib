@@ -8,12 +8,17 @@ for consuming and providing OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import Request, log
+import logging
+
+from oauthlib.common import Request
 
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
+log = logging.getLogger(__name__)
+
 
 class ResourceEndpoint(BaseEndpoint):
+
     """Authorizes access to protected resources.
 
     The client accesses protected resources by presenting the access
@@ -38,6 +43,7 @@ class ResourceEndpoint(BaseEndpoint):
         https://example.com/protected?access_token=kjfch2345sdf   # Query
         access_token=sdf23409df   # Body
     """
+
     def __init__(self, default_token, token_types):
         BaseEndpoint.__init__(self)
         self._tokens = token_types
@@ -57,13 +63,13 @@ class ResourceEndpoint(BaseEndpoint):
 
     @catch_errors_and_unavailability
     def verify_request(self, uri, http_method='GET', body=None, headers=None,
-            scopes=None):
+                       scopes=None):
         """Validate client, code etc, return body + headers"""
         request = Request(uri, http_method, body, headers)
         request.token_type = self.find_token_type(request)
         request.scopes = scopes
         token_type_handler = self.tokens.get(request.token_type,
-                self.default_token_type_handler)
+                                             self.default_token_type_handler)
         log.debug('Dispatching token_type %s request to %r.',
                   request.token_type, token_type_handler)
         return token_type_handler.validate_request(request), request
@@ -76,5 +82,6 @@ class ResourceEndpoint(BaseEndpoint):
         the most likely token type (if any) by asking each known token type
         to give an estimation based on the request.
         """
-        estimates = sorted(((t.estimate_type(request), n) for n, t in self.tokens.items()))
+        estimates = sorted(((t.estimate_type(request), n)
+                            for n, t in self.tokens.items()))
         return estimates[0][1] if len(estimates) else None

@@ -18,11 +18,12 @@ def fread(fn):
         return f.read()
 
 if sys.version_info[0] == 3:
-    tests_require = ['nose', 'pycrypto', 'pyjwt']
+    tests_require = ['nose', 'pycrypto', 'pyjwt', 'blinker']
 else:
-    tests_require = ['nose', 'unittest2', 'pycrypto', 'mock', 'pyjwt']
+    tests_require = ['nose', 'unittest2', 'pycrypto', 'mock', 'pyjwt', 'blinker']
 rsa_require = ['pycrypto']
 signedtoken_require = ['pycrypto', 'pyjwt']
+signals_require = ['blinker']
 
 requires = []
 
@@ -41,7 +42,12 @@ setup(
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
     test_suite='nose.collector',
     tests_require=tests_require,
-    extras_require={'test': tests_require, 'rsa': rsa_require, 'signedtoken': signedtoken_require},
+    extras_require={
+        'test': tests_require,
+        'rsa': rsa_require,
+        'signedtoken': signedtoken_require,
+        'signals': signals_require,
+    },
     install_requires=requires,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -57,6 +63,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: Implementation',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',

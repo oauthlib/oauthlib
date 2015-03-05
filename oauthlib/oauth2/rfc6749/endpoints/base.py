@@ -9,14 +9,16 @@ for consuming and providing OAuth 2.0 RFC6749.
 from __future__ import absolute_import, unicode_literals
 
 import functools
-
-from oauthlib.common import log
+import logging
 
 from ..errors import TemporarilyUnavailableError, ServerError
 from ..errors import FatalClientError, OAuth2Error
 
+log = logging.getLogger(__name__)
+
 
 class BaseEndpoint(object):
+
     def __init__(self):
         self._available = True
         self._catch_errors = False
@@ -55,7 +57,8 @@ def catch_errors_and_unavailability(f):
                 raise
             except Exception as e:
                 error = ServerError()
-                log.warning('Exception caught while processing request, %s.' % e)
+                log.warning(
+                    'Exception caught while processing request, %s.' % e)
                 return {}, error.json, 500
         else:
             return f(endpoint, uri, *args, **kwargs)

@@ -9,14 +9,19 @@ An implementation of the OAuth 2 `Token Revocation`_ spec (draft 11).
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import Request, log
+import logging
+
+from oauthlib.common import Request
 
 from .base import BaseEndpoint, catch_errors_and_unavailability
 from ..errors import InvalidClientError, UnsupportedTokenTypeError
 from ..errors import InvalidRequestError, OAuth2Error
 
+log = logging.getLogger(__name__)
+
 
 class RevocationEndpoint(BaseEndpoint):
+
     """Token revocation endpoint.
 
     Endpoint used by authenticated clients to revoke access and refresh tokens.
@@ -25,19 +30,17 @@ class RevocationEndpoint(BaseEndpoint):
 
     valid_token_types = ('access_token', 'refresh_token')
 
-    @property
-    def supported_token_types(self):
-        return self._supported_token_types
-
-    def __init__(self, request_validator, supported_token_types=None):
+    def __init__(self, request_validator, supported_token_types=None,
+            enable_jsonp=False):
         BaseEndpoint.__init__(self)
         self.request_validator = request_validator
-        self._supported_token_types = (
-                supported_token_types or self.valid_token_types)
+        self.supported_token_types = (
+            supported_token_types or self.valid_token_types)
+        self.enable_jsonp = enable_jsonp
 
     @catch_errors_and_unavailability
     def create_revocation_response(self, uri, http_method='POST', body=None,
-            headers=None):
+                                   headers=None):
         """Revoke supplied access or refresh token.
 
 
@@ -56,17 +59,24 @@ class RevocationEndpoint(BaseEndpoint):
         An invalid token type hint value is ignored by the authorization server
         and does not influence the revocation response.
         """
-        request = Request(uri, http_method=http_method, body=body, headers=headers)
+        request = Request(
+            uri, http_method=http_method, body=body, headers=headers)
         try:
             self.validate_revocation_request(request)
             log.debug('Token revocation valid for %r.', request)
         except OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
-            return {}, e.json, e.status_code
+            response_body = e.json
+            if self.enable_jsonp and request.callback:
+                response_body = '%s(%s);' % (request.callback, response_body)
+            return {}, response_body, e.status_code
 
         self.request_validator.revoke_token(request.token,
-                request.token_type_hint, request)
-        response_body = request.callback + '()' if request.callback else None
+                                            request.token_type_hint, request)
+
+        response_body = None
+        if self.enable_jsonp and request.callback:
+            response_body = request.callback + '();'
         return {}, response_body, 200
 
     def validate_revocation_request(self, request):
@@ -108,11 +118,12 @@ class RevocationEndpoint(BaseEndpoint):
         """
         if not request.token:
             raise InvalidRequestError(request=request,
-                    description='Missing token parameter.')
+                                      description='Missing token parameter.')
 
         if not self.request_validator.authenticate_client(request):
             raise InvalidClientError(request=request)
 
-        if (request.token_type_hint in self.valid_token_types and
+        if (request.token_type_hint and
+                request.token_type_hint in self.valid_token_types and
                 request.token_type_hint not in self.supported_token_types):
             raise UnsupportedTokenTypeError(request=request)

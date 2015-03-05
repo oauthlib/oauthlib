@@ -1,17 +1,5 @@
-Supported features, platforms and python versions
-=================================================
-
-Supported versions
-------------------
-
-* 2.6
-* 2.7
-* 3.2
-* 3.3
-* pypy
-
-Supported features
-------------------
+Supported features and platforms
+================================
 
 OAuth 1 is fully supported per the RFC for both clients and providers.
 Extensions and variations that are outside the spec are not supported.
