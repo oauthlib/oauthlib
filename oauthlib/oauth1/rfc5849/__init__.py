@@ -271,7 +271,9 @@ class Client(object):
         #       header field set to "application/x-www-form-urlencoded".
         elif not should_have_params and has_params:
             raise ValueError(
-                "Body contains parameters but Content-Type header was not set.")
+                "Body contains parameters but Content-Type header was {0} "
+                "instead of {1}".format(content_type or "not set",
+                                        CONTENT_TYPE_FORM_URLENCODED))
 
         # 3.5.2.  Form-Encoded Body
         # Protocol parameters can be transmitted in the HTTP request entity-
