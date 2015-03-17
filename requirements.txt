@@ -5,4 +5,4 @@ pycrypto
 mock
 nose
 sphinx
-pyjwt
+pyjwt==0.3.2

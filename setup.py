@@ -18,11 +18,11 @@ def fread(fn):
         return f.read()
 
 if sys.version_info[0] == 3:
-    tests_require = ['nose', 'pycrypto', 'pyjwt', 'blinker']
+    tests_require = ['nose', 'pycrypto', 'pyjwt==0.3.2', 'blinker']
 else:
-    tests_require = ['nose', 'unittest2', 'pycrypto', 'mock', 'pyjwt', 'blinker']
+    tests_require = ['nose', 'unittest2', 'pycrypto', 'mock', 'pyjwt==0.3.2', 'blinker']
 rsa_require = ['pycrypto']
-signedtoken_require = ['pycrypto', 'pyjwt']
+signedtoken_require = ['pycrypto', 'pyjwt==0.3.2']
 signals_require = ['blinker']
 
 requires = []
