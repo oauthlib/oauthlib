@@ -265,7 +265,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         token = token_handler.create_token(request, refresh_token=True)
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
-        self.request_validator.save_token(token)
+        self.request_validator.save_token(token, request)
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
         return headers, json.dumps(token), 200
