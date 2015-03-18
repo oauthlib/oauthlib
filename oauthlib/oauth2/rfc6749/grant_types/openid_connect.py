@@ -67,7 +67,8 @@ class OpenIDConnectBase(GrantTypeBase):
 
         # TODO: if max_age, then we must include auth_time here
         # TODO: acr claims
-        token['id_token'] = 'TODO'
+        # FIXME: PE: this breaks plain OAuth2
+        # token['id_token'] = 'TODO'
         return token
 
     def openid_authorization_validator(self, request):
