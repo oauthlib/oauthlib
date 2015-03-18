@@ -55,20 +55,20 @@ class OpenIDConnectBase(GrantTypeBase):
 
     def add_id_token(self, token, token_handler, request):
         # Treat it as normal OAuth 2 auth code request if openid is not present
-        if not 'openid' in request.scopes:
+        if 'openid' not in request.scopes:
             return token
 
         # Only add an id token on auth/token step if asked for.
-        if request.response_type and not 'id_token' in request.response_type:
+        if request.response_type and 'id_token' not in request.response_type:
             return token
 
-        if not 'state' in token:
+        if 'state' not in token:
             token['state'] = request.state
 
         # TODO: if max_age, then we must include auth_time here
         # TODO: acr claims
         # FIXME: PE: this breaks plain OAuth2
-        # token['id_token'] = 'TODO'
+        token['id_token'] = 'TODO'
         return token
 
     def openid_authorization_validator(self, request):
