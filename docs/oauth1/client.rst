@@ -28,15 +28,16 @@ Using the Client
     the credentials from before when obtaining an access token::
 
         client = oauthlib.oauth1.Client('client_key', client_secret='your_secret',
-            resource_owner_secret='the_new_secret', verifier='the_verifier')
+            resource_owner_key='the_request_token', resource_owner_secret='the_request_token_secret',
+            verifier='the_verifier')
         uri, headers, body = client.sign('http://example.com/access_token')
 
     The provider will now give you an access token and a new token secret which
     you will use to access protected resources::
 
         client = oauthlib.oauth1.Client('client_key', client_secret='your_secret',
-            resource_owner_key='the_access_token', resource_owner_secret='the_token_secret')
-        uri, headers, body = client.sign('http://example.com/access_token')
+            resource_owner_key='the_access_token', resource_owner_secret='the_access_token_secret')
+        uri, headers, body = client.sign('http://example.com/protected_resource')
 
     .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
 
