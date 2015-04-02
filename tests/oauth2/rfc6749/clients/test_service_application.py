@@ -5,7 +5,8 @@ import os
 from time import time
 
 import jwt
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 from mock import patch
 
 from oauthlib.common import Request
@@ -83,11 +84,14 @@ class ServiceApplicationClientTest(TestCase):
                                            audience=self.audience,
                                            body=self.body)
         r = Request('https://a.b', body=body)
-        self.assertEqual(r.isnot, 'empty') 
-        self.assertEqual(r.grant_type, ServiceApplicationClient.grant_type) 
+        self.assertEqual(r.isnot, 'empty')
+        self.assertEqual(r.grant_type, ServiceApplicationClient.grant_type)
 
-        key = RSA.importKey(self.private_key).publickey()
-        claim = jwt.decode(r.assertion, key)
+        private_key = serialization.load_pem_private_key(
+            self.private_key.encode('utf-8'), password=None, backend=default_backend(),
+        )
+        public_key = private_key.public_key()
+        claim = jwt.decode(r.assertion, public_key)
 
         self.assertEqual(claim['iss'], self.issuer)
         self.assertEqual(claim['aud'], self.audience)

@@ -482,15 +482,23 @@ def sign_rsa_sha1(base_string, rsa_private_key):
 
     """
     # TODO: finish RSA documentation
-    from Crypto.PublicKey import RSA
-    from Crypto.Signature import PKCS1_v1_5
-    from Crypto.Hash import SHA
-    key = RSA.importKey(rsa_private_key)
-    if isinstance(base_string, unicode_type):
-        base_string = base_string.encode('utf-8')
-    h = SHA.new(base_string)
-    p = PKCS1_v1_5.new(key)
-    return binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
+    from cryptography.hazmat.backends import default_backend
+    private_key = serialization.load_pem_private_key(
+        rsa_private_key.encode('utf-8'), password=None, backend=default_backend(),
+    )
+    signer = private_key.signer(
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
+    )
+    signer.update(base_string)
+    signature = signer.finalize()
+    return binascii.b2a_base64(signature)
 
 
 def sign_rsa_sha1_with_client(base_string, client):
@@ -566,7 +574,7 @@ def verify_rsa_sha1(request, rsa_public_key):
 
     Per `section 3.4.3`_ of the spec.
 
-    Note this method requires the PyCrypto library.
+    Note this method requires the cryptography library.
 
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
 
@@ -578,17 +586,27 @@ def verify_rsa_sha1(request, rsa_public_key):
 
     .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
     """
-    from Crypto.PublicKey import RSA
-    from Crypto.Signature import PKCS1_v1_5
-    from Crypto.Hash import SHA
-    key = RSA.importKey(rsa_public_key)
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
+    from cryptography.hazmat.backends import default_backend
+    public_key = serialization.load_pem_public_key(
+        rsa_public_key.encode('utf-8'), backend=default_backend(),
+    )
     norm_params = normalize_parameters(request.params)
     uri = normalize_base_string_uri(request.uri)
     message = construct_base_string(request.http_method, uri, norm_params)
-    h = SHA.new(message.encode('utf-8'))
-    p = PKCS1_v1_5.new(key)
-    sig = binascii.a2b_base64(request.signature.encode('utf-8'))
-    return p.verify(h, sig)
+    signature = binascii.a2b_base64(request.signature.encode('utf-8'))
+    verifier = public_key.verifier(
+        signature,
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
+    )
+    verifier.update(message)
+    return verifier.verify()
 
 
 def verify_plaintext(request, client_secret=None, resource_owner_secret=None):

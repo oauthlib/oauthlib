@@ -42,20 +42,20 @@ class ServiceApplicationClient(Client):
         :param private_key: Private key used for signing and encrypting.
                             Must be given as a string.
 
-        :param subject: The principal that is the subject of the JWT, i.e. 
+        :param subject: The principal that is the subject of the JWT, i.e.
                         which user is the token requested on behalf of.
                         For example, ``foo@example.com.
 
         :param issuer: The JWT MUST contain an "iss" (issuer) claim that
                        contains a unique identifier for the entity that issued
-                       the JWT. For example, ``your-client@provider.com``. 
+                       the JWT. For example, ``your-client@provider.com``.
 
         :param audience: A value identifying the authorization server as an
                          intended audience, e.g.
                          ``https://provider.com/oauth2/token``.
 
         :param kwargs: Additional arguments to pass to base client, such as
-                       state and token. See Client.__init__.__doc__ for 
+                       state and token. See Client.__init__.__doc__ for
                        details.
         """
         super(ServiceApplicationClient, self).__init__(client_id, **kwargs)
@@ -64,16 +64,16 @@ class ServiceApplicationClient(Client):
         self.issuer = issuer
         self.audience = audience
 
-    def prepare_request_body(self, 
+    def prepare_request_body(self,
                              private_key=None,
-                             subject=None, 
-                             issuer=None, 
-                             audience=None, 
-                             expires_at=None, 
+                             subject=None,
+                             issuer=None,
+                             audience=None,
+                             expires_at=None,
                              issued_at=None,
                              extra_claims=None,
-                             body='', 
-                             scope=None, 
+                             body='',
+                             scope=None,
                              **kwargs):
         """Create and add a JWT assertion to the request body.
 
@@ -86,7 +86,7 @@ class ServiceApplicationClient(Client):
 
         :param issuer: (iss) The JWT MUST contain an "iss" (issuer) claim that
                        contains a unique identifier for the entity that issued
-                       the JWT. For example, ``your-client@provider.com``. 
+                       the JWT. For example, ``your-client@provider.com``.
 
         :param audience: (aud) A value identifying the authorization server as an
                          intended audience, e.g.
@@ -117,7 +117,7 @@ class ServiceApplicationClient(Client):
         [I-D.ietf-oauth-assertions] specification, to indicate the requested
         scope.
 
-        Authentication of the client is optional, as described in 
+        Authentication of the client is optional, as described in
         `Section 3.2.1`_ of OAuth 2.0 [RFC6749] and consequently, the
         "client_id" is only needed when a form of client authentication that
         relies on the parameter is used.
@@ -140,13 +140,17 @@ class ServiceApplicationClient(Client):
         .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         import jwt
-        import Crypto.PublicKey.RSA as RSA
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.backends import default_backend
 
-        key = private_key or self.private_key
-        if not key:
+        private_key = private_key or self.private_key
+        if not private_key:
             raise ValueError('An encryption key must be supplied to make JWT'
                              ' token requests.')
-        key = RSA.importKey(key)
+        if isinstance(private_key, basestring):
+            private_key = serialization.load_pem_private_key(
+                private_key.encode('utf-8'), password=None, backend=default_backend(),
+            )
 
         claim = {
             'iss': issuer or self.issuer,
@@ -169,11 +173,11 @@ class ServiceApplicationClient(Client):
 
         claim.update(extra_claims or {})
 
-        assertion = jwt.encode(claim, key, 'RS256')
+        assertion = jwt.encode(claim, private_key, 'RS256')
         assertion = to_unicode(assertion)
 
         return prepare_token_request(self.grant_type,
                                      body=body,
                                      assertion=assertion,
-                                     scope=scope, 
+                                     scope=scope,
                                      **kwargs)
