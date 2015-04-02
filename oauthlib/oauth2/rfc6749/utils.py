@@ -41,7 +41,7 @@ def scope_to_list(scope):
     elif scope is None:
         return None
     else:
-        return scope.split(" ")
+        return scope.strip().split(" ")
 
 
 def params_from_uri(uri):
