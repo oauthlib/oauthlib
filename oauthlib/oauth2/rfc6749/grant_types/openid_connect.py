@@ -62,13 +62,17 @@ class OpenIDConnectBase(GrantTypeBase):
         if request.response_type and 'id_token' not in request.response_type:
             return token
 
-        if 'state' not in token:
+        if "scope" not in token:
+            token['scope'] = ' '.join(request.scopes)
+
+        if request.state and "state" not in token:
             token['state'] = request.state
 
         # TODO: if max_age, then we must include auth_time here
         # TODO: acr claims
-        # FIXME: PE: this breaks plain OAuth2
-        token['id_token'] = 'TODO'
+        token['id_token'] = self.request_validator.get_id_token(request)
+        token['expires_in'] = 300  # TODO
+
         return token
 
     def openid_authorization_validator(self, request):

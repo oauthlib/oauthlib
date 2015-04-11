@@ -520,3 +520,11 @@ class RequestValidator(object):
             - OpenIDConnectHybrid
         """
         raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_id_token(self, request):
+        """Retrieve or generate a id_token JWT.
+
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: id_token as a JWT string
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
