@@ -79,6 +79,12 @@ class UtilsTests(TestCase):
         obj_list = [ScopeObject('foo'), ScopeObject('bar'), ScopeObject('baz')]
         self.assertEqual(list_to_scope(obj_list), expected)
 
+        set_list = set(string_list)
+        set_scope = list_to_scope(set_list)
+        assert len(set_scope.split(' ')) == 3
+        for x in string_list:
+            assert x in set_scope
+
     def test_scope_to_list(self):
         expected = ['foo', 'bar', 'baz']
 
@@ -88,9 +94,15 @@ class UtilsTests(TestCase):
         string_list_scopes = ['foo', 'bar', 'baz']
         self.assertEqual(scope_to_list(string_list_scopes), expected)
 
+        tuple_list_scopes = ('foo', 'bar', 'baz')
+        self.assertEqual(scope_to_list(tuple_list_scopes), expected)
+
         obj_list_scopes = [ScopeObject('foo'), ScopeObject('bar'), ScopeObject('baz')]
         self.assertEqual(scope_to_list(obj_list_scopes), expected)
 
+        set_list_scopes = set(string_list_scopes)
+        set_list = scope_to_list(set_list_scopes)
+        self.assertEqual(sorted(set_list), sorted(string_list_scopes))
 
 
 
