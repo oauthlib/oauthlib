@@ -73,6 +73,9 @@ class UtilsTests(TestCase):
         string_list = ['foo', 'bar', 'baz']
         self.assertEqual(list_to_scope(string_list), expected)
 
+        string_tuple = ('foo', 'bar', 'baz')
+        self.assertEqual(list_to_scope(string_tuple), expected)
+
         obj_list = [ScopeObject('foo'), ScopeObject('bar'), ScopeObject('baz')]
         self.assertEqual(list_to_scope(obj_list), expected)
 

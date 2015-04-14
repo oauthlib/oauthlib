@@ -464,6 +464,15 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     # .. _`RFC2045, Section 6.8`: http://tools.ietf.org/html/rfc2045#section-6.8
     return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
 
+_jwtrs1 = None
+
+#jwt has some nice pycrypto/cryptography abstractions
+def _jwt_rs1_signing_algorithm():
+    global _jwtrs1
+    if _jwtrs1 is None:
+        import jwt.algorithms as jwtalgo
+        _jwtrs1 = jwtalgo.RSAAlgorithm(jwtalgo.hashes.SHA1)
+    return _jwtrs1
 
 def sign_rsa_sha1(base_string, rsa_private_key):
     """**RSA-SHA1**
@@ -481,16 +490,13 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     .. _`RFC3447, Section 8.2`: http://tools.ietf.org/html/rfc3447#section-8.2
 
     """
-    # TODO: finish RSA documentation
-    from Crypto.PublicKey import RSA
-    from Crypto.Signature import PKCS1_v1_5
-    from Crypto.Hash import SHA
-    key = RSA.importKey(rsa_private_key)
     if isinstance(base_string, unicode_type):
         base_string = base_string.encode('utf-8')
-    h = SHA.new(base_string)
-    p = PKCS1_v1_5.new(key)
-    return binascii.b2a_base64(p.sign(h))[:-1].decode('utf-8')
+    # TODO: finish RSA documentation
+    alg = _jwt_rs1_signing_algorithm()
+    key = _prepare_key_plus(alg, rsa_private_key)
+    s=alg.sign(base_string, key)
+    return binascii.b2a_base64(s)[:-1].decode('utf-8')
 
 
 def sign_rsa_sha1_with_client(base_string, client):
@@ -560,13 +566,17 @@ def verify_hmac_sha1(request, client_secret=None,
                                resource_owner_secret)
     return safe_string_equals(signature, request.signature)
 
+def _prepare_key_plus(alg, keystr):
+    if isinstance(keystr, bytes_type):
+        keystr = keystr.decode('utf-8')
+    return alg.prepare_key(keystr)
 
 def verify_rsa_sha1(request, rsa_public_key):
     """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
 
     Per `section 3.4.3`_ of the spec.
 
-    Note this method requires the PyCrypto library.
+    Note this method requires the jwt and cryptography libraries.
 
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
 
@@ -578,17 +588,14 @@ def verify_rsa_sha1(request, rsa_public_key):
 
     .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
     """
-    from Crypto.PublicKey import RSA
-    from Crypto.Signature import PKCS1_v1_5
-    from Crypto.Hash import SHA
-    key = RSA.importKey(rsa_public_key)
     norm_params = normalize_parameters(request.params)
     uri = normalize_base_string_uri(request.uri)
-    message = construct_base_string(request.http_method, uri, norm_params)
-    h = SHA.new(message.encode('utf-8'))
-    p = PKCS1_v1_5.new(key)
+    message = construct_base_string(request.http_method, uri, norm_params).encode('utf-8')
     sig = binascii.a2b_base64(request.signature.encode('utf-8'))
-    return p.verify(h, sig)
+
+    alg = _jwt_rs1_signing_algorithm()
+    key = _prepare_key_plus(alg, rsa_public_key)
+    return alg.verify(message, key, sig)
 
 
 def verify_plaintext(request, client_secret=None, resource_owner_secret=None):

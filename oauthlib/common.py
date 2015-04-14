@@ -229,10 +229,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 
 
 def generate_signed_token(private_pem, request):
-    import Crypto.PublicKey.RSA as RSA
     import jwt
-
-    private_key = RSA.importKey(private_pem)
 
     now = datetime.datetime.utcnow()
 
@@ -243,23 +240,16 @@ def generate_signed_token(private_pem, request):
 
     claims.update(request.claims)
 
-    token = jwt.encode(claims, private_key, 'RS256')
+    token = jwt.encode(claims, private_pem, 'RS256')
     token = to_unicode(token, "UTF-8")
 
     return token
 
 
-def verify_signed_token(private_pem, token):
-    import Crypto.PublicKey.RSA as RSA
+def verify_signed_token(public_pem, token):
     import jwt
 
-    public_key = RSA.importKey(private_pem).publickey()
-
-    try:
-        # return jwt.verify_jwt(token.encode(), public_key)
-        return jwt.decode(token, public_key)
-    except:
-        raise Exception
+    return jwt.decode(token, public_pem, algorithms=['RS256'])
 
 
 def generate_client_id(length=30, chars=CLIENT_ID_CHARACTER_SET):

@@ -140,14 +140,11 @@ class ServiceApplicationClient(Client):
         .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         import jwt
-        import Crypto.PublicKey.RSA as RSA
 
         key = private_key or self.private_key
         if not key:
             raise ValueError('An encryption key must be supplied to make JWT'
                              ' token requests.')
-        key = RSA.importKey(key)
-
         claim = {
             'iss': issuer or self.issuer,
             'aud': audience or self.issuer,
