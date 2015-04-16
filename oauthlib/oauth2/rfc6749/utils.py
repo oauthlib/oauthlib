@@ -27,7 +27,7 @@ def list_to_scope(scope):
     elif isinstance(scope, (set, tuple, list)):
         return " ".join([unicode_type(s) for s in scope])
     else:
-        raise ValueError("Invalid scope, must be string or list.")
+        raise ValueError("Invalid scope (%s), must be string, tuple, set, or list." % scope)
 
 
 def scope_to_list(scope):
