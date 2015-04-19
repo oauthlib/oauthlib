@@ -1,5 +1,11 @@
 Changelog
 =========
+Unreleased
+--------------------------------------------------
+
+* Replace pycrypto with cryptography from https://cryptography.io
+* Update jwt to 1.0.0 (which is backwards incompatible) no oauthlib api changes
+  were made.
 
 0.7.2 (2014-11-13)
 ------------------

@@ -27,6 +27,6 @@ Supported platforms
 OAuthLib is mainly developed/tested on 64 bit Linux but works on Unix (incl. OS
 X) and Windows as well. Unless you are using the RSA features of OAuth 1 you
 should be able to use OAuthLib on any platform that supports Python. If you use
-RSA you are limited to the platforms supported by `PyCrypto`_.
+RSA you are limited to the platforms supported by `cryptography`_.
 
-.. _`PyCrypto`: https://www.dlitz.net/software/pycrypto/
+.. _`cryptography`: https://cryptography.io/en/latest/installation/
