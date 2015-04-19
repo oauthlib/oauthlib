@@ -39,7 +39,7 @@ def scope_to_list(scope):
     if isinstance(scope, set):
         scope_to_list(list(scope))
     elif scope is None:
-        return None
+        return ''
     else:
         return scope.strip().split(" ")
 
