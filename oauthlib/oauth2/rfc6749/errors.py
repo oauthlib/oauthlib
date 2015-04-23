@@ -249,6 +249,7 @@ class UnsupportedTokenTypeError(OAuth2Error):
 class FatalOpenIDClientError(FatalClientError):
     pass
 
+
 class OpenIDClientError(OAuth2Error):
     pass
 
@@ -289,7 +290,6 @@ class AccountSelectionRequried(OpenIDClientError):
 
 
 class ConsentRequired(OpenIDClientError):
-
     """The Authorization Server requires End-User consent.
 
     This error MAY be returned when the prompt parameter value in the
@@ -298,6 +298,17 @@ class ConsentRequired(OpenIDClientError):
     """
     error = 'consent_required'
     status_code = 401
+
+
+class InvalidClientMetaData(OpenIDClientError):
+    """
+    The value of one of the Client Metadata fields is invalid and the server
+    has rejected this request. Note that an Authorization Server MAY choose
+    to substitute a valid value for any requested parameter of a Client's
+    Metadata.
+    """
+    error = 'invalid_client_metadata'
+    status_code = 400
 
 
 def raise_from_error(error, params=None):
