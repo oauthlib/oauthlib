@@ -276,7 +276,7 @@ class LoginRequired(OpenIDClientError):
     status_code = 401
 
 
-class AccountSelectionRequried(OpenIDClientError):
+class AccountSelectionRequired(OpenIDClientError):
     """The End-User is REQUIRED to select a session at the Authorization Server.
 
     The End-User MAY be authenticated at the Authorization Server with
@@ -298,6 +298,44 @@ class ConsentRequired(OpenIDClientError):
     """
     error = 'consent_required'
     status_code = 401
+
+
+class InvalidRequestURI(OpenIDClientError):
+    """
+    The request_uri in the Authorization Request returns an error or contains
+    invalid data.
+    """
+    error = 'invalid_request_uri'
+
+
+class InvalidRequestObject(OpenIDClientError):
+    """
+    The request parameter contains an invalid Request Object.
+    """
+    error = 'invalid_request_object'
+
+
+class RequestNotSupported(OpenIDClientError):
+    """
+    The OP does not support use of the request parameter defined in Section 6.
+    """
+    error = 'request_not_supported'
+
+
+class RequestURINotSupported(OpenIDClientError):
+    """
+    The OP does not support use of the request_uri parameter defined in
+    Section 6.
+    """
+    error = 'request_uri_not_supported'
+
+
+class RegistrationNotSupported(OpenIDClientError):
+    """
+    The OP does not support use of the registration parameter defined in
+    Section 7.2.1.
+    """
+    error = 'registration_not_supported'
 
 
 class InvalidClientMetaData(OpenIDClientError):
