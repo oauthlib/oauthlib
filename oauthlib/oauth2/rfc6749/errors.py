@@ -3,7 +3,7 @@
 oauthlib.oauth2.rfc6749.errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Error used both by OAuth 2 clients and provicers to represent the spec
+Error used both by OAuth 2 clients and providers to represent the spec
 defined error responses for all four core grant types.
 """
 from __future__ import unicode_literals
