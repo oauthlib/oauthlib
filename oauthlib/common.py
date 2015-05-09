@@ -387,7 +387,10 @@ class Request(object):
         self._params.update(self.headers)
 
     def __getattr__(self, name):
-        return self._params.get(name, None)
+        if name in self._params:
+            return self._params[name]
+        else:
+            raise AttributeError(name)
 
     def __repr__(self):
         return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (

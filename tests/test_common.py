@@ -171,6 +171,20 @@ class RequestTest(TestCase):
         r = Request(URI, body=PARAMS_DICT)
         self.assertItemsEqual(r.decoded_body, PARAMS_TWOTUPLE)
 
+    def test_getattr_existing_attribute(self):
+        r = Request(URI, body='foo bar')
+        self.assertEqual('foo bar', getattr(r, 'body'))
+
+    def test_getattr_return_default(self):
+        r = Request(URI, body='')
+        actual_value = getattr(r, 'does_not_exist', 'foo bar')
+        self.assertEqual('foo bar', actual_value)
+
+    def test_getattr_raise_attribute_error(self):
+        r = Request(URI, body='foo bar')
+        with self.assertRaises(AttributeError):
+            getattr(r, 'does_not_exist')
+
 
 class CaseInsensitiveDictTest(TestCase):
 
