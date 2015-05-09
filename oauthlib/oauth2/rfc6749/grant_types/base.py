@@ -23,7 +23,8 @@ class GrantTypeBase(object):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_grant_type(self, request):
-        if not self.request_validator.validate_grant_type(request.client_id,
+        client_id = getattr(request, 'client_id', None)
+        if not self.request_validator.validate_grant_type(client_id,
                                                           request.grant_type, request.client, request):
             log.debug('Unauthorized from %r (%r) access to grant type %s.',
                       request.client_id, request.client, request.grant_type)

@@ -380,7 +380,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.InvalidGrantError(request=request)
 
         for attr in ('user', 'state', 'scopes'):
-            if getattr(request, attr) is None:
+            if getattr(request, attr, None) is None:
                 log.debug('request.%s was not set on code validation.', attr)
 
         # REQUIRED, if the "redirect_uri" parameter was included in the
