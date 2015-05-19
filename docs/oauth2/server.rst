@@ -262,12 +262,12 @@ can be seen below.
 
     class MyRequestValidator(RequestValidator):
 
-    def validate_client_id(self, client_id, request):
-    try:
-        Client.objects.get(client_id=client_id)
-        return True
-    except Client.DoesNotExist:
-        return False
+        def validate_client_id(self, client_id, request):
+            try:
+                Client.objects.get(client_id=client_id)
+                return True
+            except Client.DoesNotExist:
+                return False
 
 The full API you will need to implement is available in the
 :doc:`RequestValidator <validator>` section. You might not need to implement
