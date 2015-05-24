@@ -382,13 +382,20 @@ class Request(object):
         self.oauth_params = []
 
         self._params = {
+            "access_token": None,
+            "client": None,
             "client_id": None,
+            "code": None,
+            "extra_credentials": None,
             "grant_type": None,
             "redirect_uri": None,
-            "response_type": None,
-            "state": None,
             "refresh_token": None,
-            "access_token": None,
+            "response_type": None,
+            "scope": None,
+            "scopes": None,
+            "state": None,
+            "token": None,
+            "user": None,
         }
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))
