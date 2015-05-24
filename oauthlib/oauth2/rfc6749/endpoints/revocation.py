@@ -120,8 +120,9 @@ class RevocationEndpoint(BaseEndpoint):
             raise InvalidRequestError(request=request,
                                       description='Missing token parameter.')
 
-        if not self.request_validator.authenticate_client(request):
-            raise InvalidClientError(request=request)
+        if self.request_validator.client_authentication_required(request):
+            if not self.request_validator.authenticate_client(request):
+                raise InvalidClientError(request=request)
 
         if (request.token_type_hint and
                 request.token_type_hint in self.valid_token_types and

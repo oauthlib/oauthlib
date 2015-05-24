@@ -55,6 +55,7 @@ The following packages provide OAuth support using OAuthLib.
 
 - For Django there is `django-oauth-toolkit`_, which includes `Django REST framework`_ support.
 - For Flask there is `flask-oauthlib`_ and `Flask-Dance`_.
+- For Pyramid there is `pyramid-oauthlib`_.
 
 If you have written an OAuthLib package that supports your favorite framework,
 please open a Pull Request, updating the documentation.
@@ -63,6 +64,7 @@ please open a Pull Request, updating the documentation.
 .. _`flask-oauthlib`: https://github.com/lepture/flask-oauthlib
 .. _`Django REST framework`: http://django-rest-framework.org
 .. _`Flask-Dance`: https://github.com/singingwolfboy/flask-dance
+.. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
 
 Using OAuthLib? Please get in touch!
 ------------------------------------
