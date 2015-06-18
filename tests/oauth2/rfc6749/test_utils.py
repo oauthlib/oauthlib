@@ -79,7 +79,7 @@ class UtilsTests(TestCase):
     def test_scope_to_list(self):
         expected = ['foo', 'bar', 'baz']
 
-        string_scopes = 'foo bar baz'
+        string_scopes = 'foo bar baz '
         self.assertEqual(scope_to_list(string_scopes), expected)
 
         string_list_scopes = ['foo', 'bar', 'baz']
