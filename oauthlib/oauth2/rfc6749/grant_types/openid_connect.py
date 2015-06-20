@@ -71,7 +71,10 @@ class OpenIDConnectBase(GrantTypeBase):
         # TODO: if max_age, then we must include auth_time here
         # TODO: acr claims
         token['id_token'] = self.request_validator.get_id_token(request)
-        token['expires_in'] = 300  # TODO
+
+        # TODO: get from idtoken.exp instead?
+        if "expires_in" not in token:
+            token["expires_in"] = 7200
 
         return token
 
