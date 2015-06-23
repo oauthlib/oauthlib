@@ -164,7 +164,7 @@ class InvalidTokenError(OAuth2Error):
     request.
     """
     error = 'invalid_token'
-    status_Code = 401
+    status_code = 401
 
 
 class InsufficientScopeError(OAuth2Error):
@@ -176,7 +176,7 @@ class InsufficientScopeError(OAuth2Error):
     resource.
     """
     error = 'insufficient_scope'
-    status_Code = 401
+    status_code = 403
 
 
 class AccessDeniedError(OAuth2Error):
