@@ -308,7 +308,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.InvalidRequestError(description='Missing response_type parameter.', request=request)
 
         for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
-            if param in request.duplicate_params:
+            try:
+                duplicate_params = request.duplicate_params
+            except ValueError:
+                raise errors.InvalidRequestError(description='Unable to parse query string', request=request)
+            if param in duplicate_params:
                 raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param, request=request)
 
         if not self.request_validator.validate_response_type(request.client_id,

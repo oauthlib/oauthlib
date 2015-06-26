@@ -100,6 +100,17 @@ class ErrorResponseTest(TestCase):
         self.assertRaises(errors.InvalidClientIdError,
                 self.mobile.create_authorization_response, uri, scopes=['foo'])
 
+    def test_empty_parameter(self):
+        uri = 'https://example.com/authorize?client_id=foo&redirect_uri=https%3A%2F%2Fi.b%2Fback&response_type=code&'
+
+        # Authorization code grant
+        self.assertRaises(errors.InvalidRequestError,
+                self.web.validate_authorization_request, uri)
+
+        # Implicit grant
+        self.assertRaises(errors.InvalidRequestError,
+                self.mobile.validate_authorization_request, uri)
+
     def test_invalid_request(self):
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
         token_uri = 'https://i.b/token'
