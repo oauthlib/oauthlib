@@ -35,6 +35,7 @@ class WebApplicationClientTest(TestCase):
         "require": "extra arguments"
     }
     uri_kwargs = uri_id + "&some=providers&require=extra+arguments"
+    uri_authorize_code = uri_redirect + "&scope=%2Fprofile&state=" + state
 
     code = "zzzzaaaa"
     body = "not=empty"
@@ -149,3 +150,13 @@ class WebApplicationClientTest(TestCase):
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
+
+    def test_prepare_authorization_requeset(self):
+        client = WebApplicationClient(self.client_id)
+
+        url, header, body = client.prepare_authorization_request(
+            self.uri, redirect_url=self.redirect_uri, state=self.state, scope=self.scope)
+        self.assertURLEqual(url, self.uri_authorize_code)
+        # verify default header and body only
+        self.assertEqual(header, {'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(body, '')

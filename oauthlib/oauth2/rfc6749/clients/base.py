@@ -229,7 +229,7 @@ class Client(object):
         self.redirect_url = redirect_url or self.redirect_url
         self.scope = scope or self.scope
         auth_url = self.prepare_request_uri(
-                authorization_url, redirect_uri=self.redirect_uri,
+                authorization_url, redirect_uri=self.redirect_url,
                 scope=self.scope, state=self.state, **kwargs)
         return auth_url, FORM_ENC_HEADERS, ''
 
