@@ -206,3 +206,33 @@ class ClientTest(TestCase):
 
         # NotImplementedError
         self.assertRaises(NotImplementedError, client.prepare_authorization_request, auth_url)
+
+    def test_prepare_refresh_token_request(self):
+        client = Client(self.client_id)
+
+        url = 'https://example.com/revoke'
+        token = 'foobar'
+        scope = 'extra_scope'
+
+        u, h, b = client.prepare_refresh_token_request(url, token)
+        self.assertEqual(u, url)
+        self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(b, 'grant_type=refresh_token&refresh_token={}'.format(token))
+
+        # Non-HTTPS revocation endpoint
+        self.assertRaises(InsecureTransportError,
+                          client.prepare_refresh_token_request,
+                          'http://example.com/revoke', token)
+
+        # provide extra scope
+        u, h, b = client.prepare_refresh_token_request(url, token, scope=scope)
+        self.assertEqual(u, url)
+        self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(b, 'grant_type=refresh_token&scope={}&refresh_token={}'.format(scope, token))
+
+        # provide scope while init
+        client = Client(self.client_id, scope=scope)
+        u, h, b = client.prepare_refresh_token_request(url, token, scope=scope)
+        self.assertEqual(u, url)
+        self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertEqual(b, 'grant_type=refresh_token&scope={}&refresh_token={}'.format(scope, token))
