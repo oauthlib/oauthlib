@@ -500,6 +500,8 @@ def sign_rsa_sha1(base_string, rsa_private_key):
 
 
 def sign_rsa_sha1_with_client(base_string, client):
+    if not client.rsa_key:
+        raise ValueError('rsa_key is required when using RSA signature method.')
     return sign_rsa_sha1(base_string, client.rsa_key)
 
 

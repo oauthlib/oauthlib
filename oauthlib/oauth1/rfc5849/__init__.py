@@ -101,10 +101,6 @@ class Client(object):
         self.nonce = encode(nonce)
         self.timestamp = encode(timestamp)
 
-        if self.signature_method == SIGNATURE_RSA and self.rsa_key is None:
-            raise ValueError(
-                'rsa_key is required when using RSA signature method.')
-
     def __repr__(self):
         attrs = vars(self).copy()
         attrs['client_secret'] = '****' if attrs['client_secret'] else None
