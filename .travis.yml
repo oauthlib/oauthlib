@@ -1,24 +1,26 @@
 language: python
-
 install:
-  - pip install tox coveralls
-
+- pip install tox coveralls
 script:
-  - tox
-
+- tox
 env:
-  - TOXENV=py26
-  - TOXENV=py27
-  - TOXENV=py32
-  - TOXENV=py33
-  - TOXENV=py32
-  - TOXENV=pypy
-
+- TOXENV=py26
+- TOXENV=py27
+- TOXENV=py32
+- TOXENV=py33
+- TOXENV=py32
+- TOXENV=pypy
 after_success: coveralls
-
 branches:
   only:
-    - master
-
+  - master
 notifications:
-  irc: "irc.freenode.org#oauthlib"
+  irc: irc.freenode.org#oauthlib
+deploy:
+  provider: pypi
+  user: ib.lundgren
+  password:
+    secure: hmKuLMTlBPRnwt3m3z6Z2jTn1ZFwpaU7UtSMj8GLwRC3w5GqDkhwNfMMkZOcMCemvGAx5g40vXTxCeMgyryCc0uPlMzDgospVCKxtB8rW9hDx2eHCJmfUSZG6whBJ3S1zTOev/TXxp8fakTdPrN89YESjvcWKbytBM61qhbUOqE=
+  on:
+    tags: true
+    repo: idan/oauthlib
