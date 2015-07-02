@@ -297,7 +297,7 @@ class Client(object):
             raise InsecureTransportError()
 
         self.scope = scope or self.scope
-        body = self._client.prepare_refresh_body(body=body,
+        body = self.prepare_refresh_body(body=body,
                 refresh_token=refresh_token, scope=self.scope, **kwargs)
         return token_url, FORM_ENC_HEADERS, body
 
