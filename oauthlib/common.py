@@ -381,13 +381,31 @@ class Request(object):
         self.decoded_body = extract_params(encode(body))
         self.oauth_params = []
 
-        self._params = {}
+        self._params = {
+            "access_token": None,
+            "client": None,
+            "client_id": None,
+            "code": None,
+            "extra_credentials": None,
+            "grant_type": None,
+            "redirect_uri": None,
+            "refresh_token": None,
+            "response_type": None,
+            "scope": None,
+            "scopes": None,
+            "state": None,
+            "token": None,
+            "user": None,
+        }
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))
         self._params.update(self.headers)
 
     def __getattr__(self, name):
-        return self._params.get(name, None)
+        if name in self._params:
+            return self._params[name]
+        else:
+            raise AttributeError(name)
 
     def __repr__(self):
         return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
