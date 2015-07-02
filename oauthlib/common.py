@@ -410,7 +410,7 @@ class Request(object):
 
     def __repr__(self):
         body = self.body
-        if 'password=' in body:
+        if body and 'password=' in body:
             body = PASSWORD_PATTERN.sub('password=***', body)
         return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
             self.uri, self.http_method, self.headers, body)
