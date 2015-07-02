@@ -36,6 +36,7 @@ UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
 CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
                            'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}')
 
+PASSWORD_PATTERN = re.compile(r'password=[^&]+')
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                'abcdefghijklmnopqrstuvwxyz'
@@ -408,8 +409,11 @@ class Request(object):
             raise AttributeError(name)
 
     def __repr__(self):
+        body = self.body
+        if 'password=' in body:
+            body = PASSWORD_PATTERN.sub('password=***', body)
         return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
-            self.uri, self.http_method, self.headers, self.body)
+            self.uri, self.http_method, self.headers, body)
 
     @property
     def uri_query(self):
