@@ -217,7 +217,7 @@ class ClientTest(TestCase):
         u, h, b = client.prepare_refresh_token_request(url, token)
         self.assertEqual(u, url)
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertURLEqual(b, 'grant_type=refresh_token&refresh_token=%s' % token)
+        self.assertFormBodyEqual(b, 'grant_type=refresh_token&refresh_token=%s' % token)
 
         # Non-HTTPS revocation endpoint
         self.assertRaises(InsecureTransportError,
@@ -228,11 +228,11 @@ class ClientTest(TestCase):
         u, h, b = client.prepare_refresh_token_request(url, token, scope=scope)
         self.assertEqual(u, url)
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertURLEqual(b, 'grant_type=refresh_token&scope=%s&refresh_token=%s' % (scope, token))
+        self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope=%s&refresh_token=%s' % (scope, token))
 
         # provide scope while init
         client = Client(self.client_id, scope=scope)
         u, h, b = client.prepare_refresh_token_request(url, token, scope=scope)
         self.assertEqual(u, url)
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertURLEqual(b, 'grant_type=refresh_token&scope=%s&refresh_token=%s' % (scope, token))
+        self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope=%s&refresh_token=%s' % (scope, token))
