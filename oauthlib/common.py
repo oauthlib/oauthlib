@@ -379,7 +379,7 @@ class Request(object):
         self.http_method = encode(http_method)
         self.headers = CaseInsensitiveDict(encode(headers or {}))
         self.body = encode(body)
-        self.decoded_body = extract_params(encode(body))
+        self.decoded_body = extract_params(self.body)
         self.oauth_params = []
 
         self._params = {
