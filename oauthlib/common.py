@@ -37,6 +37,7 @@ CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
                            'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}')
 
 PASSWORD_PATTERN = re.compile(r'password=[^&]+')
+INVALID_HEX_PATTERN = re.compile(r'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]')
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                'abcdefghijklmnopqrstuvwxyz'
@@ -133,8 +134,7 @@ def urldecode(query):
     # All encoded values begin with % followed by two hex characters
     # correct = %00, %A0, %0A, %FF
     # invalid = %G0, %5H, %PO
-    invalid_hex = '%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]'
-    if len(re.findall(invalid_hex, query)):
+    if INVALID_HEX_PATTERN.search(query):
         raise ValueError('Invalid hex encoding in query string.')
 
     # We encode to utf-8 prior to parsing because parse_qsl behaves
@@ -379,7 +379,7 @@ class Request(object):
         self.http_method = encode(http_method)
         self.headers = CaseInsensitiveDict(encode(headers or {}))
         self.body = encode(body)
-        self.decoded_body = extract_params(encode(body))
+        self.decoded_body = extract_params(self.body)
         self.oauth_params = []
 
         self._params = {
