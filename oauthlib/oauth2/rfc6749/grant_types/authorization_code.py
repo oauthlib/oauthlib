@@ -383,7 +383,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                       request.client_id, request.client, request.scopes)
             raise errors.InvalidGrantError(request=request)
 
-        for attr in ('user', 'state', 'scopes'):
+        for attr in ('user', 'scopes'):
             if getattr(request, attr, None) is None:
                 log.debug('request.%s was not set on code validation.', attr)
 
