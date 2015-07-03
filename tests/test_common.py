@@ -185,6 +185,15 @@ class RequestTest(TestCase):
         with self.assertRaises(AttributeError):
             getattr(r, 'does_not_exist')
 
+    def test_password_body(self):
+        payload = 'username=foo&password=bar'
+        r = Request(URI, body=payload)
+        self.assertNotIn('bar', repr(r))
+
+        payload = 'password=bar&username=foo'
+        r = Request(URI, body=payload)
+        self.assertNotIn('bar', repr(r))
+
 
 class CaseInsensitiveDictTest(TestCase):
 
