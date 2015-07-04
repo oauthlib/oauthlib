@@ -3,9 +3,22 @@ Changelog
 Unreleased
 --------------------------------------------------
 
-* Replace pycrypto with cryptography from https://cryptography.io
-* Update jwt to 1.0.0 (which is backwards incompatible) no oauthlib api changes
+* (Breaking Change) Replace pycrypto with cryptography from https://cryptography.io
+* (Breaking Change) Update jwt to 1.0.0 (which is backwards incompatible) no oauthlib api changes
   were made.
+* (Breaking Change) Raise attribute error for non-existing attributes in the Request object.
+* (Fix) Strip whitespace off of scope string.
+* (Change) Don't require to return the state in the access token response.
+* (Change) Hide password in logs.
+* (Fix) Fix incorrect invocation of prepare_refresh_body in the OAuth2 client.
+* (Fix) Handle empty/non-parsable query strings.
+* (Fix) Check if an RSA key is actually needed before requiring it.
+* (Change) Allow tuples for list_to_scope as well as sets and lists.
+* (Change) Add code to determine if client authentication is required for OAuth2.
+* (Fix) Fix error message on invalid Content-Type header for OAtuh1 signing.
+* Increased test coverage.
+* Performance improvements.
+* Documentation improvements and fixes.
 
 0.7.2 (2014-11-13)
 ------------------
