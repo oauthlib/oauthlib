@@ -41,7 +41,7 @@ class ExtraCredentialsTest(TestCase):
 
         # Implicit grant
         self.validator.save_bearer_token.side_effect = save_token
-        self.web.create_authorization_response(
+        self.mobile.create_authorization_response(
                 'https://i.b/auth?client_id=foo&response_type=token',
                 scopes=['foo'],
                 credentials={'extra': 'creds'})
