@@ -262,9 +262,12 @@ class ImplicitGrant(GrantTypeBase):
 
         # First check duplicate parameters
         for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
-            if param in request.duplicate_params:
-                raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param,
-                                                      request=request)
+            try:
+                duplicate_params = request.duplicate_params
+            except ValueError:
+                raise errors.InvalidRequestFatalError(description='Unable to parse query string', request=request)
+            if param in duplicate_params:
+                raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param, request=request)
 
         # REQUIRED. The client identifier as described in Section 2.2.
         # http://tools.ietf.org/html/rfc6749#section-2.2

@@ -83,7 +83,7 @@ class ClientCredentialsGrant(GrantTypeBase):
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
-        if not getattr(request, 'grant_type'):
+        if not getattr(request, 'grant_type', None):
             raise errors.InvalidRequestError('Request is missing grant type.',
                                              request=request)
 

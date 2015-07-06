@@ -229,7 +229,7 @@ class Client(object):
         self.redirect_url = redirect_url or self.redirect_url
         self.scope = scope or self.scope
         auth_url = self.prepare_request_uri(
-                authorization_url, redirect_uri=self.redirect_uri,
+                authorization_url, redirect_uri=self.redirect_url,
                 scope=self.scope, state=self.state, **kwargs)
         return auth_url, FORM_ENC_HEADERS, ''
 
@@ -297,7 +297,7 @@ class Client(object):
             raise InsecureTransportError()
 
         self.scope = scope or self.scope
-        body = self._client.prepare_refresh_body(body=body,
+        body = self.prepare_refresh_body(body=body,
                 refresh_token=refresh_token, scope=self.scope, **kwargs)
         return token_url, FORM_ENC_HEADERS, body
 

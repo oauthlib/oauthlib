@@ -61,6 +61,10 @@ class ClientConstructorTests(TestCase):
             self.assertIsInstance(k, bytes_type)
             self.assertIsInstance(v, bytes_type)
 
+    def test_rsa(self):
+        client = Client('client_key', signature_method=SIGNATURE_RSA)
+        self.assertIsNone(client.rsa_key)  # don't need an RSA key to instantiate
+
 
 class SignatureMethodTest(TestCase):
 
@@ -96,7 +100,6 @@ class SignatureMethodTest(TestCase):
                    'HJILzZ8iFOvS6w5E%3D"')
         self.assertEqual(h['Authorization'], correct)
 
-
     def test_plaintext_method(self):
         client = Client('client_key',
                         signature_method=SIGNATURE_PLAINTEXT,
@@ -115,6 +118,9 @@ class SignatureMethodTest(TestCase):
         client = Client('client_key', signature_method='invalid')
         self.assertRaises(ValueError, client.sign, 'http://example.com')
 
+    def test_rsa_no_key(self):
+        client = Client('client_key', signature_method=SIGNATURE_RSA)
+        self.assertRaises(ValueError, client.sign, 'http://example.com')
 
     def test_register_method(self):
         Client.register_signature_method('PIZZA',

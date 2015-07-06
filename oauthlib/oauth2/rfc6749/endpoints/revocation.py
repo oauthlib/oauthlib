@@ -74,7 +74,7 @@ class RevocationEndpoint(BaseEndpoint):
         self.request_validator.revoke_token(request.token,
                                             request.token_type_hint, request)
 
-        response_body = None
+        response_body = ''
         if self.enable_jsonp and request.callback:
             response_body = request.callback + '();'
         return {}, response_body, 200
@@ -120,8 +120,9 @@ class RevocationEndpoint(BaseEndpoint):
             raise InvalidRequestError(request=request,
                                       description='Missing token parameter.')
 
-        if not self.request_validator.authenticate_client(request):
-            raise InvalidClientError(request=request)
+        if self.request_validator.client_authentication_required(request):
+            if not self.request_validator.authenticate_client(request):
+                raise InvalidClientError(request=request)
 
         if (request.token_type_hint and
                 request.token_type_hint in self.valid_token_types and

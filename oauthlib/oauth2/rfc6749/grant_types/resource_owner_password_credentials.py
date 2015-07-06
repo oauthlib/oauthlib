@@ -160,7 +160,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         for param in ('grant_type', 'username', 'password'):
-            if not getattr(request, param):
+            if not getattr(request, param, None):
                 raise errors.InvalidRequestError(
                     'Request is missing %s parameter.' % param, request=request)
 

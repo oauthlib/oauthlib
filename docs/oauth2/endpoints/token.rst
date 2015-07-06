@@ -39,7 +39,7 @@ tokens which unless you are certain you need them, are a bad idea.
         # Validate request
         uri = 'https://example.com/token'
         http_method = 'POST'
-        body = 'authorization_code=somerandomstring&'
+        body = 'code=somerandomstring&'
                'grant_type=authorization_code&'
         # Clients authenticate through a method of your choosing, for example
         # using HTTP Basic Authentication

@@ -11,24 +11,23 @@ What parts of OAuth 1 & 2 are supported?
 
     See :doc:`feature_matrix`.
 
-OAuth 1 with RSA-SHA1 signatures says "could not import Crypto". What should I do?
+OAuth 1 with RSA-SHA1 signatures says "could not import cryptography". What should I do?
 ----------------------------------------------------------------------------------
 
-    Install either PyCrypto or Cryptography via pip.
+    Install cryptography via pip.
 
 .. code-block:: sh
 
-    $ pip install pycrypto
     $ pip install cryptography
 
-OAuth 2 ServiceApplicationClient says "could not import jwt". What should I do?
--------------------------------------------------------------------------------
+OAuth 2 ServiceApplicationClient and OAuth 1 with RSA-SHA1 signatures say "could not import jwt". What should I do?
+-------------------------------------------------------------------------------------------------------------------
 
-    Install pyjwt and pycrypto with pip.
+    Install pyjwt and cryptography with pip.
 
 .. code-block:: sh
 
-    $ pip install pyjwt pycrypto
+    $ pip install pyjwt cryptography
 
 What does ValueError `Only unicode objects are escapable. Got one of type X.` mean?
 -----------------------------------------------------------------------------------

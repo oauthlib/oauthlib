@@ -30,7 +30,19 @@ class RevocationEndpointTest(TestCase):
             h, b, s = self.endpoint.create_revocation_response(self.uri,
                     headers=self.headers, body=body)
             self.assertEqual(h, {})
-            self.assertEqual(b, None)
+            self.assertEqual(b, '')
+            self.assertEqual(s, 200)
+
+    def test_revoke_token_without_client_authentication(self):
+        self.validator.client_authentication_required.return_value = False
+        self.validator.authenticate_client.return_value = False
+        for token_type in ('access_token', 'refresh_token', 'invalid'):
+            body = urlencode([('token', 'foo'),
+                              ('token_type_hint', token_type)])
+            h, b, s = self.endpoint.create_revocation_response(self.uri,
+                    headers=self.headers, body=body)
+            self.assertEqual(h, {})
+            self.assertEqual(b, '')
             self.assertEqual(s, 200)
 
     def test_revoke_with_callback(self):
@@ -62,5 +74,3 @@ class RevocationEndpointTest(TestCase):
         self.assertEqual(h, {})
         self.assertEqual(loads(b)['error'], 'invalid_request')
         self.assertEqual(s, 400)
-
-

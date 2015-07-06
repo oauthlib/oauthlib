@@ -64,7 +64,7 @@ class SkeletonValidator(RequestValidator):
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
         # Validate the code belongs to the client. Add associated scopes,
-        # state and user to request.scopes, request.state and request.user.
+        # state and user to request.scopes and request.user.
         pass
 
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):

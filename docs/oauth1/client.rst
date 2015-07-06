@@ -28,15 +28,16 @@ Using the Client
     the credentials from before when obtaining an access token::
 
         client = oauthlib.oauth1.Client('client_key', client_secret='your_secret',
-            resource_owner_secret='the_new_secret', verifier='the_verifier')
+            resource_owner_key='the_request_token', resource_owner_secret='the_request_token_secret',
+            verifier='the_verifier')
         uri, headers, body = client.sign('http://example.com/access_token')
 
     The provider will now give you an access token and a new token secret which
     you will use to access protected resources::
 
         client = oauthlib.oauth1.Client('client_key', client_secret='your_secret',
-            resource_owner_key='the_access_token', resource_owner_secret='the_token_secret')
-        uri, headers, body = client.sign('http://example.com/access_token')
+            resource_owner_key='the_access_token', resource_owner_secret='the_access_token_secret')
+        uri, headers, body = client.sign('http://example.com/protected_resource')
 
     .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
 
@@ -63,25 +64,18 @@ Using the Client
 
 **RSA Signatures**
 
-    OAuthLib supports the 'RSA-SHA1' signature but does not install the PyCrypto
-    dependency by default. This is not done because PyCrypto is fairly
-    cumbersome to install, especially on Windows. Linux and Mac OS X (?) users
-    can install PyCrypto using pip::
+    OAuthLib supports the 'RSA-SHA1' signature but does not install the jwt or
+    cryptography dependency by default. The cryptography package is much better
+    supported on Windows and Mac OS X than PyCrypto, and simpler to install.
+    OAuthLib uses the jwt package to smooth out its internal code.
+    Users can install cryptography using pip::
 
-        pip install pycrypto
+        pip install jwt cryptography
 
-    Windows users will have to jump through a few hoops. The following links may be helpful:
-
-    * `Voidspace Python prebuilt binaries for PyCrypto <http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_
-
-    * `Can I install Python Windows packages into virtualenvs <http://stackoverflow.com/questions/3271590/can-i-install-python-windows-packages-into-virtualenvs>`_
-
-    * `Compiling pycrypto on Windows 7 (64bit) <http://yorickdowne.wordpress.com/2010/12/22/compiling-pycrypto-on-win7-64/>`_
-
-    When you have pycrypto installed using RSA signatures is similar to HMAC but
-    differ in a few aspects. RSA signatures does not make use of client secrets
-    nor resource owner secrets (token secrets) and requires you to specify the
-    signature type when constructing a client::
+    When you have cryptography and jwt installed using RSA signatures is
+    similar to HMAC but differ in a few aspects. RSA signatures does not make
+    use of client secrets nor resource owner secrets (token secrets) and
+    requires you to specify the signature type when constructing a client::
 
         client = oauthlib.oauth1.Client('your client key',
             signature_method=oauthlib.oauth1.SIGNATURE_RSA,

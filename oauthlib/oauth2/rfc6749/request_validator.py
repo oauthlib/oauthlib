@@ -342,8 +342,8 @@ class RequestValidator(object):
         """Ensure the authorization_code is valid and assigned to client.
 
         OBS! The request.user attribute should be set to the resource owner
-        associated with this authorization code. Similarly request.scopes and
-        request.state must also be set.
+        associated with this authorization code. Similarly request.scopes
+        must also be set.
 
         :param client_id: Unicode client identifier
         :param code: Unicode authorization code

@@ -36,6 +36,8 @@ UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
 CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
                            'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}')
 
+PASSWORD_PATTERN = re.compile(r'password=[^&]+')
+INVALID_HEX_PATTERN = re.compile(r'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]')
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                'abcdefghijklmnopqrstuvwxyz'
@@ -132,8 +134,7 @@ def urldecode(query):
     # All encoded values begin with % followed by two hex characters
     # correct = %00, %A0, %0A, %FF
     # invalid = %G0, %5H, %PO
-    invalid_hex = '%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]'
-    if len(re.findall(invalid_hex, query)):
+    if INVALID_HEX_PATTERN.search(query):
         raise ValueError('Invalid hex encoding in query string.')
 
     # We encode to utf-8 prior to parsing because parse_qsl behaves
@@ -229,10 +230,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 
 
 def generate_signed_token(private_pem, request):
-    import Crypto.PublicKey.RSA as RSA
     import jwt
-
-    private_key = RSA.importKey(private_pem)
 
     now = datetime.datetime.utcnow()
 
@@ -243,23 +241,16 @@ def generate_signed_token(private_pem, request):
 
     claims.update(request.claims)
 
-    token = jwt.encode(claims, private_key, 'RS256')
+    token = jwt.encode(claims, private_pem, 'RS256')
     token = to_unicode(token, "UTF-8")
 
     return token
 
 
-def verify_signed_token(private_pem, token):
-    import Crypto.PublicKey.RSA as RSA
+def verify_signed_token(public_pem, token):
     import jwt
 
-    public_key = RSA.importKey(private_pem).publickey()
-
-    try:
-        # return jwt.verify_jwt(token.encode(), public_key)
-        return jwt.decode(token, public_key)
-    except:
-        raise Exception
+    return jwt.decode(token, public_pem, algorithms=['RS256'])
 
 
 def generate_client_id(length=30, chars=CLIENT_ID_CHARACTER_SET):
@@ -388,20 +379,41 @@ class Request(object):
         self.http_method = encode(http_method)
         self.headers = CaseInsensitiveDict(encode(headers or {}))
         self.body = encode(body)
-        self.decoded_body = extract_params(encode(body))
+        self.decoded_body = extract_params(self.body)
         self.oauth_params = []
 
-        self._params = {}
+        self._params = {
+            "access_token": None,
+            "client": None,
+            "client_id": None,
+            "code": None,
+            "extra_credentials": None,
+            "grant_type": None,
+            "redirect_uri": None,
+            "refresh_token": None,
+            "response_type": None,
+            "scope": None,
+            "scopes": None,
+            "state": None,
+            "token": None,
+            "user": None,
+        }
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))
         self._params.update(self.headers)
 
     def __getattr__(self, name):
-        return self._params.get(name, None)
+        if name in self._params:
+            return self._params[name]
+        else:
+            raise AttributeError(name)
 
     def __repr__(self):
+        body = self.body
+        if body and 'password=' in body:
+            body = PASSWORD_PATTERN.sub('password=***', body)
         return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
-            self.uri, self.http_method, self.headers, self.body)
+            self.uri, self.http_method, self.headers, body)
 
     @property
     def uri_query(self):

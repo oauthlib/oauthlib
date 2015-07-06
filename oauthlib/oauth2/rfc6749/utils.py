@@ -24,24 +24,20 @@ def list_to_scope(scope):
     """Convert a list of scopes to a space separated string."""
     if isinstance(scope, unicode_type) or scope is None:
         return scope
-    elif isinstance(scope, list):
+    elif isinstance(scope, (set, tuple, list)):
         return " ".join([unicode_type(s) for s in scope])
-    elif isinstance(scope, set):
-        return list_to_scope(list(scope))
     else:
-        raise ValueError("Invalid scope, must be string or list.")
+        raise ValueError("Invalid scope (%s), must be string, tuple, set, or list." % scope)
 
 
 def scope_to_list(scope):
     """Convert a space separated string to a list of scopes."""
-    if isinstance(scope, list):
+    if isinstance(scope, (tuple, list, set)):
         return [unicode_type(s) for s in scope]
-    if isinstance(scope, set):
-        scope_to_list(list(scope))
     elif scope is None:
         return None
     else:
-        return scope.split(" ")
+        return scope.strip().split(" ")
 
 
 def params_from_uri(uri):
