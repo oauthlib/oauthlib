@@ -51,12 +51,6 @@ class RequestValidator(object):
         both body and query can be obtained by direct attribute access, i.e.
         request.client_id for client_id in the URL query.
 
-        OBS! Certain grant types rely on this authentication, possibly with
-        other fallbacks, and for them to recognize this authorization please
-        set the client attribute on the request (request.client). Note that
-        preferably this client object should have a client_id attribute of
-        unicode type (request.client.client_id).
-
         :param request: oauthlib.common.Request
         :rtype: True or False
 
