@@ -10,7 +10,8 @@ from json import loads
 from .base import GrantTypeBase
 from .authorization_code import AuthorizationCodeGrant
 from .implicit import ImplicitGrant
-from ..errors import InvalidRequestError, LoginRequired, ConsentRequired
+from ..errors import InvalidRequestError, LoginRequired, ConsentRequired, \
+    UnsupportedResponseTypeError
 from ..request_validator import RequestValidator
 
 
@@ -71,10 +72,6 @@ class OpenIDConnectBase(GrantTypeBase):
         # TODO: if max_age, then we must include auth_time here
         # TODO: acr claims
         token['id_token'] = self.request_validator.get_id_token(request)
-
-        # TODO: get from idtoken.exp instead?
-        if "expires_in" not in token:
-            token["expires_in"] = 7200
 
         return token
 
@@ -248,7 +245,13 @@ class OpenIDConnectBase(GrantTypeBase):
         if request.response_type == 'token':
             return {}
 
-        if not 'openid' in request.scopes:
+        if 'openid' not in request.scopes:
+            # In plain OAuth 2.0 mode we won't issue an ID Token, better be
+            # explicit about that.
+            if 'id_token' in request.response_type.split():
+                desc = 'Request for id_token without openid scope.'
+                raise UnsupportedResponseTypeError(request=request,
+                                                   description=desc)
             return {}
 
         # REQUIRED. String value used to associate a Client session with an ID
