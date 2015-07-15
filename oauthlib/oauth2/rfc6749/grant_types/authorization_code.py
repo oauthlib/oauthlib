@@ -229,8 +229,16 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
+            # If application is doing its own error handling, then just raise.
+            if not self.redirect_on_error:
+                raise
             request.redirect_uri = request.redirect_uri or self.error_uri
-            return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples)}, None, 302
+            use_fragments = request.response_mode == 'fragment'
+            return {'Location': common.add_params_to_uri(
+                request.redirect_uri,
+                e.twotuples,
+                use_fragments
+            )}, None, 302
 
         grant = self.create_authorization_code(request)
         for modifier in self._code_modifiers:
@@ -357,6 +365,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             'client_id': request.client_id,
             'redirect_uri': request.redirect_uri,
             'response_type': request.response_type,
+            'response_mode': request.response_mode,
             'state': request.state,
             'request': request,
         }

@@ -17,6 +17,7 @@ class GrantTypeBase(object):
     error_uri = None
     request_validator = None
     default_response_mode = 'fragment'
+    redirect_on_error = True
 
     def create_authorization_response(self, request, token_handler):
         raise NotImplementedError('Subclasses must implement this method.')

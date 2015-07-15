@@ -54,12 +54,14 @@ class OAuth2Error(Exception):
             self.client_id = request.client_id
             self.scopes = request.scopes
             self.response_type = request.response_type
+            self.response_mode = request.response_mode
             self.grant_type = request.grant_type
             if not state:
                 self.state = request.state
 
     def in_uri(self, uri):
-        return add_params_to_uri(uri, self.twotuples)
+        use_fragment = self.response_mode == "fragment"
+        return add_params_to_uri(uri, self.twotuples, use_fragment)
 
     @property
     def twotuples(self):
