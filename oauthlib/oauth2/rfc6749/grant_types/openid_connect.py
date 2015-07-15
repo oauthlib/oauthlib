@@ -346,7 +346,8 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
-
+        super(OpenIDConnectHybrid, self).__init__(
+            request_validator=self.request_validator)
         self.auth_code = AuthorizationCodeGrant(
             request_validator=request_validator)
         self.auth_code.register_response_type('code id_token')
@@ -354,6 +355,8 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
         self.auth_code.register_response_type('code id_token token')
         self.auth_code.register_authorization_validator(
             self.openid_authorization_validator)
+        self.auth_code.register_authorization_validator(
+            self.openid_implicit_authorization_validator)
         self.auth_code.register_code_modifier(self.add_token)
         self.auth_code.register_code_modifier(self.add_id_token)
         self.auth_code.register_token_modifier(self.add_id_token)
