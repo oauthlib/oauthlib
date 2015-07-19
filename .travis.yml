@@ -16,9 +16,6 @@ env:
 - TOXENV=pypy
 - TOXENV=pypy3
 after_success: coveralls
-branches:
-  only:
-  - master
 notifications:
   irc: irc.freenode.org#oauthlib
 deploy:
