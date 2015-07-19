@@ -7,7 +7,8 @@ This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 from __future__ import absolute_import, unicode_literals
-
+import base64
+import hashlib
 import logging
 log = logging.getLogger(__name__)
 
@@ -171,6 +172,16 @@ class Client(object):
             params.append(('oauth_callback', self.callback_uri))
         if self.verifier:
             params.append(('oauth_verifier', self.verifier))
+
+        # providing body hash for requests other than x-www-form-urlencoded
+        # as described in http://oauth.googlecode.com/svn/spec/ext/body_hash/1.0/oauth-bodyhash.html
+        # 4.1.1. When to include the body hash
+        #    *  [...] MUST NOT include an oauth_body_hash parameter on requests with form-encoded request bodies
+        #    *  [...] SHOULD include the oauth_body_hash parameter on all other requests.  
+        content_type = request.headers.get('Content-Type', None)
+        content_type_eligible = content_type and content_type.find('application/x-www-form-urlencoded') < 0
+        if request.body is not None and content_type_eligible:
+            params.append(('oauth_body_hash', base64.b64encode(hashlib.sha1(request.body).digest()).decode('utf-8')))
 
         return params
 
