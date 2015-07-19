@@ -1,7 +1,8 @@
 Changelog
 =========
+
 Unreleased
---------------------------------------------------
+----------
 
 * (Breaking Change) Replace pycrypto with cryptography from https://cryptography.io
 * (Breaking Change) Update jwt to 1.0.0 (which is backwards incompatible) no oauthlib api changes
@@ -16,6 +17,10 @@ Unreleased
 * (Change) Allow tuples for list_to_scope as well as sets and lists.
 * (Change) Add code to determine if client authentication is required for OAuth2.
 * (Fix) Fix error message on invalid Content-Type header for OAtuh1 signing.
+* (Fix) Allow ! character in query strings.
+* (Fix) OAuth1 now includes the body hash for requests that specify any content-type that isn't x-www-form-urlencoded.
+* (Fix) Fixed error description in oauth1 endpoint.
+* (Fix) Revocation endpoint for oauth2 will now return an empty string in the response body instead of 'None'.
 * Increased test coverage.
 * Performance improvements.
 * Documentation improvements and fixes.
@@ -54,7 +59,7 @@ Unreleased
 * Allow unescaped @ in urlencoded parameters.
 
 0.6.3 (2014-06-10)
------------------
+------------------
 
 Quick fix. OAuth 1 client repr in 0.6.2 overwrote secrets when scrubbing for print.
 
@@ -214,7 +219,7 @@ Soft dependency on PyCrypto.
 Use python-rsa instead of pycrypto.
 
 0.1.1 / 0.1.2
------
+-------------
 
 Fix installation of pycrypto dependency.
 
