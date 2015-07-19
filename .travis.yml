@@ -1,4 +1,8 @@
 language: python
+sudo: false
+cache:
+  directories:
+    - $HOME/.cache/pip
 install:
 - pip install tox coveralls
 script:
@@ -10,6 +14,7 @@ env:
 - TOXENV=py33
 - TOXENV=py32
 - TOXENV=pypy
+- TOXENV=pypy3
 after_success: coveralls
 branches:
   only:
