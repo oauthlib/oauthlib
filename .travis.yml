@@ -2,7 +2,7 @@ language: python
 sudo: false
 cache:
   directories:
-    - $HOME/.cache/pip
+  - "$HOME/.cache/pip"
 install:
 - pip install tox coveralls
 script:
@@ -22,7 +22,7 @@ deploy:
   provider: pypi
   user: ib.lundgren
   password:
-    secure: hmKuLMTlBPRnwt3m3z6Z2jTn1ZFwpaU7UtSMj8GLwRC3w5GqDkhwNfMMkZOcMCemvGAx5g40vXTxCeMgyryCc0uPlMzDgospVCKxtB8rW9hDx2eHCJmfUSZG6whBJ3S1zTOev/TXxp8fakTdPrN89YESjvcWKbytBM61qhbUOqE=
+    secure: PGZF9pRiTGCSwQjk1ddTKF3x4rQ0iAiPbg2uSixyO68uMXRgJjwHhSrNM0OEqtK5YWU5FE5L0DwR1nkrpEJKO4a5q2EOgos+gVoKpJfinoUNOOkjc1VHpqKM0uRf/OKrw1alvWUwqvW8B+DOb9TY5c5VZxQuRL+iwdrtwzFlKls=
   on:
     tags: true
     repo: idan/oauthlib
