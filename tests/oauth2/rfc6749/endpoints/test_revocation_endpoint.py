@@ -32,6 +32,14 @@ class RevocationEndpointTest(TestCase):
             self.assertEqual(h, {})
             self.assertEqual(b, '')
             self.assertEqual(s, 200)
+
+        # don't specify token_type_hint
+        body = urlencode([('token', 'foo')])
+        h, b, s = self.endpoint.create_revocation_response(self.uri,
+                headers=self.headers, body=body)
+        self.assertEqual(h, {})
+        self.assertEqual(b, '')
+        self.assertEqual(s, 200)
     
     def test_revoke_token_without_client_authentication(self):
         self.validator.client_authentication_required.return_value = False
