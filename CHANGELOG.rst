@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.0.1 (2015-07-27)
+------------------
+* (Fix) Added token_type_hint to the list of default Request parameters.
+
 1.0.0 (2015-07-19)
 ------------------
 
