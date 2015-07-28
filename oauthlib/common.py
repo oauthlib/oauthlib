@@ -386,6 +386,7 @@ class Request(object):
             "access_token": None,
             "client": None,
             "client_id": None,
+            "client_secret": None,
             "code": None,
             "extra_credentials": None,
             "grant_type": None,
