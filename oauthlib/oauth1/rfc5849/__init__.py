@@ -177,11 +177,11 @@ class Client(object):
         # as described in http://oauth.googlecode.com/svn/spec/ext/body_hash/1.0/oauth-bodyhash.html
         # 4.1.1. When to include the body hash
         #    *  [...] MUST NOT include an oauth_body_hash parameter on requests with form-encoded request bodies
-        #    *  [...] SHOULD include the oauth_body_hash parameter on all other requests.  
+        #    *  [...] SHOULD include the oauth_body_hash parameter on all other requests.
         content_type = request.headers.get('Content-Type', None)
         content_type_eligible = content_type and content_type.find('application/x-www-form-urlencoded') < 0
         if request.body is not None and content_type_eligible:
-            params.append(('oauth_body_hash', base64.b64encode(hashlib.sha1(request.body).digest()).decode('utf-8')))
+            params.append(('oauth_body_hash', base64.b64encode(hashlib.sha1(request.body.encode('utf-8')).digest()).decode('utf-8')))
 
         return params
 
