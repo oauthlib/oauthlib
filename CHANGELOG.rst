@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.2 (2015-08-10)
+------------------
+* (Fix) Allow client secret to be null for public applications that do not mandate it's specification in the query parameters.
+* (Fix) Encode request body before hashing in order to prevent encoding errors in Python 3.
+
 1.0.1 (2015-07-27)
 ------------------
 * (Fix) Added token_type_hint to the list of default Request parameters.
