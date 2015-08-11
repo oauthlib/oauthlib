@@ -428,7 +428,7 @@ class RequestValidator(object):
         :param client_key: The client/consumer key.
         :param request_token: The request token string.
         :param request: An oauthlib.common.Request object.
-        :returns: The rsa public key as a string.
+        :returns: None
 
         Per `Section 2.3`__ of the spec:
 
