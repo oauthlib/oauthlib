@@ -192,6 +192,13 @@ class AccessTokenEndpoint(BaseEndpoint):
 
         valid_signature = self._check_signature(request, is_token_request=True)
 
+        # log the results to the validator_log
+        # this lets us handle internal reporting and analysis
+        request.validator_log['client'] = valid_client
+        request.validator_log['resource_owner'] = valid_resource_owner
+        request.validator_log['verifier'] = valid_verifier
+        request.validator_log['signature'] = valid_signature
+
         # We delay checking validity until the very end, using dummy values for
         # calculations and fetching secrets/keys to ensure the flow of every
         # request remains almost identical regardless of whether valid values
