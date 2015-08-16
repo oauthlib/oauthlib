@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.3 (2015-08-16)
+------------------
+* (Fix) Changed the documented return type of the ```invalidate_request_token()``` method from the RSA key to None since nobody is using the return type.
+* (Enhancement) Added a validator log that will store what the endpoint has computed for debugging and logging purposes (OAuth 1 only for now). 
+
 1.0.2 (2015-08-10)
 ------------------
 * (Fix) Allow client secret to be null for public applications that do not mandate it's specification in the query parameters.
