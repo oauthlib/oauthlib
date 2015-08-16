@@ -381,6 +381,7 @@ class Request(object):
         self.body = encode(body)
         self.decoded_body = extract_params(self.body)
         self.oauth_params = []
+        self.validator_log = {}
 
         self._params = {
             "access_token": None,
