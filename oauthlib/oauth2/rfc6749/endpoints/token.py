@@ -86,7 +86,7 @@ class TokenEndpoint(BaseEndpoint):
 
     @catch_errors_and_unavailability
     def create_token_response(self, uri, http_method='GET', body=None,
-                              headers=None, credentials=None):
+                              headers=None, credentials=None, **kwargs):
         """Extract grant_type and route to the designated handler."""
         request = Request(
             uri, http_method=http_method, body=body, headers=headers)
@@ -96,5 +96,6 @@ class TokenEndpoint(BaseEndpoint):
                                                   self.default_grant_type_handler)
         log.debug('Dispatching grant_type %s request to %r.',
                   request.grant_type, grant_type_handler)
-        return grant_type_handler.create_token_response(
-            request, self.default_token_type)
+
+        kwargs.setdefault('token_handler', self.default_token_type)
+        return grant_type_handler.create_token_response(request, **kwargs)

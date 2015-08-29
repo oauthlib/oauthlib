@@ -216,7 +216,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             request.client_id, grant, request)
         return {'Location': common.add_params_to_uri(request.redirect_uri, grant.items())}, None, 302
 
-    def create_token_response(self, request, token_handler):
+    def create_token_response(self, request, token_handler, refresh_token=True):
         """Validate the authorization code.
 
         The client MUST NOT use the authorization code more than once. If an
@@ -237,7 +237,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Client error during validation of %r. %r.', request, e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=True)
+        token = token_handler.create_token(request, refresh_token=refresh_token)
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
         return headers, json.dumps(token), 200
