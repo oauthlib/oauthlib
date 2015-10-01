@@ -28,7 +28,7 @@ signals_require = ['blinker']
 requires = []
 
 setup(
-    name='oauthlib',
+    name='oauthlib-oidc',
     version=oauthlib.__version__,
     description='A generic, spec-compliant, thorough implementation of the OAuth request-signing logic',
     long_description=fread('README.rst'),
