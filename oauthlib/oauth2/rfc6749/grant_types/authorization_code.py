@@ -95,8 +95,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
     .. _`Authorization Code Grant`: http://tools.ietf.org/html/rfc6749#section-4.1
     """
 
-    def __init__(self, request_validator=None):
+    def __init__(self, request_validator=None, refresh_token=True):
         self.request_validator = request_validator or RequestValidator()
+        self.refresh_token = refresh_token
 
     def create_authorization_code(self, request):
         """Generates an authorization grant represented as a dictionary."""
@@ -237,7 +238,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Client error during validation of %r. %r.', request, e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=True)
+        token = token_handler.create_token(request, refresh_token=self.refresh_token)
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
         return headers, json.dumps(token), 200

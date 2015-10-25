@@ -70,6 +70,23 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertTrue(self.mock_validator.validate_grant_type.called)
         self.assertTrue(self.mock_validator.invalidate_authorization_code.called)
 
+    def test_create_token_response_without_refresh_token(self):
+        self.auth.refresh_token = False  # Not to issue refresh token.
+
+        bearer = BearerToken(self.mock_validator)
+        h, token, s = self.auth.create_token_response(self.request, bearer)
+        token = json.loads(token)
+        self.assertIn('access_token', token)
+        self.assertNotIn('refresh_token', token)
+        self.assertIn('expires_in', token)
+        self.assertIn('scope', token)
+        self.assertTrue(self.mock_validator.client_authentication_required.called)
+        self.assertTrue(self.mock_validator.authenticate_client.called)
+        self.assertTrue(self.mock_validator.validate_code.called)
+        self.assertTrue(self.mock_validator.confirm_redirect_uri.called)
+        self.assertTrue(self.mock_validator.validate_grant_type.called)
+        self.assertTrue(self.mock_validator.invalidate_authorization_code.called)
+
     def test_invalid_request(self):
         del self.request.code
         self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
