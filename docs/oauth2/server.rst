@@ -405,14 +405,14 @@ The example using Django but should be transferable to any framework.
             # All requests to /token will return a json response, no redirection.
             return response_from_return(headers, body, status)
 
-        def response_from_return(headers, body, status):
-            response = HttpResponse(content=body, status=status)
-            for k, v in headers.items():
-                response[k] = v
-            return response
+    def response_from_return(headers, body, status):
+        response = HttpResponse(content=body, status=status)
+        for k, v in headers.items():
+            response[k] = v
+        return response
 
-        def response_from_error(e)
-            return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
+    def response_from_error(e)
+        return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
 
 
 5. Protect your APIs using scopes
