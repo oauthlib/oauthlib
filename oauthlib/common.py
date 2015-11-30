@@ -393,6 +393,7 @@ class Request(object):
             "grant_type": None,
             "redirect_uri": None,
             "refresh_token": None,
+            "request_token": None,
             "response_type": None,
             "scope": None,
             "scopes": None,
