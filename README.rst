@@ -23,7 +23,7 @@ both of the following:
 
 OAuthLib is a generic utility which implements the logic of OAuth without
 assuming a specific HTTP request object or web framework. Use it to graft OAuth
-client support onto your favorite HTTP library, or provider support onto your
+client support onto your favorite HTTP library, or provide support onto your
 favourite web framework. If you're a maintainer of such a library, write a thin
 veneer on top of OAuthLib and get OAuth support for very little effort.
 
