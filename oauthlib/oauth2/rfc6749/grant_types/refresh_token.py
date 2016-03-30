@@ -22,12 +22,9 @@ class RefreshTokenGrant(GrantTypeBase):
     .. _`Refresh token grant`: http://tools.ietf.org/html/rfc6749#section-6
     """
 
-    @property
-    def issue_new_refresh_tokens(self):
-        return True
-
     def __init__(self, request_validator=None, issue_new_refresh_tokens=True):
         self.request_validator = request_validator or RequestValidator()
+        self.issue_new_refresh_tokens = issue_new_refresh_tokens
 
     def create_token_response(self, request, token_handler):
         """Create a new access token from a refresh_token.
