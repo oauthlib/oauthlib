@@ -1,4 +1,6 @@
 language: python
+python:
+  - 3.5
 sudo: false
 cache:
   directories:
@@ -25,7 +27,8 @@ env:
 - TOXENV=py27
 - TOXENV=py32
 - TOXENV=py33
-- TOXENV=py32
+- TOXENV=py34
+- TOXENV=py35
 - TOXENV=pypy
 - TOXENV=pypy3
 after_success: coveralls
