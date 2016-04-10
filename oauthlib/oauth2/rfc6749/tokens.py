@@ -232,6 +232,10 @@ class TokenBase(object):
 
 
 class BearerToken(TokenBase):
+    __slots__ = (
+        'request_validator', 'token_generator',
+        'refresh_token_generator', 'expires_in'
+    )
 
     def __init__(self, request_validator=None, token_generator=None,
                  expires_in=None, refresh_token_generator=None):
