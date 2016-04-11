@@ -1,10 +1,30 @@
 language: python
+python:
+  - 3.5
 sudo: false
 cache:
   directories:
   - "$HOME/.cache/pip"
 install:
-- pip install tox coveralls
+- |
+      if [ "$TOXENV" = "pypy" ]; then
+        export PYENV_ROOT="$HOME/.pyenv"
+        if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
+          cd "$PYENV_ROOT" && git pull
+        else
+          rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
+        fi
+        export PYPY_VERSION="5.0.1"
+        "$PYENV_ROOT/bin/pyenv" install "pypy-$PYPY_VERSION"
+        virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
+        source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
+      fi
+- |
+      if [ "$TOXENV" = "py32" ] || [ "$TOXENV" = "pypy3" ]; then
+        pip install 'virtualenv<14.0.0' 'tox>=1.9' coveralls
+      else
+        pip install 'tox>=1.9' coveralls
+      fi
 script:
 - tox
 env:
@@ -12,7 +32,8 @@ env:
 - TOXENV=py27
 - TOXENV=py32
 - TOXENV=py33
-- TOXENV=py32
+- TOXENV=py34
+- TOXENV=py35
 - TOXENV=pypy
 - TOXENV=pypy3
 after_success: coveralls
