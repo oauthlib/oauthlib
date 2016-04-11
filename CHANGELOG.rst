@@ -1,10 +1,20 @@
 Changelog
 =========
 
+1.1.0 (2016-04-11)
+------------------
+* (Fix) '(', ')', '/' and '?' are now safe characters in url encoded strings.
+* (Enhancement) Added support for specifying if refresh tokens should be created on authorization code grants.
+* (Fix) OAuth2Token now handles None scopes correctly.
+* (Fix) Request token is now available for OAuth 1.
+* (Enhancement) OAuth2Token is declared with __slots__ for smaller memory footprint.
+* (Enhancement) RefreshTokenGrant now allows to set issue_new_refresh_tokens.
+* Documentation improvements and fixes.
+
 1.0.3 (2015-08-16)
 ------------------
 * (Fix) Changed the documented return type of the ```invalidate_request_token()``` method from the RSA key to None since nobody is using the return type.
-* (Enhancement) Added a validator log that will store what the endpoint has computed for debugging and logging purposes (OAuth 1 only for now). 
+* (Enhancement) Added a validator log that will store what the endpoint has computed for debugging and logging purposes (OAuth 1 only for now).
 
 1.0.2 (2015-08-10)
 ------------------
