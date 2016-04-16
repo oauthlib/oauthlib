@@ -60,10 +60,10 @@ class AuthorizationCodeGrantTest(TestCase):
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
-        self.assertURLEqual(h['Location'], 'https://example.com/cb?code=abc')
+        self.assertURLEqual(h['Location'], 'https://a.b/cb?code=abc')
         self.request.response_mode = 'fragment'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
-        self.assertURLEqual(h['Location'], 'https://example.com/cb#code=abc')
+        self.assertURLEqual(h['Location'], 'https://a.b/cb#code=abc')
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)

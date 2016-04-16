@@ -352,7 +352,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
         # Value MUST be set to "code".
-        elif request.response_type != 'code':
+        elif not 'code' in request.response_type:
             raise errors.UnsupportedResponseTypeError(request=request)
 
         if not self.request_validator.validate_response_type(request.client_id,

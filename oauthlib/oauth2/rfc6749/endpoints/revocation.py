@@ -126,5 +126,5 @@ class RevocationEndpoint(BaseEndpoint):
 
         if (request.token_type_hint and
                 request.token_type_hint in self.valid_token_types and
-                request.token_type_hint not in self.supported_token_types):
+                not request.token_type_hint in self.supported_token_types):
             raise UnsupportedTokenTypeError(request=request)

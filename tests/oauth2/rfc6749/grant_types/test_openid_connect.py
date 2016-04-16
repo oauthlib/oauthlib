@@ -22,7 +22,6 @@ class OpenIDAuthCodeInterferenceTest(AuthorizationCodeGrantTest):
         super(OpenIDAuthCodeInterferenceTest, self).setUp()
         self.auth = OpenIDConnectAuthCode(request_validator=self.mock_validator)
 
-
 class OpenIDImplicitInterferenceTest(ImplicitGrantTest):
     """Test that OpenID don't interfer with normal OAuth 2 flows."""
 
@@ -66,6 +65,7 @@ class OpenIDAuthCodeTest(TestCase):
 
     @mock.patch('oauthlib.common.generate_token')
     def test_authorization(self, generate_token):
+
         scope, info = self.auth.validate_authorization_request(self.request)
 
         generate_token.return_value = 'abc'

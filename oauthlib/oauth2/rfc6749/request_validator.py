@@ -277,6 +277,9 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def get_id_token(self, token, token_handler, request):
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def validate_bearer_token(self, token, scopes, request):
         """Ensure the Bearer token is valid and authorized access to scopes.
 

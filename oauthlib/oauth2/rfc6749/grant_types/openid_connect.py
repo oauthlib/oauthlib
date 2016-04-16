@@ -6,6 +6,9 @@ oauthlib.oauth2.rfc6749.grant_types.openid_connect
 from __future__ import unicode_literals, absolute_import
 
 from json import loads
+import logging
+
+import datetime
 
 from .base import GrantTypeBase
 from .authorization_code import AuthorizationCodeGrant
@@ -13,6 +16,7 @@ from .implicit import ImplicitGrant
 from ..errors import InvalidRequestError, LoginRequired, ConsentRequired
 from ..request_validator import RequestValidator
 
+log = logging.getLogger(__name__)
 
 class OIDCNoPrompt(Exception):
     """Exception used to inform users that no explicit authorization is needed.
@@ -65,9 +69,16 @@ class OpenIDConnectBase(GrantTypeBase):
         if not 'state' in token:
             token['state'] = request.state
 
-        # TODO: if max_age, then we must include auth_time here
+        if request.max_age:
+            d = datetime.datetime.utcnow()
+            token['auth_time'] = d.isoformat("T") + "Z"
+
         # TODO: acr claims
+
         token['id_token'] = 'TODO'
+        # the request.scopes should be used by the get_id_token() method to determine which claims to include in the resulting id_token
+        # token['id_token'] = self.request_validator.get_id_token(token, token_handler, request)
+
         return token
 
     def openid_authorization_validator(self, request):
@@ -267,6 +278,14 @@ class OpenIDConnectAuthCode(OpenIDConnectBase):
             self.openid_authorization_validator)
         self.auth_code.register_token_modifier(self.add_id_token)
 
+    @property
+    def refresh_token(self):
+        return self.auth_code.refresh_token
+
+    @refresh_token.setter
+    def refresh_token(self, value):
+        self.auth_code.refresh_token = value
+
     def create_authorization_code(self, request):
         return self.auth_code.create_authorization_code(request)
 
@@ -346,6 +365,14 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
         self.auth_code.register_code_modifier(self.add_token)
         self.auth_code.register_code_modifier(self.add_id_token)
         self.auth_code.register_token_modifier(self.add_id_token)
+
+    @property
+    def refresh_token(self):
+        return self.auth_code.refresh_token
+
+    @refresh_token.setter
+    def refresh_token(self, value):
+        self.auth_code.refresh_token = value
 
     def create_authorization_code(self, request):
         return self.auth_code.create_authorization_code(request)

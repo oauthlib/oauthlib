@@ -335,7 +335,7 @@ class ImplicitGrant(GrantTypeBase):
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
         # Value MUST be set to "token".
-        elif request.response_type != 'token':
+        elif not request.response_type in self.response_types:
             raise errors.UnsupportedResponseTypeError(request=request)
 
         log.debug('Validating use of response_type token for client %r (%r).',
