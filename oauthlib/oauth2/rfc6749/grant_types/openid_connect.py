@@ -73,11 +73,9 @@ class OpenIDConnectBase(GrantTypeBase):
             d = datetime.datetime.utcnow()
             token['auth_time'] = d.isoformat("T") + "Z"
 
-        # TODO: acr claims
+        # TODO: acr claims (probably better handled by server code using oauthlib in get_id_token)
 
-        token['id_token'] = 'TODO'
-        # the request.scopes should be used by the get_id_token() method to determine which claims to include in the resulting id_token
-        # token['id_token'] = self.request_validator.get_id_token(token, token_handler, request)
+        token['id_token'] = self.request_validator.get_id_token(token, token_handler, request)
 
         return token
 
@@ -217,6 +215,7 @@ class OpenIDConnectBase(GrantTypeBase):
         if not 'openid' in request.scopes:
             return {}
 
+        # prompt other than 'none' should be handled by the server code that uses oauthlib
         if request.prompt == 'none' and not request.id_token_hint:
             msg = "Prompt is set to none yet id_token_hint is missing."
             raise InvalidRequestError(request=request, description=msg)

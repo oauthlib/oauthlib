@@ -278,6 +278,17 @@ class RequestValidator(object):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def get_id_token(self, token, token_handler, request):
+        """
+        In the OpenID Connect workflows when an ID Token is requested this method is called.
+        Subclasses should implement the construction, signing and optional encryption of the
+        ID Token as described in the OpenID Connect spec.
+
+        :param token: A Bearer token dict
+        :param token_handler: the token handler (BearerToken class)
+        :param request: the HTTP Request (oauthlib.common.Request)
+        :return: The ID Token (a JWS signed JWT)
+        """
+        # the request.scope should be used by the get_id_token() method to determine which claims to include in the resulting id_token
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_bearer_token(self, token, scopes, request):

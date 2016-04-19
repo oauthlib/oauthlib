@@ -267,11 +267,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=self.refresh_token)
-        # NEW-FOR-OPENID
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
-        self.request_validator.save_token(token)
-        # END-NEW-FOR-OPENID
+        self.request_validator.save_token(token, request)
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
         return headers, json.dumps(token), 200
@@ -375,7 +373,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
             'request': request,
         }
 
-        # NEW-FOR-OPENID
         for validator in self._authorization_validators:
             request_info.update(validator(request))
 
@@ -383,7 +380,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
     def validate_token_request(self, request):
         # REQUIRED. Value MUST be set to "authorization_code".
-        if request.grant_type != 'authorization_code':
+        if request.grant_type not in ['authorization_code', 'openid']:
             raise errors.UnsupportedGrantTypeError(request=request)
 
         if request.code is None:

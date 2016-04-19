@@ -402,6 +402,7 @@ class Request(object):
             "user": None,
             "token_type_hint": None,
 
+            # OpenID Connect
             "response_mode": None,
             "nonce": None,
             "display": None,
