@@ -100,7 +100,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
     def __init__(self, request_validator=None, refresh_token=True):
         self.request_validator = request_validator or RequestValidator()
         self.refresh_token = refresh_token
-        # NEW-FOR-OPENID
+
         self._authorization_validators = []
         self._token_validators = []
         self._code_modifiers = []

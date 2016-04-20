@@ -38,6 +38,10 @@ class OpenIDHybridInterferenceTest(AuthorizationCodeGrantTest):
         self.auth = OpenIDConnectHybrid(request_validator=self.mock_validator)
 
 
+def get_id_token_mock(token, token_handler, request):
+    return "MOCKED_TOKEN"
+
+
 class OpenIDAuthCodeTest(TestCase):
 
     def setUp(self):
@@ -53,6 +57,7 @@ class OpenIDAuthCodeTest(TestCase):
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
+        self.mock_validator.get_id_token.side_effect = get_id_token_mock
         self.auth = OpenIDConnectAuthCode(request_validator=self.mock_validator)
 
         self.url_query = 'https://a.b/cb?code=abc&state=abc'
@@ -128,6 +133,7 @@ class OpenIDAuthCodeTest(TestCase):
     def test_create_token_response(self):
         self.request.response_type = None
         self.mock_validator.validate_code.side_effect = self.set_scopes
+
         bearer = BearerToken(self.mock_validator)
 
         h, token, s = self.auth.create_token_response(self.request, bearer)
@@ -163,9 +169,10 @@ class OpenIDImplicitTest(TestCase):
         self.request.state = 'abc'
 
         self.mock_validator = mock.MagicMock()
+        self.mock_validator.get_id_token.side_effect = get_id_token_mock
         self.auth = OpenIDConnectImplicit(request_validator=self.mock_validator)
 
-        token = 'TODO'
+        token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
 
@@ -182,7 +189,7 @@ class OpenIDImplicitTest(TestCase):
         self.assertEqual(s, 302)
 
         self.request.response_type = 'id_token'
-        token = 'TODO'
+        token = 'MOCKED_TOKEN'
         url = 'https://a.b/cb#state=abc&id_token=%s' % token
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], url, parse_fragment=True)
@@ -255,7 +262,7 @@ class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
         super(OpenIDHybridCodeIdTokenTest, self).setUp()
         self.request.response_type = 'code id_token'
         self.auth = OpenIDConnectHybrid(request_validator=self.mock_validator)
-        token = 'TODO'
+        token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?code=abc&state=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&id_token=%s' % token
 
@@ -265,6 +272,6 @@ class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
         super(OpenIDHybridCodeIdTokenTokenTest, self).setUp()
         self.request.response_type = 'code id_token token'
         self.auth = OpenIDConnectHybrid(request_validator=self.mock_validator)
-        token = 'TODO'
+        token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
