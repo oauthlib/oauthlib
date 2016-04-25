@@ -185,14 +185,36 @@ class RequestTest(TestCase):
         with self.assertRaises(AttributeError):
             getattr(r, 'does_not_exist')
 
+    def test_sanitizing_authorization_header(self):
+        r = Request(URI, headers={'Accept': 'application/json',
+                                  'Authorization': 'Basic Zm9vOmJhcg=='}
+                    )
+        self.assertNotIn('Zm9vOmJhcg==', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
+        # Double-check we didn't modify the underlying object:
+        self.assertEqual(r.headers['Authorization'], 'Basic Zm9vOmJhcg==')
+
+    def test_token_body(self):
+        payload = 'client_id=foo&refresh_token=bar'
+        r = Request(URI, body=payload)
+        self.assertNotIn('bar', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
+
+        payload = 'refresh_token=bar&client_id=foo'
+        r = Request(URI, body=payload)
+        self.assertNotIn('bar', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
+
     def test_password_body(self):
         payload = 'username=foo&password=bar'
         r = Request(URI, body=payload)
         self.assertNotIn('bar', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
 
         payload = 'password=bar&username=foo'
         r = Request(URI, body=payload)
         self.assertNotIn('bar', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
 
 
 class CaseInsensitiveDictTest(TestCase):
