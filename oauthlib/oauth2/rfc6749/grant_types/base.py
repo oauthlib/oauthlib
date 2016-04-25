@@ -63,15 +63,24 @@ class GrantTypeBase(object):
                       request.response_mode, self.default_response_mode)
             request.response_mode = self.default_response_mode
 
+        token_items = token.items()
+
+        if request.response_type == 'none':
+            state = token.get('state', None)
+            if state:
+                token_items = [('state', state)]
+            else:
+                token_items = []
+
         if request.response_mode == 'query':
             headers['Location'] = add_params_to_uri(
-                request.redirect_uri, token.items(), fragment=False)
+                request.redirect_uri, token_items, fragment=False)
             return headers, body, status
 
         if request.response_mode == 'fragment':
             headers['Location'] = add_params_to_uri(
-                request.redirect_uri, token.items(), fragment=True)
+                request.redirect_uri, token_items, fragment=True)
             return headers, body, status
 
         raise NotImplementedError(
-            'Subclasses must set a valid defaultresponse mode')
+            'Subclasses must set a valid default_response_mode')

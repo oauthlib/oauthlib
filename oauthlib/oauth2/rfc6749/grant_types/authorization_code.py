@@ -122,8 +122,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
     def register_token_modifier(self, modifier):
         self._token_modifiers.append(modifier)
 
-    # END-NEW-FOR-OPENID
-
     def create_authorization_code(self, request):
         """Generates an authorization grant represented as a dictionary."""
         grant = {'code': common.generate_token()}
@@ -350,7 +348,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
         # Value MUST be set to "code".
-        elif not 'code' in request.response_type:
+        elif not 'code' in request.response_type and request.response_type != 'none':
             raise errors.UnsupportedResponseTypeError(request=request)
 
         if not self.request_validator.validate_response_type(request.client_id,

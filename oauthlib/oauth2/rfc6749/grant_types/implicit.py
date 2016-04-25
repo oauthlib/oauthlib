@@ -139,7 +139,8 @@ class ImplicitGrant(GrantTypeBase):
         using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
 
         response_type
-                REQUIRED.  Value MUST be set to "token".
+                REQUIRED.  Value MUST be set to "token" for standard OAuth2 implicit flow
+                           or "id_token token" or just "id_token" for OIDC implicit flow
 
         client_id
                 REQUIRED.  The client identifier as described in `Section 2.2`_.
@@ -240,8 +241,14 @@ class ImplicitGrant(GrantTypeBase):
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
                                                          fragment=True)}, None, 302
 
-        token = token_handler.create_token(request, refresh_token=False)
-        # NEW-FOR-OPENID
+        # In OIDC implicit flow it is possible to have a request_type that does not include the access token!
+        # "id_token token" - return the access token and the id token
+        # "id_token" - don't return the access token
+        if "token" in request.response_type.split():
+            token = token_handler.create_token(request, refresh_token=False)
+        else:
+            token = {}
+
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
         self.request_validator.save_token(token, request)
@@ -335,7 +342,7 @@ class ImplicitGrant(GrantTypeBase):
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
         # Value MUST be set to "token".
-        elif not request.response_type in self.response_types:
+        elif not set(request.response_type.split()).issubset(self.response_types):
             raise errors.UnsupportedResponseTypeError(request=request)
 
         log.debug('Validating use of response_type token for client %r (%r).',
