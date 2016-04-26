@@ -12,6 +12,8 @@ from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.resource import ResourceEndpoint
 from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
 from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
+from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectAuthCode
+from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectImplicit
 from oauthlib.oauth2.rfc6749.grant_types import ResourceOwnerPasswordCredentialsGrant
 from oauthlib.oauth2.rfc6749.grant_types import ClientCredentialsGrant
 from oauthlib.oauth2.rfc6749 import tokens, errors
@@ -28,9 +30,20 @@ class AuthorizationEndpointTest(TestCase):
         implicit = ImplicitGrant(
                 request_validator=self.mock_validator)
         implicit.save_token = mock.MagicMock()
+
+        openid_connect_auth = OpenIDConnectAuthCode(self.mock_validator)
+        openid_connect_implicit = OpenIDConnectImplicit(self.mock_validator)
+
         response_types = {
                 'code': auth_code,
                 'token': implicit,
+
+                'id_token': openid_connect_implicit,
+                'id_token token': openid_connect_implicit,
+                'code token': openid_connect_auth,
+                'code id_token': openid_connect_auth,
+                'code token id_token': openid_connect_auth,
+                'none': auth_code
         }
         self.expires_in = 1800
         token = tokens.BearerToken(self.mock_validator,
@@ -57,6 +70,26 @@ class AuthorizationEndpointTest(TestCase):
                 uri, scopes=['all', 'of', 'them'])
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me#access_token=abc&expires_in=' + str(self.expires_in) + '&token_type=Bearer&state=xyz&scope=all+of+them', parse_fragment=True)
+
+    def test_none_grant(self):
+        uri = 'http://i.b/l?response_type=none&client_id=me&scope=all+of+them&state=xyz'
+        uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
+        headers, body, status_code = self.endpoint.create_authorization_response(
+                uri, scopes=['all', 'of', 'them'])
+        self.assertIn('Location', headers)
+        self.assertURLEqual(headers['Location'], 'http://back.to/me?state=xyz', parse_fragment=True)
+        self.assertEqual(body, None)
+        self.assertEqual(status_code, 302)
+
+        # and without the state parameter
+        uri = 'http://i.b/l?response_type=none&client_id=me&scope=all+of+them'
+        uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
+        headers, body, status_code = self.endpoint.create_authorization_response(
+            uri, scopes=['all', 'of', 'them'])
+        self.assertIn('Location', headers)
+        self.assertURLEqual(headers['Location'], 'http://back.to/me', parse_fragment=True)
+        self.assertEqual(body, None)
+        self.assertEqual(status_code, 302)
 
     def test_missing_type(self):
         uri = 'http://i.b/l?client_id=me&scope=all+of+them'

@@ -77,13 +77,6 @@ class OpenIDConnectBase(GrantTypeBase):
 
         token['id_token'] = self.request_validator.get_id_token(token, token_handler, request)
 
-        if request.response_type == "id_token":
-            # implicit flow, only requesting id_token so don't return the access token
-            token = {
-                'state': token['state'],
-                'id_token': token['id_token']
-            }
-
         return token
 
     def openid_authorization_validator(self, request):
