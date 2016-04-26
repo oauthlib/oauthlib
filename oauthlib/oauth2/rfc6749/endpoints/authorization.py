@@ -7,7 +7,7 @@ This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
-
+import sys
 import logging
 
 from oauthlib.common import Request
@@ -66,7 +66,8 @@ class AuthorizationEndpoint(BaseEndpoint):
         BaseEndpoint.__init__(self)
         self._response_types = {}
         # response_types are sorted internally so ordered comparison is faster/easier later
-        for k, v in response_types.iteritems():
+
+        for k, v in response_types.iteritems() if sys.version_info[0] == 2 else iter(response_types.items()):
             self._response_types[",".join(sorted(k.split()))] = v
 
         self._default_response_type = default_response_type
