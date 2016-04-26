@@ -122,8 +122,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
     def register_token_modifier(self, modifier):
         self._token_modifiers.append(modifier)
 
-    # END-NEW-FOR-OPENID
-
     def create_authorization_code(self, request):
         """Generates an authorization grant represented as a dictionary."""
         grant = {'code': common.generate_token()}
