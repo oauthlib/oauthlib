@@ -36,7 +36,7 @@ UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
 CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
                            'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}')
 
-PASSWORD_PATTERN = re.compile(r'password=[^&]+')
+SANITIZE_PATTERN = re.compile(r'([^&;]*(?:password|token)[^=]*=)[^&;]+', re.IGNORECASE)
 INVALID_HEX_PATTERN = re.compile(r'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]')
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -414,10 +414,13 @@ class Request(object):
 
     def __repr__(self):
         body = self.body
-        if body and 'password=' in body:
-            body = PASSWORD_PATTERN.sub('password=***', body)
+        headers = self.headers.copy()
+        if body:
+            body = SANITIZE_PATTERN.sub('\1<SANITIZED>', body)
+        if 'Authorization' in headers:
+            headers['Authorization'] = '<SANITIZED>'
         return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
-            self.uri, self.http_method, self.headers, body)
+            self.uri, self.http_method, headers, body)
 
     @property
     def uri_query(self):
