@@ -81,7 +81,7 @@ class ClientCredentialsGrant(GrantTypeBase):
             log.debug('Client error in token request. %s.', e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=False)
+        token = token_handler.create_token(request, refresh_token=False, save_token=False)
 
         for modifier in self._token_modifiers:
             token = modifier(token)

@@ -67,8 +67,10 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
+
         h, token, s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertIn('refresh_token', token)
         self.assertIn('expires_in', token)
@@ -86,6 +88,7 @@ class AuthorizationCodeGrantTest(TestCase):
         bearer = BearerToken(self.mock_validator)
         h, token, s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertNotIn('refresh_token', token)
         self.assertIn('expires_in', token)

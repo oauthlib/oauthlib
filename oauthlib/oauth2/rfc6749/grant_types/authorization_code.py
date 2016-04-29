@@ -138,7 +138,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
 
         response_type
-                REQUIRED.  Value MUST be set to "code".
+                REQUIRED.  Value MUST be set to "code" for standard OAuth2
+                authorization flow.  For OpenID Connect it must be one of
+                "code token", "code id_token", or "code token id_token" - we
+                essentially test that "code" appears in the response_type.
         client_id
                 REQUIRED.  The client identifier as described in `Section 2.2`_.
         redirect_uri
@@ -264,7 +267,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Client error during validation of %r. %r.', request, e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=self.refresh_token)
+        token = token_handler.create_token(request, refresh_token=self.refresh_token, save_token=False)
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
         self.request_validator.save_token(token, request)
@@ -347,7 +350,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # REQUIRED.
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
-        # Value MUST be set to "code".
+        # Value MUST be set to "code" or one of the OpenID authorization code including
+        # response_types "code token", "code id_token", "code token id_token"
         elif not 'code' in request.response_type and request.response_type != 'none':
             raise errors.UnsupportedResponseTypeError(request=request)
 

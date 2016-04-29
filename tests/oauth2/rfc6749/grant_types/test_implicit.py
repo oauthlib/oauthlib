@@ -33,6 +33,7 @@ class ImplicitGrantTest(TestCase):
         correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=1800&state=xyz&scope=hello+world'
         self.assertEqual(s, 302)
         self.assertURLEqual(h['Location'], correct_uri, parse_fragment=True)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
 
         correct_uri = 'https://b.c/p?access_token=1234&token_type=Bearer&expires_in=1800&state=xyz&scope=hello+world'
         self.request.response_mode = 'query'
