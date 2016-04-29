@@ -77,8 +77,7 @@ class ResourceEndpoint(BaseEndpoint):
         is_valid = token_type_handler.validate_request(request)
 
         # the validate_request() call is a chance for the client library to finalize the scopes on the request
-        if is_valid:
-            if request.claims and request.scopes and "openid" in request.scopes:
+        if is_valid and request.claims and request.scopes and "openid" in request.scopes:
                 # specific claims are requested, i.e. as part of a UserInfo endpoint request
                 # see http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
                 try:
