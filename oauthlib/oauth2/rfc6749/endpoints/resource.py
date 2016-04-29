@@ -9,8 +9,10 @@ for consuming and providing OAuth 2.0 RFC6749.
 from __future__ import absolute_import, unicode_literals
 
 import logging
+import json
 
 from oauthlib.common import Request
+from ..errors import InvalidRequestError
 
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
@@ -72,7 +74,20 @@ class ResourceEndpoint(BaseEndpoint):
                                              self.default_token_type_handler)
         log.debug('Dispatching token_type %s request to %r.',
                   request.token_type, token_type_handler)
-        return token_type_handler.validate_request(request), request
+        is_valid = token_type_handler.validate_request(request)
+
+        # the validate_request() call is a chance for the client library to finalize the scopes on the request
+        if is_valid:
+            if request.claims and request.scopes and "openid" in request.scopes:
+                # specific claims are requested, i.e. as part of a UserInfo endpoint request
+                # see http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+                try:
+                    request.claims = json.loads(request.claims)
+                except:
+                    raise InvalidRequestError(description="Malformed claims parameter",
+                                              uri="http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter")
+
+        return is_valid, request
 
     def find_token_type(self, request):
         """Token type identification.
