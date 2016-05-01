@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.1 (2016-05-01)
+------------------
+* (Enhancement) Better sanitisation of Request objects __repr__.
+
 1.1.0 (2016-04-11)
 ------------------
 * (Fix) '(', ')', '/' and '?' are now safe characters in url encoded strings.
