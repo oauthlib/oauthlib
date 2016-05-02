@@ -26,7 +26,7 @@ class GrantTypeBase(object):
 
     def add_token(self, token, token_handler, request):
         # Only add a hybrid access token on auth step if asked for
-        if not 'token' in request.response_type.split():
+        if not request.response_type in ["token", "code token", "id_token token", "code id_token token"]:
             return token
 
         token.update(token_handler.create_token(request, refresh_token=False))
