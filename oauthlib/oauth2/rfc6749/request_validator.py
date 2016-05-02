@@ -283,6 +283,9 @@ class RequestValidator(object):
         Subclasses should implement the construction, signing and optional encryption of the
         ID Token as described in the OpenID Connect spec.
 
+        For implicit and hybrid workflows your subclass can find the nonce on the
+        request.
+
         :param token: A Bearer token dict
         :param token_handler: the token handler (BearerToken class)
         :param request: the HTTP Request (oauthlib.common.Request)

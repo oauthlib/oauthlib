@@ -64,11 +64,7 @@ class AuthorizationEndpoint(BaseEndpoint):
     def __init__(self, default_response_type, default_token_type,
                  response_types):
         BaseEndpoint.__init__(self)
-        self._response_types = {}
-        # response_types are sorted internally so ordered comparison is faster/easier later
-
-        for k, v in response_types.iteritems() if sys.version_info[0] == 2 else iter(response_types.items()):
-            self._response_types[",".join(sorted(k.split()))] = v
+        self._response_types = response_types
 
         self._default_response_type = default_response_type
         self._default_token_type = default_token_type
@@ -89,16 +85,6 @@ class AuthorizationEndpoint(BaseEndpoint):
     def default_token_type(self):
         return self._default_token_type
 
-    def get_response_types_handler(self, request):
-
-        if request.response_type is None:
-            response_type_handler = self.default_response_type_handler
-        else:
-            response_type_handler = self.response_types.get(
-                ",".join(sorted(request.response_type.split())), self.default_response_type_handler)
-
-        return response_type_handler
-
     @catch_errors_and_unavailability
     def create_authorization_response(self, uri, http_method='GET', body=None,
                                       headers=None, scopes=None, credentials=None):
@@ -110,7 +96,8 @@ class AuthorizationEndpoint(BaseEndpoint):
         request.user = None     # TODO: explain this in docs
         for k, v in (credentials or {}).items():
             setattr(request, k, v)
-        response_type_handler = self.get_response_types_handler(request)
+        response_type_handler = self.response_types.get(
+            request.response_type, self.default_response_type_handler)
         log.debug('Dispatching response_type %s request to %r.',
                   request.response_type, response_type_handler)
         return response_type_handler.create_authorization_response(
@@ -123,5 +110,6 @@ class AuthorizationEndpoint(BaseEndpoint):
         request = Request(
             uri, http_method=http_method, body=body, headers=headers)
         request.scopes = None
-        response_type_handler = self.get_response_types_handler(request)
+        response_type_handler = self.response_types.get(
+            request.response_type, self.default_response_type_handler)
         return response_type_handler.validate_authorization_request(request)
