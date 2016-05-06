@@ -367,12 +367,25 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
+        # validate_authorization_request may be called multiple times in a single request
+        # so make sure we only de-serialize the claims once
+        if request.claims and not isinstance(request.claims, dict) and request.scopes and "openid" in request.scopes:
+            # specific claims are requested during the Authorization Request and may be requested for inclusion
+            # in either the id_token or the UserInfo endpoint response
+            # see http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+            try:
+                request.claims = json.loads(request.claims)
+            except Exception as ex:
+                raise errors.InvalidRequestError(description="Malformed claims parameter",
+                                          uri="http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter")
+
         request_info = {
             'client_id': request.client_id,
             'redirect_uri': request.redirect_uri,
             'response_type': request.response_type,
             'state': request.state,
             'request': request,
+            'claims': request.claims
         }
 
         for validator in self._authorization_validators:

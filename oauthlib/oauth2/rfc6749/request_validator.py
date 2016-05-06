@@ -224,6 +224,11 @@ class RequestValidator(object):
         chose to send one.  That value should be saved and used in
         'validate_code'.
 
+        It may also have a 'claims' parameter which, when present, will be a dict
+        deserialized from JSON as described at
+        http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+        This value should be saved in this method and used again in 'validate_code'.
+
         :param client_id: Unicode client identifier
         :param code: A dict of the authorization code grant and, optionally, state.
         :param request: The HTTP Request (oauthlib.common.Request)
@@ -249,6 +254,7 @@ class RequestValidator(object):
             - authorized scopes (request.scopes)
             - an expiration time
             - a refresh token, if issued
+            - a claims document, if present in request.claims
 
         The Bearer token dict may hold a number of items::
 
@@ -263,6 +269,11 @@ class RequestValidator(object):
 
         Note that while "scope" is a string-separated list of authorized scopes,
         the original list is still available in request.scopes
+
+        Also note that if an Authorization Code grant request included a valid claims
+        parameter (for OpenID Connect) then the request.claims property will contain
+        the claims dict, which should be saved for later use when generating the
+        id_token and/or UserInfo response content.
 
         :param client_id: Unicode client identifier
         :param token: A Bearer token dict
@@ -283,8 +294,11 @@ class RequestValidator(object):
         Subclasses should implement the construction, signing and optional encryption of the
         ID Token as described in the OpenID Connect spec.
 
-        For implicit and hybrid workflows your subclass can find the nonce on the
-        request.
+        In addition to the standard OAuth2 request properties, the request may also contain
+        these OIDC specific properties which are useful to this method:
+
+            - nonce, if workflow is implicit or hybrid and it was provided
+            - claims, if provided to the original Authorization Code request
 
         :param token: A Bearer token dict
         :param token_handler: the token handler (BearerToken class)
@@ -370,9 +384,12 @@ class RequestValidator(object):
             - request.user
             - request.state (if given)
             - request.scopes
+            - request.claims (if given)
         OBS! The request.user attribute should be set to the resource owner
         associated with this authorization code. Similarly request.scopes
         must also be set.
+
+        The request.claims property, if it was given, should assigned a dict.
 
         :param client_id: Unicode client identifier
         :param code: Unicode authorization code
