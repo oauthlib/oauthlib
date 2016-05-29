@@ -37,7 +37,7 @@ you'd like to know, or discuss it in our `G+ community`_, or even better, send a
 pull request!
 
 .. _`G+ community`: https://plus.google.com/communities/101889017375384052571
-.. _`Read the Docs`: https://oauthlib.readthedocs.org/en/latest/index.html
+.. _`Read the Docs`: https://oauthlib.readthedocs.io/en/latest/index.html
 
 Interested in making OAuth requests?
 ------------------------------------
@@ -96,6 +96,6 @@ Changelog
 completed, for providers as well as clients.* See `supported features`_ for
 details.
 
-.. _`supported features`: http://oauthlib.readthedocs.org/en/latest/feature_matrix.html
+.. _`supported features`: https://oauthlib.readthedocs.io/en/latest/feature_matrix.html
 
 For a full changelog see ``CHANGELOG.rst``.

@@ -3,7 +3,7 @@
 # for dispensing Bearer Tokens.
 
 # This example is meant to act as a supplement to the documentation,
-# see http://oauthlib.readthedocs.org/en/latest/.
+# see https://oauthlib.readthedocs.io/en/latest/.
 
 from oauthlib.oauth2 import RequestValidator, WebApplicationServer
 
