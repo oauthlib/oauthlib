@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.1.2 (2016-06-01)
+------------------
+* (Fix) Query strings should be able to include colons.
+* (Fix) Cast body to a string to ensure that we can perform a regex substitution on it.
+
 1.1.1 (2016-05-01)
 ------------------
 * (Enhancement) Better sanitisation of Request objects __repr__.
