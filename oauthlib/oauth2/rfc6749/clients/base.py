@@ -80,7 +80,7 @@ class Client(object):
         ``token`` dict parameter.
 
         :param refresh_token: A refresh token (string) used to refresh expired
-        tokens. Can also be supplide inside the ``token`` dict parameter.
+        tokens. Can also be supplied inside the ``token`` dict parameter.
 
         :param mac_key: Encryption key used with MAC tokens.
 
