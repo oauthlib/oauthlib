@@ -52,10 +52,46 @@ class OIDCNoPrompt(Exception):
         super(OIDCNoPrompt, self).__init__(msg)
 
 
+class AuthCodeGrantDispatcher(object):
+    """
+
+    """
+    def __init__(self, default_auth_grant=None, oidc_auth_grant=None):
+        self.default_auth_grant = default_auth_grant
+        self.oidc_auth_grant = oidc_auth_grant
+
+    def _handler_for_request(self, request):
+        handler = self.default_auth_grant
+
+        if "openid" in request.scopes:
+            handler = self.oidc_auth_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+
+    def create_authorization_response(self, request, token_handler):
+        return self._handler_for_request(request).create_authorization_response(request, token_handler)
+
+    def validate_authorization_request(self, request):
+        return self._handler_for_request(request).validate_authorization_request(request)
+
+
 class OpenIDConnectBase(GrantTypeBase):
 
     def __init__(self, request_validator=None):
         self.request_validator = request_validator or RequestValidator()
+
+    def _inflate_claims(self, request):
+        # this may be called multiple times in a single request so make sure we only de-serialize the claims once
+        if request.claims and not isinstance(request.claims, dict):
+            # specific claims are requested during the Authorization Request and may be requested for inclusion
+            # in either the id_token or the UserInfo endpoint response
+            # see http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+            try:
+                request.claims = loads(request.claims)
+            except Exception as ex:
+                raise InvalidRequestError(description="Malformed claims parameter",
+                                          uri="http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter")
 
     def add_id_token(self, token, token_handler, request):
         # Treat it as normal OAuth 2 auth code request if openid is not present
@@ -226,12 +262,13 @@ class OpenIDConnectBase(GrantTypeBase):
             if not self.request_validator.validate_silent_authorization(request):
                 raise ConsentRequired(request=request)
 
-        request.claims = loads(request.claims) if request.claims else {}
+        self._inflate_claims(request)
 
         if not self.request_validator.validate_user_match(
             request.id_token_hint, request.scopes, request.claims, request):
             msg = "Session user does not match client supplied user."
             raise LoginRequired(request=request, description=msg)
+
 
         request_info = {
             'display': request.display,
@@ -239,6 +276,7 @@ class OpenIDConnectBase(GrantTypeBase):
             'ui_locales': request.ui_locales.split() if request.ui_locales else [],
             'id_token_hint': request.id_token_hint,
             'login_hint': request.login_hint,
+            'claims': request.claims
         }
 
         return request_info
@@ -263,7 +301,9 @@ class OpenIDConnectBase(GrantTypeBase):
             desc = 'Request is missing mandatory nonce parameter.'
             raise InvalidRequestError(request=request, description=desc)
 
-        return {'nonce': request.nonce}
+        self._inflate_claims(request)
+
+        return {'nonce': request.nonce, 'claims': request.claims}
 
 class OpenIDConnectAuthCode(OpenIDConnectBase):
 

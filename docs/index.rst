@@ -32,6 +32,7 @@ For news and discussions please head over to our `G+ OAuthLib community`_.
 
    oauth1/oauth1
    oauth2/oauth2
+   oauth2/oidc
 
 Indices and tables
 ==================

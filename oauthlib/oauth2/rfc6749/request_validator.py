@@ -300,6 +300,18 @@ class RequestValidator(object):
             - nonce, if workflow is implicit or hybrid and it was provided
             - claims, if provided to the original Authorization Code request
 
+        The token parameter is a dict which may contain an ``access_token`` entry, in which
+        case the resulting ID Token *should* include a calculated ``at_hash`` claim.
+
+        Similarly, when the request parameter has a ``code`` property defined, the ID Token
+        *should* include a calculated ``c_hash`` claim.
+
+        http://openid.net/specs/openid-connect-core-1_0.html (sections `3.1.3.6`_, `3.2.2.10`_, `3.3.2.11`_)
+
+        .. _`3.1.3.6`: http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
+        .. _`3.2.2.10`: http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
+        .. _`3.3.2.11`: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
+
         :param token: A Bearer token dict
         :param token_handler: the token handler (BearerToken class)
         :param request: the HTTP Request (oauthlib.common.Request)

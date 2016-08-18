@@ -16,6 +16,7 @@ from ..grant_types import ResourceOwnerPasswordCredentialsGrant
 from ..grant_types import ClientCredentialsGrant
 from ..grant_types import RefreshTokenGrant
 from ..grant_types import OpenIDConnectImplicit
+from ..grant_types import AuthCodeGrantDispatcher
 
 from .authorization import AuthorizationEndpoint
 from .token import TokenEndpoint
@@ -56,11 +57,13 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
 
+        auth_grant_choice = AuthCodeGrantDispatcher( default_auth_grant=auth_grant, oidc_auth_grant=openid_connect_auth)
+
         # See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Combinations for valid combinations
         # internally our AuthorizationEndpoint will ensure they can appear in any order for any valid combination
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                                        response_types={
-                                           'code': auth_grant,
+                                           'code': auth_grant_choice,
                                            'token': implicit_grant,
                                            'id_token': openid_connect_implicit,
                                            'id_token token': openid_connect_implicit,
