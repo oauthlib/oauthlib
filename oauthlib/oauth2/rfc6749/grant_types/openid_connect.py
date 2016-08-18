@@ -54,7 +54,8 @@ class OIDCNoPrompt(Exception):
 
 class AuthCodeGrantDispatcher(object):
     """
-
+    This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
+    including 'openid' to either the default_auth_grant or the oidc_auth_grant based on the scopes requested.
     """
     def __init__(self, default_auth_grant=None, oidc_auth_grant=None):
         self.default_auth_grant = default_auth_grant
