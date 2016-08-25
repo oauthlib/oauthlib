@@ -341,7 +341,7 @@ class ImplicitGrant(GrantTypeBase):
         # REQUIRED.
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
-        # Value MUST be set to "token".
+        # Value MUST be one of our registered types: "token" by default or if using OIDC "id_token" or "id_token token"
         elif not set(request.response_type.split()).issubset(self.response_types):
             raise errors.UnsupportedResponseTypeError(request=request)
 

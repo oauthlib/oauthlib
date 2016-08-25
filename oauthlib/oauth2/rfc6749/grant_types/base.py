@@ -58,7 +58,7 @@ class GrantTypeBase(object):
         """
         request.response_mode = request.response_mode or self.default_response_mode
 
-        if not request.response_mode in ('query', 'fragment'):
+        if request.response_mode not in ('query', 'fragment'):
             log.debug('Overriding invalid response mode %s with %s',
                       request.response_mode, self.default_response_mode)
             request.response_mode = self.default_response_mode
