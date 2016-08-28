@@ -401,6 +401,18 @@ class Request(object):
             "token": None,
             "user": None,
             "token_type_hint": None,
+
+            # OpenID Connect
+            "response_mode": None,
+            "nonce": None,
+            "display": None,
+            "prompt": None,
+            "claims": None,
+            "max_age": None,
+            "ui_locales": None,
+            "id_token_hint": None,
+            "login_hint": None,
+            "acr_values": None
         }
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))

@@ -27,6 +27,7 @@ class ClientCredentialsGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
@@ -38,6 +39,7 @@ class ClientCredentialsGrantTest(TestCase):
         self.mock_validator.authenticate_client.return_value = False
         headers, body, status_code = self.auth.create_token_response(
             self.request, bearer)
+        self.assertEqual(self.mock_validator.save_token.call_count, 0)
         error_msg = json.loads(body)
         self.assertIn('error', error_msg)
         self.assertEqual(error_msg['error'], 'invalid_client')

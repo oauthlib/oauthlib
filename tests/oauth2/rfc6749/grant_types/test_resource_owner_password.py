@@ -35,6 +35,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
@@ -42,15 +43,20 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         # ensure client_authentication_required() is properly called
         self.mock_validator.client_authentication_required.assert_called_once_with(self.request)
         # fail client authentication
+        self.mock_validator.reset_mock()
         self.mock_validator.validate_user.return_value = True
         self.mock_validator.authenticate_client.return_value = False
         status_code = self.auth.create_token_response(self.request, bearer)[2]
         self.assertEqual(status_code, 401)
+        self.assertEqual(self.mock_validator.save_token.call_count, 0)
+
         # mock client_authentication_required() returning False then fail
+        self.mock_validator.reset_mock()
         self.mock_validator.client_authentication_required.return_value = False
         self.mock_validator.authenticate_client_id.return_value = False
         status_code = self.auth.create_token_response(self.request, bearer)[2]
         self.assertEqual(status_code, 401)
+        self.assertEqual(self.mock_validator.save_token.call_count, 0)
 
     def test_create_token_response_without_refresh_token(self):
         # self.auth.refresh_token = False so we don't generate a refresh token
@@ -60,6 +66,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
@@ -68,15 +75,19 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         # ensure client_authentication_required() is properly called
         self.mock_validator.client_authentication_required.assert_called_once_with(self.request)
         # fail client authentication
+        self.mock_validator.reset_mock()
         self.mock_validator.validate_user.return_value = True
         self.mock_validator.authenticate_client.return_value = False
         status_code = self.auth.create_token_response(self.request, bearer)[2]
         self.assertEqual(status_code, 401)
+        self.assertEqual(self.mock_validator.save_token.call_count, 0)
         # mock client_authentication_required() returning False then fail
+        self.mock_validator.reset_mock()
         self.mock_validator.client_authentication_required.return_value = False
         self.mock_validator.authenticate_client_id.return_value = False
         status_code = self.auth.create_token_response(self.request, bearer)[2]
         self.assertEqual(status_code, 401)
+        self.assertEqual(self.mock_validator.save_token.call_count, 0)
 
     def test_error_response(self):
         pass

@@ -8,12 +8,15 @@ for consuming and providing OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
 
+from ..grant_types import OpenIDConnectAuthCode
 from ..tokens import BearerToken
 from ..grant_types import AuthorizationCodeGrant
 from ..grant_types import ImplicitGrant
 from ..grant_types import ResourceOwnerPasswordCredentialsGrant
 from ..grant_types import ClientCredentialsGrant
 from ..grant_types import RefreshTokenGrant
+from ..grant_types import OpenIDConnectImplicit
+from ..grant_types import AuthCodeGrantDispatcher
 
 from .authorization import AuthorizationEndpoint
 from .token import TokenEndpoint
@@ -48,12 +51,26 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
             request_validator)
         credentials_grant = ClientCredentialsGrant(request_validator)
         refresh_grant = RefreshTokenGrant(request_validator)
+        openid_connect_auth = OpenIDConnectAuthCode(request_validator)
+        openid_connect_implicit = OpenIDConnectImplicit(request_validator)
+
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
+
+        auth_grant_choice = AuthCodeGrantDispatcher( default_auth_grant=auth_grant, oidc_auth_grant=openid_connect_auth)
+
+        # See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Combinations for valid combinations
+        # internally our AuthorizationEndpoint will ensure they can appear in any order for any valid combination
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                                        response_types={
-                                           'code': auth_grant,
+                                           'code': auth_grant_choice,
                                            'token': implicit_grant,
+                                           'id_token': openid_connect_implicit,
+                                           'id_token token': openid_connect_implicit,
+                                           'code token': openid_connect_auth,
+                                           'code id_token': openid_connect_auth,
+                                           'code token id_token': openid_connect_auth,
+                                           'none': auth_grant
                                        },
                                        default_token_type=bearer)
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
@@ -62,6 +79,7 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
                                    'password': password_grant,
                                    'client_credentials': credentials_grant,
                                    'refresh_token': refresh_grant,
+                                   'openid' : openid_connect_auth
                                },
                                default_token_type=bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',

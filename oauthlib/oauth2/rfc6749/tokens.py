@@ -246,7 +246,7 @@ class BearerToken(TokenBase):
         )
         self.expires_in = expires_in or 3600
 
-    def create_token(self, request, refresh_token=False):
+    def create_token(self, request, refresh_token=False, save_token=True):
         """Create a BearerToken, by default without refresh token."""
 
         if callable(self.expires_in):
@@ -277,7 +277,8 @@ class BearerToken(TokenBase):
 
         token.update(request.extra_credentials or {})
         token = OAuth2Token(token)
-        self.request_validator.save_bearer_token(token, request)
+        if save_token:
+            self.request_validator.save_bearer_token(token, request)
         return token
 
     def validate_request(self, request):

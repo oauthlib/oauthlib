@@ -55,10 +55,22 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertTrue(self.mock_validator.validate_response_type.called)
         self.assertTrue(self.mock_validator.validate_scopes.called)
 
+    @mock.patch('oauthlib.common.generate_token')
+    def test_create_authorization_response(self, generate_token):
+        generate_token.return_value = 'abc'
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], 'https://a.b/cb?code=abc')
+        self.request.response_mode = 'fragment'
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], 'https://a.b/cb#code=abc')
+
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
+
         h, token, s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertIn('refresh_token', token)
         self.assertIn('expires_in', token)
@@ -76,6 +88,7 @@ class AuthorizationCodeGrantTest(TestCase):
         bearer = BearerToken(self.mock_validator)
         h, token, s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertNotIn('refresh_token', token)
         self.assertIn('expires_in', token)

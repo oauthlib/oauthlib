@@ -224,6 +224,11 @@ class RequestValidator(object):
         chose to send one.  That value should be saved and used in
         'validate_code'.
 
+        It may also have a 'claims' parameter which, when present, will be a dict
+        deserialized from JSON as described at
+        http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+        This value should be saved in this method and used again in 'validate_code'.
+
         :param client_id: Unicode client identifier
         :param code: A dict of the authorization code grant and, optionally, state.
         :param request: The HTTP Request (oauthlib.common.Request)
@@ -232,6 +237,13 @@ class RequestValidator(object):
             - Authorization Code Grant
         """
         raise NotImplementedError('Subclasses must implement this method.')
+
+    def save_token(self, token, request, *args, **kwargs):
+        """Persist the token with a token type specific method.
+
+        Currently, only save_bearer_token is supported.
+        """
+        return self.save_bearer_token(token, request, *args, **kwargs)
 
     def save_bearer_token(self, token, request, *args, **kwargs):
         """Persist the Bearer token.
@@ -242,6 +254,7 @@ class RequestValidator(object):
             - authorized scopes (request.scopes)
             - an expiration time
             - a refresh token, if issued
+            - a claims document, if present in request.claims
 
         The Bearer token dict may hold a number of items::
 
@@ -257,6 +270,11 @@ class RequestValidator(object):
         Note that while "scope" is a string-separated list of authorized scopes,
         the original list is still available in request.scopes
 
+        Also note that if an Authorization Code grant request included a valid claims
+        parameter (for OpenID Connect) then the request.claims property will contain
+        the claims dict, which should be saved for later use when generating the
+        id_token and/or UserInfo response content.
+
         :param client_id: Unicode client identifier
         :param token: A Bearer token dict
         :param request: The HTTP Request (oauthlib.common.Request)
@@ -268,6 +286,38 @@ class RequestValidator(object):
             - Resource Owner Password Credentials Grant (might not associate a client)
             - Client Credentials grant
         """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_id_token(self, token, token_handler, request):
+        """
+        In the OpenID Connect workflows when an ID Token is requested this method is called.
+        Subclasses should implement the construction, signing and optional encryption of the
+        ID Token as described in the OpenID Connect spec.
+
+        In addition to the standard OAuth2 request properties, the request may also contain
+        these OIDC specific properties which are useful to this method:
+
+            - nonce, if workflow is implicit or hybrid and it was provided
+            - claims, if provided to the original Authorization Code request
+
+        The token parameter is a dict which may contain an ``access_token`` entry, in which
+        case the resulting ID Token *should* include a calculated ``at_hash`` claim.
+
+        Similarly, when the request parameter has a ``code`` property defined, the ID Token
+        *should* include a calculated ``c_hash`` claim.
+
+        http://openid.net/specs/openid-connect-core-1_0.html (sections `3.1.3.6`_, `3.2.2.10`_, `3.3.2.11`_)
+
+        .. _`3.1.3.6`: http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
+        .. _`3.2.2.10`: http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
+        .. _`3.3.2.11`: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
+
+        :param token: A Bearer token dict
+        :param token_handler: the token handler (BearerToken class)
+        :param request: the HTTP Request (oauthlib.common.Request)
+        :return: The ID Token (a JWS signed JWT)
+        """
+        # the request.scope should be used by the get_id_token() method to determine which claims to include in the resulting id_token
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_bearer_token(self, token, scopes, request):
@@ -346,9 +396,12 @@ class RequestValidator(object):
             - request.user
             - request.state (if given)
             - request.scopes
+            - request.claims (if given)
         OBS! The request.user attribute should be set to the resource owner
         associated with this authorization code. Similarly request.scopes
         must also be set.
+
+        The request.claims property, if it was given, should assigned a dict.
 
         :param client_id: Unicode client identifier
         :param code: Unicode authorization code
@@ -445,6 +498,42 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def validate_silent_authorization(self, request):
+        """Ensure the logged in user has authorized silent OpenID authorization.
+
+        Silent OpenID authorization allows access tokens and id tokens to be
+        granted to clients without any user prompt or interaction.
+
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - OpenIDConnectAuthCode
+            - OpenIDConnectImplicit
+            - OpenIDConnectHybrid
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_silent_login(self, request):
+        """Ensure session user has authorized silent OpenID login.
+
+        If no user is logged in or has not authorized silent login, this
+        method should return False.
+
+        If the user is logged in but associated with multiple accounts and
+        not selected which one to link to the token then this method should
+        raise an oauthlib.oauth2.AccountSelectionRequired error.
+
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - OpenIDConnectAuthCode
+            - OpenIDConnectImplicit
+            - OpenIDConnectHybrid
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def validate_user(self, username, password, client, request, *args, **kwargs):
         """Ensure the username and password is valid.
 
@@ -461,5 +550,24 @@ class RequestValidator(object):
 
         Method is used by:
             - Resource Owner Password Credentials Grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_user_match(self, id_token_hint, scopes, claims, request):
+        """Ensure client supplied user id hint matches session user.
+
+        If the sub claim or id_token_hint is supplied then the session
+        user must match the given ID.
+
+        :param id_token_hint: User identifier string.
+        :param scopes: List of OAuth 2 scopes and OpenID claims (strings).
+        :param claims: OpenID Connect claims dict.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is used by:
+            - OpenIDConnectAuthCode
+            - OpenIDConnectImplicit
+            - OpenIDConnectHybrid
         """
         raise NotImplementedError('Subclasses must implement this method.')
