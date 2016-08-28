@@ -382,7 +382,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
     def validate_token_request(self, request):
         # REQUIRED. Value MUST be set to "authorization_code".
-        if request.grant_type not in ['authorization_code', 'openid']:
+        if request.grant_type not in ('authorization_code', 'openid'):
             raise errors.UnsupportedGrantTypeError(request=request)
 
         if request.code is None:
