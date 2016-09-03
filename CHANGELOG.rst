@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.0.0 (2016-09-03)
+------------------
+* (New Feature) **OpenID** support.
+* Documentation improvements and fixes.
+
 1.1.2 (2016-06-01)
 ------------------
 * (Fix) Query strings should be able to include colons.

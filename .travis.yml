@@ -3,8 +3,7 @@ python:
   - 3.5
 sudo: false
 cache:
-  directories:
-  - "$HOME/.cache/pip"
+  pip: true
 install:
 - |
       if [ "$TOXENV" = "pypy" ]; then
@@ -14,7 +13,7 @@ install:
         else
           rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
         fi
-        export PYPY_VERSION="5.0.1"
+        export PYPY_VERSION="5.3.0"
         "$PYENV_ROOT/bin/pyenv" install "pypy-$PYPY_VERSION"
         virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
