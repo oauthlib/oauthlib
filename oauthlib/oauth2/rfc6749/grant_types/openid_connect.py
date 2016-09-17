@@ -64,7 +64,7 @@ class AuthCodeGrantDispatcher(object):
     def _handler_for_request(self, request):
         handler = self.default_auth_grant
 
-        if "openid" in request.scopes:
+        if request.scopes and "openid" in request.scopes:
             handler = self.oidc_auth_grant
 
         log.debug('Selecting handler for request %r.', handler)
