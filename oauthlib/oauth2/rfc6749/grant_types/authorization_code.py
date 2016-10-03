@@ -439,6 +439,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
                       request.redirect_uri, request.client_id, request.client)
             raise errors.AccessDeniedError(request=request)
 
+        request.client_id = request.client_id or request.client.client_id
+
         for validator in self._token_validators:
             validator(request)
 
