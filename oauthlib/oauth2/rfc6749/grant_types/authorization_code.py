@@ -415,6 +415,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
                                       'request.client.client_id attribute '
                                       'in authenticate_client.')
 
+        request.client_id = request.client_id or request.client.client_id
+
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
 
@@ -438,8 +440,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Redirect_uri (%r) invalid for client %r (%r).',
                       request.redirect_uri, request.client_id, request.client)
             raise errors.AccessDeniedError(request=request)
-
-        request.client_id = request.client_id or request.client.client_id
 
         for validator in self._token_validators:
             validator(request)
