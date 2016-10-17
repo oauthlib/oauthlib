@@ -107,7 +107,7 @@ class AuthorizationEndpoint(BaseEndpoint):
         """Extract response_type and route to the designated handler."""
         request = Request(
             uri, http_method=http_method, body=body, headers=headers)
-        request.scopes = None
+        request.scopes = []
         response_type_handler = self.response_types.get(
             request.response_type, self.default_response_type_handler)
         return response_type_handler.validate_authorization_request(request)
