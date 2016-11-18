@@ -9,6 +9,7 @@ import logging
 
 from oauthlib.common import add_params_to_uri
 from oauthlib.oauth2.rfc6749 import errors, utils
+from ..request_validator import RequestValidator
 
 log = logging.getLogger(__name__)
 
@@ -17,6 +18,49 @@ class GrantTypeBase(object):
     error_uri = None
     request_validator = None
     default_response_mode = 'fragment'
+    refresh_token = True
+    response_types = ['code']
+
+    def __init__(self, request_validator=None, **kwargs):
+        self.request_validator = request_validator or RequestValidator()
+
+        # Transforms class variables into instance variables:
+        self.response_types = self.response_types
+        self.refresh_token = self.refresh_token
+
+        self._setup_validator_hooks()
+        for kw, val in kwargs.items():
+            setattr(self, kw, val)
+
+    def _setup_validator_hooks(self):
+        self._auth_validators_run_before_standard_ones = []
+        self._auth_validators_run_after_standard_ones = []
+        self._token_validators_run_before_standard_ones = []
+        self._token_validators_run_after_standard_ones = []
+        self._code_modifiers = []
+        self._token_modifiers = []
+
+    def register_response_type(self, response_type):
+        self.response_types.append(response_type)
+
+    def register_authorization_validator(self, validator, after_standard=True):
+        if after_standard:
+            self._auth_validators_run_after_standard_ones.append(validator)
+        else:
+            self._auth_validators_run_before_standard_ones.append(validator)
+
+    def register_token_validator(self, validator, after_standard=True):
+        if after_standard:
+            self._token_validators_run_after_standard_ones.append(validator)
+        else:
+            self._token_validators_run_before_standard_ones.append(validator)
+
+    def register_code_modifier(self, modifier):
+        self._code_modifiers.append(modifier)
+
+    def register_token_modifier(self, modifier):
+        self._token_modifiers.append(modifier)
+
 
     def create_authorization_response(self, request, token_handler):
         raise NotImplementedError('Subclasses must implement this method.')

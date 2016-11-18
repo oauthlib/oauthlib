@@ -5,6 +5,7 @@ oauthlib.oauth2.rfc6749.grant_types
 """
 from __future__ import unicode_literals, absolute_import
 
+from itertools import chain
 import logging
 
 from oauthlib import common
@@ -117,20 +118,8 @@ class ImplicitGrant(GrantTypeBase):
     .. _`Section 10.16`: http://tools.ietf.org/html/rfc6749#section-10.16
     """
 
-    def __init__(self, request_validator=None):
-        self.request_validator = request_validator or RequestValidator()
-        self._authorization_validators = []
-        self._token_modifiers = []
-        self.response_types = ['token']
-
-    def register_response_type(self, response_type):
-        self.response_types.append(response_type)
-
-    def register_authorization_validator(self, validator):
-        self._authorization_validators.append(validator)
-
-    def register_token_modifier(self, modifier):
-        self._token_modifiers.append(modifier)
+    response_types = ['token']
+    grant_allows_refresh_token = False
 
     def create_authorization_response(self, request, token_handler):
         """Create an authorization response.
@@ -328,6 +317,16 @@ class ImplicitGrant(GrantTypeBase):
 
         # Then check for normal errors.
 
+        request_info = {}
+        # For implicit grant, auth_validators and token_validators are
+        # basically equivalent since the token is returned from the
+        # authorization endpoint.
+        for validator in chain(self._token_validators_run_before_standard_ones,
+                               self._auth_validators_run_before_standard_ones):
+            result = validator(request)
+            if result is not None:
+                request_info.update(result)
+
         # If the resource owner denies the access request or if the request
         # fails for reasons other than a missing or invalid redirection URI,
         # the authorization server informs the client by adding the following
@@ -359,15 +358,21 @@ class ImplicitGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
-        request_info = {
+        request_info.update({
                 'client_id': request.client_id,
                 'redirect_uri': request.redirect_uri,
                 'response_type': request.response_type,
                 'state': request.state,
                 'request': request,
-        }
+        })
 
-        for validator in self._authorization_validators:
-            request_info.update(validator(request))
+        # For implicit grant, auth_validators and token_validators are
+        # basically equivalent since the token is returned from the
+        # authorization endpoint.
+        for validator in chain(self._auth_validators_run_after_standard_ones,
+                               self._token_validators_run_after_standard_ones):
+            result = validator(request)
+            if result is not None:
+                request_info.update(result)
 
         return request.scopes, request_info
