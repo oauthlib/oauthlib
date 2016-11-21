@@ -11,6 +11,7 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from oauthlib.common import Request
+from oauthlib.oauth2.rfc6749 import utils
 
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
@@ -91,7 +92,13 @@ class TokenEndpoint(BaseEndpoint):
         """Extract grant_type and route to the designated handler."""
         request = Request(
             uri, http_method=http_method, body=body, headers=headers)
-        request.scopes = None
+
+        # 'scope' is an allowed Token Request param in both the "Resource Owner Password Credentials Grant"
+        # and "Client Credentials Grant" flows
+        # https://tools.ietf.org/html/rfc6749#section-4.3.2
+        # https://tools.ietf.org/html/rfc6749#section-4.4.2
+        request.scopes = utils.scope_to_list(request.scope)
+
         request.extra_credentials = credentials
         if grant_type_for_scope:
             request.grant_type = grant_type_for_scope

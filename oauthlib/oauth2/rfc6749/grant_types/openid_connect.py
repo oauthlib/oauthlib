@@ -64,7 +64,7 @@ class AuthCodeGrantDispatcher(object):
     def _handler_for_request(self, request):
         handler = self.default_auth_grant
 
-        if "openid" in request.scopes:
+        if request.scopes and "openid" in request.scopes:
             handler = self.oidc_auth_grant
 
         log.debug('Selecting handler for request %r.', handler)
@@ -96,7 +96,7 @@ class OpenIDConnectBase(GrantTypeBase):
 
     def add_id_token(self, token, token_handler, request):
         # Treat it as normal OAuth 2 auth code request if openid is not present
-        if 'openid' not in request.scopes:
+        if not request.scopes or 'openid' not in request.scopes:
             return token
 
         # Only add an id token on auth/token step if asked for.
@@ -249,7 +249,7 @@ class OpenIDConnectBase(GrantTypeBase):
         """
 
         # Treat it as normal OAuth 2 auth code request if openid is not present
-        if not 'openid' in request.scopes:
+        if not request.scopes or 'openid' not in request.scopes:
             return {}
 
         # prompt other than 'none' should be handled by the server code that uses oauthlib
@@ -289,7 +289,8 @@ class OpenIDConnectBase(GrantTypeBase):
         if request.response_type == 'token':
             return {}
 
-        if not 'openid' in request.scopes:
+        # Treat it as normal OAuth 2 auth code request if openid is not present
+        if not request.scopes or 'openid' not in request.scopes:
             return {}
 
         # REQUIRED. String value used to associate a Client session with an ID
