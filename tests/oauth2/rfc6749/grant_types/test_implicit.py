@@ -40,5 +40,24 @@ class ImplicitGrantTest(TestCase):
         h, b, s = self.auth.create_token_response(self.request, bearer)
         self.assertURLEqual(h['Location'], correct_uri)
 
+    def test_custom_validators(self):
+        self.authval1, self.authval2 = mock.Mock(), mock.Mock()
+        self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
+        for val in (self.authval1, self.authval2):
+            val.return_value = {}
+        for val in (self.tknval1, self.tknval2):
+            val.return_value = None
+        self.auth.register_token_validator(self.tknval1, after_standard=False)
+        self.auth.register_token_validator(self.tknval2, after_standard=True)
+        self.auth.register_authorization_validator(self.authval1, after_standard=False)
+        self.auth.register_authorization_validator(self.authval2, after_standard=True)
+
+        bearer = BearerToken(self.mock_validator)
+        self.auth.create_token_response(self.request, bearer)
+        self.assertTrue(self.tknval1.called)
+        self.assertTrue(self.tknval2.called)
+        self.assertTrue(self.authval1.called)
+        self.assertTrue(self.authval2.called)
+
     def test_error_response(self):
         pass

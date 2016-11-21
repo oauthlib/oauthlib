@@ -89,6 +89,21 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         self.assertEqual(status_code, 401)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
 
+    def test_custom_token_validators(self):
+        self.authval1, self.authval2 = mock.Mock(), mock.Mock()
+        self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
+        self.auth.register_token_validator(self.tknval1, after_standard=False)
+        self.auth.register_token_validator(self.tknval2, after_standard=True)
+        self.auth.register_authorization_validator(self.authval1, after_standard=False)
+        self.auth.register_authorization_validator(self.authval2, after_standard=True)
+
+        bearer = BearerToken(self.mock_validator)
+        self.auth.create_token_response(self.request, bearer)
+        self.assertTrue(self.tknval1.called)
+        self.assertTrue(self.tknval2.called)
+        self.assertFalse(self.authval1.called)
+        self.assertFalse(self.authval2.called)
+
     def test_error_response(self):
         pass
 
