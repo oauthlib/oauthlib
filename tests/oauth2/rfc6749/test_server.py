@@ -284,7 +284,7 @@ twIDAQAB
             'expires_in': self.expires_in,
             'access_token': body['access_token'],
             'refresh_token': 'abc',
-            'scope': u'all of them',
+            'scope': 'all of them',
             'state': 'xyz'
         }
         self.assertEqual(body, token)
