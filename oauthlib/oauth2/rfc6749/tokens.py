@@ -262,6 +262,9 @@ class BearerToken(TokenBase):
             'token_type': 'Bearer',
         }
 
+        # If provided, include - this is optional in some cases https://tools.ietf.org/html/rfc6749#section-3.3 but
+        # there is currently no mechanism to coordinate issuing a token for only a subset of the requested scopes so
+        # all tokens issued are for the entire set of requested scopes.
         if request.scopes is not None:
             token['scope'] = ' '.join(request.scopes)
 

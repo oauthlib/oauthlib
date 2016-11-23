@@ -12,7 +12,7 @@ from ....unittest import TestCase
 
 from oauthlib.oauth2 import RequestValidator
 from oauthlib.oauth2 import WebApplicationServer, MobileApplicationServer
-from oauthlib.oauth2 import LegacyApplicationServer, BackendApplicationServer
+from oauthlib.oauth2 import LegacyApplicationServer, BackendApplicationServer, Server
 
 
 class TestScopeHandling(TestCase):
@@ -41,6 +41,7 @@ class TestScopeHandling(TestCase):
         self.validator = mock.MagicMock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = TestScopeHandling.DEFAULT_REDIRECT_URI
         self.validator.authenticate_client.side_effect = self.set_client
+        self.server = Server(self.validator)
         self.web = WebApplicationServer(self.validator)
         self.mobile = MobileApplicationServer(self.validator)
         self.legacy = LegacyApplicationServer(self.validator)
@@ -50,6 +51,7 @@ class TestScopeHandling(TestCase):
         scopes = (
             ('images', ['images']),
             ('images+videos', ['images', 'videos']),
+            ('images+videos+openid', ['images', 'videos', 'openid']),
             ('http%3A%2f%2fa.b%2fvideos', ['http://a.b/videos']),
             ('http%3A%2f%2fa.b%2fvideos+pics', ['http://a.b/videos', 'pics']),
             ('pics+http%3A%2f%2fa.b%2fvideos', ['pics', 'http://a.b/videos']),
@@ -64,6 +66,9 @@ class TestScopeHandling(TestCase):
             scopes, _ = self.mobile.validate_authorization_request(
                     uri % (scope, 'token'))
             self.assertItemsEqual(scopes, correct_scopes)
+            scopes, _ = self.server.validate_authorization_request(
+                uri % (scope, 'code'))
+            self.assertItemsEqual(scopes, correct_scopes)
 
     def test_scope_preservation(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
@@ -72,36 +77,40 @@ class TestScopeHandling(TestCase):
         token_uri = 'http://example.com/path'
 
         # authorization grant
-        h, _, s = self.web.create_authorization_response(
-                auth_uri + 'code', scopes=decoded_scope.split(' '))
-        self.validator.validate_code.side_effect = self.set_scopes(decoded_scope.split(' '))
-        self.assertEqual(s, 302)
-        self.assertIn('Location', h)
-        code = get_query_credentials(h['Location'])['code'][0]
-        _, body, _ = self.web.create_token_response(token_uri,
-                body='grant_type=authorization_code&code=%s' % code)
-        self.assertEqual(json.loads(body)['scope'], decoded_scope)
+        for backend_server_type in ['web', 'server']:
+            h, _, s = getattr(self, backend_server_type).create_authorization_response(
+                    auth_uri + 'code', scopes=decoded_scope.split(' '))
+            self.validator.validate_code.side_effect = self.set_scopes(decoded_scope.split(' '))
+            self.assertEqual(s, 302)
+            self.assertIn('Location', h)
+            code = get_query_credentials(h['Location'])['code'][0]
+            _, body, _ = getattr(self, backend_server_type).create_token_response(token_uri,
+                    body='grant_type=authorization_code&code=%s' % code)
+            self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # implicit grant
-        h, _, s = self.mobile.create_authorization_response(
-                auth_uri + 'token', scopes=decoded_scope.split(' '))
-        self.assertEqual(s, 302)
-        self.assertIn('Location', h)
-        self.assertEqual(get_fragment_credentials(h['Location'])['scope'][0], decoded_scope)
+        for backend_server_type in ['mobile', 'server']:
+            h, _, s = getattr(self, backend_server_type).create_authorization_response(
+                    auth_uri + 'token', scopes=decoded_scope.split(' '))
+            self.assertEqual(s, 302)
+            self.assertIn('Location', h)
+            self.assertEqual(get_fragment_credentials(h['Location'])['scope'][0], decoded_scope)
 
         # resource owner password credentials grant
-        body = 'grant_type=password&username=abc&password=secret&scope=%s'
+        for backend_server_type in ['legacy', 'server']:
+            body = 'grant_type=password&username=abc&password=secret&scope=%s'
 
-        _, body, _ = self.legacy.create_token_response(token_uri,
-                body=body % scope)
-        self.assertEqual(json.loads(body)['scope'], decoded_scope)
+            _, body, _ = getattr(self, backend_server_type).create_token_response(token_uri,
+                    body=body % scope)
+            self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # client credentials grant
-        body = 'grant_type=client_credentials&scope=%s'
-        self.validator.authenticate_client.side_effect = self.set_user
-        _, body, _ = self.backend.create_token_response(token_uri,
-                body=body % scope)
-        self.assertEqual(json.loads(body)['scope'], decoded_scope)
+        for backend_server_type in ['backend', 'server']:
+            body = 'grant_type=client_credentials&scope=%s'
+            self.validator.authenticate_client.side_effect = self.set_user
+            _, body, _ = getattr(self, backend_server_type).create_token_response(token_uri,
+                    body=body % scope)
+            self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
     def test_scope_changed(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
