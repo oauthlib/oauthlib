@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.0.1 (2016-11-23)
+------------------
+* (FIX) Normalize handling of request.scopes list
+
 2.0.0 (2016-09-03)
 ------------------
 * (New Feature) **OpenID** support.
