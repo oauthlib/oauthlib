@@ -415,6 +415,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
                                       'request.client.client_id attribute '
                                       'in authenticate_client.')
 
+        request.client_id = request.client_id or request.client.client_id
+
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
 
