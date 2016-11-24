@@ -105,6 +105,7 @@ class Client(object):
     def __repr__(self):
         attrs = vars(self).copy()
         attrs['client_secret'] = '****' if attrs['client_secret'] else None
+        attrs['rsa_key'] = '****' if attrs['rsa_key'] else None
         attrs[
             'resource_owner_secret'] = '****' if attrs['resource_owner_secret'] else None
         attribute_str = ', '.join('%s=%s' % (k, v) for k, v in attrs.items())
