@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Development
+-----------
+* Dropped support for Python 2.6, 3.2 & 3.3.
+
 2.0.1 (2016-11-23)
 ------------------
 * (FIX) Normalize handling of request.scopes list
