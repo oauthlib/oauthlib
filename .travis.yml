@@ -27,14 +27,10 @@ install:
 script:
 - tox
 env:
-- TOXENV=py26
 - TOXENV=py27
-- TOXENV=py32
-- TOXENV=py33
 - TOXENV=py34
 - TOXENV=py35
 - TOXENV=pypy
-- TOXENV=pypy3
 after_success: coveralls
 notifications:
   irc: irc.freenode.org#oauthlib
