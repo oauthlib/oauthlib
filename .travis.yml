@@ -18,12 +18,8 @@ install:
         virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
       fi
-- |
-      if [ "$TOXENV" = "py32" ] || [ "$TOXENV" = "pypy3" ]; then
-        pip install 'virtualenv<14.0.0' 'tox>=1.9' coveralls
-      else
-        pip install 'tox>=1.9' coveralls
-      fi
+- pip install 'tox>=1.9' coveralls
+
 script:
 - tox
 env:
