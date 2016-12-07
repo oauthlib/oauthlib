@@ -61,7 +61,7 @@ class RevocationEndpointTest(TestCase):
             h, b, s = self.endpoint.create_revocation_response(self.uri,
                     headers=self.headers, body=body)
             self.assertEqual(h, {})
-            self.assertEqual(b, None)
+            self.assertEqual(b, '')
             self.assertEqual(s, 200)
 
     def test_revoke_token_public_client_authentication_failed(self):
