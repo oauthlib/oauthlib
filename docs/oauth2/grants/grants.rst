@@ -24,6 +24,12 @@ resources in various ways with different security credentials.
 Naturally, OAuth 2 allows for extension grant types to be defined and OAuthLib
 attempts to cater for easy inclusion of this as much as possible.
 
+OAuthlib also offers hooks for registering your own custom validations for use
+with the existing grant type handlers
+(:py:meth:`oauthlib.oauth2.AuthorizationCodeGrant.register_authorization_validator`).
+In some situations, this may be more convenient than subclassing or writing
+your own extension grant type.
+
 Certain grant types allow the issuing of refresh tokens which will allow a
 client to request new tokens for as long as you as provider allow them too. In
 general, OAuth 2 tokens should expire quickly and rather than annoying the user

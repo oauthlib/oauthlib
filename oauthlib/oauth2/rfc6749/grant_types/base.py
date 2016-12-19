@@ -44,12 +44,38 @@ class GrantTypeBase(object):
         self.response_types.append(response_type)
 
     def register_authorization_validator(self, validator, after_standard=True):
+        """
+        Register a validator callable to be invoked during calls to the
+        authorization endpoint.
+
+        :param callable validator: callable that takes a request object and returns a
+                          mapping of items to be included with the authorization validation
+                          response.
+        :param bool after_standard: default: True, If True, the custom
+                                    validator is called after the standard authorization
+                                    validations. If False, the custom valdator is called before
+                                    the standard validations.
+        :returns: None
+        """
         if after_standard:
             self._auth_validators_run_after_standard_ones.append(validator)
         else:
             self._auth_validators_run_before_standard_ones.append(validator)
 
     def register_token_validator(self, validator, after_standard=True):
+        """
+        Register a validator callable to be invoked during calls to the
+        token endpoint (or the authorization endpoint during the implicit grant,
+        flow which returns tokens directly from the authorization endpoint).
+
+
+        :param callable validator: callable that takes a request object and returns None or
+                          raises an exception if appropriate.
+        :param bool after_standard: default: True, If True, the custom
+                               validator is called after the standard token validations. If False,
+                               the custom valdator is called before the standard validations.
+        :returns: None
+        """
         if after_standard:
             self._token_validators_run_after_standard_ones.append(validator)
         else:
