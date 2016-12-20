@@ -270,10 +270,15 @@ class OpenIDConnectBase(GrantTypeBase):
             msg = "Session user does not match client supplied user."
             raise LoginRequired(request=request, description=msg)
 
+        prompt = []
+        if request.prompt:
+            prompt = request.prompt
+            if hasattr(prompt, 'split'):
+                prompt = prompt.split()
 
         request_info = {
             'display': request.display,
-            'prompt': request.prompt.split() if request.prompt else [],
+            'prompt': prompt,
             'ui_locales': request.ui_locales.split() if request.ui_locales else [],
             'id_token_hint': request.id_token_hint,
             'login_hint': request.login_hint,
