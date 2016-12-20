@@ -318,14 +318,11 @@ class ImplicitGrant(GrantTypeBase):
         # Then check for normal errors.
 
         request_info = {}
-        # For implicit grant, auth_validators and token_validators are
-        # basically equivalent since the token is returned from the
-        # authorization endpoint.
-        for validator in chain(self._token_validators_run_before_standard_ones,
-                               self._auth_validators_run_before_standard_ones):
-            result = validator(request)
-            if result is not None:
-                request_info.update(result)
+
+        self._run_custom_validators(request, request_info,
+                            self._auth_validators_run_before_standard_ones,
+                            self._token_validators_run_before_standard_ones)
+
 
         # If the resource owner denies the access request or if the request
         # fails for reasons other than a missing or invalid redirection URI,
@@ -366,13 +363,23 @@ class ImplicitGrant(GrantTypeBase):
                 'request': request,
         })
 
+        self._run_custom_validators(request, request_info,
+                            self._auth_validators_run_after_standard_ones,
+                            self._token_validators_run_after_standard_ones)
+
+        return request.scopes, request_info
+
+
+    def _run_custom_validators(self,
+                               request,
+                               request_info,
+                               auth_validators,
+                               token_validators):
         # For implicit grant, auth_validators and token_validators are
         # basically equivalent since the token is returned from the
         # authorization endpoint.
-        for validator in chain(self._auth_validators_run_after_standard_ones,
-                               self._token_validators_run_after_standard_ones):
+        for validator in chain(auth_validators, token_validators):
             result = validator(request)
             if result is not None:
                 request_info.update(result)
-
-        return request.scopes, request_info
+        return request_info
