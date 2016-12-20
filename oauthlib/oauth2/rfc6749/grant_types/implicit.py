@@ -317,9 +317,7 @@ class ImplicitGrant(GrantTypeBase):
 
         # Then check for normal errors.
 
-        request_info = {}
-
-        self._run_custom_validators(request, request_info,
+        request_info = self._run_custom_validators(request,
                             self._auth_validators_run_before_standard_ones,
                             self._token_validators_run_before_standard_ones)
 
@@ -363,18 +361,21 @@ class ImplicitGrant(GrantTypeBase):
                 'request': request,
         })
 
-        self._run_custom_validators(request, request_info,
+        request_info = self._run_custom_validators(request,
                             self._auth_validators_run_after_standard_ones,
-                            self._token_validators_run_after_standard_ones)
+                            self._token_validators_run_after_standard_ones,
+                            request_info)
 
         return request.scopes, request_info
 
 
     def _run_custom_validators(self,
                                request,
-                               request_info,
                                auth_validators,
-                               token_validators):
+                               token_validators,
+                               request_info=None):
+        # Make a copy so we don't modify the existing request_info dict
+        request_info = {} if request_info is None else request_info.copy()
         # For implicit grant, auth_validators and token_validators are
         # basically equivalent since the token is returned from the
         # authorization endpoint.
