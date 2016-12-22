@@ -9,6 +9,7 @@ Grant types
     implicit
     password
     credentials
+    custom_validators
     jwt
 
 Grant types are what make OAuth 2 so flexible. The Authorization Code grant is
@@ -26,7 +27,7 @@ attempts to cater for easy inclusion of this as much as possible.
 
 OAuthlib also offers hooks for registering your own custom validations for use
 with the existing grant type handlers
-(:py:meth:`oauthlib.oauth2.AuthorizationCodeGrant.register_authorization_validator`).
+(:py:class:`oauthlib.oauth2.rfc6749.grant_types.base.ValidatorsContainer`).
 In some situations, this may be more convenient than subclassing or writing
 your own extension grant type.
 
