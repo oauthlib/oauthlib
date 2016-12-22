@@ -5,7 +5,6 @@ oauthlib.oauth2.rfc6749.grant_types
 """
 from __future__ import unicode_literals, absolute_import
 
-from itertools import chain
 import logging
 
 from oauthlib import common
@@ -318,8 +317,7 @@ class ImplicitGrant(GrantTypeBase):
         # Then check for normal errors.
 
         request_info = self._run_custom_validators(request,
-                            self._auth_validators_run_before_standard_ones,
-                            self._token_validators_run_before_standard_ones)
+                                self.custom_validators.all_pre)
 
 
         # If the resource owner denies the access request or if the request
@@ -362,8 +360,7 @@ class ImplicitGrant(GrantTypeBase):
         })
 
         request_info = self._run_custom_validators(request,
-                            self._auth_validators_run_after_standard_ones,
-                            self._token_validators_run_after_standard_ones,
+                            self.custom_validators.all_post,
                             request_info)
 
         return request.scopes, request_info
@@ -371,15 +368,14 @@ class ImplicitGrant(GrantTypeBase):
 
     def _run_custom_validators(self,
                                request,
-                               auth_validators,
-                               token_validators,
+                               validations,
                                request_info=None):
         # Make a copy so we don't modify the existing request_info dict
         request_info = {} if request_info is None else request_info.copy()
         # For implicit grant, auth_validators and token_validators are
         # basically equivalent since the token is returned from the
         # authorization endpoint.
-        for validator in chain(auth_validators, token_validators):
+        for validator in validations:
             result = validator(request)
             if result is not None:
                 request_info.update(result)

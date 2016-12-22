@@ -156,7 +156,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
         .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
-        for validator in self._token_validators_run_before_standard_ones:
+        for validator in self.custom_validators.pre_token:
             validator(request)
 
         for param in ('grant_type', 'username', 'password'):
@@ -193,5 +193,5 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             request.client_id = request.client_id or request.client.client_id
         self.validate_scopes(request)
 
-        for validator in self._token_validators_run_after_standard_ones:
+        for validator in self.custom_validators.post_token:
             validator(request)

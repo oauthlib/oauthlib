@@ -323,7 +323,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # populated through the use of specific exceptions.
 
         request_info = {}
-        for validator in self._auth_validators_run_before_standard_ones:
+        for validator in self.custom_validators.pre_auth:
             request_info.update(validator(request))
 
         # REQUIRED.
@@ -354,7 +354,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             'request': request
         })
 
-        for validator in self._auth_validators_run_after_standard_ones:
+        for validator in self.custom_validators.post_auth:
             request_info.update(validator(request))
 
         return request.scopes, request_info
@@ -364,7 +364,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         if request.grant_type not in ('authorization_code', 'openid'):
             raise errors.UnsupportedGrantTypeError(request=request)
 
-        for validator in self._token_validators_run_before_standard_ones:
+        for validator in self.custom_validators.pre_token:
             validator(request)
 
         if request.code is None:
@@ -423,5 +423,5 @@ class AuthorizationCodeGrant(GrantTypeBase):
                       request.redirect_uri, request.client_id, request.client)
             raise errors.AccessDeniedError(request=request)
 
-        for validator in self._token_validators_run_after_standard_ones:
+        for validator in self.custom_validators.post_token:
             validator(request)

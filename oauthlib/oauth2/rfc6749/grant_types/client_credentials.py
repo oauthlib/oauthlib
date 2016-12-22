@@ -85,7 +85,7 @@ class ClientCredentialsGrant(GrantTypeBase):
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
-        for validator in self._token_validators_run_before_standard_ones:
+        for validator in self.custom_validators.pre_token:
             validator(request)
 
         if not getattr(request, 'grant_type', None):
@@ -116,5 +116,5 @@ class ClientCredentialsGrant(GrantTypeBase):
         request.client_id = request.client_id or request.client.client_id
         self.validate_scopes(request)
 
-        for validator in self._token_validators_run_after_standard_ones:
+        for validator in self.custom_validators.post_token:
             validator(request)

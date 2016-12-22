@@ -335,7 +335,7 @@ class OpenIDConnectAuthCode(OpenIDConnectBase):
     def __init__(self, request_validator=None, **kwargs):
         self.proxy_target = AuthorizationCodeGrant(
             request_validator=request_validator, **kwargs)
-        self.register_authorization_validator(
+        self.custom_validators.post_auth.append(
             self.openid_authorization_validator)
         self.register_token_modifier(self.add_id_token)
 
@@ -346,9 +346,9 @@ class OpenIDConnectImplicit(OpenIDConnectBase):
             request_validator=request_validator, **kwargs)
         self.register_response_type('id_token')
         self.register_response_type('id_token token')
-        self.register_authorization_validator(
+        self.custom_validators.post_auth.append(
             self.openid_authorization_validator)
-        self.register_authorization_validator(
+        self.custom_validators.post_auth.append(
             self.openid_implicit_authorization_validator)
         self.register_token_modifier(self.add_id_token)
 
@@ -362,7 +362,7 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
         self.register_response_type('code id_token')
         self.register_response_type('code token')
         self.register_response_type('code id_token token')
-        self.register_authorization_validator(
+        self.custom_validators.post_auth.append(
             self.openid_authorization_validator)
         # Hybrid flows can return the id_token from the authorization
         # endpoint as part of the 'code' response

@@ -4,6 +4,7 @@ oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import unicode_literals, absolute_import
+from itertools import chain
 
 import logging
 
@@ -12,6 +13,28 @@ from oauthlib.oauth2.rfc6749 import errors, utils
 from ..request_validator import RequestValidator
 
 log = logging.getLogger(__name__)
+
+class ValidatorsContainer(object):
+
+    """
+        Container object for holding validator callables to be invoked.
+    """
+
+    def __init__(self,
+                 post_auth=None, post_token=None,
+                 pre_auth=None, pre_token=None):
+        self.pre_auth = pre_auth
+        self.post_auth = post_auth
+        self.pre_token = pre_token
+        self.post_token = post_token
+
+    @property
+    def all_pre(self):
+        return chain(self.pre_auth, self.pre_token)
+
+    @property
+    def all_post(self):
+        return chain(self.post_auth, self.post_token)
 
 
 class GrantTypeBase(object):
@@ -27,59 +50,29 @@ class GrantTypeBase(object):
         # Transforms class variables into instance variables:
         self.response_types = self.response_types
         self.refresh_token = self.refresh_token
-
-        self._setup_validator_hooks()
-        for kw, val in kwargs.items():
-            setattr(self, kw, val)
-
-    def _setup_validator_hooks(self):
-        self._auth_validators_run_before_standard_ones = []
-        self._auth_validators_run_after_standard_ones = []
-        self._token_validators_run_before_standard_ones = []
-        self._token_validators_run_after_standard_ones = []
+        self._setup_custom_validators(kwargs)
         self._code_modifiers = []
         self._token_modifiers = []
 
+        for kw, val in kwargs.items():
+            setattr(self, kw, val)
+
+    def _setup_custom_validators(self, kwargs):
+        post_auth = kwargs.get('post_auth', [])
+        post_token = kwargs.get('post_token', [])
+        pre_auth = kwargs.get('pre_auth', [])
+        pre_token = kwargs.get('pre_token', [])
+        if not hasattr(self, 'validate_authorization_request'):
+            if post_auth or pre_auth:
+                msg = ("{} does not support authorization validators. Use "
+                       "token validators instead.").format(self.__class__.__name__)
+                raise ValueError(msg)
+            post_auth, pre_auth = (), ()
+        self.custom_validators = ValidatorsContainer(post_auth, post_token,
+                                                     pre_auth, pre_token)
+
     def register_response_type(self, response_type):
         self.response_types.append(response_type)
-
-    def register_authorization_validator(self, validator, after_standard=True):
-        """
-        Register a validator callable to be invoked during calls to the
-        authorization endpoint.
-
-        :param callable validator: callable that takes a request object and returns a
-                          mapping of items to be included with the authorization validation
-                          response.
-        :param bool after_standard: default: True, If True, the custom
-                                    validator is called after the standard authorization
-                                    validations. If False, the custom valdator is called before
-                                    the standard validations.
-        :returns: None
-        """
-        if after_standard:
-            self._auth_validators_run_after_standard_ones.append(validator)
-        else:
-            self._auth_validators_run_before_standard_ones.append(validator)
-
-    def register_token_validator(self, validator, after_standard=True):
-        """
-        Register a validator callable to be invoked during calls to the
-        token endpoint (or the authorization endpoint during the implicit grant,
-        flow which returns tokens directly from the authorization endpoint).
-
-
-        :param callable validator: callable that takes a request object and returns None or
-                          raises an exception if appropriate.
-        :param bool after_standard: default: True, If True, the custom
-                               validator is called after the standard token validations. If False,
-                               the custom valdator is called before the standard validations.
-        :returns: None
-        """
-        if after_standard:
-            self._token_validators_run_after_standard_ones.append(validator)
-        else:
-            self._token_validators_run_before_standard_ones.append(validator)
 
     def register_code_modifier(self, modifier):
         self._code_modifiers.append(modifier)

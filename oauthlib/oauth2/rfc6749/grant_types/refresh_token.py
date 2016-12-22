@@ -76,7 +76,7 @@ class RefreshTokenGrant(GrantTypeBase):
         if request.grant_type != 'refresh_token':
             raise errors.UnsupportedGrantTypeError(request=request)
 
-        for validator in self._token_validators_run_before_standard_ones:
+        for validator in self.custom_validators.pre_token:
             validator(request)
 
         if request.refresh_token is None:
@@ -127,5 +127,5 @@ class RefreshTokenGrant(GrantTypeBase):
         else:
             request.scopes = original_scopes
 
-        for validator in self._token_validators_run_after_standard_ones:
+        for validator in self.custom_validators.post_token:
             validator(request)
