@@ -32,15 +32,20 @@ class AuthorizationCodeGrantTest(TestCase):
         request.client.client_id = 'mocked'
         return True
 
-    def test_custom_auth_validators(self):
+    def setup_validators(self):
         self.authval1, self.authval2 = mock.Mock(), mock.Mock()
         self.authval1.return_value = {}
         self.authval2.return_value = {}
         self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
-        self.auth.register_token_validator(self.tknval1, after_standard=False)
-        self.auth.register_token_validator(self.tknval2, after_standard=True)
-        self.auth.register_authorization_validator(self.authval1, after_standard=False)
-        self.auth.register_authorization_validator(self.authval2, after_standard=True)
+        self.tknval1.return_value = None
+        self.tknval2.return_value = None
+        self.auth.custom_validators.pre_token.append(self.tknval1)
+        self.auth.custom_validators.post_token.append(self.tknval2)
+        self.auth.custom_validators.pre_auth.append(self.authval1)
+        self.auth.custom_validators.post_auth.append(self.authval2)
+
+    def test_custom_auth_validators(self):
+        self.setup_validators()
 
         bearer = BearerToken(self.mock_validator)
         self.auth.create_authorization_response(self.request, bearer)
@@ -50,12 +55,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertFalse(self.tknval2.called)
 
     def test_custom_token_validators(self):
-        self.authval1, self.authval2 = mock.Mock(), mock.Mock()
-        self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
-        self.auth.register_token_validator(self.tknval1, after_standard=False)
-        self.auth.register_token_validator(self.tknval2, after_standard=True)
-        self.auth.register_authorization_validator(self.authval1, after_standard=False)
-        self.auth.register_authorization_validator(self.authval2, after_standard=True)
+        self.setup_validators()
 
         bearer = BearerToken(self.mock_validator)
         self.auth.create_token_response(self.request, bearer)

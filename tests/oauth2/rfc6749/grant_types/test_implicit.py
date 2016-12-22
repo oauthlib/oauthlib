@@ -47,10 +47,10 @@ class ImplicitGrantTest(TestCase):
             val.return_value = {}
         for val in (self.tknval1, self.tknval2):
             val.return_value = None
-        self.auth.register_token_validator(self.tknval1, after_standard=False)
-        self.auth.register_token_validator(self.tknval2, after_standard=True)
-        self.auth.register_authorization_validator(self.authval1, after_standard=False)
-        self.auth.register_authorization_validator(self.authval2, after_standard=True)
+        self.auth.custom_validators.pre_token.append(self.tknval1)
+        self.auth.custom_validators.post_token.append(self.tknval2)
+        self.auth.custom_validators.pre_auth.append(self.authval1)
+        self.auth.custom_validators.post_auth.append(self.authval2)
 
         bearer = BearerToken(self.mock_validator)
         self.auth.create_token_response(self.request, bearer)
