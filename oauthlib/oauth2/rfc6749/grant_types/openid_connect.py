@@ -77,10 +77,33 @@ class AuthCodeGrantDispatcher(object):
         return self._handler_for_request(request).validate_authorization_request(request)
 
 
-class OpenIDConnectBase(GrantTypeBase):
+class OpenIDConnectBase(object):
 
-    def __init__(self, request_validator=None):
-        self.request_validator = request_validator or RequestValidator()
+    # Just proxy the majority of method calls through to the
+    # proxy_target grant type handler, which will usually be either
+    # the standard OAuth2 AuthCode or Implicit grant types.
+    def __getattr__(self, attr):
+        return getattr(self.proxy_target, attr)
+
+    def __setattr__(self, attr, value):
+        proxied_attrs = set(('refresh_token', 'response_types'))
+        if attr in proxied_attrs:
+            setattr(self.proxy_target, attr, value)
+        else:
+            super(OpenIDConnectBase, self).__setattr__(attr, value)
+
+    def validate_authorization_request(self, request):
+        """Validates the OpenID Connect authorization request parameters.
+
+        :returns: (list of scopes, dict of request info)
+        """
+        # If request.prompt is 'none' then no login/authorization form should
+        # be presented to the user. Instead, a silent login/authorization
+        # should be performed.
+        if request.prompt == 'none':
+            raise OIDCNoPrompt()
+        else:
+            return self.proxy_target.validate_authorization_request(request)
 
     def _inflate_claims(self, request):
         # this may be called multiple times in a single request so make sure we only de-serialize the claims once
@@ -309,135 +332,40 @@ class OpenIDConnectBase(GrantTypeBase):
 
 class OpenIDConnectAuthCode(OpenIDConnectBase):
 
-    def __init__(self, request_validator=None):
-        self.request_validator = request_validator or RequestValidator()
-        super(OpenIDConnectAuthCode, self).__init__(
-            request_validator=self.request_validator)
-        self.auth_code = AuthorizationCodeGrant(
-            request_validator=self.request_validator)
-        self.auth_code.register_authorization_validator(
+    def __init__(self, request_validator=None, **kwargs):
+        self.proxy_target = AuthorizationCodeGrant(
+            request_validator=request_validator, **kwargs)
+        self.custom_validators.post_auth.append(
             self.openid_authorization_validator)
-        self.auth_code.register_token_modifier(self.add_id_token)
-
-    @property
-    def refresh_token(self):
-        return self.auth_code.refresh_token
-
-    @refresh_token.setter
-    def refresh_token(self, value):
-        self.auth_code.refresh_token = value
-
-    def create_authorization_code(self, request):
-        return self.auth_code.create_authorization_code(request)
-
-    def create_authorization_response(self, request, token_handler):
-        return self.auth_code.create_authorization_response(
-            request, token_handler)
-
-    def create_token_response(self, request, token_handler):
-        return self.auth_code.create_token_response(request, token_handler)
-
-    def validate_authorization_request(self, request):
-        """Validates the OpenID Connect authorization request parameters.
-
-        :returns: (list of scopes, dict of request info)
-        """
-        # If request.prompt is 'none' then no login/authorization form should
-        # be presented to the user. Instead, a silent login/authorization
-        # should be performed.
-        if request.prompt == 'none':
-            raise OIDCNoPrompt()
-        else:
-            return self.auth_code.validate_authorization_request(request)
-
-    def validate_token_request(self, request):
-        return self.auth_code.validate_token_request(request)
-
+        self.register_token_modifier(self.add_id_token)
 
 class OpenIDConnectImplicit(OpenIDConnectBase):
 
-    def __init__(self, request_validator=None):
-        self.request_validator = request_validator or RequestValidator()
-        super(OpenIDConnectImplicit, self).__init__(
-            request_validator=self.request_validator)
-        self.implicit = ImplicitGrant(
-            request_validator=request_validator)
-        self.implicit.register_response_type('id_token')
-        self.implicit.register_response_type('id_token token')
-        self.implicit.register_authorization_validator(
+    def __init__(self, request_validator=None, **kwargs):
+        self.proxy_target = ImplicitGrant(
+            request_validator=request_validator, **kwargs)
+        self.register_response_type('id_token')
+        self.register_response_type('id_token token')
+        self.custom_validators.post_auth.append(
             self.openid_authorization_validator)
-        self.implicit.register_authorization_validator(
+        self.custom_validators.post_auth.append(
             self.openid_implicit_authorization_validator)
-        self.implicit.register_token_modifier(self.add_id_token)
-
-    def create_authorization_response(self, request, token_handler):
-        return self.create_token_response(request, token_handler)
-
-    def create_token_response(self, request, token_handler):
-        return self.implicit.create_authorization_response(
-            request, token_handler)
-
-    def validate_authorization_request(self, request):
-        """Validates the OpenID Connect authorization request parameters.
-
-        :returns: (list of scopes, dict of request info)
-        """
-        # If request.prompt is 'none' then no login/authorization form should
-        # be presented to the user. Instead, a silent login/authorization
-        # should be performed.
-        if request.prompt == 'none':
-            raise OIDCNoPrompt()
-        else:
-            return self.implicit.validate_authorization_request(request)
-
+        self.register_token_modifier(self.add_id_token)
 
 class OpenIDConnectHybrid(OpenIDConnectBase):
 
-    def __init__(self, request_validator=None):
+    def __init__(self, request_validator=None, **kwargs):
         self.request_validator = request_validator or RequestValidator()
 
-        self.auth_code = AuthorizationCodeGrant(
-            request_validator=request_validator)
-        self.auth_code.register_response_type('code id_token')
-        self.auth_code.register_response_type('code token')
-        self.auth_code.register_response_type('code id_token token')
-        self.auth_code.register_authorization_validator(
+        self.proxy_target = AuthorizationCodeGrant(
+            request_validator=request_validator, **kwargs)
+        self.register_response_type('code id_token')
+        self.register_response_type('code token')
+        self.register_response_type('code id_token token')
+        self.custom_validators.post_auth.append(
             self.openid_authorization_validator)
-        self.auth_code.register_code_modifier(self.add_token)
-        self.auth_code.register_code_modifier(self.add_id_token)
-        self.auth_code.register_token_modifier(self.add_id_token)
-
-    @property
-    def refresh_token(self):
-        return self.auth_code.refresh_token
-
-    @refresh_token.setter
-    def refresh_token(self, value):
-        self.auth_code.refresh_token = value
-
-    def create_authorization_code(self, request):
-        return self.auth_code.create_authorization_code(request)
-
-    def create_authorization_response(self, request, token_handler):
-        return self.auth_code.create_authorization_response(
-            request, token_handler)
-
-    def create_token_response(self, request, token_handler):
-        return self.auth_code.create_token_response(request, token_handler)
-
-    def validate_authorization_request(self, request):
-        """Validates the OpenID Connect authorization request parameters.
-
-        :returns: (list of scopes, dict of request info)
-        """
-        # If request.prompt is 'none' then no login/authorization form should
-        # be presented to the user. Instead, a silent login/authorization
-        # should be performed.
-        if request.prompt == 'none':
-            raise OIDCNoPrompt()
-        else:
-            return self.auth_code.validate_authorization_request(request)
-
-    def validate_token_request(self, request):
-        return self.auth_code.validate_token_request(request)
-
+        # Hybrid flows can return the id_token from the authorization
+        # endpoint as part of the 'code' response
+        self.register_code_modifier(self.add_token)
+        self.register_code_modifier(self.add_id_token)
+        self.register_token_modifier(self.add_id_token)

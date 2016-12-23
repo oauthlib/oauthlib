@@ -50,13 +50,6 @@ class ClientCredentialsGrant(GrantTypeBase):
     .. _`Client Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.4
     """
 
-    def __init__(self, request_validator=None):
-        self.request_validator = request_validator or RequestValidator()
-        self._token_modifiers = []
-
-    def register_token_modifier(self, modifier):
-        self._token_modifiers.append(modifier)
-
     def create_token_response(self, request, token_handler):
         """Return token or error in JSON format.
 
@@ -92,6 +85,9 @@ class ClientCredentialsGrant(GrantTypeBase):
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
+        for validator in self.custom_validators.pre_token:
+            validator(request)
+
         if not getattr(request, 'grant_type', None):
             raise errors.InvalidRequestError('Request is missing grant type.',
                                              request=request)
@@ -119,3 +115,6 @@ class ClientCredentialsGrant(GrantTypeBase):
         log.debug('Authorizing access to user %r.', request.user)
         request.client_id = request.client_id or request.client.client_id
         self.validate_scopes(request)
+
+        for validator in self.custom_validators.post_token:
+            validator(request)

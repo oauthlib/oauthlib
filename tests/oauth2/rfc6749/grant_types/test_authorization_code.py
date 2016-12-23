@@ -32,6 +32,38 @@ class AuthorizationCodeGrantTest(TestCase):
         request.client.client_id = 'mocked'
         return True
 
+    def setup_validators(self):
+        self.authval1, self.authval2 = mock.Mock(), mock.Mock()
+        self.authval1.return_value = {}
+        self.authval2.return_value = {}
+        self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
+        self.tknval1.return_value = None
+        self.tknval2.return_value = None
+        self.auth.custom_validators.pre_token.append(self.tknval1)
+        self.auth.custom_validators.post_token.append(self.tknval2)
+        self.auth.custom_validators.pre_auth.append(self.authval1)
+        self.auth.custom_validators.post_auth.append(self.authval2)
+
+    def test_custom_auth_validators(self):
+        self.setup_validators()
+
+        bearer = BearerToken(self.mock_validator)
+        self.auth.create_authorization_response(self.request, bearer)
+        self.assertTrue(self.authval1.called)
+        self.assertTrue(self.authval2.called)
+        self.assertFalse(self.tknval1.called)
+        self.assertFalse(self.tknval2.called)
+
+    def test_custom_token_validators(self):
+        self.setup_validators()
+
+        bearer = BearerToken(self.mock_validator)
+        self.auth.create_token_response(self.request, bearer)
+        self.assertTrue(self.tknval1.called)
+        self.assertTrue(self.tknval2.called)
+        self.assertFalse(self.authval1.called)
+        self.assertFalse(self.authval2.called)
+
     def test_create_authorization_grant(self):
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)

@@ -22,13 +22,13 @@ class RefreshTokenGrant(GrantTypeBase):
     .. _`Refresh token grant`: http://tools.ietf.org/html/rfc6749#section-6
     """
 
-    def __init__(self, request_validator=None, issue_new_refresh_tokens=True):
-        self.request_validator = request_validator or RequestValidator()
-        self.issue_new_refresh_tokens = issue_new_refresh_tokens
-        self._token_modifiers = []
-
-    def register_token_modifier(self, modifier):
-        self._token_modifiers.append(modifier)
+    def __init__(self, request_validator=None,
+                 issue_new_refresh_tokens=True,
+                 **kwargs):
+        super(RefreshTokenGrant, self).__init__(
+            request_validator,
+            issue_new_refresh_tokens=issue_new_refresh_tokens,
+            **kwargs)
 
     def create_token_response(self, request, token_handler):
         """Create a new access token from a refresh_token.
@@ -75,6 +75,9 @@ class RefreshTokenGrant(GrantTypeBase):
         # REQUIRED. Value MUST be set to "refresh_token".
         if request.grant_type != 'refresh_token':
             raise errors.UnsupportedGrantTypeError(request=request)
+
+        for validator in self.custom_validators.pre_token:
+            validator(request)
 
         if request.refresh_token is None:
             raise errors.InvalidRequestError(
@@ -123,3 +126,6 @@ class RefreshTokenGrant(GrantTypeBase):
                 raise errors.InvalidScopeError(request=request)
         else:
             request.scopes = original_scopes
+
+        for validator in self.custom_validators.post_token:
+            validator(request)

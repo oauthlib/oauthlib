@@ -70,18 +70,6 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     .. _`Resource Owner Password Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.3
     """
 
-    def __init__(self, request_validator=None, refresh_token=True):
-        """
-        If the refresh_token keyword argument is False, do not return
-        a refresh token in the response.
-        """
-        self.request_validator = request_validator or RequestValidator()
-        self.refresh_token = refresh_token
-        self._token_modifiers = []
-
-    def register_token_modifier(self, modifier):
-        self._token_modifiers.append(modifier)
-
     def create_token_response(self, request, token_handler):
         """Return token or error in json format.
 
@@ -168,6 +156,9 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
         .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
+        for validator in self.custom_validators.pre_token:
+            validator(request)
+
         for param in ('grant_type', 'username', 'password'):
             if not getattr(request, param, None):
                 raise errors.InvalidRequestError(
@@ -201,3 +192,6 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         if request.client:
             request.client_id = request.client_id or request.client.client_id
         self.validate_scopes(request)
+
+        for validator in self.custom_validators.post_token:
+            validator(request)

@@ -13,7 +13,6 @@ from oauthlib.uri_validate import is_absolute_uri
 
 from .base import GrantTypeBase
 from .. import errors
-from ..request_validator import RequestValidator
 
 log = logging.getLogger(__name__)
 
@@ -96,31 +95,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
     """
 
     default_response_mode = 'query'
-
-    def __init__(self, request_validator=None, refresh_token=True):
-        self.request_validator = request_validator or RequestValidator()
-        self.refresh_token = refresh_token
-
-        self._authorization_validators = []
-        self._token_validators = []
-        self._code_modifiers = []
-        self._token_modifiers = []
-        self.response_types = ['code']
-
-    def register_response_type(self, response_type):
-        self.response_types.append(response_type)
-
-    def register_authorization_validator(self, validator):
-        self._authorization_validators.append(validator)
-
-    def register_token_validator(self, validator):
-        self._token_validators.append(validator)
-
-    def register_code_modifier(self, modifier):
-        self._code_modifiers.append(modifier)
-
-    def register_token_modifier(self, modifier):
-        self._token_modifiers.append(modifier)
+    response_types = ['code']
 
     def create_authorization_code(self, request):
         """Generates an authorization grant represented as a dictionary."""
@@ -347,6 +322,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions.
 
+        request_info = {}
+        for validator in self.custom_validators.pre_auth:
+            request_info.update(validator(request))
+
         # REQUIRED.
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
@@ -367,15 +346,15 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
-        request_info = {
+        request_info.update({
             'client_id': request.client_id,
             'redirect_uri': request.redirect_uri,
             'response_type': request.response_type,
             'state': request.state,
             'request': request
-        }
+        })
 
-        for validator in self._authorization_validators:
+        for validator in self.custom_validators.post_auth:
             request_info.update(validator(request))
 
         return request.scopes, request_info
@@ -384,6 +363,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # REQUIRED. Value MUST be set to "authorization_code".
         if request.grant_type not in ('authorization_code', 'openid'):
             raise errors.UnsupportedGrantTypeError(request=request)
+
+        for validator in self.custom_validators.pre_token:
+            validator(request)
 
         if request.code is None:
             raise errors.InvalidRequestError(
@@ -441,6 +423,5 @@ class AuthorizationCodeGrant(GrantTypeBase):
                       request.redirect_uri, request.client_id, request.client)
             raise errors.AccessDeniedError(request=request)
 
-        for validator in self._token_validators:
+        for validator in self.custom_validators.post_token:
             validator(request)
-

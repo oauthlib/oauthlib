@@ -22,6 +22,31 @@ class ClientCredentialsGrantTest(TestCase):
         self.auth = ClientCredentialsGrant(
                 request_validator=self.mock_validator)
 
+    def test_custom_auth_validators_unsupported(self):
+        authval1, authval2 = mock.Mock(), mock.Mock()
+        expected = ('ClientCredentialsGrant does not support authorization '
+                    'validators. Use token validators instead.')
+        with self.assertRaises(ValueError) as caught:
+            ClientCredentialsGrant(self.mock_validator, pre_auth=[authval1])
+        self.assertEqual(caught.exception.args[0], expected)
+        with self.assertRaises(ValueError) as caught:
+            ClientCredentialsGrant(self.mock_validator, post_auth=[authval2])
+        self.assertEqual(caught.exception.args[0], expected)
+        with self.assertRaises(AttributeError):
+            self.auth.custom_validators.pre_auth.append(authval1)
+        with self.assertRaises(AttributeError):
+            self.auth.custom_validators.pre_auth.append(authval2)
+
+    def test_custom_token_validators(self):
+        tknval1, tknval2 = mock.Mock(), mock.Mock()
+        self.auth.custom_validators.pre_token.append(tknval1)
+        self.auth.custom_validators.post_token.append(tknval2)
+
+        bearer = BearerToken(self.mock_validator)
+        self.auth.create_token_response(self.request, bearer)
+        self.assertTrue(tknval1.called)
+        self.assertTrue(tknval2.called)
+
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
         headers, body, status_code = self.auth.create_token_response(
