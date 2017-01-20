@@ -26,6 +26,8 @@ from __future__ import absolute_import, unicode_literals
 import binascii
 import hashlib
 import hmac
+import logging
+
 try:
     import urlparse
 except ImportError:
@@ -34,6 +36,7 @@ from . import utils
 from oauthlib.common import urldecode, extract_params, safe_string_equals
 from oauthlib.common import bytes_type, unicode_type
 
+log = logging.getLogger(__name__)
 
 def construct_base_string(http_method, base_string_uri,
                           normalized_encoded_request_parameters):
@@ -566,7 +569,11 @@ def verify_hmac_sha1(request, client_secret=None,
     base_string = construct_base_string(request.http_method, uri, norm_params)
     signature = sign_hmac_sha1(base_string, client_secret,
                                resource_owner_secret)
-    return safe_string_equals(signature, request.signature)
+    match = safe_string_equals(signature, request.signature)
+    log.debug('Verify HMAC-SHA1: signature base string: {}'.format(base_string))
+    log.debug('Verify HMAC-SHA1: signature matches={}'.format(match))
+    return match
+
 
 def _prepare_key_plus(alg, keystr):
     if isinstance(keystr, bytes_type):
@@ -597,7 +604,11 @@ def verify_rsa_sha1(request, rsa_public_key):
 
     alg = _jwt_rs1_signing_algorithm()
     key = _prepare_key_plus(alg, rsa_public_key)
-    return alg.verify(message, key, sig)
+
+    verify_ok = alg.verify(message, key, sig)
+    log.debug('Verify RSA-SHA1: signature base string: {}'.format(message))
+    log.debug('Verify RSA-SHA1: signature verifies={}'.format(verify_ok))
+    return verify_ok
 
 
 def verify_plaintext(request, client_secret=None, resource_owner_secret=None):
@@ -608,4 +619,6 @@ def verify_plaintext(request, client_secret=None, resource_owner_secret=None):
     .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
     """
     signature = sign_plaintext(client_secret, resource_owner_secret)
-    return safe_string_equals(signature, request.signature)
+    match = safe_string_equals(signature, request.signature)
+    log.debug('Verify PLAINTEXT: signature matches={}'.format(match))
+    return match

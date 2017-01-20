@@ -143,7 +143,7 @@ class Client(object):
         base_string = signature.construct_base_string(request.http_method,
                                                       normalized_uri, normalized_params)
 
-        log.debug("Base signing string: {0}".format(base_string))
+        log.debug("Signing: signature base string: {0}".format(base_string))
 
         if self.signature_method not in self.SIGNATURE_METHODS:
             raise ValueError('Invalid signature method.')
