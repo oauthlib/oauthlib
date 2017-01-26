@@ -570,8 +570,8 @@ def verify_hmac_sha1(request, client_secret=None,
     signature = sign_hmac_sha1(base_string, client_secret,
                                resource_owner_secret)
     match = safe_string_equals(signature, request.signature)
-    log.debug('Verify HMAC-SHA1: signature base string: {}'.format(base_string))
-    log.debug('Verify HMAC-SHA1: signature matches={}'.format(match))
+    if not match:
+        log.debug('Verify HMAC-SHA1 failed: sig base string: %s', base_string)
     return match
 
 
@@ -606,8 +606,8 @@ def verify_rsa_sha1(request, rsa_public_key):
     key = _prepare_key_plus(alg, rsa_public_key)
 
     verify_ok = alg.verify(message, key, sig)
-    log.debug('Verify RSA-SHA1: signature base string: {}'.format(message))
-    log.debug('Verify RSA-SHA1: signature verifies={}'.format(verify_ok))
+    if not verify_ok:
+        log.debug('Verify RSA-SHA1 failed: sig base string: %s', message)
     return verify_ok
 
 
@@ -620,5 +620,6 @@ def verify_plaintext(request, client_secret=None, resource_owner_secret=None):
     """
     signature = sign_plaintext(client_secret, resource_owner_secret)
     match = safe_string_equals(signature, request.signature)
-    log.debug('Verify PLAINTEXT: signature matches={}'.format(match))
+    if not match:
+        log.debug('Verify PLAINTEXT failed')
     return match
