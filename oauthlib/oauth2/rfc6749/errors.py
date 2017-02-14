@@ -287,7 +287,7 @@ class LoginRequired(OpenIDClientError):
     status_code = 401
 
 
-class AccountSelectionRequried(OpenIDClientError):
+class AccountSelectionRequired(OpenIDClientError):
     """The End-User is REQUIRED to select a session at the Authorization Server.
 
     The End-User MAY be authenticated at the Authorization Server with
