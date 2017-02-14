@@ -312,6 +312,48 @@ class ConsentRequired(OpenIDClientError):
     status_code = 401
 
 
+class InvalidRequestURI(OpenIDClientError):
+    """
+    The request_uri in the Authorization Request returns an error or
+    contains invalid data.
+    """
+    error = 'invalid_request_uri'
+    description = 'The request_uri in the Authorization Request returns an ' \
+                  'error or contains invalid data.'
+
+
+class InvalidRequestObject(OpenIDClientError):
+    """
+    The request parameter contains an invalid Request Object.
+    """
+    error = 'invalid_request_object'
+    description = 'The request parameter contains an invalid Request Object.'
+
+
+class RequestNotSupported(OpenIDClientError):
+    """
+    The OP does not support use of the request parameter.
+    """
+    error = 'request_not_supported'
+    description = 'The request parameter is not supported.'
+
+
+class RequestURINotSupported(OpenIDClientError):
+    """
+    The OP does not support use of the request_uri parameter.
+    """
+    error = 'request_uri_not_supported'
+    description = 'The request_uri parameter is not supported.'
+
+
+class RegistrationNotSupported(OpenIDClientError):
+    """
+    The OP does not support use of the registration parameter.
+    """
+    error = 'registration_not_supported'
+    description = 'The registration parameter is not supported.'
+
+
 def raise_from_error(error, params=None):
     import inspect
     import sys
