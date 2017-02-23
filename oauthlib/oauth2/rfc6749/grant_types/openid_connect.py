@@ -275,14 +275,26 @@ class OpenIDConnectBase(object):
         if not request.scopes or 'openid' not in request.scopes:
             return {}
 
-        # prompt other than 'none' should be handled by the server code that uses oauthlib
-        if request.prompt == 'none' and not request.id_token_hint:
-            msg = "Prompt is set to none yet id_token_hint is missing."
-            raise InvalidRequestError(request=request, description=msg)
+        prompt = request.prompt if request.prompt else []
+        if hasattr(prompt, 'split'):
+            prompt = prompt.strip().split()
+        prompt = set(prompt)
 
-        if request.prompt == 'none':
+        if 'none' in prompt:
+
+            if len(prompt) > 1:
+                msg = "Prompt none is mutually exclusive with other values."
+                raise InvalidRequestError(request=request, description=msg)
+
+            # prompt other than 'none' should be handled by the server code that
+            # uses oauthlib
+            if not request.id_token_hint:
+                msg = "Prompt is set to none yet id_token_hint is missing."
+                raise InvalidRequestError(request=request, description=msg)
+
             if not self.request_validator.validate_silent_login(request):
                 raise LoginRequired(request=request)
+
             if not self.request_validator.validate_silent_authorization(request):
                 raise ConsentRequired(request=request)
 
@@ -292,12 +304,6 @@ class OpenIDConnectBase(object):
             request.id_token_hint, request.scopes, request.claims, request):
             msg = "Session user does not match client supplied user."
             raise LoginRequired(request=request, description=msg)
-
-        prompt = []
-        if request.prompt:
-            prompt = request.prompt
-            if hasattr(prompt, 'split'):
-                prompt = prompt.split()
 
         request_info = {
             'display': request.display,
@@ -334,6 +340,7 @@ class OpenIDConnectBase(object):
         self._inflate_claims(request)
 
         return {'nonce': request.nonce, 'claims': request.claims}
+
 
 class OpenIDConnectAuthCode(OpenIDConnectBase):
 
