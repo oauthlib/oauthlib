@@ -354,6 +354,11 @@ class CaseInsensitiveDict(dict):
         super(CaseInsensitiveDict, self).__setitem__(k, v)
         self.proxy[k.lower()] = k
 
+    def update(self, *args, **kwargs):
+        super(CaseInsensitiveDict, self).update(*args, **kwargs)
+        for k in dict(*args, **kwargs):
+            self.proxy[k.lower()] = k
+
 
 class Request(object):
 
