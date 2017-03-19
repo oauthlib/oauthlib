@@ -3,7 +3,11 @@ Changelog
 
 Development
 -----------
+
+2.0.2 (2017-03-19)
+------------------
 * Dropped support for Python 2.6, 3.2 & 3.3.
+* (FIX) `OpenIDConnector` will no longer raise an AttributeError when calling `openid_authorization_validator()` twice.  
 
 2.0.1 (2016-11-23)
 ------------------
