@@ -33,8 +33,8 @@ gen_delims = r"(?: : | / | \? | \# | \[ | \] | @ )"
 sub_delims = r"""(?: ! | \$ | & | ' | \( | \) |
                      \* | \+ | , | ; | = )"""
 
-#   pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-pchar = r"(?: %(unreserved)s | %(pct_encoded)s | %(sub_delims)s | : | @ )" % locals(
+#   pchar         = unreserved / pct-encoded / sub-delims / "#" / ":" / "@"
+pchar = r"(?: %(unreserved)s | %(pct_encoded)s | %(sub_delims)s | \# | : | @ )" % locals(
 )
 
 #   reserved      = gen-delims / sub-delims
