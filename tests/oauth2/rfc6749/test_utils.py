@@ -110,7 +110,7 @@ class UtilsTests(TestCase):
 
 
 class TestUrlValidation(TestCase):
-    def test_basic_urls(self):
+    def test_good_urls(self):
         valid_urls = ["https://www.zombo.com",
                 "https://google.com",
                 "http://localhost:31337",
@@ -119,6 +119,7 @@ class TestUrlValidation(TestCase):
         for url in valid_urls:
             self.assertIsNotNone(is_absolute_uri(url))
 
+    def test_bad_urls(self):
         invalid_urls = ["asdfasdf",
                 "://www.zombo.com"]
         
