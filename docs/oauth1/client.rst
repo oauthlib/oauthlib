@@ -4,7 +4,7 @@ Using the Client
 
 **Are you using requests?**
 
-    If you then you should take a look at `requests-oauthlib`_ which has several
+    If you are, then you should take a look at `requests-oauthlib`_ which has several
     examples of how to use OAuth1 with requests.
 
     .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
