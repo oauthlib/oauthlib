@@ -228,3 +228,8 @@ class CaseInsensitiveDictTest(TestCase):
         del cid['c']
         self.assertEqual(cid['A'], 'b')
         self.assertEqual(cid['a'], 'b')
+
+    def test_update(self):
+        cid = CaseInsensitiveDict({})
+        cid.update({'KeY': 'value'})
+        self.assertEqual(cid['kEy'], 'value')
