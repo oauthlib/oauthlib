@@ -7,9 +7,11 @@ except ImportError:
 import mock
 
 from ....unittest import TestCase
+from oauthlib.oauth2 import InvalidRequestError
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectAuthCode
 from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
+
 
 class OpenIDConnectEndpointTest(TestCase):
 
@@ -48,3 +50,19 @@ class OpenIDConnectEndpointTest(TestCase):
         self.assertURLEqual(h['Location'], expected)
         self.assertEqual(b, None)
         self.assertEqual(s, 302)
+
+    def test_prompt_none_exclusiveness(self):
+        """
+        Test that prompt=none can't be used with another prompt value.
+        """
+        params = {
+            'prompt': 'none consent',
+            'state': 'abc',
+            'redirect_uri': 'https://a.b/cb',
+            'response_type': 'code',
+            'client_id': 'abcdef',
+            'scope': 'hello openid'
+        }
+        url = 'http://a.b/path?' + urlencode(params)
+        with self.assertRaises(InvalidRequestError):
+            self.endpoint.validate_authorization_request(url)
