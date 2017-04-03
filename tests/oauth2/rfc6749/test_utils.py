@@ -10,6 +10,7 @@ from oauthlib.oauth2.rfc6749.utils import generate_age
 from oauthlib.oauth2.rfc6749.utils import is_secure_transport
 from oauthlib.oauth2.rfc6749.utils import params_from_uri
 from oauthlib.oauth2.rfc6749.utils import list_to_scope, scope_to_list
+from oauthlib.uri_validate import is_absolute_uri
 
 
 class ScopeObject:
@@ -107,4 +108,21 @@ class UtilsTests(TestCase):
         self.assertEqual(sorted(set_list), sorted(string_list_scopes))
 
 
+
+class TestUrlValidation(TestCase):
+    def test_good_urls(self):
+        valid_urls = ["https://www.zombo.com",
+                "https://google.com",
+                "http://localhost:31337",
+                "https://www.zombo.com/#/angular_crap"] 
+
+        for url in valid_urls:
+            self.assertIsNotNone(is_absolute_uri(url))
+
+    def test_bad_urls(self):
+        invalid_urls = ["asdfasdf",
+                "://www.zombo.com"]
+        
+        for url in invalid_urls:
+            self.assertIsNone(is_absolute_uri(url), url)
 

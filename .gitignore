@@ -36,3 +36,5 @@ coverage
 # Sphinx
 docs/_build
 docs/_static
+
+.cache
