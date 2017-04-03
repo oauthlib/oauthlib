@@ -110,8 +110,8 @@ class MissingTokenTypeError(OAuth2Error):
 
 
 class FatalClientError(OAuth2Error):
-
-    """Errors during authorization where user should not be redirected back.
+    """
+    Errors during authorization where user should not be redirected back.
 
     If the request fails due to a missing, invalid, or mismatching
     redirection URI, or if the client identifier is missing or invalid,
@@ -125,7 +125,8 @@ class FatalClientError(OAuth2Error):
 
 
 class InvalidRequestFatalError(FatalClientError):
-    """For fatal errors, the request is missing a required parameter, includes
+    """
+    For fatal errors, the request is missing a required parameter, includes
     an invalid parameter value, includes a parameter more than once, or is
     otherwise malformed.
     """
@@ -153,8 +154,8 @@ class MissingClientIdError(InvalidRequestFatalError):
 
 
 class InvalidRequestError(OAuth2Error):
-
-    """The request is missing a required parameter, includes an invalid
+    """
+    The request is missing a required parameter, includes an invalid
     parameter value, includes a parameter more than once, or is
     otherwise malformed.
     """
@@ -166,30 +167,32 @@ class MissingResponseTypeError(InvalidRequestError):
 
 
 class AccessDeniedError(OAuth2Error):
-
-    """The resource owner or authorization server denied the request."""
+    """
+    The resource owner or authorization server denied the request.
+    """
     error = 'access_denied'
     status_code = 401
 
 
 class UnsupportedResponseTypeError(OAuth2Error):
-
-    """The authorization server does not support obtaining an authorization
+    """
+    The authorization server does not support obtaining an authorization
     code using this method.
     """
     error = 'unsupported_response_type'
 
 
 class InvalidScopeError(OAuth2Error):
-
-    """The requested scope is invalid, unknown, or malformed."""
+    """
+    The requested scope is invalid, unknown, or malformed.
+    """
     error = 'invalid_scope'
     status_code = 401
 
 
 class ServerError(OAuth2Error):
-
-    """The authorization server encountered an unexpected condition that
+    """
+    The authorization server encountered an unexpected condition that
     prevented it from fulfilling the request.  (This error code is needed
     because a 500 Internal Server Error HTTP status code cannot be returned
     to the client via a HTTP redirect.)
@@ -198,8 +201,8 @@ class ServerError(OAuth2Error):
 
 
 class TemporarilyUnavailableError(OAuth2Error):
-
-    """The authorization server is currently unable to handle the request
+    """
+    The authorization server is currently unable to handle the request
     due to a temporary overloading or maintenance of the server.
     (This error code is needed because a 503 Service Unavailable HTTP
     status code cannot be returned to the client via a HTTP redirect.)
@@ -208,8 +211,8 @@ class TemporarilyUnavailableError(OAuth2Error):
 
 
 class InvalidClientError(OAuth2Error):
-
-    """Client authentication failed (e.g. unknown client, no client
+    """
+    Client authentication failed (e.g. unknown client, no client
     authentication included, or unsupported authentication method).
     The authorization server MAY return an HTTP 401 (Unauthorized) status
     code to indicate which HTTP authentication schemes are supported.
@@ -224,8 +227,8 @@ class InvalidClientError(OAuth2Error):
 
 
 class InvalidGrantError(OAuth2Error):
-
-    """The provided authorization grant (e.g. authorization code, resource
+    """
+    The provided authorization grant (e.g. authorization code, resource
     owner credentials) or refresh token is invalid, expired, revoked, does
     not match the redirection URI used in the authorization request, or was
     issued to another client.
@@ -235,8 +238,8 @@ class InvalidGrantError(OAuth2Error):
 
 
 class UnauthorizedClientError(OAuth2Error):
-
-    """The authenticated client is not authorized to use this authorization
+    """
+    The authenticated client is not authorized to use this authorization
     grant type.
     """
     error = 'unauthorized_client'
@@ -244,16 +247,16 @@ class UnauthorizedClientError(OAuth2Error):
 
 
 class UnsupportedGrantTypeError(OAuth2Error):
-
-    """The authorization grant type is not supported by the authorization
+    """
+    The authorization grant type is not supported by the authorization
     server.
     """
     error = 'unsupported_grant_type'
 
 
 class UnsupportedTokenTypeError(OAuth2Error):
-
-    """The authorization server does not support the revocation of the
+    """
+    The authorization server does not support the revocation of the
     presented token type.  I.e. the client tried to revoke an access token
     on a server not supporting this feature.
     """
@@ -263,12 +266,14 @@ class UnsupportedTokenTypeError(OAuth2Error):
 class FatalOpenIDClientError(FatalClientError):
     pass
 
+
 class OpenIDClientError(OAuth2Error):
     pass
 
 
 class InteractionRequired(OpenIDClientError):
-    """The Authorization Server requires End-User interaction to proceed.
+    """
+    The Authorization Server requires End-User interaction to proceed.
 
     This error MAY be returned when the prompt parameter value in the
     Authentication Request is none, but the Authentication Request cannot be
@@ -279,7 +284,8 @@ class InteractionRequired(OpenIDClientError):
 
 
 class LoginRequired(OpenIDClientError):
-    """The Authorization Server requires End-User authentication.
+    """
+    The Authorization Server requires End-User authentication.
 
     This error MAY be returned when the prompt parameter value in the
     Authentication Request is none, but the Authentication Request cannot be
@@ -290,7 +296,8 @@ class LoginRequired(OpenIDClientError):
 
 
 class AccountSelectionRequired(OpenIDClientError):
-    """The End-User is REQUIRED to select a session at the Authorization Server.
+    """
+    The End-User is REQUIRED to select a session at the Authorization Server.
 
     The End-User MAY be authenticated at the Authorization Server with
     different associated accounts, but the End-User did not select a session.
@@ -303,8 +310,8 @@ class AccountSelectionRequired(OpenIDClientError):
 
 
 class ConsentRequired(OpenIDClientError):
-
-    """The Authorization Server requires End-User consent.
+    """
+    The Authorization Server requires End-User consent.
 
     This error MAY be returned when the prompt parameter value in the
     Authentication Request is none, but the Authentication Request cannot be
@@ -354,6 +361,34 @@ class RegistrationNotSupported(OpenIDClientError):
     """
     error = 'registration_not_supported'
     description = 'The registration parameter is not supported.'
+
+
+class InvalidTokenError(OAuth2Error):
+    """
+    The access token provided is expired, revoked, malformed, or
+    invalid for other reasons.  The resource SHOULD respond with
+    the HTTP 401 (Unauthorized) status code.  The client MAY
+    request a new access token and retry the protected resource
+    request.
+    """
+    error = 'invalid_token'
+    status_code = 401
+    description = ("The access token provided is expired, revoked, malformed, "
+                   "or invalid for other reasons.")
+
+
+class InsufficientScopeError(OAuth2Error):
+    """
+    The request requires higher privileges than provided by the
+    access token.  The resource server SHOULD respond with the HTTP
+    403 (Forbidden) status code and MAY include the "scope"
+    attribute with the scope necessary to access the protected
+    resource.
+    """
+    error = 'insufficient_scope'
+    status_code = 403
+    description = ("The request requires higher privileges than provided by "
+                   "the access token.")
 
 
 def raise_from_error(error, params=None):
