@@ -71,8 +71,10 @@ class RevocationEndpoint(BaseEndpoint):
                 response_body = '%s(%s);' % (request.callback, response_body)
             return {}, response_body, e.status_code
 
-        self.request_validator.revoke_token(request.token,
-                                            request.token_type_hint, request)
+        self.request_validator.revoke_token(
+                request.token, getattr(request, 'token_type_hint', None),
+                request
+        )
 
         response_body = ''
         if self.enable_jsonp and request.callback:
@@ -128,7 +130,7 @@ class RevocationEndpoint(BaseEndpoint):
             log.debug('Client authentication failed, %r.', request)
             raise InvalidClientError(request=request) 
 
-        if (request.token_type_hint and
+        if (hasattr(request, 'token_type_hint') and
                 request.token_type_hint in self.valid_token_types and
                 request.token_type_hint not in self.supported_token_types):
             raise UnsupportedTokenTypeError(request=request)
