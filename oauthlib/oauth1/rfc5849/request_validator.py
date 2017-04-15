@@ -773,6 +773,9 @@ class RequestValidator(object):
 
         Client key can be obtained from ``request.client_key``.
 
+        At this point, the request token used for this request should be made invalid.
+        The request token's key can be obtained from ``request.resource_owner_key``.
+
         The list of realms (not joined string) can be obtained from
         ``request.realm``.
 
