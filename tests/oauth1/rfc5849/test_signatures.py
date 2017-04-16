@@ -142,13 +142,13 @@ class SignatureTests(TestCase):
 
         # test a URI with the default port
         uri = "http://www.example.com:80/"
-        self.assertEquals(normalize_base_string_uri(uri),
-                          "http://www.example.com/")
+        self.assertEqual(normalize_base_string_uri(uri),
+                         "http://www.example.com/")
 
         # test a URI missing a path
         uri = "http://www.example.com"
-        self.assertEquals(normalize_base_string_uri(uri),
-                          "http://www.example.com/")
+        self.assertEqual(normalize_base_string_uri(uri),
+                         "http://www.example.com/")
 
         # test a relative URI
         uri = "/a-host-relative-uri"
@@ -158,14 +158,14 @@ class SignatureTests(TestCase):
         # test overriding the URI's netloc with a host argument
         uri = "http://www.example.com/a-path"
         host = "alternatehost.example.com"
-        self.assertEquals(normalize_base_string_uri(uri, host),
-                          "http://alternatehost.example.com/a-path")
+        self.assertEqual(normalize_base_string_uri(uri, host),
+                         "http://alternatehost.example.com/a-path")
 
     def test_collect_parameters(self):
         """We check against parameters multiple times in case things change
         after more parameters are added.
         """
-        self.assertEquals(collect_parameters(), [])
+        self.assertEqual(collect_parameters(), [])
 
         # Check against uri_query
         parameters = collect_parameters(uri_query=self.uri_query)
@@ -241,8 +241,8 @@ class SignatureTests(TestCase):
         sign = sign_hmac_sha1(self.control_base_string,
                               self.client_secret.decode('utf-8'),
                               self.resource_owner_secret.decode('utf-8'))
-        self.assertEquals(len(sign), 28)
-        self.assertEquals(sign, self.control_signature)
+        self.assertEqual(len(sign), 28)
+        self.assertEqual(sign, self.control_signature)
 
     def test_sign_hmac_sha1_with_client(self):
         self.assertRaises(ValueError,
@@ -254,8 +254,8 @@ class SignatureTests(TestCase):
         sign = sign_hmac_sha1_with_client(
             self.control_base_string, self.client)
 
-        self.assertEquals(len(sign), 28)
-        self.assertEquals(sign, self.control_signature)
+        self.assertEqual(len(sign), 28)
+        self.assertEqual(sign, self.control_signature)
 
 
     control_base_string_rsa_sha1 = (
@@ -309,9 +309,9 @@ Ga6FHdjGPcfajt+nrpB1n8UQBEH9ZxniokR/IPvdMlxqXA==
         control_signature = self.control_signature_rsa_sha1
 
         sign = sign_rsa_sha1(base_string, private_key)
-        self.assertEquals(sign, control_signature)
+        self.assertEqual(sign, control_signature)
         sign = sign_rsa_sha1(base_string.decode('utf-8'), private_key)
-        self.assertEquals(sign, control_signature)
+        self.assertEqual(sign, control_signature)
 
 
     def test_sign_rsa_sha1_with_client(self):
@@ -323,13 +323,13 @@ Ga6FHdjGPcfajt+nrpB1n8UQBEH9ZxniokR/IPvdMlxqXA==
 
         sign = sign_rsa_sha1_with_client(base_string, self.client)
 
-        self.assertEquals(sign, control_signature)
+        self.assertEqual(sign, control_signature)
 
         self.client.decode() ## Decode `rsa_private_key` from UTF-8
 
         sign = sign_rsa_sha1_with_client(base_string, self.client)
 
-        self.assertEquals(sign, control_signature)
+        self.assertEqual(sign, control_signature)
 
 
     control_signature_plaintext = (
@@ -343,7 +343,7 @@ Ga6FHdjGPcfajt+nrpB1n8UQBEH9ZxniokR/IPvdMlxqXA==
                           self.resource_owner_secret)
         sign = sign_plaintext(self.client_secret.decode('utf-8'),
                               self.resource_owner_secret.decode('utf-8'))
-        self.assertEquals(sign, self.control_signature_plaintext)
+        self.assertEqual(sign, self.control_signature_plaintext)
 
 
     def test_sign_plaintext_with_client(self):
@@ -354,5 +354,4 @@ Ga6FHdjGPcfajt+nrpB1n8UQBEH9ZxniokR/IPvdMlxqXA==
 
         sign = sign_plaintext_with_client(None, self.client)
 
-        self.assertEquals(sign, self.control_signature_plaintext)
-
+        self.assertEqual(sign, self.control_signature_plaintext)
