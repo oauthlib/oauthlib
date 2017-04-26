@@ -201,11 +201,6 @@ class ImplicitGrant(GrantTypeBase):
         .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
         """
         try:
-            # request.scopes is only mandated in post auth and both pre and
-            # post auth use validate_authorization_request
-            if not request.scopes:
-                raise ValueError('Scopes must be set on post auth.')
-
             self.validate_token_request(request)
 
         # If the request fails due to a missing, invalid, or mismatching
