@@ -4,9 +4,9 @@ OAuthLib
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
 logic for python*
 
-.. image:: https://travis-ci.org/idan/oauthlib.png?branch=master
+.. image:: https://travis-ci.org/idan/oauthlib.svg?branch=master
   :target: https://travis-ci.org/idan/oauthlib
-.. image:: https://coveralls.io/repos/idan/oauthlib/badge.png?branch=master
+.. image:: https://coveralls.io/repos/idan/oauthlib/badge.svg?branch=master
   :target: https://coveralls.io/r/idan/oauthlib
 
 
