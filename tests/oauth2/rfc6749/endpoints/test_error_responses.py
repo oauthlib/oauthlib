@@ -240,7 +240,7 @@ class ErrorResponseTest(TestCase):
         # Authorization code grant
         _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=foo')
-        self.assertEqual('access_denied', json.loads(body)['error'])
+        self.assertEqual('invalid_request', json.loads(body)['error'])
 
     def test_unsupported_response_type(self):
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'

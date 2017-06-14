@@ -77,7 +77,7 @@ class PreservationTest(TestCase):
         code = get_query_credentials(h['Location'])['code'][0]
         _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
-        self.assertEqual(json.loads(body)['error'], 'access_denied')
+        self.assertEqual(json.loads(body)['error'], 'invalid_request')
 
         # implicit grant
         h, _, s = self.mobile.create_authorization_response(
