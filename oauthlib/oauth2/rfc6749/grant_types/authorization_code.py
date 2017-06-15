@@ -424,7 +424,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                                                            request.redirect_uri, request.client):
             log.debug('Redirect_uri (%r) invalid for client %r (%r).',
                       request.redirect_uri, request.client_id, request.client)
-            raise errors.AccessDeniedError(request=request)
+            raise errors.MismatchingRedirectURIError(request=request)
 
         for validator in self.custom_validators.post_token:
             validator(request)

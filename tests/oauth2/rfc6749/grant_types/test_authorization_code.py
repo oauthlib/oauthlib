@@ -186,5 +186,5 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def test_invalid_redirect_uri(self):
         self.mock_validator.confirm_redirect_uri.return_value = False
-        self.assertRaises(errors.AccessDeniedError,
+        self.assertRaises(errors.MismatchingRedirectURIError,
                           self.auth.validate_token_request, self.request)
