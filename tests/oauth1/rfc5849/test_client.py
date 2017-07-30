@@ -133,7 +133,7 @@ class SignatureMethodTest(TestCase):
 
         u, h, b = client.sign('http://example.com')
 
-        self.assertEquals(h['Authorization'], (
+        self.assertEqual(h['Authorization'], (
             'OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
             'oauth_version="1.0", oauth_signature_method="PIZZA", '
             'oauth_consumer_key="client_key", '
