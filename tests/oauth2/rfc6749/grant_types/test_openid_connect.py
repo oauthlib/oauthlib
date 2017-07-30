@@ -16,14 +16,14 @@ from .test_implicit import ImplicitGrantTest
 
 
 class OpenIDAuthCodeInterferenceTest(AuthorizationCodeGrantTest):
-    """Test that OpenID don't interfer with normal OAuth 2 flows."""
+    """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
         super(OpenIDAuthCodeInterferenceTest, self).setUp()
         self.auth = OpenIDConnectAuthCode(request_validator=self.mock_validator)
 
 class OpenIDImplicitInterferenceTest(ImplicitGrantTest):
-    """Test that OpenID don't interfer with normal OAuth 2 flows."""
+    """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
         super(OpenIDImplicitInterferenceTest, self).setUp()
@@ -31,7 +31,7 @@ class OpenIDImplicitInterferenceTest(ImplicitGrantTest):
 
 
 class OpenIDHybridInterferenceTest(AuthorizationCodeGrantTest):
-    """Test that OpenID don't interfer with normal OAuth 2 flows."""
+    """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
         super(OpenIDHybridInterferenceTest, self).setUp()
@@ -75,8 +75,15 @@ class OpenIDAuthCodeTest(TestCase):
 
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_query)
+        self.assertEqual(b, None)
+        self.assertEqual(s, 302)
+
+        self.request.response_mode = 'fragment'
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], self.url_fragment, parse_fragment=True)
         self.assertEqual(b, None)
         self.assertEqual(s, 302)
 
@@ -96,6 +103,7 @@ class OpenIDAuthCodeTest(TestCase):
         self.assertEqual(b, None)
         self.assertEqual(s, 302)
 
+        self.request.response_mode = 'query'
         self.request.id_token_hint = 'me@email.com'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_query)

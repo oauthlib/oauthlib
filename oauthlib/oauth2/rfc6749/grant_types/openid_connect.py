@@ -371,6 +371,8 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
 
         self.proxy_target = AuthorizationCodeGrant(
             request_validator=request_validator, **kwargs)
+        # All hybrid response types should be fragment-encoded.
+        self.proxy_target.default_response_mode = "fragment"
         self.register_response_type('code id_token')
         self.register_response_type('code token')
         self.register_response_type('code id_token token')

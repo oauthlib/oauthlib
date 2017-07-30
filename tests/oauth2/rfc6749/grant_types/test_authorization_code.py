@@ -66,6 +66,7 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def test_create_authorization_grant(self):
         bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         grant = dict(Request(h['Location']).uri_query_params)
         self.assertIn('code', grant)
@@ -76,6 +77,7 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_create_authorization_grant_state(self):
         self.request.state = 'abc'
         self.request.redirect_uri = None
+        self.request.response_mode = 'query'
         self.mock_validator.get_default_redirect_uri.return_value = 'https://a.b/cb'
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
@@ -91,6 +93,7 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_create_authorization_response(self, generate_token):
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], 'https://a.b/cb?code=abc')
         self.request.response_mode = 'fragment'
