@@ -306,6 +306,7 @@ class OpenIDConnectBase(object):
 
         request_info = {
             'display': request.display,
+            'nonce': request.nonce,
             'prompt': prompt,
             'ui_locales': request.ui_locales.split() if request.ui_locales else [],
             'id_token_hint': request.id_token_hint,
@@ -336,9 +337,7 @@ class OpenIDConnectBase(object):
             desc = 'Request is missing mandatory nonce parameter.'
             raise InvalidRequestError(request=request, description=desc)
 
-        self._inflate_claims(request)
-
-        return {'nonce': request.nonce, 'claims': request.claims}
+        return {}
 
 
 class OpenIDConnectAuthCode(OpenIDConnectBase):
