@@ -375,7 +375,7 @@ class RequestValidator(object):
 
         * RequestTokenEndpoint
         """
-        self._subclass_must_implement("get_default_realms")
+        raise self._subclass_must_implement("get_default_realms")
 
     def get_realms(self, token, request):
         """Get realms associated with a request token.
