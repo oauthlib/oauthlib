@@ -64,15 +64,16 @@ Using the Client
 
 **RSA Signatures**
 
-    OAuthLib supports the 'RSA-SHA1' signature but does not install the jwt or
-    cryptography dependency by default. The cryptography package is much better
-    supported on Windows and Mac OS X than PyCrypto, and simpler to install.
-    OAuthLib uses the jwt package to smooth out its internal code.
-    Users can install cryptography using pip::
+    OAuthLib supports 'RSA-SHA1' signatures, but does not install the
+    PyJWT or cryptography dependencies by default. OAuthLib uses the
+    PyJWT package to smooth out its internal code. The cryptography
+    package is much better supported on Windows and Mac OS X than
+    PyCrypto, and simpler to install. Users can install PyJWT and
+    cryptography using pip::
 
-        pip install jwt cryptography
+        pip install pyjwt cryptography
 
-    When you have cryptography and jwt installed using RSA signatures is
+    When you have cryptography and PyJWT installed, using RSA signatures is
     similar to HMAC but differ in a few aspects. RSA signatures does not make
     use of client secrets nor resource owner secrets (token secrets) and
     requires you to specify the signature type when constructing a client::
