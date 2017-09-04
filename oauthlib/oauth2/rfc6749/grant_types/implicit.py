@@ -239,7 +239,12 @@ class ImplicitGrant(GrantTypeBase):
 
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
-        self.request_validator.save_token(token, request)
+
+        # In OIDC implicit flow it is possible to have a request_type that does
+        # not include the access_token! In this case there is no need to save a token.
+        if "token" in request.response_type.split():
+            self.request_validator.save_token(token, request)
+
         return self.prepare_authorization_response(
             request, token, {}, None, 302)
 
