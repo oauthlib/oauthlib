@@ -87,7 +87,7 @@ class TestScopeHandling(TestCase):
             self.assertIn('Location', h)
             code = get_query_credentials(h['Location'])['code'][0]
             _, body, _ = getattr(self, backend_server_type).create_token_response(token_uri,
-                    body='grant_type=authorization_code&code=%s' % code)
+                    body='client_id=me&redirect_uri=http://back.to/me&grant_type=authorization_code&code=%s' % code)
             self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # implicit grant
