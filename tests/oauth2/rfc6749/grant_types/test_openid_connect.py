@@ -6,7 +6,9 @@ import json
 import mock
 
 from oauthlib.common import Request
-from oauthlib.oauth2.rfc6749.grant_types import (OIDCNoPrompt,
+from oauthlib.oauth2.rfc6749.grant_types import (ImplicitGrant,
+                                                 ImplicitTokenGrantDispatcher,
+                                                 OIDCNoPrompt,
                                                  OpenIDConnectAuthCode,
                                                  OpenIDConnectHybrid,
                                                  OpenIDConnectImplicit)
@@ -289,3 +291,40 @@ class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
         token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
+
+
+class ImplicitTokenGrantDispatcherTest(TestCase):
+    def setUp(self):
+        self.request = Request('http://a.b/path')
+        request_validator = mock.MagicMock()
+        implicit_grant = ImplicitGrant(request_validator)
+        openid_connect_implicit = OpenIDConnectImplicit(request_validator)
+
+        self.dispatcher = ImplicitTokenGrantDispatcher(
+            default_implicit_grant=implicit_grant,
+            oidc_implicit_grant=openid_connect_implicit
+        )
+
+    def test_create_authorization_response_openid(self):
+        self.request.scopes = ('hello', 'openid')
+        self.request.response_type = 'id_token'
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, OpenIDConnectImplicit))
+
+    def test_validate_authorization_request_openid(self):
+        self.request.scopes = ('hello', 'openid')
+        self.request.response_type = 'id_token'
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, OpenIDConnectImplicit))
+
+    def test_create_authorization_response_oauth(self):
+        self.request.scopes = ('hello', 'world')
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, ImplicitGrant))
+
+    def test_validate_authorization_request_oauth(self):
+        self.request.scopes = ('hello', 'world')
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, ImplicitGrant))
+
+

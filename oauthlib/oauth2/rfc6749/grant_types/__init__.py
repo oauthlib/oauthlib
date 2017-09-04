@@ -16,3 +16,4 @@ from .openid_connect import OpenIDConnectImplicit
 from .openid_connect import OpenIDConnectHybrid
 from .openid_connect import OIDCNoPrompt
 from .openid_connect import AuthCodeGrantDispatcher
+from .openid_connect import ImplicitTokenGrantDispatcher

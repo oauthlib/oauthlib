@@ -76,6 +76,31 @@ class AuthCodeGrantDispatcher(object):
         return self._handler_for_request(request).validate_authorization_request(request)
 
 
+class ImplicitTokenGrantDispatcher(object):
+    """
+    This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
+    including 'openid' to either the default_auth_grant or the oidc_auth_grant based on the scopes requested.
+    """
+    def __init__(self, default_implicit_grant=None, oidc_implicit_grant=None):
+        self.default_implicit_grant = default_implicit_grant
+        self.oidc_implicit_grant = oidc_implicit_grant
+
+    def _handler_for_request(self, request):
+        handler = self.default_implicit_grant
+
+        if request.scopes and "openid" in request.scopes and 'id_token' in request.response_type:
+            handler = self.oidc_implicit_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+
+    def create_authorization_response(self, request, token_handler):
+        return self._handler_for_request(request).create_authorization_response(request, token_handler)
+
+    def validate_authorization_request(self, request):
+        return self._handler_for_request(request).validate_authorization_request(request)
+
+
 class OpenIDConnectBase(object):
 
     # Just proxy the majority of method calls through to the
