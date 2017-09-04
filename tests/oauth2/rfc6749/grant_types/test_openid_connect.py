@@ -6,7 +6,9 @@ import json
 import mock
 
 from oauthlib.common import Request
-from oauthlib.oauth2.rfc6749.grant_types import (ImplicitGrant,
+from oauthlib.oauth2.rfc6749.grant_types import (AuthTokenGrantDispatcher,
+                                                 AuthorizationCodeGrant,
+                                                 ImplicitGrant,
                                                  ImplicitTokenGrantDispatcher,
                                                  OIDCNoPrompt,
                                                  OpenIDConnectAuthCode,
@@ -328,3 +330,68 @@ class ImplicitTokenGrantDispatcherTest(TestCase):
         self.assertTrue(isinstance(handler, ImplicitGrant))
 
 
+class DispatcherTest(TestCase):
+    def setUp(self):
+        self.request = Request('http://a.b/path')
+        self.request.decoded_body = (
+            ("client_id", "me"),
+            ("code", "code"),
+            ("redirect_url", "https://a.b/cb"),
+        )
+
+        self.request_validator = mock.MagicMock()
+        self.auth_grant = AuthorizationCodeGrant(self.request_validator)
+        self.openid_connect_auth = OpenIDConnectAuthCode(self.request_validator)
+
+
+class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
+
+    def setUp(self):
+        super(AuthTokenGrantDispatcherOpenIdTest, self).setUp()
+        self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'openid')
+        self.dispatcher = AuthTokenGrantDispatcher(
+            self.request_validator,
+            default_token_grant=self.auth_grant,
+            oidc_token_grant=self.openid_connect_auth
+        )
+
+    def test_create_token_response_openid(self):
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, OpenIDConnectAuthCode))
+
+
+class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
+
+    def setUp(self):
+        super(AuthTokenGrantDispatcherOpenIdWithoutCodeTest, self).setUp()
+        self.request.decoded_body = (
+            ("client_id", "me"),
+            ("code", ""),
+            ("redirect_url", "https://a.b/cb"),
+        )
+        self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'openid')
+        self.dispatcher = AuthTokenGrantDispatcher(
+            self.request_validator,
+            default_token_grant=self.auth_grant,
+            oidc_token_grant=self.openid_connect_auth
+        )
+
+    def test_create_token_response_openid_without_code(self):
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, AuthorizationCodeGrant))
+
+
+class AuthTokenGrantDispatcherOAuthTest(DispatcherTest):
+
+    def setUp(self):
+        super(AuthTokenGrantDispatcherOAuthTest, self).setUp()
+        self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'world')
+        self.dispatcher = AuthTokenGrantDispatcher(
+            self.request_validator,
+            default_token_grant=self.auth_grant,
+            oidc_token_grant=self.openid_connect_auth
+        )
+
+    def test_create_token_response_oauth(self):
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, AuthorizationCodeGrant))

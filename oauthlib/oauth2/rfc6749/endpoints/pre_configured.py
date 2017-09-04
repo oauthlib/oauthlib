@@ -9,6 +9,7 @@ for consuming and providing OAuth 2.0 RFC6749.
 from __future__ import absolute_import, unicode_literals
 
 from ..grant_types import (AuthCodeGrantDispatcher, AuthorizationCodeGrant,
+                           AuthTokenGrantDispatcher,
                            ClientCredentialsGrant,
                            ImplicitTokenGrantDispatcher, ImplicitGrant,
                            OpenIDConnectAuthCode, OpenIDConnectImplicit,
@@ -73,9 +74,12 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
                                            'none': auth_grant
                                        },
                                        default_token_type=bearer)
+
+        token_grant_choice = AuthTokenGrantDispatcher(request_validator, default_token_grant=auth_grant, oidc_token_grant=openid_connect_auth)
+
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                                grant_types={
-                                   'authorization_code': auth_grant,
+                                   'authorization_code': token_grant_choice,
                                    'password': password_grant,
                                    'client_credentials': credentials_grant,
                                    'refresh_token': refresh_grant,
