@@ -28,6 +28,7 @@ class OpenIDAuthCodeInterferenceTest(AuthorizationCodeGrantTest):
         super(OpenIDAuthCodeInterferenceTest, self).setUp()
         self.auth = OpenIDConnectAuthCode(request_validator=self.mock_validator)
 
+
 class OpenIDImplicitInterferenceTest(ImplicitGrantTest):
     """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
@@ -274,6 +275,7 @@ class OpenIDHybridCodeTokenTest(OpenIDAuthCodeTest):
         self.url_query = 'https://a.b/cb?code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc'
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc'
 
+
 class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
@@ -283,6 +285,7 @@ class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
         token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?code=abc&state=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&id_token=%s' % token
+
 
 class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
 

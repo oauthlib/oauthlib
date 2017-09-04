@@ -12,10 +12,10 @@ from json import loads
 from ..errors import ConsentRequired, InvalidRequestError, LoginRequired
 from ..request_validator import RequestValidator
 from .authorization_code import AuthorizationCodeGrant
-from .base import GrantTypeBase
 from .implicit import ImplicitGrant
 
 log = logging.getLogger(__name__)
+
 
 class OIDCNoPrompt(Exception):
     """Exception used to inform users that no explicit authorization is needed.
@@ -359,7 +359,7 @@ class OpenIDConnectBase(object):
         self._inflate_claims(request)
 
         if not self.request_validator.validate_user_match(
-            request.id_token_hint, request.scopes, request.claims, request):
+                request.id_token_hint, request.scopes, request.claims, request):
             msg = "Session user does not match client supplied user."
             raise LoginRequired(request=request, description=msg)
 
@@ -409,6 +409,7 @@ class OpenIDConnectAuthCode(OpenIDConnectBase):
             self.openid_authorization_validator)
         self.register_token_modifier(self.add_id_token)
 
+
 class OpenIDConnectImplicit(OpenIDConnectBase):
 
     def __init__(self, request_validator=None, **kwargs):
@@ -421,6 +422,7 @@ class OpenIDConnectImplicit(OpenIDConnectBase):
         self.custom_validators.post_auth.append(
             self.openid_implicit_authorization_validator)
         self.register_token_modifier(self.add_id_token)
+
 
 class OpenIDConnectHybrid(OpenIDConnectBase):
 
