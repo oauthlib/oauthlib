@@ -11,6 +11,7 @@ from __future__ import absolute_import, unicode_literals
 from ..grant_types import (AuthCodeGrantDispatcher, AuthorizationCodeGrant,
                            ClientCredentialsGrant, ImplicitGrant,
                            OpenIDConnectAuthCode, OpenIDConnectImplicit,
+                           OpenIDConnectHybrid,
                            RefreshTokenGrant,
                            ResourceOwnerPasswordCredentialsGrant)
 from ..tokens import BearerToken
@@ -49,6 +50,7 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
         refresh_grant = RefreshTokenGrant(request_validator)
         openid_connect_auth = OpenIDConnectAuthCode(request_validator)
         openid_connect_implicit = OpenIDConnectImplicit(request_validator)
+        openid_connect_hybrid = OpenIDConnectHybrid(request_validator)
 
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
@@ -63,9 +65,9 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
                                            'token': implicit_grant,
                                            'id_token': openid_connect_implicit,
                                            'id_token token': openid_connect_implicit,
-                                           'code token': openid_connect_auth,
-                                           'code id_token': openid_connect_auth,
-                                           'code token id_token': openid_connect_auth,
+                                           'code token': openid_connect_hybrid,
+                                           'code id_token': openid_connect_hybrid,
+                                           'code id_token token': openid_connect_hybrid,
                                            'none': auth_grant
                                        },
                                        default_token_type=bearer)
