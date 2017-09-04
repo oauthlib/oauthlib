@@ -83,7 +83,6 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
                                    'password': password_grant,
                                    'client_credentials': credentials_grant,
                                    'refresh_token': refresh_grant,
-                                   'openid': openid_connect_auth
                                },
                                default_token_type=bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
