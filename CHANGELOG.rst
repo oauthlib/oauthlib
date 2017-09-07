@@ -1,13 +1,28 @@
 Changelog
 =========
 
-Development
------------
+2.0.3 (2017-09-07)
+------------------
+* Address missing OIDC errors and fix a typo in the AccountSelectionRequired exception.
+* Update proxy keys on CaseInsensitiveDict.update().
+* Redirect errors according to OIDC's response_mode.
+* Added universal wheel support.
+* Added log statements to except clauses.
+* According to RC7009 Section 2.1, a client should include authentication credentials when revoking its tokens.
+  As discussed in #339, this is not make sense for public clients.
+  However, in that case, the public client should still be checked that is infact a public client (authenticate_client_id).
+* Improved prompt parameter validation.
+* Added two error codes from RFC 6750.
+* Hybrid response types are now be fragment-encoded.
+* Added Python 3.6 to Travis CI testing and trove classifiers.
+* Fixed BytesWarning issued when using a string placeholder for bytes object.
+* Documented PyJWT dependency and improved logging and exception messages.
+* Documentation improvements and fixes.
 
 2.0.2 (2017-03-19)
 ------------------
 * Dropped support for Python 2.6, 3.2 & 3.3.
-* (FIX) `OpenIDConnector` will no longer raise an AttributeError when calling `openid_authorization_validator()` twice.  
+* (FIX) `OpenIDConnector` will no longer raise an AttributeError when calling `openid_authorization_validator()` twice.
 
 2.0.1 (2016-11-23)
 ------------------
