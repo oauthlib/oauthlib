@@ -141,6 +141,13 @@ class OpenIDConnectBase(object):
     def openid_authorization_validator(self, request):
         """Perform OpenID Connect specific authorization request validation.
 
+        nonce
+                OPTIONAL. String value used to associate a Client session with
+                an ID Token, and to mitigate replay attacks. The value is
+                passed through unmodified from the Authentication Request to
+                the ID Token. Sufficient entropy MUST be present in the nonce
+                values used to prevent attackers from guessing values
+
         display
                 OPTIONAL. ASCII string value that specifies how the
                 Authorization Server displays the authentication and consent
