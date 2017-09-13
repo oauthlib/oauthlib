@@ -29,6 +29,8 @@ class OpenIDConnectEndpointTest(TestCase):
                                               response_types={'code': grant})
         params = {
             'prompt': 'consent',
+            'display': 'touch',
+            'nonce': 'abcd',
             'state': 'abc',
             'redirect_uri': 'https://a.b/cb',
             'response_type': 'code',
@@ -71,3 +73,13 @@ class OpenIDConnectEndpointTest(TestCase):
         url = 'http://a.b/path?' + urlencode(params)
         with self.assertRaises(InvalidRequestError):
             self.endpoint.validate_authorization_request(url)
+
+    def test_oidc_params_preservation(self):
+        """
+        Test that the nonce parameter is passed through.
+        """
+        scopes, creds = self.endpoint.validate_authorization_request(self.url)
+
+        self.assertEqual(creds['prompt'], {'consent'})
+        self.assertEqual(creds['nonce'], 'abcd')
+        self.assertEqual(creds['display'], 'touch')
