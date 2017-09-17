@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.0.4 (2017-09-17)
+------------------
+* Fixed typo that caused OAuthlib to crash because of the fix in "Address missing OIDC errors and fix a typo in the AccountSelectionRequired exception".
+
 2.0.3 (2017-09-07)
 ------------------
 * Address missing OIDC errors and fix a typo in the AccountSelectionRequired exception.
