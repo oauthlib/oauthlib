@@ -28,13 +28,15 @@ import hashlib
 import hmac
 import logging
 
+from oauthlib.common import (bytes_type, extract_params, safe_string_equals,
+                             unicode_type, urldecode)
+
+from . import utils
+
 try:
     import urlparse
 except ImportError:
     import urllib.parse as urlparse
-from . import utils
-from oauthlib.common import urldecode, extract_params, safe_string_equals
-from oauthlib.common import bytes_type, unicode_type
 
 log = logging.getLogger(__name__)
 

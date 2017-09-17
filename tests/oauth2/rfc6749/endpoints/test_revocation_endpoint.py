@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from json import loads
+
 from mock import MagicMock
 
 from oauthlib.common import urlencode

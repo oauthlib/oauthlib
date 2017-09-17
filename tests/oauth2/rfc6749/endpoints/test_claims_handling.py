@@ -10,11 +10,10 @@ from __future__ import absolute_import, unicode_literals
 
 import mock
 
-from .test_utils import get_query_credentials, get_fragment_credentials
-from ....unittest import TestCase
+from oauthlib.oauth2 import InvalidRequestError, RequestValidator, Server
 
-from oauthlib.oauth2 import RequestValidator, InvalidRequestError
-from oauthlib.oauth2 import Server
+from ....unittest import TestCase
+from .test_utils import get_fragment_credentials, get_query_credentials
 
 
 class TestClaimsHandling(TestCase):
@@ -104,4 +103,3 @@ class TestClaimsHandling(TestCase):
         error_desc = get_query_credentials(h['Location'])['error_description'][0]
         self.assertEqual(error, 'invalid_request')
         self.assertEqual(error_desc, "Malformed claims parameter")
-

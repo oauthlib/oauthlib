@@ -8,8 +8,9 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 from __future__ import absolute_import, unicode_literals
 
-from . import SIGNATURE_METHODS, utils
 import sys
+
+from . import SIGNATURE_METHODS, utils
 
 
 class RequestValidator(object):

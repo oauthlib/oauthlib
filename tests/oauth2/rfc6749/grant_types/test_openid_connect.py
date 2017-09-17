@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ....unittest import TestCase
 
 import json
+
 import mock
+
 from oauthlib.common import Request
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectAuthCode
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectImplicit
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectHybrid
-from oauthlib.oauth2.rfc6749.grant_types import OIDCNoPrompt
+from oauthlib.oauth2.rfc6749.grant_types import (OIDCNoPrompt,
+                                                 OpenIDConnectAuthCode,
+                                                 OpenIDConnectHybrid,
+                                                 OpenIDConnectImplicit)
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
+from ....unittest import TestCase
 from .test_authorization_code import AuthorizationCodeGrantTest
 from .test_implicit import ImplicitGrantTest
 

@@ -10,8 +10,8 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
-from .base import BaseEndpoint
 from .. import errors
+from .base import BaseEndpoint
 
 log = logging.getLogger(__name__)
 

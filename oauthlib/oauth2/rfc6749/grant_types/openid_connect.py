@@ -3,18 +3,17 @@
 oauthlib.oauth2.rfc6749.grant_types.openid_connect
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
-
-from json import loads
-import logging
+from __future__ import absolute_import, unicode_literals
 
 import datetime
+import logging
+from json import loads
 
-from .base import GrantTypeBase
-from .authorization_code import AuthorizationCodeGrant
-from .implicit import ImplicitGrant
-from ..errors import InvalidRequestError, LoginRequired, ConsentRequired
+from ..errors import ConsentRequired, InvalidRequestError, LoginRequired
 from ..request_validator import RequestValidator
+from .authorization_code import AuthorizationCodeGrant
+from .base import GrantTypeBase
+from .implicit import ImplicitGrant
 
 log = logging.getLogger(__name__)
 

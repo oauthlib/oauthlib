@@ -13,9 +13,9 @@ import logging
 
 from oauthlib.common import Request
 
+from ..errors import (InvalidClientError, InvalidRequestError, OAuth2Error,
+                      UnsupportedTokenTypeError)
 from .base import BaseEndpoint, catch_errors_and_unavailability
-from ..errors import InvalidClientError, UnsupportedTokenTypeError
-from ..errors import InvalidRequestError, OAuth2Error
 
 log = logging.getLogger(__name__)
 

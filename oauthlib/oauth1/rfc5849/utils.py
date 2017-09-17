@@ -8,12 +8,13 @@ spec.
 """
 from __future__ import absolute_import, unicode_literals
 
+from oauthlib.common import bytes_type, quote, unicode_type, unquote
+
 try:
     import urllib2
 except ImportError:
     import urllib.request as urllib2
 
-from oauthlib.common import quote, unquote, bytes_type, unicode_type
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'

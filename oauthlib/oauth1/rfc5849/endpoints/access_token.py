@@ -14,8 +14,8 @@ import logging
 
 from oauthlib.common import urlencode
 
-from .base import BaseEndpoint
 from .. import errors
+from .base import BaseEndpoint
 
 log = logging.getLogger(__name__)
 

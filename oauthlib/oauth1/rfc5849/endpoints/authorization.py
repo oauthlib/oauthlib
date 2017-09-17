@@ -10,8 +10,9 @@ from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import Request, add_params_to_uri
 
-from .base import BaseEndpoint
 from .. import errors
+from .base import BaseEndpoint
+
 try:
     from urllib import urlencode
 except ImportError:

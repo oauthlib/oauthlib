@@ -7,8 +7,11 @@ This module contains utility methods used by various parts of the OAuth 2 spec.
 """
 from __future__ import absolute_import, unicode_literals
 
-import os
 import datetime
+import os
+
+from oauthlib.common import unicode_type, urldecode
+
 try:
     from urllib import quote
 except ImportError:
@@ -17,7 +20,6 @@ try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
-from oauthlib.common import unicode_type, urldecode
 
 
 def list_to_scope(scope):

@@ -9,18 +9,21 @@ This module contains methods for adding two types of access tokens to requests.
 """
 from __future__ import absolute_import, unicode_literals
 
-from binascii import b2a_base64
 import hashlib
 import hmac
+from binascii import b2a_base64
+
+from oauthlib import common
+from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
+
+from . import utils
+
 try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
 
-from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
-from oauthlib import common
 
-from . import utils
 
 
 class OAuth2Token(dict):

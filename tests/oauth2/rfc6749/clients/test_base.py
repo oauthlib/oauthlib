@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ....unittest import TestCase
 
 import datetime
+
 from oauthlib import common
+from oauthlib.oauth2 import Client, InsecureTransportError
 from oauthlib.oauth2.rfc6749 import utils
-from oauthlib.oauth2 import Client
-from oauthlib.oauth2 import InsecureTransportError
-from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, URI_QUERY, BODY
+from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
+
+from ....unittest import TestCase
 
 
 class ClientTest(TestCase):

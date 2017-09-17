@@ -7,6 +7,7 @@ This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
+
 import logging
 
 from oauthlib.common import Request

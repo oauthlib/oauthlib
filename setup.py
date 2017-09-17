@@ -7,9 +7,10 @@ except ImportError:
     pass
 
 import sys
-
 from os.path import dirname, join
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
+
 import oauthlib
 
 

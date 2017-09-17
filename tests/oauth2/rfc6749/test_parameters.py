@@ -1,10 +1,12 @@
-from __future__ import absolute_import, unicode_literals 
+from __future__ import absolute_import, unicode_literals
+
 from mock import patch
 
-from ...unittest import TestCase
-from oauthlib.oauth2.rfc6749.parameters import *
-from oauthlib.oauth2.rfc6749.errors import *
 from oauthlib import signals
+from oauthlib.oauth2.rfc6749.errors import *
+from oauthlib.oauth2.rfc6749.parameters import *
+
+from ...unittest import TestCase
 
 
 @patch('time.time', new=lambda: 1000)

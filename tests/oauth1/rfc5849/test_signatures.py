@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+from oauthlib.common import unicode_type
+from oauthlib.oauth1.rfc5849.signature import (collect_parameters,
+                                               construct_base_string,
+                                               normalize_base_string_uri,
+                                               normalize_parameters,
+                                               sign_hmac_sha1,
+                                               sign_hmac_sha1_with_client,
+                                               sign_plaintext,
+                                               sign_plaintext_with_client,
+                                               sign_rsa_sha1,
+                                               sign_rsa_sha1_with_client)
+
+from ...unittest import TestCase
+
 try:
     from urllib import quote
 except ImportError:
     from urllib.parse import quote
 
-from oauthlib.oauth1.rfc5849.signature import collect_parameters
-from oauthlib.oauth1.rfc5849.signature import construct_base_string
-from oauthlib.oauth1.rfc5849.signature import normalize_base_string_uri
-from oauthlib.oauth1.rfc5849.signature import normalize_parameters
-from oauthlib.oauth1.rfc5849.signature import sign_hmac_sha1, sign_hmac_sha1_with_client
-from oauthlib.oauth1.rfc5849.signature import sign_rsa_sha1, sign_rsa_sha1_with_client
-from oauthlib.oauth1.rfc5849.signature import sign_plaintext, sign_plaintext_with_client
-from oauthlib.common import unicode_type
-from ...unittest import TestCase
 
 
 class SignatureTests(TestCase):

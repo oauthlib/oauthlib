@@ -1,15 +1,17 @@
 """Ensure all tokens are associated with a resource owner.
 """
 from __future__ import absolute_import, unicode_literals
+
 import json
+
 import mock
 
-from .test_utils import get_query_credentials, get_fragment_credentials
-from ....unittest import TestCase
+from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
+                             MobileApplicationServer, RequestValidator,
+                             WebApplicationServer)
 
-from oauthlib.oauth2 import RequestValidator
-from oauthlib.oauth2 import WebApplicationServer, MobileApplicationServer
-from oauthlib.oauth2 import LegacyApplicationServer, BackendApplicationServer
+from ....unittest import TestCase
+from .test_utils import get_fragment_credentials, get_query_credentials
 
 
 class ResourceOwnerAssociationTest(TestCase):

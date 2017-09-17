@@ -1,11 +1,12 @@
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from mock import MagicMock
-from ....unittest import TestCase
 
 from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import errors
 from oauthlib.oauth1.rfc5849.endpoints import AuthorizationEndpoint
+
+from ....unittest import TestCase
 
 
 class AuthorizationEndpointTest(TestCase):

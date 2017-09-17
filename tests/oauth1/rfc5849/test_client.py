@@ -2,9 +2,10 @@
 from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import Request
-from oauthlib.oauth1 import SIGNATURE_RSA, SIGNATURE_PLAINTEXT
-from oauthlib.oauth1 import SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY
+from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_RSA,
+                             SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY)
 from oauthlib.oauth1.rfc5849 import Client, bytes_type
+
 from ...unittest import TestCase
 
 

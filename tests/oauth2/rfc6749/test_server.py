@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ...unittest import TestCase
+
 import json
+
 import jwt
 import mock
 
 from oauthlib import common
+from oauthlib.oauth2.rfc6749 import errors, tokens
 from oauthlib.oauth2.rfc6749.endpoints import Server
-from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
-from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.authorization import \
+    AuthorizationEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.resource import ResourceEndpoint
-from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
-from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectAuthCode
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectImplicit
-from oauthlib.oauth2.rfc6749.grant_types import ResourceOwnerPasswordCredentialsGrant
-from oauthlib.oauth2.rfc6749.grant_types import ClientCredentialsGrant
-from oauthlib.oauth2.rfc6749 import tokens, errors
+from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
+from oauthlib.oauth2.rfc6749.grant_types import (AuthorizationCodeGrant,
+                                                 ClientCredentialsGrant,
+                                                 ImplicitGrant,
+                                                 OpenIDConnectAuthCode,
+                                                 OpenIDConnectImplicit,
+                                                 ResourceOwnerPasswordCredentialsGrant)
+
+from ...unittest import TestCase
 
 
 class AuthorizationEndpointTest(TestCase):
