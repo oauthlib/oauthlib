@@ -361,6 +361,7 @@ class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
     def test_create_token_response_openid(self):
         handler = self.dispatcher._handler_for_request(self.request)
         self.assertTrue(isinstance(handler, OpenIDConnectAuthCode))
+        self.assertTrue(self.dispatcher.request_validator.get_authorization_code_scopes.called)
 
 
 class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
@@ -382,6 +383,7 @@ class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
     def test_create_token_response_openid_without_code(self):
         handler = self.dispatcher._handler_for_request(self.request)
         self.assertTrue(isinstance(handler, AuthorizationCodeGrant))
+        self.assertFalse(self.dispatcher.request_validator.get_authorization_code_scopes.called)
 
 
 class AuthTokenGrantDispatcherOAuthTest(DispatcherTest):
@@ -398,3 +400,4 @@ class AuthTokenGrantDispatcherOAuthTest(DispatcherTest):
     def test_create_token_response_oauth(self):
         handler = self.dispatcher._handler_for_request(self.request)
         self.assertTrue(isinstance(handler, AuthorizationCodeGrant))
+        self.assertTrue(self.dispatcher.request_validator.get_authorization_code_scopes.called)
