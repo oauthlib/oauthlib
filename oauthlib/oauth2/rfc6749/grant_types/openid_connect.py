@@ -115,12 +115,12 @@ class AuthTokenGrantDispatcher(object):
         handler = self.default_token_grant
         scopes = ()
         parameters = dict(request.decoded_body)
-        client_id = parameters.get('client_id', '')
+        client_id = parameters.get('client_id', None)
         code = parameters.get('code', None)
-        redirect_uri = parameters.get('redirect_uri', '')
+        redirect_uri = parameters.get('redirect_uri', None)
 
         # If code is not pressent fallback to `default_token_grant` wich will
-        # rase an error for the missing `code` in `create_token_response` step.
+        # raise an error for the missing `code` in `create_token_response` step.
         if code:
             scopes = self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri)
 
