@@ -39,6 +39,7 @@ class OAuth2Error(Exception):
 
         request:  Oauthlib Request object
         """
+        self.response_mode = None
         self.description = description or self.description
         message = '(%s) %s' % (self.error, self.description)
         if request:
