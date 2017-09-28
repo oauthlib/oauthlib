@@ -238,7 +238,7 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_authorization_code_scopes(self, client_id, code, redirect_uri):
+    def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
         """ Extracts scopes from saved authorization code.
 
         The scopes returned by this method is used to route token requests

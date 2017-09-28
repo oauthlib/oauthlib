@@ -122,7 +122,7 @@ class AuthTokenGrantDispatcher(object):
         # If code is not pressent fallback to `default_token_grant` wich will
         # raise an error for the missing `code` in `create_token_response` step.
         if code:
-            scopes = self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri)
+            scopes = self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri, request)
 
         if 'openid' in scopes:
             handler = self.oidc_token_grant
