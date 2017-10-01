@@ -91,7 +91,7 @@ class TestClaimsHandling(TestCase):
         code = get_query_credentials(h['Location'])['code'][0]
         token_uri = 'http://example.com/path'
         _, body, _ = self.server.create_token_response(token_uri,
-                                                    body='grant_type=authorization_code&code=%s' % code)
+                body='client_id=me&redirect_uri=http://back.to/me&grant_type=authorization_code&code=%s' % code)
 
         self.assertDictEqual(self.claims_saved_with_bearer_token, claims)
 
