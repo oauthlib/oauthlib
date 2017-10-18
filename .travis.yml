@@ -15,7 +15,7 @@ matrix:
     - python: pypy-5.3
       env: TOXENV=pypy
 
-install: pip install tox coveralls
+install: pip install cryptography==2.0.3 tox coveralls
 script: tox
 
 after_success: coveralls
