@@ -10,7 +10,7 @@
 """
 
 __author__ = 'Idan Gazit <idan@gazit.me>'
-__version__ = '2.0.4'
+__version__ = '2.0.5'
 
 
 import logging

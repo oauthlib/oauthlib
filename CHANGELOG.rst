@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.0.5 (2017-10-19)
+------------------
+
+* Fix OAuth2Error.response_mode for #463.
+* Documentation improvement.
+
 2.0.4 (2017-09-17)
 ------------------
 * Fixed typo that caused OAuthlib to crash because of the fix in "Address missing OIDC errors and fix a typo in the AccountSelectionRequired exception".
