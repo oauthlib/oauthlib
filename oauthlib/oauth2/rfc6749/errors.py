@@ -18,8 +18,8 @@ class OAuth2Error(Exception):
     status_code = 400
     description = ''
 
-    def __init__(self, description=None, uri=None, state=None, status_code=None,
-                 request=None):
+    def __init__(self, description=None, uri=None, state=None,
+                 status_code=None, request=None):
         """
         description:    A human-readable ASCII [USASCII] text providing
                         additional information, used to assist the client
@@ -39,8 +39,9 @@ class OAuth2Error(Exception):
 
         request:  Oauthlib Request object
         """
-        self.response_mode = None
-        self.description = description or self.description
+        if description is not None:
+            self.description = description
+
         message = '(%s) %s' % (self.error, self.description)
         if request:
             message += ' ' + repr(request)
@@ -61,10 +62,17 @@ class OAuth2Error(Exception):
             self.grant_type = request.grant_type
             if not state:
                 self.state = request.state
+        else:
+            self.redirect_uri = None
+            self.client_id = None
+            self.scopes = None
+            self.response_type = None
+            self.response_mode = None
+            self.grant_type = None
 
     def in_uri(self, uri):
-        return add_params_to_uri(uri, self.twotuples,
-                                 fragment=self.response_mode == "fragment")
+        fragment = self.response_mode == "fragment"
+        return add_params_to_uri(uri, self.twotuples, fragment)
 
     @property
     def twotuples(self):
