@@ -119,4 +119,3 @@ mfvGGg3xNjTMO7IdrwIDAQAB
         token = client.parse_request_body_response(self.token_json, scope="invalid")
         self.assertTrue(token.scope_changed)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
-

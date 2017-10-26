@@ -8,17 +8,19 @@ for consuming and providing OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
 
+from ..grant_types import (AuthCodeGrantDispatcher, AuthorizationCodeGrant,
+                           AuthTokenGrantDispatcher,
+                           ClientCredentialsGrant,
+                           ImplicitTokenGrantDispatcher, ImplicitGrant,
+                           OpenIDConnectAuthCode, OpenIDConnectImplicit,
+                           OpenIDConnectHybrid,
+                           RefreshTokenGrant,
+                           ResourceOwnerPasswordCredentialsGrant)
 from ..tokens import BearerToken
-from ..grant_types import AuthorizationCodeGrant
-from ..grant_types import ImplicitGrant
-from ..grant_types import ResourceOwnerPasswordCredentialsGrant
-from ..grant_types import ClientCredentialsGrant
-from ..grant_types import RefreshTokenGrant
-
 from .authorization import AuthorizationEndpoint
-from .token import TokenEndpoint
 from .resource import ResourceEndpoint
 from .revocation import RevocationEndpoint
+from .token import TokenEndpoint
 
 
 class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
@@ -48,17 +50,36 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
             request_validator)
         credentials_grant = ClientCredentialsGrant(request_validator)
         refresh_grant = RefreshTokenGrant(request_validator)
+        openid_connect_auth = OpenIDConnectAuthCode(request_validator)
+        openid_connect_implicit = OpenIDConnectImplicit(request_validator)
+        openid_connect_hybrid = OpenIDConnectHybrid(request_validator)
+
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
+
+        auth_grant_choice = AuthCodeGrantDispatcher(default_auth_grant=auth_grant, oidc_auth_grant=openid_connect_auth)
+        implicit_grant_choice = ImplicitTokenGrantDispatcher(default_implicit_grant=implicit_grant, oidc_implicit_grant=openid_connect_implicit)
+
+        # See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Combinations for valid combinations
+        # internally our AuthorizationEndpoint will ensure they can appear in any order for any valid combination
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                                        response_types={
-                                           'code': auth_grant,
-                                           'token': implicit_grant,
+                                           'code': auth_grant_choice,
+                                           'token': implicit_grant_choice,
+                                           'id_token': openid_connect_implicit,
+                                           'id_token token': openid_connect_implicit,
+                                           'code token': openid_connect_hybrid,
+                                           'code id_token': openid_connect_hybrid,
+                                           'code id_token token': openid_connect_hybrid,
+                                           'none': auth_grant
                                        },
                                        default_token_type=bearer)
+
+        token_grant_choice = AuthTokenGrantDispatcher(request_validator, default_token_grant=auth_grant, oidc_token_grant=openid_connect_auth)
+
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                                grant_types={
-                                   'authorization_code': auth_grant,
+                                   'authorization_code': token_grant_choice,
                                    'password': password_grant,
                                    'client_credentials': credentials_grant,
                                    'refresh_token': refresh_grant,

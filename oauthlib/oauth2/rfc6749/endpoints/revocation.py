@@ -13,9 +13,9 @@ import logging
 
 from oauthlib.common import Request
 
+from ..errors import (InvalidClientError, InvalidRequestError, OAuth2Error,
+                      UnsupportedTokenTypeError)
 from .base import BaseEndpoint, catch_errors_and_unavailability
-from ..errors import InvalidClientError, UnsupportedTokenTypeError
-from ..errors import InvalidRequestError, OAuth2Error
 
 log = logging.getLogger(__name__)
 
@@ -122,7 +122,11 @@ class RevocationEndpoint(BaseEndpoint):
 
         if self.request_validator.client_authentication_required(request):
             if not self.request_validator.authenticate_client(request):
+                log.debug('Client authentication failed, %r.', request)
                 raise InvalidClientError(request=request)
+        elif not self.request_validator.authenticate_client_id(request.client_id, request):
+            log.debug('Client authentication failed, %r.', request)
+            raise InvalidClientError(request=request) 
 
         if (request.token_type_hint and
                 request.token_type_hint in self.valid_token_types and

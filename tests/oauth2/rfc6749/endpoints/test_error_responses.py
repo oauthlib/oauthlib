@@ -1,15 +1,17 @@
 """Ensure the correct error responses are returned for all defined error types.
 """
 from __future__ import absolute_import, unicode_literals
+
 import json
+
 import mock
 
-from ....unittest import TestCase
-
-from oauthlib.oauth2 import RequestValidator
-from oauthlib.oauth2 import WebApplicationServer, MobileApplicationServer
-from oauthlib.oauth2 import LegacyApplicationServer, BackendApplicationServer
+from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
+                             MobileApplicationServer, RequestValidator,
+                             WebApplicationServer)
 from oauthlib.oauth2.rfc6749 import errors
+
+from ....unittest import TestCase
 
 
 class ErrorResponseTest(TestCase):
@@ -240,7 +242,7 @@ class ErrorResponseTest(TestCase):
         # Authorization code grant
         _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=foo')
-        self.assertEqual('access_denied', json.loads(body)['error'])
+        self.assertEqual('invalid_request', json.loads(body)['error'])
 
     def test_unsupported_response_type(self):
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'

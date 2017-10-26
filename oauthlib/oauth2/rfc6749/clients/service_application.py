@@ -12,9 +12,8 @@ import time
 
 from oauthlib.common import to_unicode
 
+from ..parameters import parse_token_response, prepare_token_request
 from .base import Client
-from ..parameters import prepare_token_request
-from ..parameters import parse_token_response
 
 
 class ServiceApplicationClient(Client):

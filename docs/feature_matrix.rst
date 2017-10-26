@@ -17,6 +17,7 @@ OAuth 2 client and provider support for
 - Bearer Tokens
 - Draft MAC tokens
 - Token Revocation
+- OpenID Connect Authentication
 
 with support for SAML2 and JWT tokens, dynamic client registration and more to
 come.

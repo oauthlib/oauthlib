@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 from oauthlib.common import urlencode
-from oauthlib.oauth1.rfc5849.parameters import (_append_params, prepare_headers,
-    prepare_form_encoded_body, prepare_request_uri_query)
+from oauthlib.oauth1.rfc5849.parameters import (_append_params,
+                                                prepare_form_encoded_body,
+                                                prepare_headers,
+                                                prepare_request_uri_query)
+
 from ...unittest import TestCase
 
 

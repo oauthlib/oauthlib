@@ -36,7 +36,7 @@ UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
 CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
                            'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}')
 
-PASSWORD_PATTERN = re.compile(r'password=[^&]+')
+SANITIZE_PATTERN = re.compile(r'([^&;]*(?:password|token)[^=]*=)[^&;]+', re.IGNORECASE)
 INVALID_HEX_PATTERN = re.compile(r'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]')
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -109,7 +109,7 @@ def decode_params_utf8(params):
     return decoded
 
 
-urlencoded = set(always_safe) | set('=&;%+~,*@!')
+urlencoded = set(always_safe) | set('=&;:%+~,*@!()/?')
 
 
 def urldecode(query):
@@ -354,6 +354,11 @@ class CaseInsensitiveDict(dict):
         super(CaseInsensitiveDict, self).__setitem__(k, v)
         self.proxy[k.lower()] = k
 
+    def update(self, *args, **kwargs):
+        super(CaseInsensitiveDict, self).update(*args, **kwargs)
+        for k in dict(*args, **kwargs):
+            self.proxy[k.lower()] = k
+
 
 class Request(object):
 
@@ -393,6 +398,7 @@ class Request(object):
             "grant_type": None,
             "redirect_uri": None,
             "refresh_token": None,
+            "request_token": None,
             "response_type": None,
             "scope": None,
             "scopes": None,
@@ -400,6 +406,18 @@ class Request(object):
             "token": None,
             "user": None,
             "token_type_hint": None,
+
+            # OpenID Connect
+            "response_mode": None,
+            "nonce": None,
+            "display": None,
+            "prompt": None,
+            "claims": None,
+            "max_age": None,
+            "ui_locales": None,
+            "id_token_hint": None,
+            "login_hint": None,
+            "acr_values": None
         }
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))
@@ -413,10 +431,13 @@ class Request(object):
 
     def __repr__(self):
         body = self.body
-        if body and 'password=' in body:
-            body = PASSWORD_PATTERN.sub('password=***', body)
+        headers = self.headers.copy()
+        if body:
+            body = SANITIZE_PATTERN.sub('\1<SANITIZED>', str(body))
+        if 'Authorization' in headers:
+            headers['Authorization'] = '<SANITIZED>'
         return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
-            self.uri, self.http_method, self.headers, body)
+            self.uri, self.http_method, headers, body)
 
     @property
     def uri_query(self):

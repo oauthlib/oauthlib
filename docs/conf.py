@@ -11,7 +11,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
+import sys
+
+from oauthlib import __version__ as v
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -48,7 +51,6 @@ copyright = u'2012, Idan Gazit and the Python Community'
 #
 # The short X.Y version.
 
-from oauthlib import __version__ as v
 version = v[:3]
 # The full version, including alpha/beta/rc tags.
 release = v

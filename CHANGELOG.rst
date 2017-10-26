@@ -1,10 +1,71 @@
 Changelog
 =========
 
+2.0.5 (2017-10-19)
+------------------
+
+* Fix OAuth2Error.response_mode for #463.
+* Documentation improvement.
+
+2.0.4 (2017-09-17)
+------------------
+* Fixed typo that caused OAuthlib to crash because of the fix in "Address missing OIDC errors and fix a typo in the AccountSelectionRequired exception".
+
+2.0.3 (2017-09-07)
+------------------
+* Address missing OIDC errors and fix a typo in the AccountSelectionRequired exception.
+* Update proxy keys on CaseInsensitiveDict.update().
+* Redirect errors according to OIDC's response_mode.
+* Added universal wheel support.
+* Added log statements to except clauses.
+* According to RC7009 Section 2.1, a client should include authentication credentials when revoking its tokens.
+  As discussed in #339, this is not make sense for public clients.
+  However, in that case, the public client should still be checked that is infact a public client (authenticate_client_id).
+* Improved prompt parameter validation.
+* Added two error codes from RFC 6750.
+* Hybrid response types are now be fragment-encoded.
+* Added Python 3.6 to Travis CI testing and trove classifiers.
+* Fixed BytesWarning issued when using a string placeholder for bytes object.
+* Documented PyJWT dependency and improved logging and exception messages.
+* Documentation improvements and fixes.
+
+2.0.2 (2017-03-19)
+------------------
+* Dropped support for Python 2.6, 3.2 & 3.3.
+* (FIX) `OpenIDConnector` will no longer raise an AttributeError when calling `openid_authorization_validator()` twice.
+
+2.0.1 (2016-11-23)
+------------------
+* (FIX) Normalize handling of request.scopes list
+
+2.0.0 (2016-09-03)
+------------------
+* (New Feature) **OpenID** support.
+* Documentation improvements and fixes.
+
+1.1.2 (2016-06-01)
+------------------
+* (Fix) Query strings should be able to include colons.
+* (Fix) Cast body to a string to ensure that we can perform a regex substitution on it.
+
+1.1.1 (2016-05-01)
+------------------
+* (Enhancement) Better sanitisation of Request objects __repr__.
+
+1.1.0 (2016-04-11)
+------------------
+* (Fix) '(', ')', '/' and '?' are now safe characters in url encoded strings.
+* (Enhancement) Added support for specifying if refresh tokens should be created on authorization code grants.
+* (Fix) OAuth2Token now handles None scopes correctly.
+* (Fix) Request token is now available for OAuth 1.
+* (Enhancement) OAuth2Token is declared with __slots__ for smaller memory footprint.
+* (Enhancement) RefreshTokenGrant now allows to set issue_new_refresh_tokens.
+* Documentation improvements and fixes.
+
 1.0.3 (2015-08-16)
 ------------------
 * (Fix) Changed the documented return type of the ```invalidate_request_token()``` method from the RSA key to None since nobody is using the return type.
-* (Enhancement) Added a validator log that will store what the endpoint has computed for debugging and logging purposes (OAuth 1 only for now). 
+* (Enhancement) Added a validator log that will store what the endpoint has computed for debugging and logging purposes (OAuth 1 only for now).
 
 1.0.2 (2015-08-10)
 ------------------

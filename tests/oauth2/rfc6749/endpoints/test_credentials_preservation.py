@@ -4,15 +4,17 @@ The Authorization Code Grant will need to preserve state as well as redirect
 uri and the Implicit Grant will need to preserve state.
 """
 from __future__ import absolute_import, unicode_literals
+
 import json
+
 import mock
 
-from .test_utils import get_query_credentials, get_fragment_credentials
-from ....unittest import TestCase
-
-from oauthlib.oauth2 import RequestValidator
-from oauthlib.oauth2 import WebApplicationServer, MobileApplicationServer
+from oauthlib.oauth2 import (MobileApplicationServer, RequestValidator,
+                             WebApplicationServer)
 from oauthlib.oauth2.rfc6749 import errors
+
+from ....unittest import TestCase
+from .test_utils import get_fragment_credentials, get_query_credentials
 
 
 class PreservationTest(TestCase):
@@ -77,7 +79,7 @@ class PreservationTest(TestCase):
         code = get_query_credentials(h['Location'])['code'][0]
         _, body, _ = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
-        self.assertEqual(json.loads(body)['error'], 'access_denied')
+        self.assertEqual(json.loads(body)['error'], 'invalid_request')
 
         # implicit grant
         h, _, s = self.mobile.create_authorization_response(

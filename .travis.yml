@@ -1,20 +1,25 @@
 language: python
 sudo: false
-cache:
-  directories:
-  - "$HOME/.cache/pip"
+cache: pip
+
+matrix:
+  include:
+    - python: 2.7
+      env: TOXENV=py27
+    - python: 3.4
+      env: TOXENV=py34
+    - python: 3.5
+      env: TOXENV=py35
+    - python: 3.6
+      env: TOXENV=py36
+    - python: pypy-5.3
+      env: TOXENV=pypy
+
 install:
-- pip install tox coveralls
-script:
-- tox
-env:
-- TOXENV=py26
-- TOXENV=py27
-- TOXENV=py32
-- TOXENV=py33
-- TOXENV=py32
-- TOXENV=pypy
-- TOXENV=pypy3
+  - pip install -U setuptools
+  - pip install tox coveralls
+script: tox
+
 after_success: coveralls
 notifications:
   irc: irc.freenode.org#oauthlib

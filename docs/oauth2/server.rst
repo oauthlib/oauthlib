@@ -33,7 +33,7 @@ translate to other ORMs such as SQLAlchemy and the Appengine Datastore.
 User (or Resource Owner)
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The user of your site which resources might be access by clients upon
+The user of your site which resources might be accessed by clients upon
 authorization from the user. In our example we will re-use the User
 model provided in django.contrib.auth.models. How the user authenticates
 is orthogonal from OAuth and may be any way you prefer::
@@ -405,14 +405,14 @@ The example using Django but should be transferable to any framework.
             # All requests to /token will return a json response, no redirection.
             return response_from_return(headers, body, status)
 
-        def response_from_return(headers, body, status):
-            response = HttpResponse(content=body, status=status)
-            for k, v in headers.items():
-                response[k] = v
-            return response
+    def response_from_return(headers, body, status):
+        response = HttpResponse(content=body, status=status)
+        for k, v in headers.items():
+            response[k] = v
+        return response
 
-        def response_from_error(e)
-            return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
+    def response_from_error(e)
+        return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
 
 
 5. Protect your APIs using scopes

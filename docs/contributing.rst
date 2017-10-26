@@ -147,7 +147,7 @@ version. For Ubuntu you can easily install all after adding one ppa.
    $ sudo apt-get install python3.3 python3.3-dev
    $ sudo apt-get install pypy pypy-dev
 
-.. _`Tox`: http://tox.readthedocs.org/en/latest/install.html
+.. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
 .. _`virtualenv`: http://www.virtualenv.org/en/latest/#installation
 
 If you add code you need to add tests!

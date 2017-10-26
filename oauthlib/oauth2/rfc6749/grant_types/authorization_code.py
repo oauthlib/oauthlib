@@ -3,7 +3,7 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import json
 import logging
@@ -11,9 +11,8 @@ import logging
 from oauthlib import common
 from oauthlib.uri_validate import is_absolute_uri
 
-from .base import GrantTypeBase
 from .. import errors
-from ..request_validator import RequestValidator
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
@@ -95,8 +94,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
     .. _`Authorization Code Grant`: http://tools.ietf.org/html/rfc6749#section-4.1
     """
 
-    def __init__(self, request_validator=None):
-        self.request_validator = request_validator or RequestValidator()
+    default_response_mode = 'query'
+    response_types = ['code']
 
     def create_authorization_code(self, request):
         """Generates an authorization grant represented as a dictionary."""
@@ -114,7 +113,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
 
         response_type
-                REQUIRED.  Value MUST be set to "code".
+                REQUIRED.  Value MUST be set to "code" for standard OAuth2
+                authorization flow.  For OpenID Connect it must be one of
+                "code token", "code id_token", or "code token id_token" - we
+                essentially test that "code" appears in the response_type.
         client_id
                 REQUIRED.  The client identifier as described in `Section 2.2`_.
         redirect_uri
@@ -208,13 +210,19 @@ class AuthorizationCodeGrant(GrantTypeBase):
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
             request.redirect_uri = request.redirect_uri or self.error_uri
-            return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples)}, None, 302
+            redirect_uri = common.add_params_to_uri(
+                request.redirect_uri, e.twotuples,
+                fragment=request.response_mode == "fragment")
+            return {'Location': redirect_uri}, None, 302
 
         grant = self.create_authorization_code(request)
+        for modifier in self._code_modifiers:
+            grant = modifier(grant, token_handler, request)
         log.debug('Saving grant %r for %r.', grant, request)
         self.request_validator.save_authorization_code(
             request.client_id, grant, request)
-        return {'Location': common.add_params_to_uri(request.redirect_uri, grant.items())}, None, 302
+        return self.prepare_authorization_response(
+            request, grant, {}, None, 302)
 
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.
@@ -237,7 +245,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Client error during validation of %r. %r.', request, e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=True)
+        token = token_handler.create_token(request, refresh_token=self.refresh_token, save_token=False)
+        for modifier in self._token_modifiers:
+            token = modifier(token, token_handler, request)
+        self.request_validator.save_token(token, request)
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
         return headers, json.dumps(token), 200
@@ -314,11 +325,16 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions.
 
+        request_info = {}
+        for validator in self.custom_validators.pre_auth:
+            request_info.update(validator(request))
+
         # REQUIRED.
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
-        # Value MUST be set to "code".
-        elif request.response_type != 'code':
+        # Value MUST be set to "code" or one of the OpenID authorization code including
+        # response_types "code token", "code id_token", "code token id_token"
+        elif not 'code' in request.response_type and request.response_type != 'none':
             raise errors.UnsupportedResponseTypeError(request=request)
 
         if not self.request_validator.validate_response_type(request.client_id,
@@ -333,18 +349,26 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
-        return request.scopes, {
+        request_info.update({
             'client_id': request.client_id,
             'redirect_uri': request.redirect_uri,
             'response_type': request.response_type,
             'state': request.state,
-            'request': request,
-        }
+            'request': request
+        })
+
+        for validator in self.custom_validators.post_auth:
+            request_info.update(validator(request))
+
+        return request.scopes, request_info
 
     def validate_token_request(self, request):
         # REQUIRED. Value MUST be set to "authorization_code".
-        if request.grant_type != 'authorization_code':
+        if request.grant_type not in ('authorization_code', 'openid'):
             raise errors.UnsupportedGrantTypeError(request=request)
+
+        for validator in self.custom_validators.pre_token:
+            validator(request)
 
         if request.code is None:
             raise errors.InvalidRequestError(
@@ -376,6 +400,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
                                       'request.client.client_id attribute '
                                       'in authenticate_client.')
 
+        request.client_id = request.client_id or request.client.client_id
+
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
 
@@ -398,4 +424,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                                                            request.redirect_uri, request.client):
             log.debug('Redirect_uri (%r) invalid for client %r (%r).',
                       request.redirect_uri, request.client_id, request.client)
-            raise errors.AccessDeniedError(request=request)
+            raise errors.MismatchingRedirectURIError(request=request)
+
+        for validator in self.custom_validators.post_token:
+            validator(request)

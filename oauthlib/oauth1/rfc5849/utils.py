@@ -8,12 +8,13 @@ spec.
 """
 from __future__ import absolute_import, unicode_literals
 
+from oauthlib.common import bytes_type, quote, unicode_type, unquote
+
 try:
     import urllib2
 except ImportError:
     import urllib.request as urllib2
 
-from oauthlib.common import quote, unquote, bytes_type, unicode_type
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -53,7 +54,7 @@ def escape(u):
     """
     if not isinstance(u, unicode_type):
         raise ValueError('Only unicode objects are escapable. ' +
-                         'Got %s of type %s.' % (u, type(u)))
+                         'Got %r of type %s.' % (u, type(u)))
     # Letters, digits, and the characters '_.-' are already treated as safe
     # by urllib.quote(). We need to add '~' to fully support rfc5849.
     return quote(u, safe=b'~')

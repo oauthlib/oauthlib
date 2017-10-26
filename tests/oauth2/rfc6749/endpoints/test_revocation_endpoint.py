@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from json import loads
+
 from mock import MagicMock
 
 from oauthlib.common import urlencode
@@ -14,6 +15,7 @@ class RevocationEndpointTest(TestCase):
 
     def setUp(self):
         self.validator = MagicMock(wraps=RequestValidator())
+        self.validator.client_authentication_required.return_value = True
         self.validator.authenticate_client.return_value = True
         self.validator.revoke_token.return_value = True
         self.endpoint = RevocationEndpoint(self.validator)
@@ -40,22 +42,20 @@ class RevocationEndpointTest(TestCase):
         self.assertEqual(h, {})
         self.assertEqual(b, '')
         self.assertEqual(s, 200)
-    
-    def test_revoke_token_without_client_authentication(self):
-        self.validator.client_authentication_required.return_value = False
-        self.validator.authenticate_client.return_value = False        
-        for token_type in ('access_token', 'refresh_token', 'invalid'):
-            body = urlencode([('token', 'foo'),
-                              ('token_type_hint', token_type)])
-            h, b, s = self.endpoint.create_revocation_response(self.uri,
-                    headers=self.headers, body=body)
-            self.assertEqual(h, {})
-            self.assertEqual(b, None)
-            self.assertEqual(s, 200)
 
-    def test_revoke_token_without_client_authentication(self):
-        self.validator.client_authentication_required.return_value = False
+    def test_revoke_token_client_authentication_failed(self):
         self.validator.authenticate_client.return_value = False
+        body = urlencode([('token', 'foo'),
+                          ('token_type_hint', 'access_token')])
+        h, b, s = self.endpoint.create_revocation_response(self.uri,
+                headers=self.headers, body=body)
+        self.assertEqual(h, {})
+        self.assertEqual(loads(b)['error'], 'invalid_client')
+        self.assertEqual(s, 401)
+
+    def test_revoke_token_public_client_authentication(self):
+        self.validator.client_authentication_required.return_value = False
+        self.validator.authenticate_client_id.return_value = True
         for token_type in ('access_token', 'refresh_token', 'invalid'):
             body = urlencode([('token', 'foo'),
                               ('token_type_hint', token_type)])
@@ -64,6 +64,17 @@ class RevocationEndpointTest(TestCase):
             self.assertEqual(h, {})
             self.assertEqual(b, '')
             self.assertEqual(s, 200)
+
+    def test_revoke_token_public_client_authentication_failed(self):
+        self.validator.client_authentication_required.return_value = False
+        self.validator.authenticate_client_id.return_value = False
+        body = urlencode([('token', 'foo'),
+                          ('token_type_hint', 'access_token')])
+        h, b, s = self.endpoint.create_revocation_response(self.uri,
+                headers=self.headers, body=body)
+        self.assertEqual(h, {})
+        self.assertEqual(loads(b)['error'], 'invalid_client')
+        self.assertEqual(s, 401)
 
     def test_revoke_with_callback(self):
         endpoint = RevocationEndpoint(self.validator, enable_jsonp=True)

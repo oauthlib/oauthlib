@@ -3,14 +3,14 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import json
 import logging
 
-from .base import GrantTypeBase
 from .. import errors
 from ..request_validator import RequestValidator
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
@@ -70,14 +70,6 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     .. _`Resource Owner Password Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.3
     """
 
-    def __init__(self, request_validator=None, refresh_token=True):
-        """
-        If the refresh_token keyword argument is False, do not return
-        a refresh token in the response.
-        """
-        self.request_validator = request_validator or RequestValidator()
-        self.refresh_token = refresh_token
-
     def create_token_response(self, request, token_handler):
         """Return token or error in json format.
 
@@ -110,7 +102,12 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             log.debug('Client error in token request, %s.', e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, self.refresh_token)
+        token = token_handler.create_token(request, self.refresh_token, save_token=False)
+
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token, request)
+
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
                   token, request.client_id, request.client, request.username)
         return headers, json.dumps(token), 200
@@ -159,6 +156,9 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
         .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
         """
+        for validator in self.custom_validators.pre_token:
+            validator(request)
+
         for param in ('grant_type', 'username', 'password'):
             if not getattr(request, param, None):
                 raise errors.InvalidRequestError(
@@ -192,3 +192,6 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         if request.client:
             request.client_id = request.client_id or request.client.client_id
         self.validate_scopes(request)
+
+        for validator in self.custom_validators.post_token:
+            validator(request)

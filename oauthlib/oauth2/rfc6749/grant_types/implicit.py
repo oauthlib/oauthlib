@@ -3,16 +3,15 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import logging
 
 from oauthlib import common
 from oauthlib.uri_validate import is_absolute_uri
 
-from .base import GrantTypeBase
 from .. import errors
-from ..request_validator import RequestValidator
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
@@ -117,8 +116,8 @@ class ImplicitGrant(GrantTypeBase):
     .. _`Section 10.16`: http://tools.ietf.org/html/rfc6749#section-10.16
     """
 
-    def __init__(self, request_validator=None):
-        self.request_validator = request_validator or RequestValidator()
+    response_types = ['token']
+    grant_allows_refresh_token = False
 
     def create_authorization_response(self, request, token_handler):
         """Create an authorization response.
@@ -127,7 +126,8 @@ class ImplicitGrant(GrantTypeBase):
         using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
 
         response_type
-                REQUIRED.  Value MUST be set to "token".
+                REQUIRED.  Value MUST be set to "token" for standard OAuth2 implicit flow
+                           or "id_token token" or just "id_token" for OIDC implicit flow
 
         client_id
                 REQUIRED.  The client identifier as described in `Section 2.2`_.
@@ -228,9 +228,24 @@ class ImplicitGrant(GrantTypeBase):
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
                                                          fragment=True)}, None, 302
 
-        token = token_handler.create_token(request, refresh_token=False)
-        return {'Location': common.add_params_to_uri(request.redirect_uri, token.items(),
-                                                     fragment=True)}, None, 302
+        # In OIDC implicit flow it is possible to have a request_type that does not include the access_token!
+        # "id_token token" - return the access token and the id token
+        # "id_token" - don't return the access token
+        if "token" in request.response_type.split():
+            token = token_handler.create_token(request, refresh_token=False, save_token=False)
+        else:
+            token = {}
+
+        for modifier in self._token_modifiers:
+            token = modifier(token, token_handler, request)
+
+        # In OIDC implicit flow it is possible to have a request_type that does
+        # not include the access_token! In this case there is no need to save a token.
+        if "token" in request.response_type.split():
+            self.request_validator.save_token(token, request)
+
+        return self.prepare_authorization_response(
+            request, token, {}, None, 302)
 
     def validate_authorization_request(self, request):
         return self.validate_token_request(request)
@@ -305,6 +320,9 @@ class ImplicitGrant(GrantTypeBase):
 
         # Then check for normal errors.
 
+        request_info = self._run_custom_validators(request,
+                                                   self.custom_validators.all_pre)
+
         # If the resource owner denies the access request or if the request
         # fails for reasons other than a missing or invalid redirection URI,
         # the authorization server informs the client by adding the following
@@ -318,8 +336,8 @@ class ImplicitGrant(GrantTypeBase):
         # REQUIRED.
         if request.response_type is None:
             raise errors.MissingResponseTypeError(request=request)
-        # Value MUST be set to "token".
-        elif request.response_type != 'token':
+        # Value MUST be one of our registered types: "token" by default or if using OIDC "id_token" or "id_token token"
+        elif not set(request.response_type.split()).issubset(self.response_types):
             raise errors.UnsupportedResponseTypeError(request=request)
 
         log.debug('Validating use of response_type token for client %r (%r).',
@@ -336,10 +354,33 @@ class ImplicitGrant(GrantTypeBase):
         # http://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
-        return request.scopes, {
+        request_info.update({
             'client_id': request.client_id,
             'redirect_uri': request.redirect_uri,
             'response_type': request.response_type,
             'state': request.state,
             'request': request,
-        }
+        })
+
+        request_info = self._run_custom_validators(
+            request,
+            self.custom_validators.all_post,
+            request_info
+        )
+
+        return request.scopes, request_info
+
+    def _run_custom_validators(self,
+                               request,
+                               validations,
+                               request_info=None):
+        # Make a copy so we don't modify the existing request_info dict
+        request_info = {} if request_info is None else request_info.copy()
+        # For implicit grant, auth_validators and token_validators are
+        # basically equivalent since the token is returned from the
+        # authorization endpoint.
+        for validator in validations:
+            result = validator(request)
+            if result is not None:
+                request_info.update(result)
+        return request_info

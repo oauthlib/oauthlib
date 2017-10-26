@@ -8,7 +8,7 @@ for consuming OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
 
-from .base import *
+from .base import Client, AUTH_HEADER, URI_QUERY, BODY
 from .web_application import WebApplicationClient
 from .mobile_application import MobileApplicationClient
 from .legacy_application import LegacyApplicationClient

@@ -1,11 +1,12 @@
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
-from mock import MagicMock, ANY
-from ....unittest import TestCase
+from mock import ANY, MagicMock
 
-from oauthlib.oauth1.rfc5849 import Client
 from oauthlib.oauth1 import RequestValidator
+from oauthlib.oauth1.rfc5849 import Client
 from oauthlib.oauth1.rfc5849.endpoints import AccessTokenEndpoint
+
+from ....unittest import TestCase
 
 
 class AccessTokenEndpointTest(TestCase):
@@ -90,4 +91,3 @@ class AccessTokenEndpointTest(TestCase):
              request_token=self.client.resource_owner_key)
         self.validator.invalidate_request_token.assert_called_once_with(
                 self.client.client_key, self.client.resource_owner_key, ANY)
-

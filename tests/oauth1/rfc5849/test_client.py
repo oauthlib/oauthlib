@@ -2,9 +2,10 @@
 from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import Request
-from oauthlib.oauth1 import SIGNATURE_RSA, SIGNATURE_PLAINTEXT
-from oauthlib.oauth1 import SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY
+from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_RSA,
+                             SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY)
 from oauthlib.oauth1.rfc5849 import Client, bytes_type
+
 from ...unittest import TestCase
 
 
@@ -133,7 +134,7 @@ class SignatureMethodTest(TestCase):
 
         u, h, b = client.sign('http://example.com')
 
-        self.assertEquals(h['Authorization'], (
+        self.assertEqual(h['Authorization'], (
             'OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
             'oauth_version="1.0", oauth_signature_method="PIZZA", '
             'oauth_consumer_key="client_key", '

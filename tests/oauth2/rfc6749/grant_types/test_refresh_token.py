@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ....unittest import TestCase
 
 import json
+
 import mock
+
 from oauthlib.common import Request
+from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types import RefreshTokenGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
-from oauthlib.oauth2.rfc6749 import errors
+
+from ....unittest import TestCase
 
 
 class RefreshTokenGrantTest(TestCase):
@@ -30,10 +33,36 @@ class RefreshTokenGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
         self.assertEqual(token['scope'], 'foo')
+
+    def test_custom_auth_validators_unsupported(self):
+        authval1, authval2 = mock.Mock(), mock.Mock()
+        expected = ('RefreshTokenGrant does not support authorization '
+                    'validators. Use token validators instead.')
+        with self.assertRaises(ValueError) as caught:
+            RefreshTokenGrant(self.mock_validator, pre_auth=[authval1])
+        self.assertEqual(caught.exception.args[0], expected)
+        with self.assertRaises(ValueError) as caught:
+            RefreshTokenGrant(self.mock_validator, post_auth=[authval2])
+        self.assertEqual(caught.exception.args[0], expected)
+        with self.assertRaises(AttributeError):
+            self.auth.custom_validators.pre_auth.append(authval1)
+        with self.assertRaises(AttributeError):
+            self.auth.custom_validators.pre_auth.append(authval2)
+
+    def test_custom_token_validators(self):
+        tknval1, tknval2 = mock.Mock(), mock.Mock()
+        self.auth.custom_validators.pre_token.append(tknval1)
+        self.auth.custom_validators.post_token.append(tknval2)
+
+        bearer = BearerToken(self.mock_validator)
+        self.auth.create_token_response(self.request, bearer)
+        self.assertTrue(tknval1.called)
+        self.assertTrue(tknval2.called)
 
     def test_create_token_inherit_scope(self):
         self.request.scope = None
@@ -42,6 +71,7 @@ class RefreshTokenGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
@@ -54,6 +84,7 @@ class RefreshTokenGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
@@ -66,6 +97,7 @@ class RefreshTokenGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 0)
         self.assertEqual(token['error'], 'invalid_scope')
         self.assertEqual(status_code, 401)
 
@@ -75,6 +107,7 @@ class RefreshTokenGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 0)
         self.assertEqual(token['error'], 'invalid_grant')
         self.assertEqual(status_code, 401)
 
@@ -84,6 +117,7 @@ class RefreshTokenGrantTest(TestCase):
         headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
+        self.assertEqual(self.mock_validator.save_token.call_count, 0)
         self.assertEqual(token['error'], 'invalid_client')
         self.assertEqual(status_code, 401)
 

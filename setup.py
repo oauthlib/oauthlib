@@ -7,9 +7,10 @@ except ImportError:
     pass
 
 import sys
-
 from os.path import dirname, join
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
+
 import oauthlib
 
 
@@ -50,7 +51,7 @@ setup(
     },
     install_requires=requires,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved',
@@ -59,11 +60,12 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',

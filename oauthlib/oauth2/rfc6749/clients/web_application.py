@@ -8,10 +8,10 @@ for consuming and providing OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
 
+from ..parameters import (parse_authorization_code_response,
+                          parse_token_response, prepare_grant_uri,
+                          prepare_token_request)
 from .base import Client
-from ..parameters import prepare_grant_uri, prepare_token_request
-from ..parameters import parse_authorization_code_response
-from ..parameters import parse_token_response
 
 
 class WebApplicationClient(Client):

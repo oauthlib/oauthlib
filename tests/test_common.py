@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import sys
 
+from oauthlib.common import (CaseInsensitiveDict, Request, add_params_to_uri,
+                             extract_params, generate_client_id,
+                             generate_nonce, generate_timestamp,
+                             generate_token, unicode_type, urldecode)
+
 from .unittest import TestCase
-
-from oauthlib.common import add_params_to_uri
-from oauthlib.common import CaseInsensitiveDict
-from oauthlib.common import extract_params
-from oauthlib.common import generate_client_id
-from oauthlib.common import generate_nonce
-from oauthlib.common import generate_timestamp
-from oauthlib.common import generate_token
-from oauthlib.common import Request
-from oauthlib.common import unicode_type
-from oauthlib.common import urldecode
-
 
 if sys.version_info[0] == 3:
     bytes_type = bytes
@@ -40,10 +34,12 @@ class EncodingTest(TestCase):
         self.assertItemsEqual(urldecode('foo_%20~=.bar-'),
                               [('foo_ ~', '.bar-')])
         self.assertItemsEqual(urldecode('foo=1,2,3'), [('foo', '1,2,3')])
+        self.assertItemsEqual(urldecode('foo=(1,2,3)'), [('foo', '(1,2,3)')])
         self.assertItemsEqual(urldecode('foo=bar.*'), [('foo', 'bar.*')])
         self.assertItemsEqual(urldecode('foo=bar@spam'), [('foo', 'bar@spam')])
+        self.assertItemsEqual(urldecode('foo=bar/baz'), [('foo', 'bar/baz')])
+        self.assertItemsEqual(urldecode('foo=bar?baz'), [('foo', 'bar?baz')])
         self.assertRaises(ValueError, urldecode, 'foo bar')
-        self.assertRaises(ValueError, urldecode, '?')
         self.assertRaises(ValueError, urldecode, '%R')
         self.assertRaises(ValueError, urldecode, '%RA')
         self.assertRaises(ValueError, urldecode, '%AR')
@@ -185,14 +181,36 @@ class RequestTest(TestCase):
         with self.assertRaises(AttributeError):
             getattr(r, 'does_not_exist')
 
+    def test_sanitizing_authorization_header(self):
+        r = Request(URI, headers={'Accept': 'application/json',
+                                  'Authorization': 'Basic Zm9vOmJhcg=='}
+                    )
+        self.assertNotIn('Zm9vOmJhcg==', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
+        # Double-check we didn't modify the underlying object:
+        self.assertEqual(r.headers['Authorization'], 'Basic Zm9vOmJhcg==')
+
+    def test_token_body(self):
+        payload = 'client_id=foo&refresh_token=bar'
+        r = Request(URI, body=payload)
+        self.assertNotIn('bar', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
+
+        payload = 'refresh_token=bar&client_id=foo'
+        r = Request(URI, body=payload)
+        self.assertNotIn('bar', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
+
     def test_password_body(self):
         payload = 'username=foo&password=bar'
         r = Request(URI, body=payload)
         self.assertNotIn('bar', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
 
         payload = 'password=bar&username=foo'
         r = Request(URI, body=payload)
         self.assertNotIn('bar', repr(r))
+        self.assertIn('<SANITIZED>', repr(r))
 
 
 class CaseInsensitiveDictTest(TestCase):
@@ -204,3 +222,8 @@ class CaseInsensitiveDictTest(TestCase):
         del cid['c']
         self.assertEqual(cid['A'], 'b')
         self.assertEqual(cid['a'], 'b')
+
+    def test_update(self):
+        cid = CaseInsensitiveDict({})
+        cid.update({'KeY': 'value'})
+        self.assertEqual(cid['kEy'], 'value')

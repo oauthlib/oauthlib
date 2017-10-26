@@ -3,14 +3,14 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import json
 import logging
 
-from .base import GrantTypeBase
 from .. import errors
 from ..request_validator import RequestValidator
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
@@ -50,9 +50,6 @@ class ClientCredentialsGrant(GrantTypeBase):
     .. _`Client Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.4
     """
 
-    def __init__(self, request_validator=None):
-        self.request_validator = request_validator or RequestValidator()
-
     def create_token_response(self, request, token_handler):
         """Return token or error in JSON format.
 
@@ -77,12 +74,20 @@ class ClientCredentialsGrant(GrantTypeBase):
             log.debug('Client error in token request. %s.', e)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=False)
+        token = token_handler.create_token(request, refresh_token=False, save_token=False)
+
+        for modifier in self._token_modifiers:
+            token = modifier(token)
+        self.request_validator.save_token(token, request)
+
         log.debug('Issuing token to client id %r (%r), %r.',
                   request.client_id, request.client, token)
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
+        for validator in self.custom_validators.pre_token:
+            validator(request)
+
         if not getattr(request, 'grant_type', None):
             raise errors.InvalidRequestError('Request is missing grant type.',
                                              request=request)
@@ -110,3 +115,6 @@ class ClientCredentialsGrant(GrantTypeBase):
         log.debug('Authorizing access to user %r.', request.user)
         request.client_id = request.client_id or request.client.client_id
         self.validate_scopes(request)
+
+        for validator in self.custom_validators.post_token:
+            validator(request)

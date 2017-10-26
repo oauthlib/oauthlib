@@ -9,18 +9,21 @@ This module contains methods for adding two types of access tokens to requests.
 """
 from __future__ import absolute_import, unicode_literals
 
-from binascii import b2a_base64
 import hashlib
 import hmac
+from binascii import b2a_base64
+
+from oauthlib import common
+from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
+
+from . import utils
+
 try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
 
-from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
-from oauthlib import common
 
-from . import utils
 
 
 class OAuth2Token(dict):
@@ -28,7 +31,7 @@ class OAuth2Token(dict):
     def __init__(self, params, old_scope=None):
         super(OAuth2Token, self).__init__(params)
         self._new_scope = None
-        if 'scope' in params:
+        if 'scope' in params and params['scope']:
             self._new_scope = set(utils.scope_to_list(params['scope']))
         if old_scope is not None:
             self._old_scope = set(utils.scope_to_list(old_scope))
@@ -232,6 +235,10 @@ class TokenBase(object):
 
 
 class BearerToken(TokenBase):
+    __slots__ = (
+        'request_validator', 'token_generator',
+        'refresh_token_generator', 'expires_in'
+    )
 
     def __init__(self, request_validator=None, token_generator=None,
                  expires_in=None, refresh_token_generator=None):
@@ -242,7 +249,7 @@ class BearerToken(TokenBase):
         )
         self.expires_in = expires_in or 3600
 
-    def create_token(self, request, refresh_token=False):
+    def create_token(self, request, refresh_token=False, save_token=True):
         """Create a BearerToken, by default without refresh token."""
 
         if callable(self.expires_in):
@@ -258,6 +265,9 @@ class BearerToken(TokenBase):
             'token_type': 'Bearer',
         }
 
+        # If provided, include - this is optional in some cases https://tools.ietf.org/html/rfc6749#section-3.3 but
+        # there is currently no mechanism to coordinate issuing a token for only a subset of the requested scopes so
+        # all tokens issued are for the entire set of requested scopes.
         if request.scopes is not None:
             token['scope'] = ' '.join(request.scopes)
 
@@ -273,7 +283,8 @@ class BearerToken(TokenBase):
 
         token.update(request.extra_credentials or {})
         token = OAuth2Token(token)
-        self.request_validator.save_bearer_token(token, request)
+        if save_token:
+            self.request_validator.save_bearer_token(token, request)
         return token
 
     def validate_request(self, request):
