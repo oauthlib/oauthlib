@@ -2,7 +2,8 @@
 from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import Request
-from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
+from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_HMAC_SHA1,
+                             SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
                              SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY)
 from oauthlib.oauth1.rfc5849 import Client, bytes_type
 
@@ -62,13 +63,25 @@ class ClientConstructorTests(TestCase):
             self.assertIsInstance(k, bytes_type)
             self.assertIsInstance(v, bytes_type)
 
-    def test_hmac256(self):
+    def test_hmac_sha1(self):
+        client = Client('client_key')
+        # instance is using the correct signer method
+        self.assertEqual(Client.SIGNATURE_METHODS[SIGNATURE_HMAC_SHA1],
+                         client.SIGNATURE_METHODS[client.signature_method])
+
+    def test_hmac_sha256(self):
         client = Client('client_key', signature_method=SIGNATURE_HMAC_SHA256)
-        self.assertIsNone(client.rsa_key)  # don't need an RSA key to instantiate
+        # instance is using the correct signer method
+        self.assertEqual(Client.SIGNATURE_METHODS[SIGNATURE_HMAC_SHA256],
+                         client.SIGNATURE_METHODS[client.signature_method])
 
     def test_rsa(self):
         client = Client('client_key', signature_method=SIGNATURE_RSA)
-        self.assertIsNone(client.rsa_key)  # don't need an RSA key to instantiate
+        # instance is using the correct signer method
+        self.assertEqual(Client.SIGNATURE_METHODS[SIGNATURE_RSA],
+                         client.SIGNATURE_METHODS[client.signature_method])
+        # don't need an RSA key to instantiate
+        self.assertIsNone(client.rsa_key)
 
 
 class SignatureMethodTest(TestCase):
