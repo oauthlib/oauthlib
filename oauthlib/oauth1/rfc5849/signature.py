@@ -478,20 +478,20 @@ def sign_hmac_sha256_with_client(base_string, client):
 
 
 def sign_hmac_sha256(base_string, client_secret, resource_owner_secret):
-    """**HMAC-SHA1**
+    """**HMAC-SHA256**
 
-    The "HMAC-SHA1" signature method uses the HMAC-SHA1 signature
-    algorithm as defined in `RFC2104`_::
+    The "HMAC-SHA256" signature method uses the HMAC-SHA256 signature
+    algorithm as defined in `RFC4634`_::
 
-        digest = HMAC-SHA1 (key, text)
+        digest = HMAC-SHA256 (key, text)
 
     Per `section 3.4.2`_ of the spec.
 
-    .. _`RFC2104`: http://tools.ietf.org/html/rfc2104
+    .. _`RFC4634`: http://tools.ietf.org/html/rfc4634
     .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
     """
 
-    # The HMAC-SHA1 function variables are used in following way:
+    # The HMAC-SHA256 function variables are used in following way:
 
     # text is set to the value of the signature base string from
     # `Section 3.4.1.1`_.

@@ -2,7 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import Request
-from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_RSA,
+from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
                              SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY)
 from oauthlib.oauth1.rfc5849 import Client, bytes_type
 
@@ -62,12 +62,35 @@ class ClientConstructorTests(TestCase):
             self.assertIsInstance(k, bytes_type)
             self.assertIsInstance(v, bytes_type)
 
+    def test_hmac256(self):
+        client = Client('client_key', signature_method=SIGNATURE_HMAC_SHA256)
+        self.assertIsNone(client.rsa_key)  # don't need an RSA key to instantiate
+
     def test_rsa(self):
         client = Client('client_key', signature_method=SIGNATURE_RSA)
         self.assertIsNone(client.rsa_key)  # don't need an RSA key to instantiate
 
 
 class SignatureMethodTest(TestCase):
+
+    def test_hmac_sha1_method(self):
+        client = Client('client_key', timestamp='1234567890', nonce='abc')
+        u, h, b = client.sign('http://example.com')
+        correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
+                   'oauth_version="1.0", oauth_signature_method="HMAC-SHA1", '
+                   'oauth_consumer_key="client_key", '
+                   'oauth_signature="hH5BWYVqo7QI4EmPBUUe9owRUUQ%3D"')
+        self.assertEqual(h['Authorization'], correct)
+
+    def test_hmac_sha256_method(self):
+        client = Client('client_key', signature_method=SIGNATURE_HMAC_SHA256,
+                        timestamp='1234567890', nonce='abc')
+        u, h, b = client.sign('http://example.com')
+        correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
+                   'oauth_version="1.0", oauth_signature_method="HMAC-SHA256", '
+                   'oauth_consumer_key="client_key", '
+                   'oauth_signature="JzgJWBxX664OiMW3WE4MEjtYwOjI%2FpaUWHqtdHe68Es%3D"')
+        self.assertEqual(h['Authorization'], correct)
 
     def test_rsa_method(self):
         private_key = (
