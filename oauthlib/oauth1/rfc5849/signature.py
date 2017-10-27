@@ -469,6 +469,63 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     # .. _`RFC2045, Section 6.8`: http://tools.ietf.org/html/rfc2045#section-6.8
     return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
 
+
+def sign_hmac_sha256_with_client(base_string, client):
+    return sign_hmac_sha256(base_string,
+                          client.client_secret,
+                          client.resource_owner_secret
+                          )
+
+
+def sign_hmac_sha256(base_string, client_secret, resource_owner_secret):
+    """**HMAC-SHA1**
+
+    The "HMAC-SHA1" signature method uses the HMAC-SHA1 signature
+    algorithm as defined in `RFC2104`_::
+
+        digest = HMAC-SHA1 (key, text)
+
+    Per `section 3.4.2`_ of the spec.
+
+    .. _`RFC2104`: http://tools.ietf.org/html/rfc2104
+    .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
+    """
+
+    # The HMAC-SHA1 function variables are used in following way:
+
+    # text is set to the value of the signature base string from
+    # `Section 3.4.1.1`_.
+    #
+    # .. _`Section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.1
+    text = base_string
+
+    # key is set to the concatenated values of:
+    # 1.  The client shared-secret, after being encoded (`Section 3.6`_).
+    #
+    # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
+    key = utils.escape(client_secret or '')
+
+    # 2.  An "&" character (ASCII code 38), which MUST be included
+    #     even when either secret is empty.
+    key += '&'
+
+    # 3.  The token shared-secret, after being encoded (`Section 3.6`_).
+    #
+    # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
+    key += utils.escape(resource_owner_secret or '')
+
+    # FIXME: HMAC does not support unicode!
+    key_utf8 = key.encode('utf-8')
+    text_utf8 = text.encode('utf-8')
+    signature = hmac.new(key_utf8, text_utf8, hashlib.sha256)
+
+    # digest  is used to set the value of the "oauth_signature" protocol
+    #         parameter, after the result octet string is base64-encoded
+    #         per `RFC2045, Section 6.8`.
+    #
+    # .. _`RFC2045, Section 6.8`: http://tools.ietf.org/html/rfc2045#section-6.8
+    return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
+
 _jwtrs1 = None
 
 #jwt has some nice pycrypto/cryptography abstractions
