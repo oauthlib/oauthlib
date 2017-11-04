@@ -186,7 +186,7 @@ class Client(object):
         if not self.token_type.lower() in case_insensitive_token_types:
             raise ValueError("Unsupported token type: %s" % self.token_type)
 
-        if not (self.access_token and self.token.get('access_token')):
+        if not (self.access_token or self.token.get('access_token')):
             raise ValueError("Missing access token.")
 
         if self._expires_at and self._expires_at < time.time():
