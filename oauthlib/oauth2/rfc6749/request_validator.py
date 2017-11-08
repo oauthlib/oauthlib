@@ -166,6 +166,26 @@ class RequestValidator(object):
         """
         return False
 
+    def introspect_token(self, token, token_type_hint, request, *args, **kwargs):
+        """Introspect an access or refresh token.
+
+        Called once introspect token request is validated. This method
+        should return a dictionary with any desired claims associated
+        with the *token*. The implementation can use *token_type_hint*
+        to lookup this type first, but then it must fallback to other
+        types known, to be compliant with RFC.
+
+        The dict of claims is added to request.token after this method.
+
+        :param token: The token string.
+        :param token_type_hint: access_token or refresh_token.
+        :param request: The HTTP Request (oauthlib.common.Request)
+
+        Method is used by:
+            - Introspect Endpoint (all grants are compatible)
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def invalidate_authorization_code(self, client_id, code, request, *args, **kwargs):
         """Invalidate an authorization code after use.
 

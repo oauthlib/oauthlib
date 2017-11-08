@@ -267,7 +267,7 @@ class UnsupportedGrantTypeError(OAuth2Error):
 
 class UnsupportedTokenTypeError(OAuth2Error):
     """
-    The authorization server does not support the revocation of the
+    The authorization server does not support the hint of the
     presented token type.  I.e. the client tried to revoke an access token
     on a server not supporting this feature.
     """

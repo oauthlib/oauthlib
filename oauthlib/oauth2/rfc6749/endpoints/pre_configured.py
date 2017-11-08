@@ -18,13 +18,14 @@ from ..grant_types import (AuthCodeGrantDispatcher, AuthorizationCodeGrant,
                            ResourceOwnerPasswordCredentialsGrant)
 from ..tokens import BearerToken
 from .authorization import AuthorizationEndpoint
+from .introspect import IntrospectEndpoint
 from .resource import ResourceEndpoint
 from .revocation import RevocationEndpoint
 from .token import TokenEndpoint
 
 
-class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
-             RevocationEndpoint):
+class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
+             ResourceEndpoint, RevocationEndpoint):
 
     """An all-in-one endpoint featuring all four major grant types."""
 
@@ -88,10 +89,11 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
         ResourceEndpoint.__init__(self, default_token='Bearer',
                                   token_types={'Bearer': bearer})
         RevocationEndpoint.__init__(self, request_validator)
+        IntrospectEndpoint.__init__(self, request_validator)
 
 
-class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
-                           RevocationEndpoint):
+class WebApplicationServer(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
+                           ResourceEndpoint, RevocationEndpoint):
 
     """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
 
@@ -126,10 +128,11 @@ class WebApplicationServer(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoin
         ResourceEndpoint.__init__(self, default_token='Bearer',
                                   token_types={'Bearer': bearer})
         RevocationEndpoint.__init__(self, request_validator)
+        IntrospectEndpoint.__init__(self, request_validator)
 
 
-class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint,
-                              RevocationEndpoint):
+class MobileApplicationServer(AuthorizationEndpoint, IntrospectEndpoint,
+                              ResourceEndpoint, RevocationEndpoint):
 
     """An all-in-one endpoint featuring Implicit code grant and Bearer tokens."""
 
@@ -159,10 +162,11 @@ class MobileApplicationServer(AuthorizationEndpoint, ResourceEndpoint,
                                   token_types={'Bearer': bearer})
         RevocationEndpoint.__init__(self, request_validator,
                                     supported_token_types=['access_token'])
+        IntrospectEndpoint.__init__(self, request_validator)
 
 
-class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint,
-                              RevocationEndpoint):
+class LegacyApplicationServer(TokenEndpoint, IntrospectEndpoint,
+                              ResourceEndpoint, RevocationEndpoint):
 
     """An all-in-one endpoint featuring Resource Owner Password Credentials grant and Bearer tokens."""
 
@@ -195,10 +199,11 @@ class LegacyApplicationServer(TokenEndpoint, ResourceEndpoint,
         ResourceEndpoint.__init__(self, default_token='Bearer',
                                   token_types={'Bearer': bearer})
         RevocationEndpoint.__init__(self, request_validator)
+        IntrospectEndpoint.__init__(self, request_validator)
 
 
-class BackendApplicationServer(TokenEndpoint, ResourceEndpoint,
-                               RevocationEndpoint):
+class BackendApplicationServer(TokenEndpoint, IntrospectEndpoint,
+                               ResourceEndpoint, RevocationEndpoint):
 
     """An all-in-one endpoint featuring Client Credentials grant and Bearer tokens."""
 
@@ -227,4 +232,6 @@ class BackendApplicationServer(TokenEndpoint, ResourceEndpoint,
         ResourceEndpoint.__init__(self, default_token='Bearer',
                                   token_types={'Bearer': bearer})
         RevocationEndpoint.__init__(self, request_validator,
+                                    supported_token_types=['access_token'])
+        IntrospectEndpoint.__init__(self, request_validator,
                                     supported_token_types=['access_token'])
