@@ -67,7 +67,7 @@ class SkeletonValidator(RequestValidator):
         # state and user to request.scopes and request.user.
         pass
 
-    def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):
+    def confirm_redirect_uri(self, client_id, code, redirect_uri, client, request, *args, **kwargs):
         # You did save the redirect uri with the authorization code right?
         pass
 

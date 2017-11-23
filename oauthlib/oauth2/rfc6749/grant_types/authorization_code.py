@@ -421,7 +421,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # authorization request as described in Section 4.1.1, and their
         # values MUST be identical.
         if not self.request_validator.confirm_redirect_uri(request.client_id, request.code,
-                                                           request.redirect_uri, request.client):
+                                                           request.redirect_uri, request.client,
+                                                           request):
             log.debug('Redirect_uri (%r) invalid for client %r (%r).',
                       request.redirect_uri, request.client_id, request.client)
             raise errors.MismatchingRedirectURIError(request=request)
