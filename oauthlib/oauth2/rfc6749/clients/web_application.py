@@ -125,7 +125,7 @@ class WebApplicationClient(Client):
         """
         code = code or self.code
         return prepare_token_request('authorization_code', code=code, body=body,
-                                     client_id=self.client_id, redirect_uri=redirect_uri, **kwargs)
+                                     client_id=client_id, redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
         """Parse the URI query for code and state.
