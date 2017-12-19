@@ -162,7 +162,8 @@ class MobileApplicationServer(AuthorizationEndpoint, IntrospectEndpoint,
                                   token_types={'Bearer': bearer})
         RevocationEndpoint.__init__(self, request_validator,
                                     supported_token_types=['access_token'])
-        IntrospectEndpoint.__init__(self, request_validator)
+        IntrospectEndpoint.__init__(self, request_validator,
+                                    supported_token_types=['access_token'])
 
 
 class LegacyApplicationServer(TokenEndpoint, IntrospectEndpoint,
