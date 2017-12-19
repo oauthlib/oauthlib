@@ -312,8 +312,24 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_id_token(self, token, token_handler, request):
+    def get_jwt_bearer_token(self, token, token_handler, request):
+        """Get JWT Bearer token or OpenID Connect ID token
+
+        If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
+
+        :param token: A Bearer token dict
+        :param token_handler: the token handler (BearerToken class)
+        :param request: the HTTP Request (oauthlib.common.Request)
+        :return: The JWT Bearer token or OpenID Connect ID token (a JWS signed JWT)
+
+        Method is used by JWT Bearer and OpenID Connect tokens:
+            - JWTToken.create_token
         """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_id_token(self, token, token_handler, request):
+        """Get OpenID Connect ID token
+
         In the OpenID Connect workflows when an ID Token is requested this method is called.
         Subclasses should implement the construction, signing and optional encryption of the
         ID Token as described in the OpenID Connect spec.
@@ -344,12 +360,31 @@ class RequestValidator(object):
         # the request.scope should be used by the get_id_token() method to determine which claims to include in the resulting id_token
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def validate_jwt_bearer_token(self, token, scopes, request):
+        """Ensure the JWT Bearer token or OpenID Connect ID token are valids and authorized access to scopes.
+
+        If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
+
+        OpenID connect core 1.0 describe how to validate an id_token:
+            - http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation2
+
+        :param token: Unicode Bearer token
+        :param scopes: List of scopes (defined by you)
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is indirectly used by all core OpenID connect JWT token issuing grant types:
+            - Authorization Code Grant
+            - Implicit Grant
+            - Hybrid Grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def validate_id_token(self, token, scopes, request):
         """Ensure the id token is valid and authorized access to scopes.
-
-        :param token: A string of JWT serialized.
-        :param scopes: A list of scopes associated with the protected resource.
-        :param request: The HTTP Request (oauthlib.common.Request)
 
         OpenID connect core 1.0 describe how to validate an id_token:
             - http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation

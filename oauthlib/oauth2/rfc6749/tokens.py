@@ -328,7 +328,7 @@ class JWTToken(TokenBase):
 
         request.expires_in = expires_in
 
-        return self.request_validator.get_id_token(None, None, request)
+        return self.request_validator.get_jwt_bearer_token(None, None, request)
 
     def validate_request(self, request):
         token = None
@@ -336,7 +336,7 @@ class JWTToken(TokenBase):
             token = request.headers.get('Authorization')[7:]
         else:
             token = request.access_token
-        return self.request_validator.validate_id_token(
+        return self.request_validator.validate_jwt_bearer_token(
             token, request.scopes, request)
 
     def estimate_type(self, request):

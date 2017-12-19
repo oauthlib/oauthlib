@@ -127,7 +127,7 @@ class JWTTokenTestCase(TestCase):
             token = JWTToken(expires_in=mock.MagicMock(), request_validator=request_validator)
             token.create_token(request=request_mock)
 
-            request_validator.get_id_token.assert_called_once_with(None, None, request_mock)
+            request_validator.get_jwt_bearer_token.assert_called_once_with(None, None, request_mock)
 
     def test_validate_request_token_from_headers(self):
         """
@@ -151,7 +151,7 @@ class JWTTokenTestCase(TestCase):
 
             token.validate_request(request=request)
 
-            request_validator_mock.validate_id_token.assert_called_once_with('some-token-from-header',
+            request_validator_mock.validate_jwt_bearer_token.assert_called_once_with('some-token-from-header',
                                                                              request.scopes,
                                                                              request)
 
@@ -176,7 +176,7 @@ class JWTTokenTestCase(TestCase):
 
             token.validate_request(request=request)
 
-            request_validator_mock.validate_id_token.assert_called_once_with('some-token-from-request-object',
+            request_validator_mock.validate_jwt_bearer_token.assert_called_once_with('some-token-from-request-object',
                                                                              request.scopes,
                                                                              request)
 
