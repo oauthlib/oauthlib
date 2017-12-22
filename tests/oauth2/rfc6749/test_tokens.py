@@ -201,9 +201,9 @@ class JWTTokenTestCase(TestCase):
                 self.assertEqual(result, expected_result)
 
         test_items = (
-            ('foo.foo.foo', 10),
-            ('foo.foo.foo.foo.foo', 10),
-            ('foobar', 0)
+            ('eyfoo.foo.foo', 10),
+            ('eyfoo.foo.foo.foo.foo', 10),
+            ('eyfoobar', 0)
         )
 
         for token, expected_result in test_items:
