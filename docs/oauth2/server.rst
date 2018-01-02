@@ -6,8 +6,10 @@ OAuthLib is a dependency free library that may be used with any web
 framework. That said, there are framework specific helper libraries
 to make your life easier.
 
-- For Django there is `django-oauth-toolkit`_.
-- For Flask there is `flask-oauthlib`_.
+- Django `django-oauth-toolkit`_
+- Flask `flask-oauthlib`_
+- Pyramid `pyramid-oauthlib`_
+- Bottle `bottle-oauthlib`_
 
 If there is no support for your favourite framework and you are interested
 in providing it then you have come to the right place. OAuthLib can handle
@@ -17,6 +19,8 @@ as well as provide an interface for a backend to store tokens, clients, etc.
 
 .. _`django-oauth-toolkit`: https://github.com/evonove/django-oauth-toolkit
 .. _`flask-oauthlib`: https://github.com/lepture/flask-oauthlib
+.. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
+.. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
 
 .. contents:: Tutorial Contents
     :depth: 3
