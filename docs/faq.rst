@@ -65,10 +65,17 @@ How do I use OAuthLib with Google, Twitter and other providers?
 How do I use OAuthlib as a provider with Django, Flask and other web frameworks?
 --------------------------------------------------------------------------------
 
-    Providers using Django should seek out `django-oauth-toolkit`_
-    and those using Flask `flask-oauthlib`_. For other frameworks,
-    please get in touch by opening a `GitHub issue`_, on `G+`_ or
-    on IRC #oauthlib irc.freenode.net.
+    Providers can be implemented in any web frameworks. However, some of
+    them have ready-to-use libraries to help integration:
+    - Django `django-oauth-toolkit`_
+    - Flask `flask-oauthlib`_
+    - Pyramid `pyramid-oauthlib`_
+    - Bottle `bottle-oauthlib`_
+
+    For other frameworks, please get in touch by opening a `GitHub issue`_, on `G+`_ or
+    on IRC #oauthlib irc.freenode.net. If you have written an OAuthLib package that
+    supports your favorite framework, please open a Pull Request to update the docs.
+
 
 What is the difference between authentication and authorization?
 ----------------------------------------------------------------
@@ -91,6 +98,8 @@ Some argue OAuth 2 is worse than 1, is that true?
 .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
 .. _`django-oauth-toolkit`: https://github.com/evonove/django-oauth-toolkit
 .. _`flask-oauthlib`: https://github.com/lepture/flask-oauthlib
+.. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
+.. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
 .. _`GitHub issue`: https://github.com/idan/oauthlib/issues/new
 .. _`G+`: https://plus.google.com/communities/101889017375384052571
 .. _`difference`: http://www.cyberciti.biz/faq/authentication-vs-authorization/
