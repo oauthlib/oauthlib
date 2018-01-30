@@ -365,6 +365,8 @@ class RequestValidator(object):
 
         If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
 
+        If not using OpenID Connect this can `return None` to avoid 5xx rather 401/3 response.
+
         OpenID connect core 1.0 describe how to validate an id_token:
             - http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
             - http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
