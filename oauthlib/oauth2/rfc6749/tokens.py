@@ -220,6 +220,24 @@ def signed_token_generator(private_pem, **kwargs):
     return signed_token_generator
 
 
+def get_token_from_header(request):
+    """
+    Helper function to extract a token from the request header.
+    :param request: The request object
+    :return: Return the token or None if the Authorization header is malformed.
+    """
+    token = None
+
+    if 'Authorization' in request.headers:
+        split_header = request.headers.get('Authorization').split()
+        if len(split_header) == 2 and split_header[0] == 'Bearer':
+            token = split_header[1]
+    else:
+        token = request.access_token
+
+    return token
+
+
 class TokenBase(object):
 
     def __call__(self, request, refresh_token=False):
@@ -286,16 +304,12 @@ class BearerToken(TokenBase):
         return token
 
     def validate_request(self, request):
-        token = None
-        if 'Authorization' in request.headers:
-            token = request.headers.get('Authorization')[7:]
-        else:
-            token = request.access_token
+        token = get_token_from_header(request)
         return self.request_validator.validate_bearer_token(
             token, request.scopes, request)
 
     def estimate_type(self, request):
-        if request.headers.get('Authorization', '').startswith('Bearer'):
+        if request.headers.get('Authorization', '').split(' ')[0] == 'Bearer':
             return 9
         elif request.access_token is not None:
             return 5
@@ -331,17 +345,13 @@ class JWTToken(TokenBase):
         return self.request_validator.get_jwt_bearer_token(None, None, request)
 
     def validate_request(self, request):
-        token = None
-        if 'Authorization' in request.headers:
-            token = request.headers.get('Authorization')[7:]
-        else:
-            token = request.access_token
+        token = get_token_from_header(request)
         return self.request_validator.validate_jwt_bearer_token(
             token, request.scopes, request)
 
     def estimate_type(self, request):
-        token = request.headers.get('Authorization', '')[7:]
-        if token.startswith('ey') and token.count('.') in (2, 4):
+        split_header = request.headers.get('Authorization', '').split()
+
+        if len(split_header) == 2 and split_header[0] == 'Bearer' and split_header[1].startswith('ey') and split_header[1].count('.') in (2, 4):
             return 10
-        else:
-            return 0
+        return 0
