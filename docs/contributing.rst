@@ -102,7 +102,7 @@ Then merge the changes that you fetched::
 
     git merge upstream/master
 
-For more info, see http://help.github.com/fork-a-repo/
+For more info, see https://help.github.com/fork-a-repo/
 
 How to get your pull request accepted
 =====================================

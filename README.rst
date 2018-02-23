@@ -18,8 +18,8 @@ both of the following:
 2. They predate the `OAuth 2.0 spec`_, AKA RFC 6749.
 3. They assume the usage of a specific HTTP request library.
 
-.. _`OAuth 1.0 spec`: http://tools.ietf.org/html/rfc5849
-.. _`OAuth 2.0 spec`: http://tools.ietf.org/html/rfc6749
+.. _`OAuth 1.0 spec`: https://tools.ietf.org/html/rfc5849
+.. _`OAuth 2.0 spec`: https://tools.ietf.org/html/rfc6749
 
 OAuthLib is a generic utility which implements the logic of OAuth without
 assuming a specific HTTP request object or web framework. Use it to graft OAuth

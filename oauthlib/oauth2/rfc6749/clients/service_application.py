@@ -136,7 +136,7 @@ class ServiceApplicationClient(Client):
             eyJpc3Mi[...omitted for brevity...].
             J9l-ZhwP[...omitted for brevity...]
 
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         import jwt
 

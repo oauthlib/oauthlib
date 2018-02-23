@@ -59,7 +59,7 @@ class TokenEndpoint(BaseEndpoint):
 
         # Delegated to each grant type.
 
-    .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+    .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
     """
 
     def __init__(self, default_grant_type, default_token_type, grant_types):

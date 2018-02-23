@@ -102,4 +102,4 @@ Some argue OAuth 2 is worse than 1, is that true?
 .. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
 .. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
 .. _`G+`: https://plus.google.com/communities/101889017375384052571
-.. _`difference`: http://www.cyberciti.biz/faq/authentication-vs-authorization/
+.. _`difference`: https://www.cyberciti.biz/faq/authentication-vs-authorization/

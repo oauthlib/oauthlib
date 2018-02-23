@@ -109,7 +109,7 @@ class RequestValidator(object):
     their use more straightforward and as such it could be worth reading what
     follows in chronological order.
 
-    .. _`whitelisting or blacklisting`: http://www.schneier.com/blog/archives/2011/01/whitelisting_vs.html
+    .. _`whitelisting or blacklisting`: https://www.schneier.com/blog/archives/2011/01/whitelisting_vs.html
     """
 
     def __init__(self):
@@ -445,7 +445,7 @@ class RequestValidator(object):
         "The server MUST (...) ensure that the temporary
         credentials have not expired or been used before."
 
-        .. _`Section 2.3`: http://tools.ietf.org/html/rfc5849#section-2.3
+        .. _`Section 2.3`: https://tools.ietf.org/html/rfc5849#section-2.3
 
         This method should ensure that provided token won't validate anymore.
         It can be simply removing RequestToken from storage or setting
@@ -582,7 +582,7 @@ class RequestValidator(object):
         channel.  The nonce value MUST be unique across all requests with the
         same timestamp, client credentials, and token combinations."
 
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
 
         One of the first validation checks that will be made is for the validity
         of the nonce and timestamp, which are associated with a client key and
