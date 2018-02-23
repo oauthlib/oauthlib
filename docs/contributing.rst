@@ -148,7 +148,7 @@ version. For Ubuntu you can easily install all after adding one ppa.
    $ sudo apt-get install pypy pypy-dev
 
 .. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
-.. _`virtualenv`: http://www.virtualenv.org/en/latest/#installation
+.. _`virtualenv`: https://virtualenv.pypa.io/en/latest/installation/
 
 If you add code you need to add tests!
 --------------------------------------
