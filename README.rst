@@ -45,7 +45,7 @@ Interested in making OAuth requests?
 Then you might be more interested in using `requests`_ which has OAuthLib
 powered OAuth support provided by the `requests-oauthlib`_ library.
 
-.. _`requests`: https://github.com/kennethreitz/requests
+.. _`requests`: https://github.com/requests/requests
 .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
 
 Which web frameworks are supported?
