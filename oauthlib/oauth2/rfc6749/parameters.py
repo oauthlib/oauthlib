@@ -359,7 +359,7 @@ def parse_token_response(body, scope=None):
 
         # Fall back to URL-encoded string, to support old implementations,
         # including (at time of writing) Facebook. See:
-        #   https://github.com/idan/oauthlib/issues/267
+        #   https://github.com/oauthlib/oauthlib/issues/267
 
         params = dict(urlparse.parse_qsl(body))
         for key in ('expires_in', 'expires'):

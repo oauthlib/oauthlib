@@ -91,7 +91,7 @@ request only to have it rejected because it has diverged too far from master.
 
 To pull in upstream changes::
 
-    git remote add upstream https://github.com/idan/oauthlib.git
+    git remote add upstream https://github.com/oauthlib/oauthlib.git
     git fetch upstream
 
 Check the log to be sure that you actually want the changes, before merging::
@@ -223,5 +223,5 @@ to GitHub::
     git push upstream master
 
 .. _installation: install.html
-.. _GitHub project: https://github.com/idan/oauthlib
-.. _issue tracker: https://github.com/idan/oauthlib/issues
+.. _GitHub project: https://github.com/oauthlib/oauthlib
+.. _issue tracker: https://github.com/oauthlib/oauthlib/issues
