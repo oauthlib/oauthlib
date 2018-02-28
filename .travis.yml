@@ -31,4 +31,4 @@ deploy:
   distributions: sdist bdist_wheel
   on:
     tags: true
-    repo: idan/oauthlib
+    repo: oauthlib/oauthlib
