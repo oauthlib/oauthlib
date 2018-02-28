@@ -64,9 +64,9 @@ class LegacyApplicationClient(Client):
             >>> client.prepare_request_body(username='foo', password='bar', scope=['hello', 'world'])
             'grant_type=password&username=foo&scope=hello+world&password=bar'
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         return prepare_token_request('password', body=body, username=username,
                                      password=password, scope=scope, **kwargs)

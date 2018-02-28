@@ -279,7 +279,7 @@ all methods depending on which grant types you wish to support. A skeleton
 validator listing the methods required for the WebApplicationServer is
 available in the `examples`_ folder on GitHub.
 
-..  _`examples`: https://github.com/idan/oauthlib/blob/master/examples/skeleton_oauth2_web_application_server.py
+..  _`examples`: https://github.com/oauthlib/oauthlib/blob/master/examples/skeleton_oauth2_web_application_server.py
 
 Relevant sections include:
 
@@ -496,7 +496,7 @@ at runtime by a function, rather then by a list.
 Drop a line in our `G+ community`_ or open a `GitHub issue`_ =)
 
 .. _`G+ community`: https://plus.google.com/communities/101889017375384052571
-.. _`GitHub issue`: https://github.com/idan/oauthlib/issues/new
+.. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
 
 If you run into issues it can be helpful to enable debug logging.
 

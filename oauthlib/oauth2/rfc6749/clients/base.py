@@ -173,8 +173,8 @@ class Client(object):
                                 nonce="274312:dj83hs9s",
                                 mac="kDZvddkndxvhGRXZhvuDjEWhGeE="
 
-        .. _`I-D.ietf-oauth-v2-bearer`: http://tools.ietf.org/html/rfc6749#section-12.2
-        .. _`I-D.ietf-oauth-v2-http-mac`: http://tools.ietf.org/html/rfc6749#section-12.2
+        .. _`I-D.ietf-oauth-v2-bearer`: https://tools.ietf.org/html/rfc6749#section-12.2
+        .. _`I-D.ietf-oauth-v2-http-mac`: https://tools.ietf.org/html/rfc6749#section-12.2
         """
         if not is_secure_transport(uri):
             raise InsecureTransportError()
@@ -401,9 +401,9 @@ class Client(object):
             Providers may supply this in all responses but are required to only
             if it has changed since the authorization request.
 
-        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
-        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
-        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
+        .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
         """
         self.token = parse_token_response(body, scope=scope)
         self._populate_attributes(self.token)

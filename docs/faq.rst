@@ -100,6 +100,6 @@ Some argue OAuth 2 is worse than 1, is that true?
 .. _`flask-oauthlib`: https://github.com/lepture/flask-oauthlib
 .. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
 .. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
-.. _`GitHub issue`: https://github.com/idan/oauthlib/issues/new
+.. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
 .. _`G+`: https://plus.google.com/communities/101889017375384052571
-.. _`difference`: http://www.cyberciti.biz/faq/authentication-vs-authorization/
+.. _`difference`: https://www.cyberciti.biz/faq/authentication-vs-authorization/

@@ -13,7 +13,7 @@ Check out :doc:`error_reporting` for details on how to be an awesome bug reporte
 
 For news and discussions please head over to our `G+ OAuthLib community`_.
 
-.. _`new issue on GitHub`: https://github.com/idan/oauthlib/issues/new
+.. _`new issue on GitHub`: https://github.com/oauthlib/oauthlib/issues/new
 .. _`G+ OAuthLib community`: https://plus.google.com/communities/101889017375384052571
 
 .. toctree::
