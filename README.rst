@@ -2,7 +2,7 @@ OAuthLib
 ========
 
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
-logic for Python 2.7 and 3.4+.*
+logic for Python
 
 .. image:: https://travis-ci.org/oauthlib/oauthlib.svg?branch=master
   :target: https://travis-ci.org/oauthlib/oauthlib
