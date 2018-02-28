@@ -112,9 +112,9 @@ class ImplicitGrant(GrantTypeBase):
     See `Section 10.3`_ and `Section 10.16`_ for important security considerations
     when using the implicit grant.
 
-    .. _`Implicit Grant`: http://tools.ietf.org/html/rfc6749#section-4.2
-    .. _`Section 10.3`: http://tools.ietf.org/html/rfc6749#section-10.3
-    .. _`Section 10.16`: http://tools.ietf.org/html/rfc6749#section-10.16
+    .. _`Implicit Grant`: https://tools.ietf.org/html/rfc6749#section-4.2
+    .. _`Section 10.3`: https://tools.ietf.org/html/rfc6749#section-10.3
+    .. _`Section 10.16`: https://tools.ietf.org/html/rfc6749#section-10.16
     """
 
     response_types = ['token']
@@ -153,11 +153,11 @@ class ImplicitGrant(GrantTypeBase):
         access token matches a redirection URI registered by the client as
         described in `Section 3.1.2`_.
 
-        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
-        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
         """
         return self.create_token_response(request, token_handler)
 
@@ -196,9 +196,9 @@ class ImplicitGrant(GrantTypeBase):
 
         The authorization server MUST NOT issue a refresh token.
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
         """
         try:
             # request.scopes is only mandated in post auth and both pre and
@@ -223,7 +223,7 @@ class ImplicitGrant(GrantTypeBase):
         # the authorization server informs the client by adding the following
         # parameters to the fragment component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B:
-        # http://tools.ietf.org/html/rfc6749#appendix-B
+        # https://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
@@ -281,7 +281,7 @@ class ImplicitGrant(GrantTypeBase):
                 raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param, request=request)
 
         # REQUIRED. The client identifier as described in Section 2.2.
-        # http://tools.ietf.org/html/rfc6749#section-2.2
+        # https://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
 
@@ -289,7 +289,7 @@ class ImplicitGrant(GrantTypeBase):
             raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
-        # http://tools.ietf.org/html/rfc6749#section-3.1.2
+        # https://tools.ietf.org/html/rfc6749#section-3.1.2
         if request.redirect_uri is not None:
             request.using_default_redirect_uri = False
             log.debug('Using provided redirect_uri %s', request.redirect_uri)
@@ -300,7 +300,7 @@ class ImplicitGrant(GrantTypeBase):
             # to which it will redirect the access token matches a
             # redirection URI registered by the client as described in
             # Section 3.1.2.
-            # http://tools.ietf.org/html/rfc6749#section-3.1.2
+            # https://tools.ietf.org/html/rfc6749#section-3.1.2
             if not self.request_validator.validate_redirect_uri(
                     request.client_id, request.redirect_uri, request):
                 raise errors.MismatchingRedirectURIError(request=request)
@@ -325,7 +325,7 @@ class ImplicitGrant(GrantTypeBase):
         # the authorization server informs the client by adding the following
         # parameters to the fragment component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B.
-        # http://tools.ietf.org/html/rfc6749#appendix-B
+        # https://tools.ietf.org/html/rfc6749#appendix-B
 
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions
@@ -348,7 +348,7 @@ class ImplicitGrant(GrantTypeBase):
             raise errors.UnauthorizedClientError(request=request)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
-        # http://tools.ietf.org/html/rfc6749#section-3.3
+        # https://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
         request_info.update({

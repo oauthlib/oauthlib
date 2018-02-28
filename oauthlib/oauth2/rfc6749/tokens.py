@@ -4,8 +4,8 @@ oauthlib.oauth2.rfc6749.tokens
 
 This module contains methods for adding two types of access tokens to requests.
 
-- Bearer http://tools.ietf.org/html/rfc6750
-- MAC http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
+- Bearer https://tools.ietf.org/html/rfc6750
+- MAC https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -95,8 +95,8 @@ def prepare_mac_header(token, uri, key, http_method,
                        nonce="1336363200:dj83hs9s",
                        mac="bhCQXTVyfj5cmA9uKkPFx1zeOXM="
 
-    .. _`MAC Access Authentication`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
-    .. _`extension algorithms`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-7.1
+    .. _`MAC Access Authentication`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
+    .. _`extension algorithms`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-7.1
 
     :param uri: Request URI.
     :param headers: Request headers as a dictionary.
@@ -182,7 +182,7 @@ def prepare_bearer_uri(token, uri):
 
     http://www.example.com/path?access_token=h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
+    .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
     """
     return add_params_to_uri(uri, [(('access_token', token))])
 
@@ -193,7 +193,7 @@ def prepare_bearer_headers(token, headers=None):
 
     Authorization: Bearer h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
+    .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
     """
     headers = headers or {}
     headers['Authorization'] = 'Bearer %s' % token
@@ -205,7 +205,7 @@ def prepare_bearer_body(token, body=''):
 
     access_token=h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
+    .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
     """
     return add_params_to_qs(body, [(('access_token', token))])
 

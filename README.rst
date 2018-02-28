@@ -4,10 +4,10 @@ OAuthLib
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
 logic for python*
 
-.. image:: https://travis-ci.org/idan/oauthlib.svg?branch=master
-  :target: https://travis-ci.org/idan/oauthlib
-.. image:: https://coveralls.io/repos/idan/oauthlib/badge.svg?branch=master
-  :target: https://coveralls.io/r/idan/oauthlib
+.. image:: https://travis-ci.org/oauthlib/oauthlib.svg?branch=master
+  :target: https://travis-ci.org/oauthlib/oauthlib
+.. image:: https://coveralls.io/repos/oauthlib/oauthlib/badge.svg?branch=master
+  :target: https://coveralls.io/r/oauthlib/oauthlib
 
 
 OAuth often seems complicated and difficult-to-implement. There are several
@@ -18,8 +18,8 @@ both of the following:
 2. They predate the `OAuth 2.0 spec`_, AKA RFC 6749.
 3. They assume the usage of a specific HTTP request library.
 
-.. _`OAuth 1.0 spec`: http://tools.ietf.org/html/rfc5849
-.. _`OAuth 2.0 spec`: http://tools.ietf.org/html/rfc6749
+.. _`OAuth 1.0 spec`: https://tools.ietf.org/html/rfc5849
+.. _`OAuth 2.0 spec`: https://tools.ietf.org/html/rfc6749
 
 OAuthLib is a generic utility which implements the logic of OAuth without
 assuming a specific HTTP request object or web framework. Use it to graft OAuth
@@ -45,7 +45,7 @@ Interested in making OAuth requests?
 Then you might be more interested in using `requests`_ which has OAuthLib
 powered OAuth support provided by the `requests-oauthlib`_ library.
 
-.. _`requests`: https://github.com/kennethreitz/requests
+.. _`requests`: https://github.com/requests/requests
 .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
 
 Which web frameworks are supported?
