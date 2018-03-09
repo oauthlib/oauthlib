@@ -1,6 +1,23 @@
 Changelog
 =========
 
+2.0.7 (2018-03-09)
+------------------
+
+* Moved oauthlib into new organization on GitHub.
+* Include license file in the generated wheel package. (#494)
+* When deploying a release to PyPI, include the wheel distribution. (#496)
+* Check access token in self.token dict. (#500)
+* Added bottle-oauthlib to docs. (#509)
+* Updated docs for organization change. (#515)
+* Update repository location in Travis. (#514)
+* Replace G+ with Gitter. (#517)
+
+2.0.6 (2017-10-20)
+------------------
+
+* 2.0.5 contains breaking changes.
+
 2.0.5 (2017-10-19)
 ------------------
 
