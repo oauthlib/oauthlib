@@ -6,10 +6,22 @@ logic for Python 2.7 and 3.4+.*
 
 .. image:: https://travis-ci.org/oauthlib/oauthlib.svg?branch=master
   :target: https://travis-ci.org/oauthlib/oauthlib
+  :alt: Travis
 .. image:: https://coveralls.io/repos/oauthlib/oauthlib/badge.svg?branch=master
   :target: https://coveralls.io/r/oauthlib/oauthlib
+  :alt: Coveralls
+.. image:: https://img.shields.io/pypi/pyversions/oauthlib.svg
+  :target: https://pypi.python.org/pypi/oauthlib
+  :alt: Download from PyPi
+.. image:: https://img.shields.io/pypi/l/oauthlib.svg
+  :target: https://pypi.python.org/pypi/oauthlib
+  :alt: License
+.. image:: https://img.shields.io/readthedocs/oauthlib.svg
+  :target: https://oauthlib.readthedocs.io/en/latest/index.html
+  :alt: Read the Docs
 .. image:: https://badges.gitter.im/oauthlib/oauthlib.svg
-  :target: https://gitter.im/oauthlib/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+  :target: https://gitter.im/oauthlib/Lobby
+  :alt: Chat on Gitter
 
 OAuth often seems complicated and difficult-to-implement. There are several
 prominent libraries for handling OAuth requests, but they all suffer from one or
@@ -37,7 +49,7 @@ welcome! The documentation is still quite sparse, please open an issue for what
 you'd like to know, or discuss it in our `Gitter community`_, or even better, send a
 pull request!
 
-.. _`Gitter community`: https://gitter.im/oauthlib/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+.. _`Gitter community`: https://gitter.im/oauthlib/Lobby
 .. _`Read the Docs`: https://oauthlib.readthedocs.io/en/latest/index.html
 
 Interested in making OAuth requests?
@@ -84,7 +96,7 @@ Chances are you have run into something annoying that you wish there was
 documentation for, if you wish to gain eternal fame and glory, and a drink if we
 have the pleasure to run into eachother, please send a docs pull request =)
 
-.. _`Gitter community`: https://gitter.im/oauthlib/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+.. _`Gitter community`: https://gitter.im/oauthlib/Lobby
 
 License
 -------
