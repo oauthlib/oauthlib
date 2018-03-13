@@ -29,11 +29,17 @@ notifications:
     on_failure: always
     on_start: never
 deploy:
-  provider: pypi
-  user: ib.lundgren
-  password:
-    secure: PGZF9pRiTGCSwQjk1ddTKF3x4rQ0iAiPbg2uSixyO68uMXRgJjwHhSrNM0OEqtK5YWU5FE5L0DwR1nkrpEJKO4a5q2EOgos+gVoKpJfinoUNOOkjc1VHpqKM0uRf/OKrw1alvWUwqvW8B+DOb9TY5c5VZxQuRL+iwdrtwzFlKls=
-  distributions: sdist bdist_wheel
-  on:
-    tags: true
-    repo: oauthlib/oauthlib
+  - provider: pypi
+    user: ib.lundgren
+    password:
+      secure: PGZF9pRiTGCSwQjk1ddTKF3x4rQ0iAiPbg2uSixyO68uMXRgJjwHhSrNM0OEqtK5YWU5FE5L0DwR1nkrpEJKO4a5q2EOgos+gVoKpJfinoUNOOkjc1VHpqKM0uRf/OKrw1alvWUwqvW8B+DOb9TY5c5VZxQuRL+iwdrtwzFlKls=
+      distributions: sdist bdist_wheel
+      on:
+        tags: true
+        repo: oauthlib/oauthlib
+  - provider: releases
+    api_key: "$GITHUB_OAUTH_TOKEN"
+    skip_cleanup: true
+    on:
+      tags: true
+      repo: oauthlib/oauthlib
