@@ -16,8 +16,6 @@ from binascii import b2a_base64
 from oauthlib import common
 from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
 
-from oauthlib.openid.connect.core.tokens import JWTToken as NewJWTToken
-
 from . import utils
 
 try:
@@ -317,6 +315,3 @@ class BearerToken(TokenBase):
             return 5
         else:
             return 0
-
-
-JWTToken = NewJWTToken
