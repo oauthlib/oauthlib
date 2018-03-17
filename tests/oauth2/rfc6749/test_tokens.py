@@ -3,7 +3,14 @@ from __future__ import absolute_import, unicode_literals
 import mock
 
 from oauthlib.common import Request
-from oauthlib.oauth2.rfc6749.tokens import *
+from oauthlib.oauth2.rfc6749.tokens import (
+    prepare_mac_header,
+    prepare_bearer_headers,
+    prepare_bearer_body,
+    prepare_bearer_uri,
+    BearerToken,
+    JWTToken,
+)
 
 from ...unittest import TestCase
 
