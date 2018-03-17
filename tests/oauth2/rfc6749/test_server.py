@@ -3,14 +3,12 @@ from __future__ import absolute_import, unicode_literals
 
 import json
 
-import jwt
 import mock
 
 from oauthlib import common
 from oauthlib.oauth2.rfc6749 import errors, tokens
 from oauthlib.oauth2.rfc6749.endpoints import Server
-from oauthlib.oauth2.rfc6749.endpoints.authorization import \
-    AuthorizationEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.resource import ResourceEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
 from oauthlib.oauth2.rfc6749.grant_types import (AuthorizationCodeGrant,
@@ -41,7 +39,6 @@ class AuthorizationEndpointTest(TestCase):
         response_types = {
                 'code': auth_code,
                 'token': implicit,
-
                 'id_token': openid_connect_implicit,
                 'id_token token': openid_connect_implicit,
                 'code token': openid_connect_auth,
