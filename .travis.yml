@@ -36,6 +36,7 @@ deploy:
     distributions: sdist bdist_wheel
     on:
       tags: true
+      all_branches: true
       repo: oauthlib/oauthlib
   - provider: releases
     api_key:
@@ -43,4 +44,5 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
+      all_branches: true
       repo: oauthlib/oauthlib
