@@ -150,6 +150,17 @@ version. For Ubuntu you can easily install all after adding one ppa.
 .. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
 .. _`virtualenv`: https://virtualenv.pypa.io/en/latest/installation/
 
+Test upstream applications
+-----------------------------------
+
+Remember, OAuthLib is used by several 3rd party projects. If you think you
+submit a breaking change, confirm that other projects builds are not affected.
+
+.. sourcecode:: bash
+
+   $ make
+
+
 If you add code you need to add tests!
 --------------------------------------
 
