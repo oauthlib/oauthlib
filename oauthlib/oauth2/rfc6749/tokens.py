@@ -4,8 +4,8 @@ oauthlib.oauth2.rfc6749.tokens
 
 This module contains methods for adding two types of access tokens to requests.
 
-- Bearer http://tools.ietf.org/html/rfc6750
-- MAC http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
+- Bearer https://tools.ietf.org/html/rfc6750
+- MAC https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -22,8 +22,6 @@ try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
-
-
 
 
 class OAuth2Token(dict):
@@ -95,8 +93,8 @@ def prepare_mac_header(token, uri, key, http_method,
                        nonce="1336363200:dj83hs9s",
                        mac="bhCQXTVyfj5cmA9uKkPFx1zeOXM="
 
-    .. _`MAC Access Authentication`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
-    .. _`extension algorithms`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-7.1
+    .. _`MAC Access Authentication`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
+    .. _`extension algorithms`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-7.1
 
     :param uri: Request URI.
     :param headers: Request headers as a dictionary.
@@ -182,7 +180,7 @@ def prepare_bearer_uri(token, uri):
 
     http://www.example.com/path?access_token=h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
+    .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
     """
     return add_params_to_uri(uri, [(('access_token', token))])
 
@@ -193,7 +191,7 @@ def prepare_bearer_headers(token, headers=None):
 
     Authorization: Bearer h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
+    .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
     """
     headers = headers or {}
     headers['Authorization'] = 'Bearer %s' % token
@@ -205,7 +203,7 @@ def prepare_bearer_body(token, body=''):
 
     access_token=h480djs93hd8
 
-    .. _`Bearer Token`: http://tools.ietf.org/html/rfc6750
+    .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
     """
     return add_params_to_qs(body, [(('access_token', token))])
 
@@ -301,5 +299,49 @@ class BearerToken(TokenBase):
             return 9
         elif request.access_token is not None:
             return 5
+        else:
+            return 0
+
+
+class JWTToken(TokenBase):
+    __slots__ = (
+        'request_validator', 'token_generator',
+        'refresh_token_generator', 'expires_in'
+    )
+
+    def __init__(self, request_validator=None, token_generator=None,
+                 expires_in=None, refresh_token_generator=None):
+        self.request_validator = request_validator
+        self.token_generator = token_generator or random_token_generator
+        self.refresh_token_generator = (
+            refresh_token_generator or self.token_generator
+        )
+        self.expires_in = expires_in or 3600
+
+    def create_token(self, request, refresh_token=False, save_token=False):
+        """Create a JWT Token, using requestvalidator method."""
+
+        if callable(self.expires_in):
+            expires_in = self.expires_in(request)
+        else:
+            expires_in = self.expires_in
+
+        request.expires_in = expires_in
+
+        return self.request_validator.get_jwt_bearer_token(None, None, request)
+
+    def validate_request(self, request):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers.get('Authorization')[7:]
+        else:
+            token = request.access_token
+        return self.request_validator.validate_jwt_bearer_token(
+            token, request.scopes, request)
+
+    def estimate_type(self, request):
+        token = request.headers.get('Authorization', '')[7:]
+        if token.startswith('ey') and token.count('.') in (2, 4):
+            return 10
         else:
             return 0
