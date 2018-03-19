@@ -37,7 +37,7 @@ deploy:
       repo: oauthlib/oauthlib
   - provider: releases
     api_key:
-      secure: "YwPR/xHcqKdBAo8bSfJqAj2aD8zEdVYbbeAoo+cl1OZkRnCC1WnsfXw865wC/gi/sSQUFvdHFGGdy5CY1Iv3E67W2CiJDN0X6AxQPrq50WUzk/pyUyvIBhsHKMU+FDYmRGU2cwOy8jlun9V9fzC2LkA9yyAklisePbIg0I3mhKA="
+      secure: LEzTaeQt4+Sp21t7usmwaEYLThKIGWDNNj04JADMLgfquTeyz5nDu9P8JNlT//G9RNN20oR8w7jZo97Y+JAylq6Hh/I+p/MEzZi8+NwIpObk3n3zJO4witZQQSTEw/6B7qf1/NQQxjQzlYTJjsGXxBps7srviWZmbH6Tz+epA3A=
     skip_cleanup: true
     on:
       tags: true
