@@ -35,7 +35,7 @@ Setting up topic branches and generating pull requests
 
 While it's handy to provide useful code snippets in an issue, it is better for
 you as a developer to submit pull requests. By submitting pull request your
-contribution to OpenComparison will be recorded by Github.
+contribution to OAuthlib will be recorded by Github.
 
 In git it is best to isolate each topic or feature into a "topic branch". While
 individual commits allow you control over how small individual changes are made
@@ -218,7 +218,7 @@ How pull requests are checked, tested, and done
 
 First we pull the code into a local branch::
 
-    git remote add <submitter-github-name> git@github.com:<submitter-github-name>/opencomparison.git
+    git remote add <submitter-github-name> git@github.com:<submitter-github-name>/oauthlib.git
     git fetch <submitter-github-name>
     git checkout -b <branch-name> <submitter-github-name>/<branch-name>
 
