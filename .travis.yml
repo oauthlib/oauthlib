@@ -30,9 +30,9 @@ notifications:
     on_start: never
 deploy:
   - provider: pypi
-    user: ib.lundgren
+    user: JonathanHuot
     password:
-      secure: PGZF9pRiTGCSwQjk1ddTKF3x4rQ0iAiPbg2uSixyO68uMXRgJjwHhSrNM0OEqtK5YWU5FE5L0DwR1nkrpEJKO4a5q2EOgos+gVoKpJfinoUNOOkjc1VHpqKM0uRf/OKrw1alvWUwqvW8B+DOb9TY5c5VZxQuRL+iwdrtwzFlKls=
+      secure: "OozNM16flVLvqDoNzmoTENchhS1w0/dEJZvXBQK2KWmh8fyGj2UZus1vkl6bA5V3Yu9MZLYFpDcltl/qraY3Up6iXQpwKz4q+ICygAudYM2kJ5l8ZEe+wy2FikWbD6LkXf5uKIJJnPNSC8AI86ZyxM/XZxbYjj/+jXyJ1YFZwwQ="
       distributions: sdist bdist_wheel
       on:
         tags: true
