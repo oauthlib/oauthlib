@@ -72,8 +72,8 @@ How do I use OAuthlib as a provider with Django, Flask and other web frameworks?
     - Pyramid `pyramid-oauthlib`_
     - Bottle `bottle-oauthlib`_
 
-    For other frameworks, please get in touch by opening a `GitHub issue`_, on `G+`_ or
-    on IRC #oauthlib irc.freenode.net. If you have written an OAuthLib package that
+    For other frameworks, please get in touch by opening a `GitHub issue`_ or
+    on `Gitter OAuthLib community`_. If you have written an OAuthLib package that
     supports your favorite framework, please open a Pull Request to update the docs.
 
 
@@ -101,5 +101,5 @@ Some argue OAuth 2 is worse than 1, is that true?
 .. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
 .. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
 .. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
-.. _`G+`: https://plus.google.com/communities/101889017375384052571
+.. _`Gitter OAuthLib community`: https://gitter.im/oauthlib/Lobby
 .. _`difference`: https://www.cyberciti.biz/faq/authentication-vs-authorization/
