@@ -1,11 +1,42 @@
 Changelog
 =========
 
-2.0.5 (2017-10-19)
+3.0.0 (2018-02-05)
 ------------------
 
+**This is a backward incompatible release**
+
+This release improves OpenID Connect supporting removing the need of using `grant_type=openid`
+in token endpoint and when defining a application credential the `authorization_grant_type`
+can be same already used (`authorization-code`) both for OpenID Connect and OAuth2.
+
+Replaces the way to send a token from `Authorization: JWT eyJhbGciOiAiUlMyNTYifQ...` to `Authorization: Bearer eyJhbGciOiAiUlMyNTYifQ...`.
+
+* OpenID connect improvements #484.
+* Openid connect jwt #488
+
+2.0.6 (2017-10-19)
+------------------
+
+This is revert release from  backward incompatible added in 2.0.5
+
+* Fix cliend_id in web request body #505
+* Added bottle-oauthlib #509
+* Add support for HMAC-SHA256 (builds on PR#388) #498
+* Check access token in self.token dict #500
+* When deploying a release to PyPI, include the wheel distribution #496
+* Include license file in the generated wheel package #494
+* Refactor OAuth2Error
 * Fix OAuth2Error.response_mode for #463.
 * Documentation improvement.
+* initialization of variable #487
+* Pass through nonce in code flow #481
+
+2.0.5 (2017-10-18)
+------------------
+**Do not use this version**
+
+By mistake backward incompatible changes were released in this version the next reverts it.
 
 2.0.4 (2017-09-17)
 ------------------
