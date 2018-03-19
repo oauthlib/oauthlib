@@ -1,30 +1,27 @@
 language: python
 sudo: false
 cache: pip
-
 matrix:
   include:
-    - python: 2.7
-      env: TOXENV=py27
-    - python: 3.4
-      env: TOXENV=py34
-    - python: 3.5
-      env: TOXENV=py35
-    - python: 3.6
-      env: TOXENV=py36
-    - python: pypy-5.3
-      env: TOXENV=pypy
-
+  - python: 2.7
+    env: TOXENV=py27
+  - python: 3.4
+    env: TOXENV=py34
+  - python: 3.5
+    env: TOXENV=py35
+  - python: 3.6
+    env: TOXENV=py36
+  - python: pypy-5.3
+    env: TOXENV=pypy
 install:
-  - pip install -U setuptools
-  - pip install tox coveralls
+- pip install -U setuptools
+- pip install tox coveralls
 script: tox
-
 after_success: coveralls
 notifications:
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/6008c872bf0ecee344f4
+    - https://webhooks.gitter.im/e/6008c872bf0ecee344f4
     on_success: change
     on_failure: always
     on_start: never
