@@ -38,7 +38,8 @@ deploy:
       tags: true
       repo: oauthlib/oauthlib
   - provider: releases
-    api_key: "$GITHUB_OAUTH_TOKEN"
+    api_key:
+      secure: "YwPR/xHcqKdBAo8bSfJqAj2aD8zEdVYbbeAoo+cl1OZkRnCC1WnsfXw865wC/gi/sSQUFvdHFGGdy5CY1Iv3E67W2CiJDN0X6AxQPrq50WUzk/pyUyvIBhsHKMU+FDYmRGU2cwOy8jlun9V9fzC2LkA9yyAklisePbIg0I3mhKA="
     skip_cleanup: true
     on:
       tags: true
