@@ -14,19 +14,23 @@ What parts of OAuth 1 & 2 are supported?
 OAuth 1 with RSA-SHA1 signatures says "could not import cryptography". What should I do?
 ----------------------------------------------------------------------------------
 
-    Install cryptography via pip.
+    Install oauthlib with rsa flag or install cryptography manually via pip.
 
 .. code-block:: sh
 
+    $ pip install oauthlib[rsa]
+    ..or..
     $ pip install cryptography
 
 OAuth 2 ServiceApplicationClient and OAuth 1 with RSA-SHA1 signatures say "could not import jwt". What should I do?
 -------------------------------------------------------------------------------------------------------------------
 
-    Install pyjwt and cryptography with pip.
+    Install oauthlib with signedtoken flag or install pyjwt and cryptography manually with pip.
 
 .. code-block:: sh
 
+    $ pip install oauthlib[signedtoken]
+    ..or..
     $ pip install pyjwt cryptography
 
 What does ValueError `Only unicode objects are escapable. Got one of type X.` mean?
