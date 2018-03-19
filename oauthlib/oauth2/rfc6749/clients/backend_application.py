@@ -52,9 +52,9 @@ class BackendApplicationClient(Client):
             >>> client.prepare_request_body(scope=['hello', 'world'])
             'grant_type=client_credentials&scope=hello+world'
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         return prepare_token_request('client_credentials', body=body,
                                      scope=scope, **kwargs)

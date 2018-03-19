@@ -22,7 +22,7 @@ Bleeding edge from GitHub master
 
 .. code-block:: bash
 
-    pip install -e git+https://github.com/idan/oauthlib.git#egg=oauthlib
+    pip install -e git+https://github.com/oauthlib/oauthlib.git#egg=oauthlib
 
 Debian and derivatives like Ubuntu, Mint, etc.
 ---------------------------------------------

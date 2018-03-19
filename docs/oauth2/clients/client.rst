@@ -24,5 +24,5 @@ to use them please browse the documentation for each client type below.
     If you are interested in integrating OAuth 2 support into your favourite
     HTTP library you might find the requests-oauthlib implementation interesting.
 
-    .. _`requests`: https://github.com/kennethreitz/requests
+    .. _`requests`: https://github.com/requests/requests
     .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib

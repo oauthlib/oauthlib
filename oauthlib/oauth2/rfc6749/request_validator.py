@@ -34,9 +34,9 @@ class RequestValidator(object):
             - Resource Owner Password Credentials Grant
             - Refresh Token Grant
 
-        .. _`Section 4.3.2`: http://tools.ietf.org/html/rfc6749#section-4.3.2
-        .. _`Section 4.1.3`: http://tools.ietf.org/html/rfc6749#section-4.1.3
-        .. _`Section 6`: http://tools.ietf.org/html/rfc6749#section-6
+        .. _`Section 4.3.2`: https://tools.ietf.org/html/rfc6749#section-4.3.2
+        .. _`Section 4.1.3`: https://tools.ietf.org/html/rfc6749#section-4.1.3
+        .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
         """
         return True
 
@@ -60,7 +60,7 @@ class RequestValidator(object):
             - Client Credentials Grant
             - Refresh Token Grant
 
-        .. _`HTTP Basic Authentication Scheme`: http://tools.ietf.org/html/rfc1945#section-11.1
+        .. _`HTTP Basic Authentication Scheme`: https://tools.ietf.org/html/rfc1945#section-11.1
         """
         raise NotImplementedError('Subclasses must implement this method.')
 

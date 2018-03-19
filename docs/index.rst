@@ -7,14 +7,14 @@ Welcome to OAuthLib's documentation!
 ====================================
 
 If you can't find what you need or have suggestions for improvement, don't
-hesitate to open a `new issue on GitHub`_!  
+hesitate to open a `new issue on GitHub`_!
 
 Check out :doc:`error_reporting` for details on how to be an awesome bug reporter.
 
-For news and discussions please head over to our `G+ OAuthLib community`_.
+For news and discussions please head over to our `Gitter OAuthLib community`_.
 
-.. _`new issue on GitHub`: https://github.com/idan/oauthlib/issues/new
-.. _`G+ OAuthLib community`: https://plus.google.com/communities/101889017375384052571
+.. _`new issue on GitHub`: https://github.com/oauthlib/oauthlib/issues/new
+.. _`Gitter OAuthLib community`: https://gitter.im/oauthlib/Lobby
 
 .. toctree::
    :maxdepth: 1

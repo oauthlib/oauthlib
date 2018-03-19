@@ -37,7 +37,7 @@ setup(
     author_email='idan@gazit.me',
     maintainer='Ib Lundgren',
     maintainer_email='ib.lundgren@gmail.com',
-    url='https://github.com/idan/oauthlib',
+    url='https://github.com/oauthlib/oauthlib',
     platforms='any',
     license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),

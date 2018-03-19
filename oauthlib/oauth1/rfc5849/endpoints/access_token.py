@@ -180,7 +180,7 @@ class AccessTokenEndpoint(BaseEndpoint):
         # token credentials to the client, and ensure that the temporary
         # credentials have not expired or been used before.  The server MUST
         # also verify the verification code received from the client.
-        # .. _`Section 3.2`: http://tools.ietf.org/html/rfc5849#section-3.2
+        # .. _`Section 3.2`: https://tools.ietf.org/html/rfc5849#section-3.2
         #
         # Note that early exit would enable resource owner authorization
         # verifier enumertion.

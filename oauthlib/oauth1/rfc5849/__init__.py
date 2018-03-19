@@ -119,7 +119,7 @@ class Client(object):
         replace any netloc part of the request argument's uri attribute
         value.
 
-        .. _`section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
+        .. _`section 3.4.1.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.2
         """
         if self.signature_method == SIGNATURE_PLAINTEXT:
             # fast-path
@@ -297,7 +297,7 @@ class Client(object):
             raise ValueError(
                 'Body signatures may only be used with form-urlencoded content')
 
-        # We amend http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
+        # We amend https://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
         # with the clause that parameters from body should only be included
         # in non GET or HEAD requests. Extracting the request body parameters
         # and including them in the signature base string would give semantic
