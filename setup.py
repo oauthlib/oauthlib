@@ -33,7 +33,7 @@ setup(
     version=oauthlib.__version__,
     description='A generic, spec-compliant, thorough implementation of the OAuth request-signing logic',
     long_description=fread('README.rst'),
-    author='Idan Gazit',
+    author='The OAuthlib Community',
     author_email='idan@gazit.me',
     maintainer='Ib Lundgren',
     maintainer_email='ib.lundgren@gmail.com',
