@@ -32,6 +32,8 @@ coverage
 # Local file cruft/auto-backups
 .DS_Store
 *~
+**/#*#
+**/.#*
 
 # Sphinx
 docs/_build
