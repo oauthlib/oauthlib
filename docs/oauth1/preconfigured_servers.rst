@@ -12,7 +12,7 @@ Construction is simple, only import your validator and you are good to go::
 
     server = WebApplicationServer(your_validator)
 
-All endpoints are documented in :doc:`endpoints`.
+All endpoints are documented in :doc:`Provider endpoints <endpoints/endpoints>`.
 
 .. autoclass:: oauthlib.oauth1.WebApplicationServer
     :members:

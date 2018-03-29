@@ -3,20 +3,19 @@
 oauthlib.oauth2.rfc6749.grant_types.openid_connect
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
-
-from json import loads
-import logging
+from __future__ import absolute_import, unicode_literals
 
 import datetime
+import logging
+from json import loads
 
-from .base import GrantTypeBase
+from ..errors import ConsentRequired, InvalidRequestError, LoginRequired
+from ..request_validator import RequestValidator
 from .authorization_code import AuthorizationCodeGrant
 from .implicit import ImplicitGrant
-from ..errors import InvalidRequestError, LoginRequired, ConsentRequired
-from ..request_validator import RequestValidator
 
 log = logging.getLogger(__name__)
+
 
 class OIDCNoPrompt(Exception):
     """Exception used to inform users that no explicit authorization is needed.
@@ -75,6 +74,65 @@ class AuthCodeGrantDispatcher(object):
 
     def validate_authorization_request(self, request):
         return self._handler_for_request(request).validate_authorization_request(request)
+
+
+class ImplicitTokenGrantDispatcher(object):
+    """
+    This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
+    including 'openid' to either the default_auth_grant or the oidc_auth_grant based on the scopes requested.
+    """
+    def __init__(self, default_implicit_grant=None, oidc_implicit_grant=None):
+        self.default_implicit_grant = default_implicit_grant
+        self.oidc_implicit_grant = oidc_implicit_grant
+
+    def _handler_for_request(self, request):
+        handler = self.default_implicit_grant
+
+        if request.scopes and "openid" in request.scopes and 'id_token' in request.response_type:
+            handler = self.oidc_implicit_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+
+    def create_authorization_response(self, request, token_handler):
+        return self._handler_for_request(request).create_authorization_response(request, token_handler)
+
+    def validate_authorization_request(self, request):
+        return self._handler_for_request(request).validate_authorization_request(request)
+
+
+class AuthTokenGrantDispatcher(object):
+    """
+    This is an adapter class that will route simple Token requests, those that authorization_code have a scope
+    including 'openid' to either the default_token_grant or the oidc_token_grant based on the scopes requested.
+    """
+    def __init__(self, request_validator, default_token_grant=None, oidc_token_grant=None):
+        self.default_token_grant = default_token_grant
+        self.oidc_token_grant = oidc_token_grant
+        self.request_validator = request_validator
+
+    def _handler_for_request(self, request):
+        handler = self.default_token_grant
+        scopes = ()
+        parameters = dict(request.decoded_body)
+        client_id = parameters.get('client_id', None)
+        code = parameters.get('code', None)
+        redirect_uri = parameters.get('redirect_uri', None)
+
+        # If code is not pressent fallback to `default_token_grant` wich will
+        # raise an error for the missing `code` in `create_token_response` step.
+        if code:
+            scopes = self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri, request)
+
+        if 'openid' in scopes:
+            handler = self.oidc_token_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+
+    def create_token_response(self, request, token_handler):
+        handler = self._handler_for_request(request)
+        return handler.create_token_response(request, token_handler)
 
 
 class OpenIDConnectBase(object):
@@ -141,6 +199,13 @@ class OpenIDConnectBase(object):
 
     def openid_authorization_validator(self, request):
         """Perform OpenID Connect specific authorization request validation.
+
+        nonce
+                OPTIONAL. String value used to associate a Client session with
+                an ID Token, and to mitigate replay attacks. The value is
+                passed through unmodified from the Authentication Request to
+                the ID Token. Sufficient entropy MUST be present in the nonce
+                values used to prevent attackers from guessing values
 
         display
                 OPTIONAL. ASCII string value that specifies how the
@@ -301,12 +366,13 @@ class OpenIDConnectBase(object):
         self._inflate_claims(request)
 
         if not self.request_validator.validate_user_match(
-            request.id_token_hint, request.scopes, request.claims, request):
+                request.id_token_hint, request.scopes, request.claims, request):
             msg = "Session user does not match client supplied user."
             raise LoginRequired(request=request, description=msg)
 
         request_info = {
             'display': request.display,
+            'nonce': request.nonce,
             'prompt': prompt,
             'ui_locales': request.ui_locales.split() if request.ui_locales else [],
             'id_token_hint': request.id_token_hint,
@@ -337,9 +403,7 @@ class OpenIDConnectBase(object):
             desc = 'Request is missing mandatory nonce parameter.'
             raise InvalidRequestError(request=request, description=desc)
 
-        self._inflate_claims(request)
-
-        return {'nonce': request.nonce, 'claims': request.claims}
+        return {}
 
 
 class OpenIDConnectAuthCode(OpenIDConnectBase):
@@ -350,6 +414,7 @@ class OpenIDConnectAuthCode(OpenIDConnectBase):
         self.custom_validators.post_auth.append(
             self.openid_authorization_validator)
         self.register_token_modifier(self.add_id_token)
+
 
 class OpenIDConnectImplicit(OpenIDConnectBase):
 
@@ -364,6 +429,7 @@ class OpenIDConnectImplicit(OpenIDConnectBase):
             self.openid_implicit_authorization_validator)
         self.register_token_modifier(self.add_id_token)
 
+
 class OpenIDConnectHybrid(OpenIDConnectBase):
 
     def __init__(self, request_validator=None, **kwargs):
@@ -371,6 +437,8 @@ class OpenIDConnectHybrid(OpenIDConnectBase):
 
         self.proxy_target = AuthorizationCodeGrant(
             request_validator=request_validator, **kwargs)
+        # All hybrid response types should be fragment-encoded.
+        self.proxy_target.default_response_mode = "fragment"
         self.register_response_type('code id_token')
         self.register_response_type('code token')
         self.register_response_type('code id_token token')

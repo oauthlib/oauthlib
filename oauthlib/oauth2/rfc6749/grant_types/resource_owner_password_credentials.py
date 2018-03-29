@@ -3,14 +3,14 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import json
 import logging
 
-from .base import GrantTypeBase
 from .. import errors
 from ..request_validator import RequestValidator
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             the resource owner credentials, and if valid, issues an access
             token.
 
-    .. _`Resource Owner Password Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.3
+    .. _`Resource Owner Password Credentials Grant`: https://tools.ietf.org/html/rfc6749#section-4.3
     """
 
     def create_token_response(self, request, token_handler):
@@ -79,8 +79,8 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         authentication or is invalid, the authorization server returns an
         error response as described in `Section 5.2`_.
 
-        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
-        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
         headers = {
             'Content-Type': 'application/json',
@@ -153,8 +153,8 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         brute force attacks (e.g., using rate-limitation or generating
         alerts).
 
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         for validator in self.custom_validators.pre_token:
             validator(request)

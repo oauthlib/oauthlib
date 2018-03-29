@@ -1,13 +1,61 @@
 Changelog
 =========
 
-Development
------------
+2.0.7 (2018-03-19)
+------------------
+
+* Moved oauthlib into new organization on GitHub.
+* Include license file in the generated wheel package. (#494)
+* When deploying a release to PyPI, include the wheel distribution. (#496)
+* Check access token in self.token dict. (#500)
+* Added bottle-oauthlib to docs. (#509)
+* Update repository location in Travis. (#514)
+* Updated docs for organization change. (#515)
+* Replace G+ with Gitter. (#517)
+* Update requirements. (#518)
+* Add shields for Python versions, license and RTD. (#520)
+* Fix ReadTheDocs build (#521).
+* Fixed "make" command to test upstream with local oauthlib. (#522)
+* Replace IRC notification with Gitter Hook. (#523)
+* Added Github Releases deploy provider. (#523)
+
+2.0.6 (2017-10-20)
+------------------
+
+* 2.0.5 contains breaking changes.
+
+2.0.5 (2017-10-19)
+------------------
+
+* Fix OAuth2Error.response_mode for #463.
+* Documentation improvement.
+
+2.0.4 (2017-09-17)
+------------------
+* Fixed typo that caused OAuthlib to crash because of the fix in "Address missing OIDC errors and fix a typo in the AccountSelectionRequired exception".
+
+2.0.3 (2017-09-07)
+------------------
+* Address missing OIDC errors and fix a typo in the AccountSelectionRequired exception.
+* Update proxy keys on CaseInsensitiveDict.update().
+* Redirect errors according to OIDC's response_mode.
+* Added universal wheel support.
+* Added log statements to except clauses.
+* According to RC7009 Section 2.1, a client should include authentication credentials when revoking its tokens.
+  As discussed in #339, this is not make sense for public clients.
+  However, in that case, the public client should still be checked that is infact a public client (authenticate_client_id).
+* Improved prompt parameter validation.
+* Added two error codes from RFC 6750.
+* Hybrid response types are now be fragment-encoded.
+* Added Python 3.6 to Travis CI testing and trove classifiers.
+* Fixed BytesWarning issued when using a string placeholder for bytes object.
+* Documented PyJWT dependency and improved logging and exception messages.
+* Documentation improvements and fixes.
 
 2.0.2 (2017-03-19)
 ------------------
 * Dropped support for Python 2.6, 3.2 & 3.3.
-* (FIX) `OpenIDConnector` will no longer raise an AttributeError when calling `openid_authorization_validator()` twice.  
+* (FIX) `OpenIDConnector` will no longer raise an AttributeError when calling `openid_authorization_validator()` twice.
 
 2.0.1 (2016-11-23)
 ------------------

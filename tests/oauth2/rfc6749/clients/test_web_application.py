@@ -7,13 +7,11 @@ import os
 from mock import patch
 
 from oauthlib import common, signals
-from oauthlib.oauth2.rfc6749 import utils, errors
-from oauthlib.oauth2 import Client
-from oauthlib.oauth2 import WebApplicationClient
-from oauthlib.oauth2 import MobileApplicationClient
-from oauthlib.oauth2 import LegacyApplicationClient
-from oauthlib.oauth2 import BackendApplicationClient
-from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, URI_QUERY, BODY
+from oauthlib.oauth2 import (BackendApplicationClient, Client,
+                             LegacyApplicationClient, MobileApplicationClient,
+                             WebApplicationClient)
+from oauthlib.oauth2.rfc6749 import errors, utils
+from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
 
 from ....unittest import TestCase
 
@@ -40,7 +38,7 @@ class WebApplicationClientTest(TestCase):
     code = "zzzzaaaa"
     body = "not=empty"
 
-    body_code = "not=empty&grant_type=authorization_code&code=%s&client_id=%s" % (code, client_id)
+    body_code = "not=empty&grant_type=authorization_code&code=%s" % code
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 

@@ -7,6 +7,7 @@ This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
+
 import logging
 
 from oauthlib.common import Request
@@ -58,7 +59,7 @@ class AuthorizationEndpoint(BaseEndpoint):
 
         # Enforced through the design of oauthlib.common.Request
 
-    .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+    .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
     """
 
     def __init__(self, default_response_type, default_token_type,

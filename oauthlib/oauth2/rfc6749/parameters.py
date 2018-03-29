@@ -5,24 +5,27 @@ oauthlib.oauth2.rfc6749.parameters
 
 This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 
-.. _`Section 4`: http://tools.ietf.org/html/rfc6749#section-4
+.. _`Section 4`: https://tools.ietf.org/html/rfc6749#section-4
 """
 from __future__ import absolute_import, unicode_literals
 
 import json
 import os
 import time
+
+from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
+from oauthlib.signals import scope_changed
+
+from .errors import (InsecureTransportError, MismatchingStateError,
+                     MissingCodeError, MissingTokenError,
+                     MissingTokenTypeError, raise_from_error)
+from .tokens import OAuth2Token
+from .utils import is_secure_transport, list_to_scope, scope_to_list
+
 try:
     import urlparse
 except ImportError:
     import urllib.parse as urlparse
-from oauthlib.common import add_params_to_uri, add_params_to_qs, unicode_type
-from oauthlib.signals import scope_changed
-from .errors import raise_from_error, MissingTokenError, MissingTokenTypeError
-from .errors import MismatchingStateError, MissingCodeError
-from .errors import InsecureTransportError
-from .tokens import OAuth2Token
-from .utils import list_to_scope, scope_to_list, is_secure_transport
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
@@ -58,11 +61,11 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
             &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
         Host: server.example.com
 
-    .. _`W3C.REC-html401-19991224`: http://tools.ietf.org/html/rfc6749#ref-W3C.REC-html401-19991224
-    .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
-    .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
-    .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-    .. _`section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
+    .. _`W3C.REC-html401-19991224`: https://tools.ietf.org/html/rfc6749#ref-W3C.REC-html401-19991224
+    .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
+    .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
+    .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+    .. _`section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
     """
     if not is_secure_transport(uri):
         raise InsecureTransportError()
@@ -108,7 +111,7 @@ def prepare_token_request(grant_type, body='', **kwargs):
         grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
         &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
 
-    .. _`Section 4.1.1`: http://tools.ietf.org/html/rfc6749#section-4.1.1
+    .. _`Section 4.1.1`: https://tools.ietf.org/html/rfc6749#section-4.1.1
     """
     params = [('grant_type', grant_type)]
 
@@ -150,9 +153,9 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
         specification MAY define other values for this parameter using the
         registry defined in `Section 4.1.2`_.
 
-    .. _`Section 1.4`: http://tools.ietf.org/html/rfc6749#section-1.4
-    .. _`Section 1.5`: http://tools.ietf.org/html/rfc6749#section-1.5
-    .. _`Section 4.1.2`: http://tools.ietf.org/html/rfc7009#section-4.1.2
+    .. _`Section 1.4`: https://tools.ietf.org/html/rfc6749#section-1.4
+    .. _`Section 1.5`: https://tools.ietf.org/html/rfc6749#section-1.5
+    .. _`Section 4.1.2`: https://tools.ietf.org/html/rfc7009#section-4.1.2
 
     """
     if not is_secure_transport(url):
@@ -345,10 +348,10 @@ def parse_token_response(body, scope=None):
             "example_parameter":"example_value"
         }
 
-    .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
-    .. _`Section 6`: http://tools.ietf.org/html/rfc6749#section-6
-    .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-    .. _`RFC4627`: http://tools.ietf.org/html/rfc4627
+    .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
+    .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
+    .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+    .. _`RFC4627`: https://tools.ietf.org/html/rfc4627
     """
     try:
         params = json.loads(body)
@@ -356,7 +359,7 @@ def parse_token_response(body, scope=None):
 
         # Fall back to URL-encoded string, to support old implementations,
         # including (at time of writing) Facebook. See:
-        #   https://github.com/idan/oauthlib/issues/267
+        #   https://github.com/oauthlib/oauthlib/issues/267
 
         params = dict(urlparse.parse_qsl(body))
         for key in ('expires_in', 'expires'):
@@ -392,7 +395,7 @@ def validate_token_parameters(params):
     # If the issued access token scope is different from the one requested by
     # the client, the authorization server MUST include the "scope" response
     # parameter to inform the client of the actual scope granted.
-    # http://tools.ietf.org/html/rfc6749#section-3.3
+    # https://tools.ietf.org/html/rfc6749#section-3.3
     if params.scope_changed:
         message = 'Scope has changed from "{old}" to "{new}".'.format(
             old=params.old_scope, new=params.scope,

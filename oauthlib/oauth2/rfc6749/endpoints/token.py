@@ -15,7 +15,6 @@ from oauthlib.oauth2.rfc6749 import utils
 
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
-
 log = logging.getLogger(__name__)
 
 
@@ -60,7 +59,7 @@ class TokenEndpoint(BaseEndpoint):
 
         # Delegated to each grant type.
 
-    .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+    .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
     """
 
     def __init__(self, default_grant_type, default_token_type, grant_types):

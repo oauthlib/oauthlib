@@ -199,8 +199,8 @@ def generate_nonce():
     A random 64-bit number is appended to the epoch timestamp for both
     randomness and to decrease the likelihood of collisions.
 
-    .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
-    .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+    .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
+    .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
     return unicode_type(unicode_type(random.getrandbits(64)) + generate_timestamp())
 
@@ -211,8 +211,8 @@ def generate_timestamp():
     Per `section 3.3`_ of the OAuth 1 RFC 5849 spec.
     Per `section 3.2.1`_ of the MAC Access Authentication spec.
 
-    .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
-    .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+    .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
+    .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
     return unicode_type(int(time.time()))
 
@@ -257,7 +257,7 @@ def generate_client_id(length=30, chars=CLIENT_ID_CHARACTER_SET):
     """Generates an OAuth client_id
 
     OAuth 2 specify the format of client_id in
-    http://tools.ietf.org/html/rfc6749#appendix-A.
+    https://tools.ietf.org/html/rfc6749#appendix-A.
     """
     return generate_token(length, chars)
 

@@ -8,6 +8,8 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 from __future__ import absolute_import, unicode_literals
 
+import sys
+
 from . import SIGNATURE_METHODS, utils
 
 
@@ -107,7 +109,7 @@ class RequestValidator(object):
     their use more straightforward and as such it could be worth reading what
     follows in chronological order.
 
-    .. _`whitelisting or blacklisting`: http://www.schneier.com/blog/archives/2011/01/whitelisting_vs.html
+    .. _`whitelisting or blacklisting`: https://www.schneier.com/blog/archives/2011/01/whitelisting_vs.html
     """
 
     def __init__(self):
@@ -197,6 +199,14 @@ class RequestValidator(object):
         """Check that the realm is one of a set allowed realms."""
         return all((r in self.realms for r in realms))
 
+    def _subclass_must_implement(self, fn):
+        """
+        Returns a NotImplementedError for a function that should be implemented.
+        :param fn: name of the function
+        """
+        m = "Missing function implementation in {}: {}".format(type(self), fn)
+        return NotImplementedError(m)
+
     @property
     def dummy_client(self):
         """Dummy client used when an invalid client key is supplied.
@@ -219,7 +229,7 @@ class RequestValidator(object):
         * ResourceEndpoint
         * SignatureOnlyEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("dummy_client")
 
     @property
     def dummy_request_token(self):
@@ -235,7 +245,7 @@ class RequestValidator(object):
 
         * AccessTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("dummy_request_token")
 
     @property
     def dummy_access_token(self):
@@ -251,7 +261,7 @@ class RequestValidator(object):
 
         * ResourceEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("dummy_access_token")
 
     def get_client_secret(self, client_key, request):
         """Retrieves the client secret associated with the client key.
@@ -286,7 +296,7 @@ class RequestValidator(object):
         * ResourceEndpoint
         * SignatureOnlyEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement('get_client_secret')
 
     def get_request_token_secret(self, client_key, token, request):
         """Retrieves the shared secret associated with the request token.
@@ -318,7 +328,7 @@ class RequestValidator(object):
 
         * AccessTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement('get_request_token_secret')
 
     def get_access_token_secret(self, client_key, token, request):
         """Retrieves the shared secret associated with the access token.
@@ -350,7 +360,7 @@ class RequestValidator(object):
 
         * ResourceEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("get_access_token_secret")
 
     def get_default_realms(self, client_key, request):
         """Get the default realms for a client.
@@ -366,7 +376,7 @@ class RequestValidator(object):
 
         * RequestTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("get_default_realms")
 
     def get_realms(self, token, request):
         """Get realms associated with a request token.
@@ -380,7 +390,7 @@ class RequestValidator(object):
         * AuthorizationEndpoint
         * AccessTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("get_realms")
 
     def get_redirect_uri(self, token, request):
         """Get the redirect URI associated with a request token.
@@ -397,7 +407,7 @@ class RequestValidator(object):
 
         * AuthorizationEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("get_redirect_uri")
 
     def get_rsa_key(self, client_key, request):
         """Retrieves a previously stored client provided RSA key.
@@ -420,7 +430,7 @@ class RequestValidator(object):
         * ResourceEndpoint
         * SignatureOnlyEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("get_rsa_key")
 
     def invalidate_request_token(self, client_key, request_token, request):
         """Invalidates a used request token.
@@ -435,7 +445,7 @@ class RequestValidator(object):
         "The server MUST (...) ensure that the temporary
         credentials have not expired or been used before."
 
-        .. _`Section 2.3`: http://tools.ietf.org/html/rfc5849#section-2.3
+        .. _`Section 2.3`: https://tools.ietf.org/html/rfc5849#section-2.3
 
         This method should ensure that provided token won't validate anymore.
         It can be simply removing RequestToken from storage or setting
@@ -446,7 +456,7 @@ class RequestValidator(object):
 
         * AccessTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("invalidate_request_token")
 
     def validate_client_key(self, client_key, request):
         """Validates that supplied client key is a registered and valid client.
@@ -482,7 +492,7 @@ class RequestValidator(object):
         * ResourceEndpoint
         * SignatureOnlyEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("validate_client_key")
 
     def validate_request_token(self, client_key, token, request):
         """Validates that supplied request token is registered and valid.
@@ -516,7 +526,7 @@ class RequestValidator(object):
 
         * AccessTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("validate_request_token")
 
     def validate_access_token(self, client_key, token, request):
         """Validates that supplied access token is registered and valid.
@@ -550,7 +560,7 @@ class RequestValidator(object):
 
         * ResourceEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("validate_access_token")
 
     def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
                                      request, request_token=None, access_token=None):
@@ -572,7 +582,7 @@ class RequestValidator(object):
         channel.  The nonce value MUST be unique across all requests with the
         same timestamp, client credentials, and token combinations."
 
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
 
         One of the first validation checks that will be made is for the validity
         of the nonce and timestamp, which are associated with a client key and
@@ -600,7 +610,7 @@ class RequestValidator(object):
         * ResourceEndpoint
         * SignatureOnlyEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("validate_timestamp_and_nonce")
 
     def validate_redirect_uri(self, client_key, redirect_uri, request):
         """Validates the client supplied redirection URI.
@@ -633,7 +643,7 @@ class RequestValidator(object):
 
         * RequestTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("validate_redirect_uri")
 
     def validate_requested_realms(self, client_key, realms, request):
         """Validates that the client may request access to the realm.
@@ -651,7 +661,7 @@ class RequestValidator(object):
 
         * RequestTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("validate_requested_realms")
 
     def validate_realms(self, client_key, token, request, uri=None,
                         realms=None):
@@ -685,7 +695,7 @@ class RequestValidator(object):
 
         * ResourceEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("validate_realms")
 
     def validate_verifier(self, client_key, token, verifier, request):
         """Validates a verification code.
@@ -716,7 +726,7 @@ class RequestValidator(object):
 
         * AccessTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("validate_verifier")
 
     def verify_request_token(self, token, request):
         """Verify that the given OAuth1 request token is valid.
@@ -734,7 +744,7 @@ class RequestValidator(object):
 
         * AuthorizationEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("verify_request_token")
 
     def verify_realms(self, token, realms, request):
         """Verify authorized realms to see if they match those given to token.
@@ -757,7 +767,7 @@ class RequestValidator(object):
 
         * AuthorizationEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("verify_realms")
 
     def save_access_token(self, token, request):
         """Save an OAuth1 access token.
@@ -780,7 +790,7 @@ class RequestValidator(object):
 
         * AccessTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("save_access_token")
 
     def save_request_token(self, token, request):
         """Save an OAuth1 request token.
@@ -800,7 +810,7 @@ class RequestValidator(object):
 
         * RequestTokenEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("save_request_token")
 
     def save_verifier(self, token, verifier, request):
         """Associate an authorization verifier with a request token.
@@ -820,4 +830,4 @@ class RequestValidator(object):
 
         * AuthorizationEndpoint
         """
-        raise NotImplementedError("Subclasses must implement this function.")
+        raise self._subclass_must_implement("save_verifier")

@@ -1,29 +1,36 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ....unittest import TestCase
 
 import json
+
 import mock
+
 from oauthlib.common import Request
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectAuthCode
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectImplicit
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectHybrid
-from oauthlib.oauth2.rfc6749.grant_types import OIDCNoPrompt
+from oauthlib.oauth2.rfc6749.grant_types import (AuthTokenGrantDispatcher,
+                                                 AuthorizationCodeGrant,
+                                                 ImplicitGrant,
+                                                 ImplicitTokenGrantDispatcher,
+                                                 OIDCNoPrompt,
+                                                 OpenIDConnectAuthCode,
+                                                 OpenIDConnectHybrid,
+                                                 OpenIDConnectImplicit)
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
+from ....unittest import TestCase
 from .test_authorization_code import AuthorizationCodeGrantTest
 from .test_implicit import ImplicitGrantTest
 
 
 class OpenIDAuthCodeInterferenceTest(AuthorizationCodeGrantTest):
-    """Test that OpenID don't interfer with normal OAuth 2 flows."""
+    """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
         super(OpenIDAuthCodeInterferenceTest, self).setUp()
         self.auth = OpenIDConnectAuthCode(request_validator=self.mock_validator)
 
+
 class OpenIDImplicitInterferenceTest(ImplicitGrantTest):
-    """Test that OpenID don't interfer with normal OAuth 2 flows."""
+    """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
         super(OpenIDImplicitInterferenceTest, self).setUp()
@@ -31,7 +38,7 @@ class OpenIDImplicitInterferenceTest(ImplicitGrantTest):
 
 
 class OpenIDHybridInterferenceTest(AuthorizationCodeGrantTest):
-    """Test that OpenID don't interfer with normal OAuth 2 flows."""
+    """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
         super(OpenIDHybridInterferenceTest, self).setUp()
@@ -75,8 +82,15 @@ class OpenIDAuthCodeTest(TestCase):
 
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_query)
+        self.assertEqual(b, None)
+        self.assertEqual(s, 302)
+
+        self.request.response_mode = 'fragment'
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], self.url_fragment, parse_fragment=True)
         self.assertEqual(b, None)
         self.assertEqual(s, 302)
 
@@ -96,6 +110,7 @@ class OpenIDAuthCodeTest(TestCase):
         self.assertEqual(b, None)
         self.assertEqual(s, 302)
 
+        self.request.response_mode = 'query'
         self.request.id_token_hint = 'me@email.com'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_query)
@@ -260,6 +275,7 @@ class OpenIDHybridCodeTokenTest(OpenIDAuthCodeTest):
         self.url_query = 'https://a.b/cb?code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc'
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc'
 
+
 class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
@@ -270,6 +286,7 @@ class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
         self.url_query = 'https://a.b/cb?code=abc&state=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&id_token=%s' % token
 
+
 class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
@@ -279,3 +296,108 @@ class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
         token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
+
+
+class ImplicitTokenGrantDispatcherTest(TestCase):
+    def setUp(self):
+        self.request = Request('http://a.b/path')
+        request_validator = mock.MagicMock()
+        implicit_grant = ImplicitGrant(request_validator)
+        openid_connect_implicit = OpenIDConnectImplicit(request_validator)
+
+        self.dispatcher = ImplicitTokenGrantDispatcher(
+            default_implicit_grant=implicit_grant,
+            oidc_implicit_grant=openid_connect_implicit
+        )
+
+    def test_create_authorization_response_openid(self):
+        self.request.scopes = ('hello', 'openid')
+        self.request.response_type = 'id_token'
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, OpenIDConnectImplicit))
+
+    def test_validate_authorization_request_openid(self):
+        self.request.scopes = ('hello', 'openid')
+        self.request.response_type = 'id_token'
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, OpenIDConnectImplicit))
+
+    def test_create_authorization_response_oauth(self):
+        self.request.scopes = ('hello', 'world')
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, ImplicitGrant))
+
+    def test_validate_authorization_request_oauth(self):
+        self.request.scopes = ('hello', 'world')
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, ImplicitGrant))
+
+
+class DispatcherTest(TestCase):
+    def setUp(self):
+        self.request = Request('http://a.b/path')
+        self.request.decoded_body = (
+            ("client_id", "me"),
+            ("code", "code"),
+            ("redirect_url", "https://a.b/cb"),
+        )
+
+        self.request_validator = mock.MagicMock()
+        self.auth_grant = AuthorizationCodeGrant(self.request_validator)
+        self.openid_connect_auth = OpenIDConnectAuthCode(self.request_validator)
+
+
+class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
+
+    def setUp(self):
+        super(AuthTokenGrantDispatcherOpenIdTest, self).setUp()
+        self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'openid')
+        self.dispatcher = AuthTokenGrantDispatcher(
+            self.request_validator,
+            default_token_grant=self.auth_grant,
+            oidc_token_grant=self.openid_connect_auth
+        )
+
+    def test_create_token_response_openid(self):
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, OpenIDConnectAuthCode))
+        self.assertTrue(self.dispatcher.request_validator.get_authorization_code_scopes.called)
+
+
+class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
+
+    def setUp(self):
+        super(AuthTokenGrantDispatcherOpenIdWithoutCodeTest, self).setUp()
+        self.request.decoded_body = (
+            ("client_id", "me"),
+            ("code", ""),
+            ("redirect_url", "https://a.b/cb"),
+        )
+        self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'openid')
+        self.dispatcher = AuthTokenGrantDispatcher(
+            self.request_validator,
+            default_token_grant=self.auth_grant,
+            oidc_token_grant=self.openid_connect_auth
+        )
+
+    def test_create_token_response_openid_without_code(self):
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, AuthorizationCodeGrant))
+        self.assertFalse(self.dispatcher.request_validator.get_authorization_code_scopes.called)
+
+
+class AuthTokenGrantDispatcherOAuthTest(DispatcherTest):
+
+    def setUp(self):
+        super(AuthTokenGrantDispatcherOAuthTest, self).setUp()
+        self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'world')
+        self.dispatcher = AuthTokenGrantDispatcher(
+            self.request_validator,
+            default_token_grant=self.auth_grant,
+            oidc_token_grant=self.openid_connect_auth
+        )
+
+    def test_create_token_response_oauth(self):
+        handler = self.dispatcher._handler_for_request(self.request)
+        self.assertTrue(isinstance(handler, AuthorizationCodeGrant))
+        self.assertTrue(self.dispatcher.request_validator.get_authorization_code_scopes.called)

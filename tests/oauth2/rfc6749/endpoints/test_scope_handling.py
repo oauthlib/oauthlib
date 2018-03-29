@@ -4,15 +4,17 @@ Fairly trivial in all grants except the Authorization Code Grant where scope
 need to be persisted temporarily in an authorization code.
 """
 from __future__ import absolute_import, unicode_literals
+
 import json
+
 import mock
 
-from .test_utils import get_query_credentials, get_fragment_credentials
-from ....unittest import TestCase
+from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
+                             MobileApplicationServer, RequestValidator, Server,
+                             WebApplicationServer)
 
-from oauthlib.oauth2 import RequestValidator
-from oauthlib.oauth2 import WebApplicationServer, MobileApplicationServer
-from oauthlib.oauth2 import LegacyApplicationServer, BackendApplicationServer, Server
+from ....unittest import TestCase
+from .test_utils import get_fragment_credentials, get_query_credentials
 
 
 class TestScopeHandling(TestCase):
@@ -85,7 +87,7 @@ class TestScopeHandling(TestCase):
             self.assertIn('Location', h)
             code = get_query_credentials(h['Location'])['code'][0]
             _, body, _ = getattr(self, backend_server_type).create_token_response(token_uri,
-                    body='grant_type=authorization_code&code=%s' % code)
+                    body='client_id=me&redirect_uri=http://back.to/me&grant_type=authorization_code&code=%s' % code)
             self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # implicit grant

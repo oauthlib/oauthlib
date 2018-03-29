@@ -9,8 +9,8 @@
     :license: BSD, see LICENSE for details.
 """
 
-__author__ = 'Idan Gazit <idan@gazit.me>'
-__version__ = '2.0.2'
+__author__ = 'The OAuthlib Community'
+__version__ = '2.0.7'
 
 
 import logging

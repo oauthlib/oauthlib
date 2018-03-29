@@ -5,7 +5,7 @@ oauthlib.oauth2.rfc6749.endpoint.revocation
 
 An implementation of the OAuth 2 `Token Revocation`_ spec (draft 11).
 
-.. _`Token Revocation`: http://tools.ietf.org/html/draft-ietf-oauth-revocation-11
+.. _`Token Revocation`: https://tools.ietf.org/html/draft-ietf-oauth-revocation-11
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -13,9 +13,9 @@ import logging
 
 from oauthlib.common import Request
 
+from ..errors import (InvalidClientError, InvalidRequestError, OAuth2Error,
+                      UnsupportedTokenTypeError)
 from .base import BaseEndpoint, catch_errors_and_unavailability
-from ..errors import InvalidClientError, UnsupportedTokenTypeError
-from ..errors import InvalidRequestError, OAuth2Error
 
 log = logging.getLogger(__name__)
 
@@ -110,11 +110,11 @@ class RevocationEndpoint(BaseEndpoint):
         The client also includes its authentication credentials as described in
         `Section 2.3`_. of [`RFC6749`_].
 
-        .. _`section 1.4`: http://tools.ietf.org/html/rfc6749#section-1.4
-        .. _`section 1.5`: http://tools.ietf.org/html/rfc6749#section-1.5
-        .. _`section 2.3`: http://tools.ietf.org/html/rfc6749#section-2.3
-        .. _`Section 4.1.2`: http://tools.ietf.org/html/draft-ietf-oauth-revocation-11#section-4.1.2
-        .. _`RFC6749`: http://tools.ietf.org/html/rfc6749
+        .. _`section 1.4`: https://tools.ietf.org/html/rfc6749#section-1.4
+        .. _`section 1.5`: https://tools.ietf.org/html/rfc6749#section-1.5
+        .. _`section 2.3`: https://tools.ietf.org/html/rfc6749#section-2.3
+        .. _`Section 4.1.2`: https://tools.ietf.org/html/draft-ietf-oauth-revocation-11#section-4.1.2
+        .. _`RFC6749`: https://tools.ietf.org/html/rfc6749
         """
         if not request.token:
             raise InvalidRequestError(request=request,

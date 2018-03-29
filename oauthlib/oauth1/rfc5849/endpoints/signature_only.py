@@ -10,8 +10,8 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
-from .base import BaseEndpoint
 from .. import errors
+from .base import BaseEndpoint
 
 log = logging.getLogger(__name__)
 
@@ -49,6 +49,7 @@ class SignatureOnlyEndpoint(BaseEndpoint):
 
         if not self.request_validator.validate_timestamp_and_nonce(
                 request.client_key, request.timestamp, request.nonce, request):
+            log.debug('[Failure] verification failed: timestamp/nonce')
             return False, request
 
         # The server SHOULD return a 401 (Unauthorized) status code when

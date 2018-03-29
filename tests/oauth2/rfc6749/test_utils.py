@@ -3,13 +3,12 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 import os
 
-from ...unittest import TestCase
 from oauthlib.common import PY3
-from oauthlib.oauth2.rfc6749.utils import escape, host_from_uri
-from oauthlib.oauth2.rfc6749.utils import generate_age
-from oauthlib.oauth2.rfc6749.utils import is_secure_transport
-from oauthlib.oauth2.rfc6749.utils import params_from_uri
-from oauthlib.oauth2.rfc6749.utils import list_to_scope, scope_to_list
+from oauthlib.oauth2.rfc6749.utils import (escape, generate_age, host_from_uri,
+                                           is_secure_transport, list_to_scope,
+                                           params_from_uri, scope_to_list)
+
+from ...unittest import TestCase
 
 
 class ScopeObject:
@@ -105,6 +104,3 @@ class UtilsTests(TestCase):
         set_list_scopes = set(string_list_scopes)
         set_list = scope_to_list(set_list_scopes)
         self.assertEqual(sorted(set_list), sorted(string_list_scopes))
-
-
-

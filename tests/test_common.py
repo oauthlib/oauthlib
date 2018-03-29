@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import sys
 
+from oauthlib.common import (CaseInsensitiveDict, Request, add_params_to_uri,
+                             extract_params, generate_client_id,
+                             generate_nonce, generate_timestamp,
+                             generate_token, unicode_type, urldecode)
+
 from .unittest import TestCase
-
-from oauthlib.common import add_params_to_uri
-from oauthlib.common import CaseInsensitiveDict
-from oauthlib.common import extract_params
-from oauthlib.common import generate_client_id
-from oauthlib.common import generate_nonce
-from oauthlib.common import generate_timestamp
-from oauthlib.common import generate_token
-from oauthlib.common import Request
-from oauthlib.common import unicode_type
-from oauthlib.common import urldecode
-
 
 if sys.version_info[0] == 3:
     bytes_type = bytes

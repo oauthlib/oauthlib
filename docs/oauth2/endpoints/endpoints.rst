@@ -23,7 +23,7 @@ handles user authorization, the token endpoint which provides tokens and the
 resource endpoint which provides access to protected resources. It is to the
 endpoints you will feed requests and get back an almost complete response. This
 process is simplified for you using a decorator such as the django one described
-later.
+later (but it's applicable to all other web frameworks librairies).
 
 The main purpose of the endpoint in OAuthLib is to figure out which grant type
 or token to dispatch the request to.

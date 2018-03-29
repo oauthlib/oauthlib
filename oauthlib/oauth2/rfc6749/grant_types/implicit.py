@@ -3,16 +3,15 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import logging
 
 from oauthlib import common
 from oauthlib.uri_validate import is_absolute_uri
 
-from .base import GrantTypeBase
 from .. import errors
-from ..request_validator import RequestValidator
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
@@ -112,9 +111,9 @@ class ImplicitGrant(GrantTypeBase):
     See `Section 10.3`_ and `Section 10.16`_ for important security considerations
     when using the implicit grant.
 
-    .. _`Implicit Grant`: http://tools.ietf.org/html/rfc6749#section-4.2
-    .. _`Section 10.3`: http://tools.ietf.org/html/rfc6749#section-10.3
-    .. _`Section 10.16`: http://tools.ietf.org/html/rfc6749#section-10.16
+    .. _`Implicit Grant`: https://tools.ietf.org/html/rfc6749#section-4.2
+    .. _`Section 10.3`: https://tools.ietf.org/html/rfc6749#section-10.3
+    .. _`Section 10.16`: https://tools.ietf.org/html/rfc6749#section-10.16
     """
 
     response_types = ['token']
@@ -153,11 +152,11 @@ class ImplicitGrant(GrantTypeBase):
         access token matches a redirection URI registered by the client as
         described in `Section 3.1.2`_.
 
-        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
-        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
         """
         return self.create_token_response(request, token_handler)
 
@@ -196,9 +195,9 @@ class ImplicitGrant(GrantTypeBase):
 
         The authorization server MUST NOT issue a refresh token.
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
         """
         try:
             self.validate_token_request(request)
@@ -218,13 +217,13 @@ class ImplicitGrant(GrantTypeBase):
         # the authorization server informs the client by adding the following
         # parameters to the fragment component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B:
-        # http://tools.ietf.org/html/rfc6749#appendix-B
+        # https://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
                                                          fragment=True)}, None, 302
 
-        # In OIDC implicit flow it is possible to have a request_type that does not include the access token!
+        # In OIDC implicit flow it is possible to have a request_type that does not include the access_token!
         # "id_token token" - return the access token and the id token
         # "id_token" - don't return the access token
         if "token" in request.response_type.split():
@@ -234,7 +233,12 @@ class ImplicitGrant(GrantTypeBase):
 
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
-        self.request_validator.save_token(token, request)
+
+        # In OIDC implicit flow it is possible to have a request_type that does
+        # not include the access_token! In this case there is no need to save a token.
+        if "token" in request.response_type.split():
+            self.request_validator.save_token(token, request)
+
         return self.prepare_authorization_response(
             request, token, {}, None, 302)
 
@@ -276,7 +280,7 @@ class ImplicitGrant(GrantTypeBase):
                 raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param, request=request)
 
         # REQUIRED. The client identifier as described in Section 2.2.
-        # http://tools.ietf.org/html/rfc6749#section-2.2
+        # https://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
 
@@ -284,7 +288,7 @@ class ImplicitGrant(GrantTypeBase):
             raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
-        # http://tools.ietf.org/html/rfc6749#section-3.1.2
+        # https://tools.ietf.org/html/rfc6749#section-3.1.2
         if request.redirect_uri is not None:
             request.using_default_redirect_uri = False
             log.debug('Using provided redirect_uri %s', request.redirect_uri)
@@ -295,7 +299,7 @@ class ImplicitGrant(GrantTypeBase):
             # to which it will redirect the access token matches a
             # redirection URI registered by the client as described in
             # Section 3.1.2.
-            # http://tools.ietf.org/html/rfc6749#section-3.1.2
+            # https://tools.ietf.org/html/rfc6749#section-3.1.2
             if not self.request_validator.validate_redirect_uri(
                     request.client_id, request.redirect_uri, request):
                 raise errors.MismatchingRedirectURIError(request=request)
@@ -312,15 +316,14 @@ class ImplicitGrant(GrantTypeBase):
         # Then check for normal errors.
 
         request_info = self._run_custom_validators(request,
-                                self.custom_validators.all_pre)
-
+                                                   self.custom_validators.all_pre)
 
         # If the resource owner denies the access request or if the request
         # fails for reasons other than a missing or invalid redirection URI,
         # the authorization server informs the client by adding the following
         # parameters to the fragment component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B.
-        # http://tools.ietf.org/html/rfc6749#appendix-B
+        # https://tools.ietf.org/html/rfc6749#appendix-B
 
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions
@@ -343,23 +346,24 @@ class ImplicitGrant(GrantTypeBase):
             raise errors.UnauthorizedClientError(request=request)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
-        # http://tools.ietf.org/html/rfc6749#section-3.3
+        # https://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
         request_info.update({
-                'client_id': request.client_id,
-                'redirect_uri': request.redirect_uri,
-                'response_type': request.response_type,
-                'state': request.state,
-                'request': request,
+            'client_id': request.client_id,
+            'redirect_uri': request.redirect_uri,
+            'response_type': request.response_type,
+            'state': request.state,
+            'request': request,
         })
 
-        request_info = self._run_custom_validators(request,
-                            self.custom_validators.all_post,
-                            request_info)
+        request_info = self._run_custom_validators(
+            request,
+            self.custom_validators.all_post,
+            request_info
+        )
 
         return request.scopes, request_info
-
 
     def _run_custom_validators(self,
                                request,

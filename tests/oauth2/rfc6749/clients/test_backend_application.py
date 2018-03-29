@@ -5,8 +5,8 @@ import os
 
 from mock import patch
 
-from oauthlib.oauth2 import BackendApplicationClient
 from oauthlib import signals
+from oauthlib.oauth2 import BackendApplicationClient
 
 from ....unittest import TestCase
 

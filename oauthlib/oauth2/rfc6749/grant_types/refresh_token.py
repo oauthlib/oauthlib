@@ -3,14 +3,14 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import json
 import logging
 
-from .base import GrantTypeBase
 from .. import errors, utils
 from ..request_validator import RequestValidator
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class RefreshTokenGrant(GrantTypeBase):
 
     """`Refresh token grant`_
 
-    .. _`Refresh token grant`: http://tools.ietf.org/html/rfc6749#section-6
+    .. _`Refresh token grant`: https://tools.ietf.org/html/rfc6749#section-6
     """
 
     def __init__(self, request_validator=None,
@@ -46,8 +46,8 @@ class RefreshTokenGrant(GrantTypeBase):
         identical to that of the refresh token included by the client in the
         request.
 
-        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
-        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
         headers = {
             'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ class RefreshTokenGrant(GrantTypeBase):
         # the client was issued client credentials (or assigned other
         # authentication requirements), the client MUST authenticate with the
         # authorization server as described in Section 3.2.1.
-        # http://tools.ietf.org/html/rfc6749#section-3.2.1
+        # https://tools.ietf.org/html/rfc6749#section-3.2.1
         if self.request_validator.client_authentication_required(request):
             log.debug('Authenticating client, %r.', request)
             if not self.request_validator.authenticate_client(request):

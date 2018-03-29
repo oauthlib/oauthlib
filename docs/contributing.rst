@@ -91,7 +91,7 @@ request only to have it rejected because it has diverged too far from master.
 
 To pull in upstream changes::
 
-    git remote add upstream https://github.com/idan/oauthlib.git
+    git remote add upstream https://github.com/oauthlib/oauthlib.git
     git fetch upstream
 
 Check the log to be sure that you actually want the changes, before merging::
@@ -102,7 +102,7 @@ Then merge the changes that you fetched::
 
     git merge upstream/master
 
-For more info, see http://help.github.com/fork-a-repo/
+For more info, see https://help.github.com/fork-a-repo/
 
 How to get your pull request accepted
 =====================================
@@ -148,7 +148,7 @@ version. For Ubuntu you can easily install all after adding one ppa.
    $ sudo apt-get install pypy pypy-dev
 
 .. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
-.. _`virtualenv`: http://www.virtualenv.org/en/latest/#installation
+.. _`virtualenv`: https://virtualenv.pypa.io/en/latest/installation/
 
 If you add code you need to add tests!
 --------------------------------------
@@ -223,5 +223,5 @@ to GitHub::
     git push upstream master
 
 .. _installation: install.html
-.. _GitHub project: https://github.com/idan/oauthlib
-.. _issue tracker: https://github.com/idan/oauthlib/issues
+.. _GitHub project: https://github.com/oauthlib/oauthlib
+.. _issue tracker: https://github.com/oauthlib/oauthlib/issues

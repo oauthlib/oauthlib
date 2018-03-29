@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ...unittest import TestCase
+
 import json
+
 import jwt
 import mock
 
 from oauthlib import common
+from oauthlib.oauth2.rfc6749 import errors, tokens
 from oauthlib.oauth2.rfc6749.endpoints import Server
-from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
-from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.authorization import \
+    AuthorizationEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.resource import ResourceEndpoint
-from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
-from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectAuthCode
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectImplicit
-from oauthlib.oauth2.rfc6749.grant_types import ResourceOwnerPasswordCredentialsGrant
-from oauthlib.oauth2.rfc6749.grant_types import ClientCredentialsGrant
-from oauthlib.oauth2.rfc6749 import tokens, errors
+from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
+from oauthlib.oauth2.rfc6749.grant_types import (AuthorizationCodeGrant,
+                                                 ClientCredentialsGrant,
+                                                 ImplicitGrant,
+                                                 OpenIDConnectAuthCode,
+                                                 OpenIDConnectImplicit,
+                                                 ResourceOwnerPasswordCredentialsGrant)
+
+from ...unittest import TestCase
 
 
 class AuthorizationEndpointTest(TestCase):
@@ -275,7 +279,7 @@ twIDAQAB
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
-        body = 'grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz'
+        body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz'
         headers, body, status_code = self.endpoint.create_token_response(
                 '', body=body)
         body = json.loads(body)
@@ -289,7 +293,7 @@ twIDAQAB
         }
         self.assertEqual(body, token)
 
-        body = 'grant_type=authorization_code&code=abc&state=xyz'
+        body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&state=xyz'
         headers, body, status_code = self.endpoint.create_token_response(
                 '', body=body)
         body = json.loads(body)
@@ -345,12 +349,12 @@ twIDAQAB
         self.assertEqual(body, token)
 
     def test_missing_type(self):
-        _, body, _ = self.endpoint.create_token_response('', body='')
+        _, body, _ = self.endpoint.create_token_response('', body='client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&code=abc')
         token = {'error': 'unsupported_grant_type'}
         self.assertEqual(json.loads(body), token)
 
     def test_invalid_type(self):
-        body = 'grant_type=invalid'
+        body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=invalid&code=abc'
         _, body, _ = self.endpoint.create_token_response('', body=body)
         token = {'error': 'unsupported_grant_type'}
         self.assertEqual(json.loads(body), token)

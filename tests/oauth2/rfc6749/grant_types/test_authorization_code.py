@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ....unittest import TestCase
 
 import json
+
 import mock
+
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
+
+from ....unittest import TestCase
 
 
 class AuthorizationCodeGrantTest(TestCase):
@@ -66,6 +69,7 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def test_create_authorization_grant(self):
         bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         grant = dict(Request(h['Location']).uri_query_params)
         self.assertIn('code', grant)
@@ -76,6 +80,7 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_create_authorization_grant_state(self):
         self.request.state = 'abc'
         self.request.redirect_uri = None
+        self.request.response_mode = 'query'
         self.mock_validator.get_default_redirect_uri.return_value = 'https://a.b/cb'
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
@@ -91,6 +96,7 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_create_authorization_response(self, generate_token):
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], 'https://a.b/cb?code=abc')
         self.request.response_mode = 'fragment'
@@ -186,5 +192,5 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def test_invalid_redirect_uri(self):
         self.mock_validator.confirm_redirect_uri.return_value = False
-        self.assertRaises(errors.AccessDeniedError,
+        self.assertRaises(errors.MismatchingRedirectURIError,
                           self.auth.validate_token_request, self.request)

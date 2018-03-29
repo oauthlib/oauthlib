@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from ....unittest import TestCase
 
-from oauthlib.oauth2.rfc6749 import BaseEndpoint, catch_errors_and_unavailability
-from oauthlib.oauth2 import Server, RequestValidator, FatalClientError, OAuth2Error
+from oauthlib.oauth2 import (FatalClientError, OAuth2Error, RequestValidator,
+                             Server)
+from oauthlib.oauth2.rfc6749 import (BaseEndpoint,
+                                     catch_errors_and_unavailability)
+
+from ....unittest import TestCase
 
 
 class BaseEndpointTest(TestCase):

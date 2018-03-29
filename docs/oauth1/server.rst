@@ -2,7 +2,7 @@
 Creating a Provider
 ===================
 
-OAuthLib is a dependency free library that may be used with any web
+OAuthLib is a framework independent library that may be used with any web
 framework. That said, there are framework specific helper libraries
 to make your life easier.
 
@@ -436,7 +436,7 @@ shown below as well as run your flask server locally on port `5000`.
 Drop a line in our `G+ community`_ or open a `GitHub issue`_ =)
 
 .. _`G+ community`: https://plus.google.com/communities/101889017375384052571
-.. _`GitHub issue`: https://github.com/idan/oauthlib/issues/new
+.. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
 
 If you run into issues it can be helpful to enable debug logging::
 

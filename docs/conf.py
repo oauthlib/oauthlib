@@ -11,7 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -241,3 +242,5 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+linkcheck_ignore = ["https://github.com/oauthlib/oauthlib/issues/new"]

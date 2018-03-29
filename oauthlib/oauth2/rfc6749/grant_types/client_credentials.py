@@ -3,14 +3,14 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import json
 import logging
 
-from .base import GrantTypeBase
 from .. import errors
 from ..request_validator import RequestValidator
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class ClientCredentialsGrant(GrantTypeBase):
     (B)  The authorization server authenticates the client, and if valid,
             issues an access token.
 
-    .. _`Client Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.4
+    .. _`Client Credentials Grant`: https://tools.ietf.org/html/rfc6749#section-4.4
     """
 
     def create_token_response(self, request, token_handler):
@@ -59,8 +59,8 @@ class ClientCredentialsGrant(GrantTypeBase):
         failed client authentication or is invalid, the authorization server
         returns an error response as described in `Section 5.2`_.
 
-        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
-        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
         headers = {
             'Content-Type': 'application/json',
