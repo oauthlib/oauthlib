@@ -6,8 +6,10 @@ OAuthLib is a dependency free library that may be used with any web
 framework. That said, there are framework specific helper libraries
 to make your life easier.
 
-- For Django there is `django-oauth-toolkit`_.
-- For Flask there is `flask-oauthlib`_.
+- Django `django-oauth-toolkit`_
+- Flask `flask-oauthlib`_
+- Pyramid `pyramid-oauthlib`_
+- Bottle `bottle-oauthlib`_
 
 If there is no support for your favourite framework and you are interested
 in providing it then you have come to the right place. OAuthLib can handle
@@ -17,6 +19,8 @@ as well as provide an interface for a backend to store tokens, clients, etc.
 
 .. _`django-oauth-toolkit`: https://github.com/evonove/django-oauth-toolkit
 .. _`flask-oauthlib`: https://github.com/lepture/flask-oauthlib
+.. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
+.. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
 
 .. contents:: Tutorial Contents
     :depth: 3
@@ -275,7 +279,7 @@ all methods depending on which grant types you wish to support. A skeleton
 validator listing the methods required for the WebApplicationServer is
 available in the `examples`_ folder on GitHub.
 
-..  _`examples`: https://github.com/idan/oauthlib/blob/master/examples/skeleton_oauth2_web_application_server.py
+..  _`examples`: https://github.com/oauthlib/oauthlib/blob/master/examples/skeleton_oauth2_web_application_server.py
 
 Relevant sections include:
 
@@ -492,7 +496,7 @@ at runtime by a function, rather then by a list.
 Drop a line in our `G+ community`_ or open a `GitHub issue`_ =)
 
 .. _`G+ community`: https://plus.google.com/communities/101889017375384052571
-.. _`GitHub issue`: https://github.com/idan/oauthlib/issues/new
+.. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
 
 If you run into issues it can be helpful to enable debug logging.
 

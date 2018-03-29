@@ -2,13 +2,26 @@ OAuthLib
 ========
 
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
-logic for python*
+logic for Python 2.7 and 3.4+.*
 
-.. image:: https://travis-ci.org/idan/oauthlib.svg?branch=master
-  :target: https://travis-ci.org/idan/oauthlib
-.. image:: https://coveralls.io/repos/idan/oauthlib/badge.svg?branch=master
-  :target: https://coveralls.io/r/idan/oauthlib
-
+.. image:: https://travis-ci.org/oauthlib/oauthlib.svg?branch=master
+  :target: https://travis-ci.org/oauthlib/oauthlib
+  :alt: Travis
+.. image:: https://coveralls.io/repos/oauthlib/oauthlib/badge.svg?branch=master
+  :target: https://coveralls.io/r/oauthlib/oauthlib
+  :alt: Coveralls
+.. image:: https://img.shields.io/pypi/pyversions/oauthlib.svg
+  :target: https://pypi.python.org/pypi/oauthlib
+  :alt: Download from PyPi
+.. image:: https://img.shields.io/pypi/l/oauthlib.svg
+  :target: https://pypi.python.org/pypi/oauthlib
+  :alt: License
+.. image:: https://img.shields.io/readthedocs/oauthlib.svg
+  :target: https://oauthlib.readthedocs.io/en/latest/index.html
+  :alt: Read the Docs
+.. image:: https://badges.gitter.im/oauthlib/oauthlib.svg
+  :target: https://gitter.im/oauthlib/Lobby
+  :alt: Chat on Gitter
 
 OAuth often seems complicated and difficult-to-implement. There are several
 prominent libraries for handling OAuth requests, but they all suffer from one or
@@ -18,8 +31,8 @@ both of the following:
 2. They predate the `OAuth 2.0 spec`_, AKA RFC 6749.
 3. They assume the usage of a specific HTTP request library.
 
-.. _`OAuth 1.0 spec`: http://tools.ietf.org/html/rfc5849
-.. _`OAuth 2.0 spec`: http://tools.ietf.org/html/rfc6749
+.. _`OAuth 1.0 spec`: https://tools.ietf.org/html/rfc5849
+.. _`OAuth 2.0 spec`: https://tools.ietf.org/html/rfc6749
 
 OAuthLib is a generic utility which implements the logic of OAuth without
 assuming a specific HTTP request object or web framework. Use it to graft OAuth
@@ -33,10 +46,10 @@ Documentation
 
 Full documentation is available on `Read the Docs`_. All contributions are very
 welcome! The documentation is still quite sparse, please open an issue for what
-you'd like to know, or discuss it in our `G+ community`_, or even better, send a
+you'd like to know, or discuss it in our `Gitter community`_, or even better, send a
 pull request!
 
-.. _`G+ community`: https://plus.google.com/communities/101889017375384052571
+.. _`Gitter community`: https://gitter.im/oauthlib/Lobby
 .. _`Read the Docs`: https://oauthlib.readthedocs.io/en/latest/index.html
 
 Interested in making OAuth requests?
@@ -45,7 +58,7 @@ Interested in making OAuth requests?
 Then you might be more interested in using `requests`_ which has OAuthLib
 powered OAuth support provided by the `requests-oauthlib`_ library.
 
-.. _`requests`: https://github.com/kennethreitz/requests
+.. _`requests`: https://github.com/requests/requests
 .. _`requests-oauthlib`: https://github.com/requests/requests-oauthlib
 
 Which web frameworks are supported?
@@ -56,6 +69,7 @@ The following packages provide OAuth support using OAuthLib.
 - For Django there is `django-oauth-toolkit`_, which includes `Django REST framework`_ support.
 - For Flask there is `flask-oauthlib`_ and `Flask-Dance`_.
 - For Pyramid there is `pyramid-oauthlib`_.
+- For Bottle there is `bottle-oauthlib`_.
 
 If you have written an OAuthLib package that supports your favorite framework,
 please open a Pull Request, updating the documentation.
@@ -65,6 +79,7 @@ please open a Pull Request, updating the documentation.
 .. _`Django REST framework`: http://django-rest-framework.org
 .. _`Flask-Dance`: https://github.com/singingwolfboy/flask-dance
 .. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
+.. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
 
 Using OAuthLib? Please get in touch!
 ------------------------------------
@@ -72,7 +87,7 @@ Patching OAuth support onto an http request framework? Creating an OAuth
 provider extension for a web framework? Simply using OAuthLib to Get Things Done
 or to learn?
 
-No matter which we'd love to hear from you in our `G+ community`_ or if you have
+No matter which we'd love to hear from you in our `Gitter community`_ or if you have
 anything in particular you would like to have, change or comment on don't
 hesitate for a second to send a pull request or open an issue. We might be quite
 busy and therefore slow to reply but we love feedback!
@@ -81,7 +96,7 @@ Chances are you have run into something annoying that you wish there was
 documentation for, if you wish to gain eternal fame and glory, and a drink if we
 have the pleasure to run into eachother, please send a docs pull request =)
 
-.. _`G+ community`: https://plus.google.com/communities/101889017375384052571
+.. _`Gitter community`: https://gitter.im/oauthlib/Lobby
 
 License
 -------
