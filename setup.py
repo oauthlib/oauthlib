@@ -21,7 +21,7 @@ def fread(fn):
 if sys.version_info[0] == 3:
     tests_require = ['nose', 'cryptography', 'pyjwt>=1.0.0', 'blinker']
 else:
-    tests_require = ['nose', 'unittest2', 'cryptography', 'mock', 'pyjwt>=1.0.0', 'blinker']
+    tests_require = ['nose', 'unittest2', 'cryptography', 'mock>=2.0', 'pyjwt>=1.0.0', 'blinker']
 rsa_require = ['cryptography']
 signedtoken_require = ['cryptography', 'pyjwt>=1.0.0']
 signals_require = ['blinker']
@@ -37,7 +37,7 @@ setup(
     author_email='idan@gazit.me',
     maintainer='Ib Lundgren',
     maintainer_email='ib.lundgren@gmail.com',
-    url='https://github.com/idan/oauthlib',
+    url='https://github.com/oauthlib/oauthlib',
     platforms='any',
     license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),

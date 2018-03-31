@@ -1,34 +1,45 @@
 language: python
 sudo: false
 cache: pip
-
 matrix:
   include:
-    - python: 2.7
-      env: TOXENV=py27
-    - python: 3.4
-      env: TOXENV=py34
-    - python: 3.5
-      env: TOXENV=py35
-    - python: 3.6
-      env: TOXENV=py36
-    - python: pypy-5.3
-      env: TOXENV=pypy
-
+  - python: 2.7
+    env: TOXENV=py27
+  - python: 3.4
+    env: TOXENV=py34
+  - python: 3.5
+    env: TOXENV=py35
+  - python: 3.6
+    env: TOXENV=py36
+  - python: pypy-5.3
+    env: TOXENV=pypy
 install:
-  - pip install -U setuptools
-  - pip install tox coveralls
+- pip install -U setuptools
+- pip install tox coveralls
 script: tox
-
 after_success: coveralls
 notifications:
-  irc: irc.freenode.org#oauthlib
+  webhooks:
+    urls:
+    - https://webhooks.gitter.im/e/6008c872bf0ecee344f4
+    on_success: change
+    on_failure: always
+    on_start: never
 deploy:
-  provider: pypi
-  user: ib.lundgren
-  password:
-    secure: PGZF9pRiTGCSwQjk1ddTKF3x4rQ0iAiPbg2uSixyO68uMXRgJjwHhSrNM0OEqtK5YWU5FE5L0DwR1nkrpEJKO4a5q2EOgos+gVoKpJfinoUNOOkjc1VHpqKM0uRf/OKrw1alvWUwqvW8B+DOb9TY5c5VZxQuRL+iwdrtwzFlKls=
-  distributions: sdist bdist_wheel
-  on:
-    tags: true
-    repo: idan/oauthlib
+  - provider: pypi
+    user: JonathanHuot
+    password:
+      secure: "OozNM16flVLvqDoNzmoTENchhS1w0/dEJZvXBQK2KWmh8fyGj2UZus1vkl6bA5V3Yu9MZLYFpDcltl/qraY3Up6iXQpwKz4q+ICygAudYM2kJ5l8ZEe+wy2FikWbD6LkXf5uKIJJnPNSC8AI86ZyxM/XZxbYjj/+jXyJ1YFZwwQ="
+    distributions: sdist bdist_wheel
+    on:
+      tags: true
+      all_branches: true
+      repo: oauthlib/oauthlib
+  - provider: releases
+    api_key:
+      secure: LEzTaeQt4+Sp21t7usmwaEYLThKIGWDNNj04JADMLgfquTeyz5nDu9P8JNlT//G9RNN20oR8w7jZo97Y+JAylq6Hh/I+p/MEzZi8+NwIpObk3n3zJO4witZQQSTEw/6B7qf1/NQQxjQzlYTJjsGXxBps7srviWZmbH6Tz+epA3A=
+    skip_cleanup: true
+    on:
+      tags: true
+      all_branches: true
+      repo: oauthlib/oauthlib

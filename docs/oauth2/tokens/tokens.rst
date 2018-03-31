@@ -15,8 +15,8 @@ providers, notably Facebook, do not provide this information. Per the
 is missing. You can force a ``MissingTokenTypeError`` exception instead, by
 setting ``OAUTHLIB_STRICT_TOKEN_TYPE`` in the environment.
 
-.. _requires: http://tools.ietf.org/html/rfc6749#section-5.1
-.. _robustness principle: http://en.wikipedia.org/wiki/Robustness_principle
+.. _requires: https://tools.ietf.org/html/rfc6749#section-5.1
+.. _robustness principle: https://en.wikipedia.org/wiki/Robustness_principle
 
 .. toctree::
     :maxdepth: 2
