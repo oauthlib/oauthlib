@@ -51,10 +51,10 @@ else
             cd /app
             bin/run_tests.sh
 
-            cp /app/package/nosetests.xml  /app
-            chown 498 /app/nosetests.xml
-            cp /app/package/coverage.xml /app
-            chown 498 /app/coverage.xml
+            #cp /app/package/nosetests.xml  /app
+            #chown 498 /app/nosetests.xml
+            #cp /app/package/coverage.xml /app
+            #chown 498 /app/coverage.xml
         ;;
 
         'upload')
