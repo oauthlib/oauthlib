@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+'''.'''
 
 # Hack because logging + setuptools sucks.
 try:
