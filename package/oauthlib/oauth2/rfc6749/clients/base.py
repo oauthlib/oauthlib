@@ -475,9 +475,6 @@ class Client(object):
             self.expires_in = response.get('expires_in')
             self._expires_at = time.time() + int(self.expires_in)
 
-        if 'expires_at' in response:
-            self._expires_at = int(response.get('expires_at'))
-
         if 'code' in response:
             self.code = response.get('code')
 
