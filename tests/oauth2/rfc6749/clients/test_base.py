@@ -51,6 +51,13 @@ class ClientTest(TestCase):
         self.assertFormBodyEqual(body, self.body)
         self.assertEqual(headers, self.bearer_header)
 
+        # Non-HTTPS
+        insecure_uri = 'http://example.com/path?query=world'
+        client = Client(self.client_id, access_token=self.access_token, token_type="Bearer")
+        self.assertRaises(InsecureTransportError, client.add_token, insecure_uri,
+                body=self.body,
+                headers=self.headers)
+
         # Missing access token
         client = Client(self.client_id)
         self.assertRaises(ValueError, client.add_token, self.uri)
@@ -150,6 +157,12 @@ class ClientTest(TestCase):
         self.assertEqual(uri, self.uri)
         self.assertEqual(body, self.body)
         self.assertEqual(headers, self.mac_00_header)
+        # Non-HTTPS
+        insecure_uri = 'http://example.com/path?query=world'
+        self.assertRaises(InsecureTransportError, client.add_token, insecure_uri,
+                body=self.body,
+                headers=self.headers,
+                issue_time=datetime.datetime.now())
 
         # Add the Authorization header (draft 00)
         client = Client(self.client_id, token_type="MAC",
@@ -160,7 +173,12 @@ class ClientTest(TestCase):
         self.assertEqual(uri, self.uri)
         self.assertEqual(body, self.body)
         self.assertEqual(headers, self.mac_01_header)
-
+        # Non-HTTPS
+        insecure_uri = 'http://example.com/path?query=world'
+        self.assertRaises(InsecureTransportError, client.add_token, insecure_uri,
+                body=self.body,
+                headers=self.headers,
+                draft=1)
 
     def test_revocation_request(self):
         client = Client(self.client_id)
