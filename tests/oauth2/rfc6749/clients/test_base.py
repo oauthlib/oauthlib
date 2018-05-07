@@ -164,7 +164,7 @@ class ClientTest(TestCase):
                 headers=self.headers,
                 issue_time=datetime.datetime.now())
 
-        # Add the Authorization header (draft 00)
+        # Add the Authorization header (draft 01)
         client = Client(self.client_id, token_type="MAC",
                 access_token=self.access_token, mac_key=self.mac_key,
                 mac_algorithm="hmac-sha-1")
