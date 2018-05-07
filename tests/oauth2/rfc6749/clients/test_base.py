@@ -208,6 +208,21 @@ class ClientTest(TestCase):
         # NotImplementedError
         self.assertRaises(NotImplementedError, client.prepare_authorization_request, auth_url)
 
+    def test_prepare_token_request(self):
+        redirect_url = 'https://example.com/callback/'
+        scopes = 'read'
+        token_url = 'https://example.com/token/'
+        state = 'fake_state'
+
+        client = Client(self.client_id, scope=scopes, state=state)
+
+        # Non-HTTPS
+        self.assertRaises(InsecureTransportError,
+                          client.prepare_token_request, 'http://example.com/token/')
+
+        # NotImplementedError
+        self.assertRaises(NotImplementedError, client.prepare_token_request, token_url)
+
     def test_prepare_refresh_token_request(self):
         client = Client(self.client_id)
 
