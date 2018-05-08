@@ -111,6 +111,7 @@ class Client(object):
         self.state_generator = state_generator
         self.state = state
         self.redirect_url = redirect_url
+        self.code = None
         self.expires_in = None
         self._expires_at = None
         self._populate_token_attributes(self.token)
