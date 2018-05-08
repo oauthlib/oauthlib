@@ -111,8 +111,10 @@ class Client(object):
         self.state_generator = state_generator
         self.state = state
         self.redirect_url = redirect_url
+        self.code = None
+        self.expires_in = None
         self._expires_at = None
-        self._populate_attributes(self.token)
+        self._populate_token_attributes(self.token)
 
     @property
     def token_types(self):
@@ -406,7 +408,7 @@ class Client(object):
         .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
         """
         self.token = parse_token_response(body, scope=scope)
-        self._populate_attributes(self.token)
+        self._populate_token_attributes(self.token)
         return self.token
 
     def prepare_refresh_body(self, body='', refresh_token=None, scope=None, **kwargs):
@@ -459,8 +461,14 @@ class Client(object):
                                             hash_algorithm=self.mac_algorithm, **kwargs)
         return uri, headers, body
 
-    def _populate_attributes(self, response):
-        """Add commonly used values such as access_token to self."""
+    def _populate_code_attributes(self, response):
+        """Add attributes from an auth code response to self."""
+
+        if 'code' in response:
+            self.code = response.get('code')
+
+    def _populate_token_attributes(self, response):
+        """Add attributes from a token exchange response to self."""
 
         if 'access_token' in response:
             self.access_token = response.get('access_token')
@@ -477,9 +485,6 @@ class Client(object):
 
         if 'expires_at' in response:
             self._expires_at = int(response.get('expires_at'))
-
-        if 'code' in response:
-            self.code = response.get('code')
 
         if 'mac_key' in response:
             self.mac_key = response.get('mac_key')
