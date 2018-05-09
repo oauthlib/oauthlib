@@ -172,5 +172,5 @@ class WebApplicationClient(Client):
             oauthlib.oauth2.rfc6749.errors.MismatchingStateError
         """
         response = parse_authorization_code_response(uri, state=state)
-        self._populate_attributes(response)
+        self._populate_code_attributes(response)
         return response
