@@ -168,5 +168,5 @@ class MobileApplicationClient(Client):
         .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
         """
         self.token = parse_implicit_response(uri, state=state, scope=scope)
-        self._populate_token_attributes(self.token)
+        self.populate_token_attributes(self.token)
         return self.token
