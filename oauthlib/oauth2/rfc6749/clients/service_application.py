@@ -146,8 +146,8 @@ class ServiceApplicationClient(Client):
                              ' token requests.')
         claim = {
             'iss': issuer or self.issuer,
-            'aud': audience or self.issuer,
-            'sub': subject or self.issuer,
+            'aud': audience or self.audience,
+            'sub': subject or self.subject,
             'exp': int(expires_at or time.time() + 3600),
             'iat': int(issued_at or time.time()),
         }

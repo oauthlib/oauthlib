@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.0.8 (2018-05-18)
+------------------
+
+* Fixed some copy and paste typos (#535)
+* Use secrets module in Python 3.6 and later (#533)
+* Add request argument to confirm_redirect_uri (#504)
+* Avoid populating spurious token credentials (#542, #546)
+
 2.0.7 (2018-03-19)
 ------------------
 
