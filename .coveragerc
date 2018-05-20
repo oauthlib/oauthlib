@@ -9,7 +9,6 @@ omit =
     */python?.?/*
     */site-packages/*
     */pypy/*
-[report]
 exclude_lines =
     pragma: no cover
     def __repr__
