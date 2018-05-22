@@ -4,7 +4,7 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 
 from oauthlib import common
-from oauthlib.oauth2 import Client, InsecureTransportError
+from oauthlib.oauth2 import Client, InsecureTransportError, TokenExpiredError
 from oauthlib.oauth2.rfc6749 import utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
 
@@ -51,9 +51,25 @@ class ClientTest(TestCase):
         self.assertFormBodyEqual(body, self.body)
         self.assertEqual(headers, self.bearer_header)
 
+        # Non-HTTPS
+        insecure_uri = 'http://example.com/path?query=world'
+        client = Client(self.client_id, access_token=self.access_token, token_type="Bearer")
+        self.assertRaises(InsecureTransportError, client.add_token, insecure_uri,
+                body=self.body,
+                headers=self.headers)
+
         # Missing access token
         client = Client(self.client_id)
         self.assertRaises(ValueError, client.add_token, self.uri)
+
+        # Expired token
+        expired = 523549800
+        expired_token = {
+                'expires_at': expired,
+        }
+        client = Client(self.client_id, token=expired_token, access_token=self.access_token, token_type="Bearer")
+        self.assertRaises(TokenExpiredError, client.add_token, self.uri,
+                body=self.body, headers=self.headers)
 
         # The default token placement, bearer in auth header
         client = Client(self.client_id, access_token=self.access_token)
@@ -150,8 +166,26 @@ class ClientTest(TestCase):
         self.assertEqual(uri, self.uri)
         self.assertEqual(body, self.body)
         self.assertEqual(headers, self.mac_00_header)
+        # Non-HTTPS
+        insecure_uri = 'http://example.com/path?query=world'
+        self.assertRaises(InsecureTransportError, client.add_token, insecure_uri,
+                body=self.body,
+                headers=self.headers,
+                issue_time=datetime.datetime.now())
+        # Expired Token
+        expired = 523549800
+        expired_token = {
+                'expires_at': expired,
+        }
+        client = Client(self.client_id, token=expired_token, token_type="MAC",
+                access_token=self.access_token, mac_key=self.mac_key,
+                mac_algorithm="hmac-sha-1")
+        self.assertRaises(TokenExpiredError, client.add_token, self.uri,
+                body=self.body,
+                headers=self.headers,
+                issue_time=datetime.datetime.now())
 
-        # Add the Authorization header (draft 00)
+        # Add the Authorization header (draft 01)
         client = Client(self.client_id, token_type="MAC",
                 access_token=self.access_token, mac_key=self.mac_key,
                 mac_algorithm="hmac-sha-1")
@@ -160,7 +194,24 @@ class ClientTest(TestCase):
         self.assertEqual(uri, self.uri)
         self.assertEqual(body, self.body)
         self.assertEqual(headers, self.mac_01_header)
-
+        # Non-HTTPS
+        insecure_uri = 'http://example.com/path?query=world'
+        self.assertRaises(InsecureTransportError, client.add_token, insecure_uri,
+                body=self.body,
+                headers=self.headers,
+                draft=1)
+        # Expired Token
+        expired = 523549800
+        expired_token = {
+                'expires_at': expired,
+        }
+        client = Client(self.client_id, token=expired_token, token_type="MAC",
+                access_token=self.access_token, mac_key=self.mac_key,
+                mac_algorithm="hmac-sha-1")
+        self.assertRaises(TokenExpiredError, client.add_token, self.uri,
+                body=self.body,
+                headers=self.headers,
+                draft=1)
 
     def test_revocation_request(self):
         client = Client(self.client_id)
@@ -207,6 +258,21 @@ class ClientTest(TestCase):
 
         # NotImplementedError
         self.assertRaises(NotImplementedError, client.prepare_authorization_request, auth_url)
+
+    def test_prepare_token_request(self):
+        redirect_url = 'https://example.com/callback/'
+        scopes = 'read'
+        token_url = 'https://example.com/token/'
+        state = 'fake_state'
+
+        client = Client(self.client_id, scope=scopes, state=state)
+
+        # Non-HTTPS
+        self.assertRaises(InsecureTransportError,
+                          client.prepare_token_request, 'http://example.com/token/')
+
+        # NotImplementedError
+        self.assertRaises(NotImplementedError, client.prepare_token_request, token_url)
 
     def test_prepare_refresh_token_request(self):
         client = Client(self.client_id)
