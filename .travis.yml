@@ -34,6 +34,7 @@ deploy:
     on:
       tags: true
       all_branches: true
+      condition: $TOXENV = py36
       repo: oauthlib/oauthlib
   - provider: releases
     api_key:
@@ -42,4 +43,5 @@ deploy:
     on:
       tags: true
       all_branches: true
+      condition: $TOXENV = py36
       repo: oauthlib/oauthlib
