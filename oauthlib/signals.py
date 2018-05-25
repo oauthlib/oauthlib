@@ -8,7 +8,7 @@ signals_available = False
 try:
     from blinker import Namespace
     signals_available = True
-except ImportError:
+except ImportError:  # noqa
     class Namespace(object):
         def signal(self, name, doc=None):
             return _FakeSignal(name, doc)

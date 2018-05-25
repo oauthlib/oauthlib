@@ -69,6 +69,18 @@ class MobileApplicationClientTest(TestCase):
         uri = client.prepare_request_uri(self.uri, **self.kwargs)
         self.assertURLEqual(uri, self.uri_kwargs)
 
+    def test_populate_attributes(self):
+
+        client = MobileApplicationClient(self.client_id)
+
+        response_uri = (self.response_uri + "&code=EVIL-CODE")
+
+        client.parse_request_uri_response(response_uri, scope=self.scope)
+
+        # We must not accidentally pick up any further security
+        # credentials at this point.
+        self.assertIsNone(client.code)
+
     def test_parse_token_response(self):
         client = MobileApplicationClient(self.client_id)
 
