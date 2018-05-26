@@ -143,6 +143,7 @@ class Client(object):
 
     def parse_request_uri_response(self, *args, **kwargs):
         """Abstract method used to parse redirection responses."""
+        raise NotImplementedError("Must be implemented by inheriting classes.")
 
     def add_token(self, uri, http_method='GET', body=None, headers=None,
                   token_placement=None, **kwargs):
