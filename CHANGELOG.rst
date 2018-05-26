@@ -1,6 +1,38 @@
 Changelog
 =========
 
+2.1.0 (2018-05-21)
+------------------
+
+* Fixed some copy and paste typos (#535)
+* Use secrets module in Python 3.6 and later (#533)
+* Add request argument to confirm_redirect_uri (#504)
+* Avoid populating spurious token credentials (#542)
+* Make populate attributes API public (#546)
+
+2.0.7 (2018-03-19)
+------------------
+
+* Moved oauthlib into new organization on GitHub.
+* Include license file in the generated wheel package. (#494)
+* When deploying a release to PyPI, include the wheel distribution. (#496)
+* Check access token in self.token dict. (#500)
+* Added bottle-oauthlib to docs. (#509)
+* Update repository location in Travis. (#514)
+* Updated docs for organization change. (#515)
+* Replace G+ with Gitter. (#517)
+* Update requirements. (#518)
+* Add shields for Python versions, license and RTD. (#520)
+* Fix ReadTheDocs build (#521).
+* Fixed "make" command to test upstream with local oauthlib. (#522)
+* Replace IRC notification with Gitter Hook. (#523)
+* Added Github Releases deploy provider. (#523)
+
+2.0.6 (2017-10-20)
+------------------
+
+* 2.0.5 contains breaking changes.
+
 2.0.5 (2017-10-19)
 ------------------
 

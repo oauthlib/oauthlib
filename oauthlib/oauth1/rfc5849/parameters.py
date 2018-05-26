@@ -15,7 +15,7 @@ from . import utils
 
 try:
     from urlparse import urlparse, urlunparse
-except ImportError:
+except ImportError:  # noqa
     from urllib.parse import urlparse, urlunparse
 
 
