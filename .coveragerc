@@ -1,0 +1,20 @@
+[run]
+branch = 1
+cover_pylib = 0
+include=*oauthlib/*
+omit = oauthlib.tests.*
+
+[report]
+omit =
+    */python?.?/*
+    */site-packages/*
+    */pypy/*
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __debug__:
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    noqa
