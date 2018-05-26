@@ -38,7 +38,7 @@ class WebApplicationClientTest(TestCase):
     code = "zzzzaaaa"
     body = "not=empty"
 
-    body_code = "not=empty&grant_type=authorization_code&code=%s&client_id=%s" % (code, client_id)
+    body_code = "not=empty&grant_type=authorization_code&code=%s" % code
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 
@@ -116,6 +116,25 @@ class WebApplicationClientTest(TestCase):
                 client.parse_request_uri_response,
                 self.response_uri,
                 state="invalid")
+
+    def test_populate_attributes(self):
+
+        client = WebApplicationClient(self.client_id)
+
+        response_uri = (self.response_uri +
+                        "&access_token=EVIL-TOKEN"
+                        "&refresh_token=EVIL-TOKEN"
+                        "&mac_key=EVIL-KEY")
+
+        client.parse_request_uri_response(response_uri, self.state)
+
+        self.assertEqual(client.code, self.code)
+
+        # We must not accidentally pick up any further security
+        # credentials at this point.
+        self.assertIsNone(client.access_token)
+        self.assertIsNone(client.refresh_token)
+        self.assertIsNone(client.mac_key)
 
     def test_parse_token_response(self):
         client = WebApplicationClient(self.client_id)

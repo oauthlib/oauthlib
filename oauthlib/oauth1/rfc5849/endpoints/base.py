@@ -127,7 +127,7 @@ class BaseEndpoint(object):
         # specification.  Implementers should review the Security
         # Considerations section (`Section 4`_) before deciding on which
         # method to support.
-        # .. _`Section 4`: http://tools.ietf.org/html/rfc5849#section-4
+        # .. _`Section 4`: https://tools.ietf.org/html/rfc5849#section-4
         if (not request.signature_method in
                 self.request_validator.allowed_signature_methods):
             raise errors.InvalidSignatureMethodError(
@@ -181,7 +181,7 @@ class BaseEndpoint(object):
         # ---- RSA Signature verification ----
         if request.signature_method == SIGNATURE_RSA:
             # The server verifies the signature per `[RFC3447] section 8.2.2`_
-            # .. _`[RFC3447] section 8.2.2`: http://tools.ietf.org/html/rfc3447#section-8.2.1
+            # .. _`[RFC3447] section 8.2.2`: https://tools.ietf.org/html/rfc3447#section-8.2.1
             rsa_key = self.request_validator.get_rsa_key(
                 request.client_key, request)
             valid_signature = signature.verify_rsa_sha1(request, rsa_key)
@@ -192,7 +192,7 @@ class BaseEndpoint(object):
             #   Recalculating the request signature independently as described in
             #   `Section 3.4`_ and comparing it to the value received from the
             #   client via the "oauth_signature" parameter.
-            # .. _`Section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
+            # .. _`Section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
             client_secret = self.request_validator.get_client_secret(
                 request.client_key, request)
             resource_owner_secret = None

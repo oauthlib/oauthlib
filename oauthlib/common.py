@@ -11,11 +11,16 @@ from __future__ import absolute_import, unicode_literals
 import collections
 import datetime
 import logging
-import random
 import re
 import sys
 import time
 
+try:
+    from secrets import randbits
+    from secrets import SystemRandom
+except ImportError:
+    from random import getrandbits as randbits
+    from random import SystemRandom
 try:
     from urllib import quote as _quote
     from urllib import unquote as _unquote
@@ -199,10 +204,10 @@ def generate_nonce():
     A random 64-bit number is appended to the epoch timestamp for both
     randomness and to decrease the likelihood of collisions.
 
-    .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
-    .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+    .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
+    .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode_type(unicode_type(random.getrandbits(64)) + generate_timestamp())
+    return unicode_type(unicode_type(randbits(64)) + generate_timestamp())
 
 
 def generate_timestamp():
@@ -211,8 +216,8 @@ def generate_timestamp():
     Per `section 3.3`_ of the OAuth 1 RFC 5849 spec.
     Per `section 3.2.1`_ of the MAC Access Authentication spec.
 
-    .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
-    .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+    .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
+    .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
     return unicode_type(int(time.time()))
 
@@ -225,7 +230,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     and entropy when generating the random characters is important. Which is
     why SystemRandom is used instead of the default random.choice method.
     """
-    rand = random.SystemRandom()
+    rand = SystemRandom()
     return ''.join(rand.choice(chars) for x in range(length))
 
 
@@ -257,7 +262,7 @@ def generate_client_id(length=30, chars=CLIENT_ID_CHARACTER_SET):
     """Generates an OAuth client_id
 
     OAuth 2 specify the format of client_id in
-    http://tools.ietf.org/html/rfc6749#appendix-A.
+    https://tools.ietf.org/html/rfc6749#appendix-A.
     """
     return generate_token(length, chars)
 

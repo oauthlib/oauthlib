@@ -89,8 +89,8 @@ mfvGGg3xNjTMO7IdrwIDAQAB
                                            audience=self.audience,
                                            body=self.body)
         r = Request('https://a.b', body=body)
-        self.assertEqual(r.isnot, 'empty') 
-        self.assertEqual(r.grant_type, ServiceApplicationClient.grant_type) 
+        self.assertEqual(r.isnot, 'empty')
+        self.assertEqual(r.grant_type, ServiceApplicationClient.grant_type)
 
         claim = jwt.decode(r.assertion, self.public_key, audience=self.audience, algorithms=['RS256'])
 
@@ -98,6 +98,72 @@ mfvGGg3xNjTMO7IdrwIDAQAB
         # audience verification is handled during decode now
         self.assertEqual(claim['sub'], self.subject)
         self.assertEqual(claim['iat'], int(t.return_value))
+        self.assertNotIn('nbf', claim)
+        self.assertNotIn('jti', claim)
+
+        # Missing issuer parameter
+        self.assertRaises(ValueError, client.prepare_request_body,
+            issuer=None, subject=self.subject, audience=self.audience, body=self.body)
+
+        # Missing subject parameter
+        self.assertRaises(ValueError, client.prepare_request_body,
+            issuer=self.issuer, subject=None, audience=self.audience, body=self.body)
+
+        # Missing audience parameter
+        self.assertRaises(ValueError, client.prepare_request_body,
+            issuer=self.issuer, subject=self.subject, audience=None, body=self.body)
+
+        # Optional kwargs
+        not_before = time() - 3600
+        jwt_id = '8zd15df4s35f43sd'
+        body = client.prepare_request_body(issuer=self.issuer,
+                                           subject=self.subject,
+                                           audience=self.audience,
+                                           body=self.body,
+                                           not_before=not_before,
+                                           jwt_id=jwt_id)
+
+        r = Request('https://a.b', body=body)
+        self.assertEqual(r.isnot, 'empty')
+        self.assertEqual(r.grant_type, ServiceApplicationClient.grant_type)
+
+        claim = jwt.decode(r.assertion, self.public_key, audience=self.audience, algorithms=['RS256'])
+
+        self.assertEqual(claim['iss'], self.issuer)
+        # audience verification is handled during decode now
+        self.assertEqual(claim['sub'], self.subject)
+        self.assertEqual(claim['iat'], int(t.return_value))
+        self.assertEqual(claim['nbf'], not_before)
+        self.assertEqual(claim['jti'], jwt_id)
+
+    @patch('time.time')
+    def test_request_body_no_initial_private_key(self, t):
+        t.return_value = time()
+        self.token['expires_at'] = self.token['expires_in'] + t.return_value
+
+        client = ServiceApplicationClient(
+                self.client_id, private_key=None)
+
+        # Basic with private key provided
+        body = client.prepare_request_body(issuer=self.issuer,
+                                           subject=self.subject,
+                                           audience=self.audience,
+                                           body=self.body,
+                                           private_key=self.private_key)
+        r = Request('https://a.b', body=body)
+        self.assertEqual(r.isnot, 'empty')
+        self.assertEqual(r.grant_type, ServiceApplicationClient.grant_type)
+
+        claim = jwt.decode(r.assertion, self.public_key, audience=self.audience, algorithms=['RS256'])
+
+        self.assertEqual(claim['iss'], self.issuer)
+        # audience verification is handled during decode now
+        self.assertEqual(claim['sub'], self.subject)
+        self.assertEqual(claim['iat'], int(t.return_value))
+
+        # No private key provided
+        self.assertRaises(ValueError, client.prepare_request_body,
+            issuer=self.issuer, subject=self.subject, audience=self.audience, body=self.body)
 
     @patch('time.time')
     def test_parse_token_response(self, t):

@@ -49,7 +49,7 @@ def escape(u):
 
     Per `section 3.6`_ of the spec.
 
-    .. _`section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
+    .. _`section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
 
     """
     if not isinstance(u, unicode_type):

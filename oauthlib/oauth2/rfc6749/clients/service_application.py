@@ -136,7 +136,7 @@ class ServiceApplicationClient(Client):
             eyJpc3Mi[...omitted for brevity...].
             J9l-ZhwP[...omitted for brevity...]
 
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         import jwt
 
@@ -146,8 +146,8 @@ class ServiceApplicationClient(Client):
                              ' token requests.')
         claim = {
             'iss': issuer or self.issuer,
-            'aud': audience or self.issuer,
-            'sub': subject or self.issuer,
+            'aud': audience or self.audience,
+            'sub': subject or self.subject,
             'exp': int(expires_at or time.time() + 3600),
             'iat': int(issued_at or time.time()),
         }

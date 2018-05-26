@@ -16,11 +16,13 @@ A few important facts regarding OAuth security
 
     * **Tokens must be random**, OAuthLib provides a method for generating
         secure tokens and it's packed into ``oauthlib.common.generate_token``,
-        use it. If you decide to roll your own, use ``random.SystemRandom``
-        which is based on ``os.urandom`` rather than the default ``random``
-        based on the effecient but not truly random Mersenne Twister.
-        Predictable tokens allow attackers to bypass virtually all defences
-        OAuth provides.
+        use it. If you decide to roll your own, use ``secrets.SystemRandom``
+        for Python 3.6 and later. The ``secrets`` module is designed for
+        generating cryptographically strong random numbers. For earlier versions
+        of Python, use ``random.SystemRandom`` which is based on ``os.urandom``
+        rather than the default ``random`` based on the effecient but not truly
+        random Mersenne Twister. Predictable tokens allow attackers to bypass
+        virtually all defences OAuth provides.
 
     * **Timing attacks are real** and more than possible if you host your
         application inside a shared datacenter. Ensure all ``validate_`` methods

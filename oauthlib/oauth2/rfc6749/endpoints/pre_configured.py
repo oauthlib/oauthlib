@@ -16,7 +16,7 @@ from ..grant_types import (AuthCodeGrantDispatcher, AuthorizationCodeGrant,
                            OpenIDConnectHybrid,
                            RefreshTokenGrant,
                            ResourceOwnerPasswordCredentialsGrant)
-from ..tokens import BearerToken
+from ..tokens import BearerToken, JWTToken
 from .authorization import AuthorizationEndpoint
 from .introspect import IntrospectEndpoint
 from .resource import ResourceEndpoint
@@ -58,6 +58,9 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
 
+        jwt = JWTToken(request_validator, token_generator,
+                       token_expires_in, refresh_token_generator)
+
         auth_grant_choice = AuthCodeGrantDispatcher(default_auth_grant=auth_grant, oidc_auth_grant=openid_connect_auth)
         implicit_grant_choice = ImplicitTokenGrantDispatcher(default_implicit_grant=implicit_grant, oidc_implicit_grant=openid_connect_implicit)
 
@@ -87,7 +90,7 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
                                },
                                default_token_type=bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
-                                  token_types={'Bearer': bearer})
+                                  token_types={'Bearer': bearer, 'JWT': jwt})
         RevocationEndpoint.__init__(self, request_validator)
         IntrospectEndpoint.__init__(self, request_validator)
 

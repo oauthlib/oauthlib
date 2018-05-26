@@ -91,7 +91,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
          step (C).  If valid, the authorization server responds back with
          an access token and, optionally, a refresh token.
 
-    .. _`Authorization Code Grant`: http://tools.ietf.org/html/rfc6749#section-4.1
+    .. _`Authorization Code Grant`: https://tools.ietf.org/html/rfc6749#section-4.1
     """
 
     default_response_mode = 'query'
@@ -175,11 +175,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 File "oauthlib/oauth2/rfc6749/grant_types.py", line 591, in validate_authorization_request
             oauthlib.oauth2.rfc6749.errors.InvalidClientIdError
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
-        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         """
         try:
             # request.scopes is only mandated in post auth and both pre and
@@ -206,7 +206,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # the authorization server informs the client by adding the following
         # parameters to the query component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B:
-        # http://tools.ietf.org/html/rfc6749#appendix-B
+        # https://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
             request.redirect_uri = request.redirect_uri or self.error_uri
@@ -285,7 +285,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param, request=request)
 
         # REQUIRED. The client identifier as described in Section 2.2.
-        # http://tools.ietf.org/html/rfc6749#section-2.2
+        # https://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
 
@@ -293,7 +293,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
-        # http://tools.ietf.org/html/rfc6749#section-3.1.2
+        # https://tools.ietf.org/html/rfc6749#section-3.1.2
         log.debug('Validating redirection uri %s for client %s.',
                   request.redirect_uri, request.client_id)
         if request.redirect_uri is not None:
@@ -320,7 +320,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # the authorization server informs the client by adding the following
         # parameters to the query component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B.
-        # http://tools.ietf.org/html/rfc6749#appendix-B
+        # https://tools.ietf.org/html/rfc6749#appendix-B
 
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions.
@@ -346,7 +346,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.UnauthorizedClientError(request=request)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
-        # http://tools.ietf.org/html/rfc6749#section-3.3
+        # https://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
         request_info.update({
@@ -384,14 +384,14 @@ class AuthorizationCodeGrant(GrantTypeBase):
             # credentials (or assigned other authentication requirements), the
             # client MUST authenticate with the authorization server as described
             # in Section 3.2.1.
-            # http://tools.ietf.org/html/rfc6749#section-3.2.1
+            # https://tools.ietf.org/html/rfc6749#section-3.2.1
             if not self.request_validator.authenticate_client(request):
                 log.debug('Client authentication failed, %r.', request)
                 raise errors.InvalidClientError(request=request)
         elif not self.request_validator.authenticate_client_id(request.client_id, request):
             # REQUIRED, if the client is not authenticating with the
             # authorization server as described in Section 3.2.1.
-            # http://tools.ietf.org/html/rfc6749#section-3.2.1
+            # https://tools.ietf.org/html/rfc6749#section-3.2.1
             log.debug('Client authentication failed, %r.', request)
             raise errors.InvalidClientError(request=request)
 
@@ -421,7 +421,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # authorization request as described in Section 4.1.1, and their
         # values MUST be identical.
         if not self.request_validator.confirm_redirect_uri(request.client_id, request.code,
-                                                           request.redirect_uri, request.client):
+                                                           request.redirect_uri, request.client,
+                                                           request):
             log.debug('Redirect_uri (%r) invalid for client %r (%r).',
                       request.redirect_uri, request.client_id, request.client)
             raise errors.MismatchingRedirectURIError(request=request)

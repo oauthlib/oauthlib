@@ -76,11 +76,11 @@ class WebApplicationClient(Client):
             >>> client.prepare_request_uri('https://example.com', foo='bar')
             'https://example.com?client_id=your_id&response_type=code&foo=bar'
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
-        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         """
         return prepare_grant_uri(uri, self.client_id, 'code',
                                  redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
@@ -120,12 +120,12 @@ class WebApplicationClient(Client):
             >>> client.prepare_request_body(code='sh35ksdf09sf', foo='bar')
             'grant_type=authorization_code&code=sh35ksdf09sf&foo=bar'
 
-        .. _`Section 4.1.1`: http://tools.ietf.org/html/rfc6749#section-4.1.1
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Section 4.1.1`: https://tools.ietf.org/html/rfc6749#section-4.1.1
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         code = code or self.code
         return prepare_token_request('authorization_code', code=code, body=body,
-                                     client_id=self.client_id, redirect_uri=redirect_uri, **kwargs)
+                                     client_id=client_id, redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
         """Parse the URI query for code and state.
@@ -172,5 +172,5 @@ class WebApplicationClient(Client):
             oauthlib.oauth2.rfc6749.errors.MismatchingStateError
         """
         response = parse_authorization_code_response(uri, state=state)
-        self._populate_attributes(response)
+        self.populate_code_attributes(response)
         return response
