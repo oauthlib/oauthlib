@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 import mock
 
+from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.tokens import *
 
 from ...unittest import TestCase
@@ -61,8 +62,21 @@ class TokenTest(TestCase):
     bearer_headers = {
         'Authorization': 'Bearer vF9dft4qmT'
     }
+    fake_bearer_headers = [
+        {'Authorization': 'Beaver vF9dft4qmT'},
+        {'Authorization': 'BeavervF9dft4qmT'},
+        {'Authorization': 'Beaver  vF9dft4qmT'},
+        {'Authorization': 'BearerF9dft4qmT'},
+        {'Authorization': 'Bearer vF9d ft4qmT'},
+    ]
+    valid_header_with_multiple_spaces = {'Authorization': 'Bearer  vF9dft4qmT'}
     bearer_body = 'access_token=vF9dft4qmT'
     bearer_uri = 'http://server.example.com/resource?access_token=vF9dft4qmT'
+
+    def _mocked_validate_bearer_token(self, token, scopes, request):
+        if not token:
+            return False
+        return True
 
     def test_prepare_mac_header(self):
         """Verify mac signatures correctness
@@ -83,8 +97,57 @@ class TokenTest(TestCase):
         self.assertEqual(prepare_bearer_body(self.token), self.bearer_body)
         self.assertEqual(prepare_bearer_uri(self.token, uri=self.uri), self.bearer_uri)
 
+    def test_fake_bearer_is_not_validated(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+
+        for fake_header in self.fake_bearer_headers:
+            request = Request('/', headers=fake_header)
+            result = BearerToken(request_validator=request_validator).validate_request(request)
+
+            self.assertFalse(result)
+
+    def test_header_with_multispaces_is_validated(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+
+        request = Request('/', headers=self.valid_header_with_multiple_spaces)
+        result = BearerToken(request_validator=request_validator).validate_request(request)
+
+        self.assertTrue(result)
+
+    def test_estimate_type_with_fake_header_returns_type_0(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+
+        for fake_header in self.fake_bearer_headers:
+            request = Request('/', headers=fake_header)
+            result = BearerToken(request_validator=request_validator).estimate_type(request)
+
+            if fake_header['Authorization'].count(' ') == 2 and \
+               fake_header['Authorization'].split()[0] == 'Bearer':
+                # If we're dealing with the header containing 2 spaces, it will be recognized
+                # as a Bearer valid header, the token itself will be invalid by the way.
+                self.assertEqual(result, 9)
+            else:
+                self.assertEqual(result, 0)
+
 
 class JWTTokenTestCase(TestCase):
+    fake_bearer_headers = [
+        {'Authorization': 'Beaver vF9dft4qmT'},
+        {'Authorization': 'BeavervF9dft4qmT'},
+        {'Authorization': 'Beaver  vF9dft4qmT'},
+        {'Authorization': 'BearerF9dft4qmT'},
+        {'Authorization': 'Bearer vF9df t4qmT'},
+    ]
+
+    valid_header_with_multiple_spaces = {'Authorization': 'Bearer  vF9dft4qmT'}
+
+    def _mocked_validate_bearer_token(self, token, scopes, request):
+        if not token:
+            return False
+        return True
 
     def test_create_token_callable_expires_in(self):
         """
@@ -179,6 +242,24 @@ class JWTTokenTestCase(TestCase):
             request_validator_mock.validate_jwt_bearer_token.assert_called_once_with('some-token-from-request-object',
                                                                              request.scopes,
                                                                              request)
+
+    def test_fake_bearer_is_not_validated(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_jwt_bearer_token = self._mocked_validate_bearer_token
+
+        for fake_header in self.fake_bearer_headers:
+            request = Request('/', headers=fake_header)
+            result = JWTToken(request_validator=request_validator).validate_request(request)
+
+            self.assertFalse(result)
+
+    def test_header_with_multiple_spaces_is_validated(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_jwt_bearer_token = self._mocked_validate_bearer_token
+        request = Request('/', headers=self.valid_header_with_multiple_spaces)
+        result = JWTToken(request_validator=request_validator).validate_request(request)
+
+        self.assertTrue(result)
 
     def test_estimate_type(self):
         """

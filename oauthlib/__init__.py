@@ -10,7 +10,7 @@
 """
 
 __author__ = 'The OAuthlib Community'
-__version__ = '2.0.7'
+__version__ = '2.1.0'
 
 
 import logging
