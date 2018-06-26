@@ -220,6 +220,24 @@ def signed_token_generator(private_pem, **kwargs):
     return signed_token_generator
 
 
+def get_token_from_header(request):
+    """
+    Helper function to extract a token from the request header.
+    :param request: The request object
+    :return: Return the token or None if the Authorization header is malformed.
+    """
+    token = None
+
+    if 'Authorization' in request.headers:
+        split_header = request.headers.get('Authorization').split()
+        if len(split_header) == 2 and split_header[0] == 'Bearer':
+            token = split_header[1]
+    else:
+        token = request.access_token
+
+    return token
+
+
 class TokenBase(object):
 
     def __call__(self, request, refresh_token=False):
@@ -286,62 +304,14 @@ class BearerToken(TokenBase):
         return token
 
     def validate_request(self, request):
-        token = None
-        if 'Authorization' in request.headers:
-            token = request.headers.get('Authorization')[7:]
-        else:
-            token = request.access_token
+        token = get_token_from_header(request)
         return self.request_validator.validate_bearer_token(
             token, request.scopes, request)
 
     def estimate_type(self, request):
-        if request.headers.get('Authorization', '').startswith('Bearer'):
+        if request.headers.get('Authorization', '').split(' ')[0] == 'Bearer':
             return 9
         elif request.access_token is not None:
             return 5
-        else:
-            return 0
-
-
-class JWTToken(TokenBase):
-    __slots__ = (
-        'request_validator', 'token_generator',
-        'refresh_token_generator', 'expires_in'
-    )
-
-    def __init__(self, request_validator=None, token_generator=None,
-                 expires_in=None, refresh_token_generator=None):
-        self.request_validator = request_validator
-        self.token_generator = token_generator or random_token_generator
-        self.refresh_token_generator = (
-            refresh_token_generator or self.token_generator
-        )
-        self.expires_in = expires_in or 3600
-
-    def create_token(self, request, refresh_token=False, save_token=False):
-        """Create a JWT Token, using requestvalidator method."""
-
-        if callable(self.expires_in):
-            expires_in = self.expires_in(request)
-        else:
-            expires_in = self.expires_in
-
-        request.expires_in = expires_in
-
-        return self.request_validator.get_jwt_bearer_token(None, None, request)
-
-    def validate_request(self, request):
-        token = None
-        if 'Authorization' in request.headers:
-            token = request.headers.get('Authorization')[7:]
-        else:
-            token = request.access_token
-        return self.request_validator.validate_jwt_bearer_token(
-            token, request.scopes, request)
-
-    def estimate_type(self, request):
-        token = request.headers.get('Authorization', '')[7:]
-        if token.startswith('ey') and token.count('.') in (2, 4):
-            return 10
         else:
             return 0
