@@ -11,10 +11,10 @@ logic for Python 2.7 and 3.4+.*
   :target: https://coveralls.io/r/oauthlib/oauthlib
   :alt: Coveralls
 .. image:: https://img.shields.io/pypi/pyversions/oauthlib.svg
-  :target: https://pypi.python.org/pypi/oauthlib
+  :target: https://pypi.org/project/oauthlib/
   :alt: Download from PyPi
 .. image:: https://img.shields.io/pypi/l/oauthlib.svg
-  :target: https://pypi.python.org/pypi/oauthlib
+  :target: https://pypi.org/project/oauthlib/
   :alt: License
 .. image:: https://img.shields.io/readthedocs/oauthlib.svg
   :target: https://oauthlib.readthedocs.io/en/latest/index.html
