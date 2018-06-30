@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.rfc6749.grant_types
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+oauthlib.oauth2.rfc6749.request_validator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -332,7 +332,14 @@ class RequestValidator(object):
             }
 
         Note that while "scope" is a string-separated list of authorized scopes,
-        the original list is still available in request.scopes
+        the original list is still available in request.scopes.
+
+        The token dict is passed as a reference so any changes made to the dictionary
+        will go back to the user.  If additional information must return to the client
+        user, and it is only possible to get this information after writing the token
+        to storage, it should be added to the token dictionary.  If the token
+        dictionary must be modified but the changes should not go back to the user,
+        a copy of the dictionary must be made before making the changes.
 
         Also note that if an Authorization Code grant request included a valid claims
         parameter (for OpenID Connect) then the request.claims property will contain

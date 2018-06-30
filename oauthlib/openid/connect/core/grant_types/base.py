@@ -1,141 +1,15 @@
-# -*- coding: utf-8 -*-
-"""
-oauthlib.oauth2.rfc6749.grant_types.openid_connect
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"""
-from __future__ import absolute_import, unicode_literals
+from .exceptions import OIDCNoPrompt
 
 import datetime
 import logging
 from json import loads
 
-from ..errors import ConsentRequired, InvalidRequestError, LoginRequired
-from ..request_validator import RequestValidator
-from .authorization_code import AuthorizationCodeGrant
-from .implicit import ImplicitGrant
+from oauthlib.oauth2.rfc6749.errors import ConsentRequired, InvalidRequestError, LoginRequired
 
 log = logging.getLogger(__name__)
 
 
-class OIDCNoPrompt(Exception):
-    """Exception used to inform users that no explicit authorization is needed.
-
-    Normally users authorize requests after validation of the request is done.
-    Then post-authorization validation is again made and a response containing
-    an auth code or token is created. However, when OIDC clients request
-    no prompting of user authorization the final response is created directly.
-
-    Example (without the shortcut for no prompt)
-
-    scopes, req_info = endpoint.validate_authorization_request(url, ...)
-    authorization_view = create_fancy_auth_form(scopes, req_info)
-    return authorization_view
-
-    Example (with the no prompt shortcut)
-    try:
-        scopes, req_info = endpoint.validate_authorization_request(url, ...)
-        authorization_view = create_fancy_auth_form(scopes, req_info)
-        return authorization_view
-    except OIDCNoPrompt:
-        # Note: Location will be set for you
-        headers, body, status = endpoint.create_authorization_response(url, ...)
-        redirect_view = create_redirect(headers, body, status)
-        return redirect_view
-    """
-
-    def __init__(self):
-        msg = ("OIDC request for no user interaction received. Do not ask user "
-               "for authorization, it should been done using silent "
-               "authentication through create_authorization_response. "
-               "See OIDCNoPrompt.__doc__ for more details.")
-        super(OIDCNoPrompt, self).__init__(msg)
-
-
-class AuthCodeGrantDispatcher(object):
-    """
-    This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
-    including 'openid' to either the default_auth_grant or the oidc_auth_grant based on the scopes requested.
-    """
-    def __init__(self, default_auth_grant=None, oidc_auth_grant=None):
-        self.default_auth_grant = default_auth_grant
-        self.oidc_auth_grant = oidc_auth_grant
-
-    def _handler_for_request(self, request):
-        handler = self.default_auth_grant
-
-        if request.scopes and "openid" in request.scopes:
-            handler = self.oidc_auth_grant
-
-        log.debug('Selecting handler for request %r.', handler)
-        return handler
-
-    def create_authorization_response(self, request, token_handler):
-        return self._handler_for_request(request).create_authorization_response(request, token_handler)
-
-    def validate_authorization_request(self, request):
-        return self._handler_for_request(request).validate_authorization_request(request)
-
-
-class ImplicitTokenGrantDispatcher(object):
-    """
-    This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
-    including 'openid' to either the default_auth_grant or the oidc_auth_grant based on the scopes requested.
-    """
-    def __init__(self, default_implicit_grant=None, oidc_implicit_grant=None):
-        self.default_implicit_grant = default_implicit_grant
-        self.oidc_implicit_grant = oidc_implicit_grant
-
-    def _handler_for_request(self, request):
-        handler = self.default_implicit_grant
-
-        if request.scopes and "openid" in request.scopes and 'id_token' in request.response_type:
-            handler = self.oidc_implicit_grant
-
-        log.debug('Selecting handler for request %r.', handler)
-        return handler
-
-    def create_authorization_response(self, request, token_handler):
-        return self._handler_for_request(request).create_authorization_response(request, token_handler)
-
-    def validate_authorization_request(self, request):
-        return self._handler_for_request(request).validate_authorization_request(request)
-
-
-class AuthTokenGrantDispatcher(object):
-    """
-    This is an adapter class that will route simple Token requests, those that authorization_code have a scope
-    including 'openid' to either the default_token_grant or the oidc_token_grant based on the scopes requested.
-    """
-    def __init__(self, request_validator, default_token_grant=None, oidc_token_grant=None):
-        self.default_token_grant = default_token_grant
-        self.oidc_token_grant = oidc_token_grant
-        self.request_validator = request_validator
-
-    def _handler_for_request(self, request):
-        handler = self.default_token_grant
-        scopes = ()
-        parameters = dict(request.decoded_body)
-        client_id = parameters.get('client_id', None)
-        code = parameters.get('code', None)
-        redirect_uri = parameters.get('redirect_uri', None)
-
-        # If code is not pressent fallback to `default_token_grant` wich will
-        # raise an error for the missing `code` in `create_token_response` step.
-        if code:
-            scopes = self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri, request)
-
-        if 'openid' in scopes:
-            handler = self.oidc_token_grant
-
-        log.debug('Selecting handler for request %r.', handler)
-        return handler
-
-    def create_token_response(self, request, token_handler):
-        handler = self._handler_for_request(request)
-        return handler.create_token_response(request, token_handler)
-
-
-class OpenIDConnectBase(object):
+class GrantTypeBase(object):
 
     # Just proxy the majority of method calls through to the
     # proxy_target grant type handler, which will usually be either
@@ -406,46 +280,4 @@ class OpenIDConnectBase(object):
         return {}
 
 
-class OpenIDConnectAuthCode(OpenIDConnectBase):
-
-    def __init__(self, request_validator=None, **kwargs):
-        self.proxy_target = AuthorizationCodeGrant(
-            request_validator=request_validator, **kwargs)
-        self.custom_validators.post_auth.append(
-            self.openid_authorization_validator)
-        self.register_token_modifier(self.add_id_token)
-
-
-class OpenIDConnectImplicit(OpenIDConnectBase):
-
-    def __init__(self, request_validator=None, **kwargs):
-        self.proxy_target = ImplicitGrant(
-            request_validator=request_validator, **kwargs)
-        self.register_response_type('id_token')
-        self.register_response_type('id_token token')
-        self.custom_validators.post_auth.append(
-            self.openid_authorization_validator)
-        self.custom_validators.post_auth.append(
-            self.openid_implicit_authorization_validator)
-        self.register_token_modifier(self.add_id_token)
-
-
-class OpenIDConnectHybrid(OpenIDConnectBase):
-
-    def __init__(self, request_validator=None, **kwargs):
-        self.request_validator = request_validator or RequestValidator()
-
-        self.proxy_target = AuthorizationCodeGrant(
-            request_validator=request_validator, **kwargs)
-        # All hybrid response types should be fragment-encoded.
-        self.proxy_target.default_response_mode = "fragment"
-        self.register_response_type('code id_token')
-        self.register_response_type('code token')
-        self.register_response_type('code id_token token')
-        self.custom_validators.post_auth.append(
-            self.openid_authorization_validator)
-        # Hybrid flows can return the id_token from the authorization
-        # endpoint as part of the 'code' response
-        self.register_code_modifier(self.add_token)
-        self.register_code_modifier(self.add_id_token)
-        self.register_token_modifier(self.add_id_token)
+OpenIDConnectBase = GrantTypeBase
