@@ -115,13 +115,6 @@ class ParameterTests(TestCase):
                    '   "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                    '   "example_parameter": "example_value" }')
 
-    json_expires = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
-                    '  "token_type": "example",'
-                    '  "expires": 3600,'
-                    '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
-                    '  "example_parameter": "example_value",'
-                    '  "scope":"abc def"}')
-
     json_dict = {
        'access_token': '2YotnFZFEjr1zCsicMWpAA',
        'token_type': 'example',
@@ -264,7 +257,3 @@ class ParameterTests(TestCase):
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
-
-    def test_token_response_with_expires(self):
-        """Verify fallback for alternate spelling of expires_in. """
-        self.assertEqual(parse_token_response(self.json_expires), self.json_dict)
