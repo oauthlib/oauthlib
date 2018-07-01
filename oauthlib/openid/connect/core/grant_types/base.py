@@ -225,12 +225,6 @@ class GrantTypeBase(object):
                 msg = "Prompt none is mutually exclusive with other values."
                 raise InvalidRequestError(request=request, description=msg)
 
-            # prompt other than 'none' should be handled by the server code that
-            # uses oauthlib
-            if not request.id_token_hint:
-                msg = "Prompt is set to none yet id_token_hint is missing."
-                raise InvalidRequestError(request=request, description=msg)
-
             if not self.request_validator.validate_silent_login(request):
                 raise LoginRequired(request=request)
 
