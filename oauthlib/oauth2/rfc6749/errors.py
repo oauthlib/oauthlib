@@ -245,7 +245,7 @@ class InvalidGrantError(OAuth2Error):
     issued to another client.
     """
     error = 'invalid_grant'
-    status_code = 401
+    status_code = 400
 
 
 class UnauthorizedClientError(OAuth2Error):
