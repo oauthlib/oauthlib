@@ -11,11 +11,10 @@ from __future__ import absolute_import, unicode_literals
 import mock
 
 from oauthlib.oauth2 import RequestValidator
-
 from oauthlib.oauth2.rfc6749.endpoints.pre_configured import Server
 
-from ....unittest import TestCase
-from .test_utils import get_query_credentials
+from tests.unittest import TestCase
+from tests.oauth2.rfc6749.endpoints.test_utils import get_query_credentials
 
 
 class TestClaimsHandling(TestCase):

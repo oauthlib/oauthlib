@@ -4,17 +4,13 @@ from __future__ import absolute_import, unicode_literals
 import mock
 
 from oauthlib.common import Request
-
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
-
-from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
-from oauthlib.openid.connect.core.grant_types.hybrid import HybridGrant
 from oauthlib.openid.connect.core.grant_types.exceptions import OIDCNoPrompt
-
-from ....unittest import TestCase
+from oauthlib.openid.connect.core.grant_types.hybrid import HybridGrant
+from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
+from tests.oauth2.rfc6749.grant_types.test_implicit import ImplicitGrantTest
+from tests.unittest import TestCase
 from .test_authorization_code import get_id_token_mock, OpenIDAuthCodeTest
-
-from ....oauth2.rfc6749.grant_types.test_implicit import ImplicitGrantTest
 
 
 class OpenIDImplicitInterferenceTest(ImplicitGrantTest):

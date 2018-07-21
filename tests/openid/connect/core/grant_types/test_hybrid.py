@@ -2,7 +2,8 @@
 from __future__ import absolute_import, unicode_literals
 from oauthlib.openid.connect.core.grant_types.hybrid import HybridGrant
 
-from ....oauth2.rfc6749.grant_types.test_authorization_code import AuthorizationCodeGrantTest
+from tests.oauth2.rfc6749.grant_types.test_authorization_code import \
+    AuthorizationCodeGrantTest
 
 
 class OpenIDHybridInterferenceTest(AuthorizationCodeGrantTest):

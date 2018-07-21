@@ -17,7 +17,7 @@ from oauthlib.oauth2.rfc6749.grant_types import (
 )
 
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ImplicitTokenGrantDispatcherTest(TestCase):
