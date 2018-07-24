@@ -47,12 +47,12 @@ class ImplicitTokenGrantDispatcherTest(TestCase):
     def test_create_authorization_response_oauth(self):
         self.request.scopes = ('hello', 'world')
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertIsInstance(handler, ImplicitGrant)
+        self.assertIsInstance(handler, OAuth2ImplicitGrant)
 
     def test_validate_authorization_request_oauth(self):
         self.request.scopes = ('hello', 'world')
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertIsInstance(handler, ImplicitGrant)
+        self.assertIsInstance(handler, OAuth2ImplicitGrant)
 
 
 class DispatcherTest(TestCase):
@@ -66,7 +66,7 @@ class DispatcherTest(TestCase):
 
         self.request_validator = mock.MagicMock()
         self.auth_grant = OAuth2AuthorizationCodeGrant(self.request_validator)
-        self.openid_connect_auth = OAuth2AuthorizationCodeGrant(self.request_validator)
+        self.openid_connect_auth = AuthorizationCodeGrant(self.request_validator)
 
 
 class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
