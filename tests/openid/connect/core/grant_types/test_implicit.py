@@ -76,13 +76,7 @@ class OpenIDImplicitTest(TestCase):
                           self.auth.validate_authorization_request,
                           self.request)
 
-        # prompt == none requires id token hint
         bearer = BearerToken(self.mock_validator)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
-        self.assertIn('error=invalid_request', h['Location'])
-        self.assertEqual(b, None)
-        self.assertEqual(s, 302)
-
         self.request.id_token_hint = 'me@email.com'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_fragment, parse_fragment=True)
