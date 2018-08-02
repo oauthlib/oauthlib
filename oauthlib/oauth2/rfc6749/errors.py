@@ -333,7 +333,7 @@ class CustomOAuth2Error(OAuth2Error):
     """
     def __init__(self, error, *args, **kwargs):
         self.error = error
-        super().__init__(*args, **kwargs)
+        super(CustomOAuth2Error, self).__init__(*args, **kwargs)
 
 
 def raise_from_error(error, params=None):
