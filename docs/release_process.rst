@@ -2,12 +2,12 @@ Release process
 ===============
 
 OAuthLib has got to a point where quite a few libraries and users depend on it.
-Because of this a more careful release procedure will be introduced to make
+Because of this, a more careful release procedure will be introduced to make
 sure all these lovely projects don't suddenly break.
 
 When approaching a release we will run the unittests for a set of downstream
 libraries using the unreleased version of OAuthLib. If OAuthLib is the cause of
-failing tests we will either
+failing tests we will either:
 
 1. Find a way to introduce the change without breaking downstream. However,
    this is not always the best long term option.
@@ -25,7 +25,7 @@ OAuthLib release issue on Github at least 2 days prior to release detailing the
 changes and pings the primary contacts for each downstream project.  Please
 respond within those 2 days if you have major concerns. 
 
-How to get on the notifcations list
+How to get on the notifications list
 -----------------------------------
 
 Which projects and the instructions for testing each will be defined in
@@ -45,8 +45,8 @@ A note on versioning
 --------------------
 
 Historically OAuthLib has not been very good at semantic versioning but that
-will change after the 1.0.0 release due late 2014. After that poing any major
-digit release (e.g. 2.0.0) may introduce non backwards compatible changes.
+has changed since the 1.0.0 in 2014. Since, any major digit release
+(e.g. 2.0.0) may introduce non backwards compatible changes.
 Minor point (1.1.0) releases will introduce non API breaking new features and
 changes. Bug releases (1.0.1) will include minor fixes that needs to be
 released quickly (e.g. after a bigger release unintentionally introduced a
