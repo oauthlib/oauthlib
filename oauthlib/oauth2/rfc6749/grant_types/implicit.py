@@ -11,7 +11,6 @@ from oauthlib import common
 from oauthlib.uri_validate import is_absolute_uri
 
 from .. import errors
-from ..request_validator import RequestValidator
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
@@ -229,7 +228,7 @@ class ImplicitGrant(GrantTypeBase):
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
                                                          fragment=True)}, None, 302
 
-        # In OIDC implicit flow it is possible to have a request_type that does not include the access token!
+        # In OIDC implicit flow it is possible to have a request_type that does not include the access_token!
         # "id_token token" - return the access token and the id token
         # "id_token" - don't return the access token
         if "token" in request.response_type.split():
@@ -239,7 +238,12 @@ class ImplicitGrant(GrantTypeBase):
 
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
-        self.request_validator.save_token(token, request)
+
+        # In OIDC implicit flow it is possible to have a request_type that does
+        # not include the access_token! In this case there is no need to save a token.
+        if "token" in request.response_type.split():
+            self.request_validator.save_token(token, request)
+
         return self.prepare_authorization_response(
             request, token, {}, None, 302)
 
@@ -317,8 +321,7 @@ class ImplicitGrant(GrantTypeBase):
         # Then check for normal errors.
 
         request_info = self._run_custom_validators(request,
-                                self.custom_validators.all_pre)
-
+                                                   self.custom_validators.all_pre)
 
         # If the resource owner denies the access request or if the request
         # fails for reasons other than a missing or invalid redirection URI,
@@ -352,19 +355,20 @@ class ImplicitGrant(GrantTypeBase):
         self.validate_scopes(request)
 
         request_info.update({
-                'client_id': request.client_id,
-                'redirect_uri': request.redirect_uri,
-                'response_type': request.response_type,
-                'state': request.state,
-                'request': request,
+            'client_id': request.client_id,
+            'redirect_uri': request.redirect_uri,
+            'response_type': request.response_type,
+            'state': request.state,
+            'request': request,
         })
 
-        request_info = self._run_custom_validators(request,
-                            self.custom_validators.all_post,
-                            request_info)
+        request_info = self._run_custom_validators(
+            request,
+            self.custom_validators.all_post,
+            request_info
+        )
 
         return request.scopes, request_info
-
 
     def _run_custom_validators(self,
                                request,

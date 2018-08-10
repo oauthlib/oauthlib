@@ -125,7 +125,7 @@ class WebApplicationClient(Client):
         """
         code = code or self.code
         return prepare_token_request('authorization_code', code=code, body=body,
-                                     client_id=self.client_id, redirect_uri=redirect_uri, **kwargs)
+                                     client_id=client_id, redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
         """Parse the URI query for code and state.
@@ -172,5 +172,5 @@ class WebApplicationClient(Client):
             oauthlib.oauth2.rfc6749.errors.MismatchingStateError
         """
         response = parse_authorization_code_response(uri, state=state)
-        self._populate_attributes(response)
+        self.populate_code_attributes(response)
         return response

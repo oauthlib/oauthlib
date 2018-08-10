@@ -24,8 +24,6 @@ except ImportError:
     from urllib.parse import urlparse
 
 
-
-
 class OAuth2Token(dict):
 
     def __init__(self, params, old_scope=None):
@@ -222,6 +220,24 @@ def signed_token_generator(private_pem, **kwargs):
     return signed_token_generator
 
 
+def get_token_from_header(request):
+    """
+    Helper function to extract a token from the request header.
+    :param request: The request object
+    :return: Return the token or None if the Authorization header is malformed.
+    """
+    token = None
+
+    if 'Authorization' in request.headers:
+        split_header = request.headers.get('Authorization').split()
+        if len(split_header) == 2 and split_header[0] == 'Bearer':
+            token = split_header[1]
+    else:
+        token = request.access_token
+
+    return token
+
+
 class TokenBase(object):
 
     def __call__(self, request, refresh_token=False):
@@ -288,16 +304,12 @@ class BearerToken(TokenBase):
         return token
 
     def validate_request(self, request):
-        token = None
-        if 'Authorization' in request.headers:
-            token = request.headers.get('Authorization')[7:]
-        else:
-            token = request.access_token
+        token = get_token_from_header(request)
         return self.request_validator.validate_bearer_token(
             token, request.scopes, request)
 
     def estimate_type(self, request):
-        if request.headers.get('Authorization', '').startswith('Bearer'):
+        if request.headers.get('Authorization', '').split(' ')[0] == 'Bearer':
             return 9
         elif request.access_token is not None:
             return 5

@@ -25,6 +25,7 @@ pip-log.txt
 .coverage
 .tox
 coverage
+htmlcov*
 
 #Translations
 *.mo

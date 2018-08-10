@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.rfc6749.grant_types
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+oauthlib.oauth2.rfc6749.request_validator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -82,7 +82,7 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def confirm_redirect_uri(self, client_id, code, redirect_uri, client,
+    def confirm_redirect_uri(self, client_id, code, redirect_uri, client, request,
                              *args, **kwargs):
         """Ensure that the authorization process represented by this authorization
         code began with this 'redirect_uri'.
@@ -166,6 +166,46 @@ class RequestValidator(object):
         """
         return False
 
+    def introspect_token(self, token, token_type_hint, request, *args, **kwargs):
+        """Introspect an access or refresh token.
+
+        Called once the introspect request is validated. This method should
+        verify the *token* and either return a dictionary with the list of
+        claims associated, or `None` in case the token is unknown.
+
+        Below the list of registered claims you should be interested in:
+        - scope : space-separated list of scopes
+        - client_id : client identifier
+        - username : human-readable identifier for the resource owner
+        - token_type : type of the token
+        - exp : integer timestamp indicating when this token will expire
+        - iat : integer timestamp indicating when this token was issued
+        - nbf : integer timestamp indicating when it can be "not-before" used
+        - sub : subject of the token - identifier of the resource owner
+        - aud : list of string identifiers representing the intended audience
+        - iss : string representing issuer of this token
+        - jti : string identifier for the token
+
+        Note that most of them are coming directly from JWT RFC. More details
+        can be found in `Introspect Claims`_ or `_JWT Claims`_.
+
+        The implementation can use *token_type_hint* to improve lookup
+        efficency, but must fallback to other types to be compliant with RFC.
+
+        The dict of claims is added to request.token after this method.
+
+        :param token: The token string.
+        :param token_type_hint: access_token or refresh_token.
+        :param request: The HTTP Request (oauthlib.common.Request)
+
+        Method is used by:
+            - Introspect Endpoint (all grants are compatible)
+
+        .. _`Introspect Claims`: https://tools.ietf.org/html/rfc7662#section-2.2
+        .. _`JWT Claims`: https://tools.ietf.org/html/rfc7519#section-4
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def invalidate_authorization_code(self, client_id, code, request, *args, **kwargs):
         """Invalidate an authorization code after use.
 
@@ -238,6 +278,30 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
+        """ Extracts scopes from saved authorization code.
+
+        The scopes returned by this method is used to route token requests
+        based on scopes passed to Authorization Code requests.
+
+        With that the token endpoint knows when to include OpenIDConnect
+        id_token in token response only based on authorization code scopes.
+
+        Only code param should be sufficient to retrieve grant code from
+        any storage you are using, `client_id` and `redirect_uri` can gave a
+        blank value `""` don't forget to check it before using those values
+        in a select query if a database is used.
+
+        :param client_id: Unicode client identifier
+        :param code: Unicode authorization code grant
+        :param redirect_uri: Unicode absolute URI
+        :return: A list of scope
+
+        Method is used by:
+            - Authorization Token Grant Dispatcher
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def save_token(self, token, request, *args, **kwargs):
         """Persist the token with a token type specific method.
 
@@ -268,7 +332,14 @@ class RequestValidator(object):
             }
 
         Note that while "scope" is a string-separated list of authorized scopes,
-        the original list is still available in request.scopes
+        the original list is still available in request.scopes.
+
+        The token dict is passed as a reference so any changes made to the dictionary
+        will go back to the user.  If additional information must return to the client
+        user, and it is only possible to get this information after writing the token
+        to storage, it should be added to the token dictionary.  If the token
+        dictionary must be modified but the changes should not go back to the user,
+        a copy of the dictionary must be made before making the changes.
 
         Also note that if an Authorization Code grant request included a valid claims
         parameter (for OpenID Connect) then the request.claims property will contain
@@ -288,8 +359,24 @@ class RequestValidator(object):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_id_token(self, token, token_handler, request):
+    def get_jwt_bearer_token(self, token, token_handler, request):
+        """Get JWT Bearer token or OpenID Connect ID token
+
+        If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
+
+        :param token: A Bearer token dict
+        :param token_handler: the token handler (BearerToken class)
+        :param request: the HTTP Request (oauthlib.common.Request)
+        :return: The JWT Bearer token or OpenID Connect ID token (a JWS signed JWT)
+
+        Method is used by JWT Bearer and OpenID Connect tokens:
+            - JWTToken.create_token
         """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_id_token(self, token, token_handler, request):
+        """Get OpenID Connect ID token
+
         In the OpenID Connect workflows when an ID Token is requested this method is called.
         Subclasses should implement the construction, signing and optional encryption of the
         ID Token as described in the OpenID Connect spec.
@@ -318,6 +405,52 @@ class RequestValidator(object):
         :return: The ID Token (a JWS signed JWT)
         """
         # the request.scope should be used by the get_id_token() method to determine which claims to include in the resulting id_token
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_jwt_bearer_token(self, token, scopes, request):
+        """Ensure the JWT Bearer token or OpenID Connect ID token are valids and authorized access to scopes.
+
+        If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
+
+        If not using OpenID Connect this can `return None` to avoid 5xx rather 401/3 response.
+
+        OpenID connect core 1.0 describe how to validate an id_token:
+            - http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation2
+
+        :param token: Unicode Bearer token
+        :param scopes: List of scopes (defined by you)
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is indirectly used by all core OpenID connect JWT token issuing grant types:
+            - Authorization Code Grant
+            - Implicit Grant
+            - Hybrid Grant
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def validate_id_token(self, token, scopes, request):
+        """Ensure the id token is valid and authorized access to scopes.
+
+        OpenID connect core 1.0 describe how to validate an id_token:
+            - http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation
+            - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation2
+
+        :param token: Unicode Bearer token
+        :param scopes: List of scopes (defined by you)
+        :param request: The HTTP Request (oauthlib.common.Request)
+        :rtype: True or False
+
+        Method is indirectly used by all core OpenID connect JWT token issuing grant types:
+            - Authorization Code Grant
+            - Implicit Grant
+            - Hybrid Grant
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_bearer_token(self, token, scopes, request):

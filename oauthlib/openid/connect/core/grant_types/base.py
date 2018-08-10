@@ -1,82 +1,15 @@
-# -*- coding: utf-8 -*-
-"""
-oauthlib.oauth2.rfc6749.grant_types.openid_connect
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"""
-from __future__ import absolute_import, unicode_literals
+from .exceptions import OIDCNoPrompt
 
 import datetime
 import logging
 from json import loads
 
-from ..errors import ConsentRequired, InvalidRequestError, LoginRequired
-from ..request_validator import RequestValidator
-from .authorization_code import AuthorizationCodeGrant
-from .base import GrantTypeBase
-from .implicit import ImplicitGrant
+from oauthlib.oauth2.rfc6749.errors import ConsentRequired, InvalidRequestError, LoginRequired
 
 log = logging.getLogger(__name__)
 
-class OIDCNoPrompt(Exception):
-    """Exception used to inform users that no explicit authorization is needed.
 
-    Normally users authorize requests after validation of the request is done.
-    Then post-authorization validation is again made and a response containing
-    an auth code or token is created. However, when OIDC clients request
-    no prompting of user authorization the final response is created directly.
-
-    Example (without the shortcut for no prompt)
-
-    scopes, req_info = endpoint.validate_authorization_request(url, ...)
-    authorization_view = create_fancy_auth_form(scopes, req_info)
-    return authorization_view
-
-    Example (with the no prompt shortcut)
-    try:
-        scopes, req_info = endpoint.validate_authorization_request(url, ...)
-        authorization_view = create_fancy_auth_form(scopes, req_info)
-        return authorization_view
-    except OIDCNoPrompt:
-        # Note: Location will be set for you
-        headers, body, status = endpoint.create_authorization_response(url, ...)
-        redirect_view = create_redirect(headers, body, status)
-        return redirect_view
-    """
-
-    def __init__(self):
-        msg = ("OIDC request for no user interaction received. Do not ask user "
-               "for authorization, it should been done using silent "
-               "authentication through create_authorization_response. "
-               "See OIDCNoPrompt.__doc__ for more details.")
-        super(OIDCNoPrompt, self).__init__(msg)
-
-
-class AuthCodeGrantDispatcher(object):
-    """
-    This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
-    including 'openid' to either the default_auth_grant or the oidc_auth_grant based on the scopes requested.
-    """
-    def __init__(self, default_auth_grant=None, oidc_auth_grant=None):
-        self.default_auth_grant = default_auth_grant
-        self.oidc_auth_grant = oidc_auth_grant
-
-    def _handler_for_request(self, request):
-        handler = self.default_auth_grant
-
-        if request.scopes and "openid" in request.scopes:
-            handler = self.oidc_auth_grant
-
-        log.debug('Selecting handler for request %r.', handler)
-        return handler
-
-    def create_authorization_response(self, request, token_handler):
-        return self._handler_for_request(request).create_authorization_response(request, token_handler)
-
-    def validate_authorization_request(self, request):
-        return self._handler_for_request(request).validate_authorization_request(request)
-
-
-class OpenIDConnectBase(object):
+class GrantTypeBase(object):
 
     # Just proxy the majority of method calls through to the
     # proxy_target grant type handler, which will usually be either
@@ -292,12 +225,6 @@ class OpenIDConnectBase(object):
                 msg = "Prompt none is mutually exclusive with other values."
                 raise InvalidRequestError(request=request, description=msg)
 
-            # prompt other than 'none' should be handled by the server code that
-            # uses oauthlib
-            if not request.id_token_hint:
-                msg = "Prompt is set to none yet id_token_hint is missing."
-                raise InvalidRequestError(request=request, description=msg)
-
             if not self.request_validator.validate_silent_login(request):
                 raise LoginRequired(request=request)
 
@@ -307,7 +234,7 @@ class OpenIDConnectBase(object):
         self._inflate_claims(request)
 
         if not self.request_validator.validate_user_match(
-            request.id_token_hint, request.scopes, request.claims, request):
+                request.id_token_hint, request.scopes, request.claims, request):
             msg = "Session user does not match client supplied user."
             raise LoginRequired(request=request, description=msg)
 
@@ -347,44 +274,4 @@ class OpenIDConnectBase(object):
         return {}
 
 
-class OpenIDConnectAuthCode(OpenIDConnectBase):
-
-    def __init__(self, request_validator=None, **kwargs):
-        self.proxy_target = AuthorizationCodeGrant(
-            request_validator=request_validator, **kwargs)
-        self.custom_validators.post_auth.append(
-            self.openid_authorization_validator)
-        self.register_token_modifier(self.add_id_token)
-
-class OpenIDConnectImplicit(OpenIDConnectBase):
-
-    def __init__(self, request_validator=None, **kwargs):
-        self.proxy_target = ImplicitGrant(
-            request_validator=request_validator, **kwargs)
-        self.register_response_type('id_token')
-        self.register_response_type('id_token token')
-        self.custom_validators.post_auth.append(
-            self.openid_authorization_validator)
-        self.custom_validators.post_auth.append(
-            self.openid_implicit_authorization_validator)
-        self.register_token_modifier(self.add_id_token)
-
-class OpenIDConnectHybrid(OpenIDConnectBase):
-
-    def __init__(self, request_validator=None, **kwargs):
-        self.request_validator = request_validator or RequestValidator()
-
-        self.proxy_target = AuthorizationCodeGrant(
-            request_validator=request_validator, **kwargs)
-        # All hybrid response types should be fragment-encoded.
-        self.proxy_target.default_response_mode = "fragment"
-        self.register_response_type('code id_token')
-        self.register_response_type('code token')
-        self.register_response_type('code id_token token')
-        self.custom_validators.post_auth.append(
-            self.openid_authorization_validator)
-        # Hybrid flows can return the id_token from the authorization
-        # endpoint as part of the 'code' response
-        self.register_code_modifier(self.add_token)
-        self.register_code_modifier(self.add_id_token)
-        self.register_token_modifier(self.add_id_token)
+OpenIDConnectBase = GrantTypeBase

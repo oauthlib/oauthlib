@@ -11,11 +11,16 @@ from __future__ import absolute_import, unicode_literals
 import collections
 import datetime
 import logging
-import random
 import re
 import sys
 import time
 
+try:
+    from secrets import randbits
+    from secrets import SystemRandom
+except ImportError:
+    from random import getrandbits as randbits
+    from random import SystemRandom
 try:
     from urllib import quote as _quote
     from urllib import unquote as _unquote
@@ -202,7 +207,7 @@ def generate_nonce():
     .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode_type(unicode_type(random.getrandbits(64)) + generate_timestamp())
+    return unicode_type(unicode_type(randbits(64)) + generate_timestamp())
 
 
 def generate_timestamp():
@@ -225,7 +230,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     and entropy when generating the random characters is important. Which is
     why SystemRandom is used instead of the default random.choice method.
     """
-    rand = random.SystemRandom()
+    rand = SystemRandom()
     return ''.join(rand.choice(chars) for x in range(length))
 
 

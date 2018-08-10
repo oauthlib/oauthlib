@@ -362,15 +362,12 @@ def parse_token_response(body, scope=None):
         #   https://github.com/oauthlib/oauthlib/issues/267
 
         params = dict(urlparse.parse_qsl(body))
-        for key in ('expires_in', 'expires'):
-            if key in params:  # cast a couple things to int
+        for key in ('expires_in',):
+            if key in params:  # cast things to int
                 params[key] = int(params[key])
 
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
-
-    if 'expires' in params:
-        params['expires_in'] = params.pop('expires')
 
     if 'expires_in' in params:
         params['expires_at'] = time.time() + int(params['expires_in'])

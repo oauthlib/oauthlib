@@ -9,6 +9,7 @@ for consuming and providing OAuth 2.0 RFC6749.
 from __future__ import absolute_import, unicode_literals
 
 from .authorization import AuthorizationEndpoint
+from .introspect import IntrospectEndpoint
 from .token import TokenEndpoint
 from .resource import ResourceEndpoint
 from .revocation import RevocationEndpoint

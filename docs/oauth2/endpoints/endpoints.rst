@@ -14,11 +14,12 @@ client attempts to access the user resources on their behalf.
     :maxdepth: 2
 
     authorization
+    introspect
     token
     resource
     revocation
 
-There are three different endpoints, the authorization endpoint which mainly
+There are three main endpoints, the authorization endpoint which mainly
 handles user authorization, the token endpoint which provides tokens and the
 resource endpoint which provides access to protected resources. It is to the
 endpoints you will feed requests and get back an almost complete response. This
@@ -27,3 +28,6 @@ later (but it's applicable to all other web frameworks libraries).
 
 The main purpose of the endpoint in OAuthLib is to figure out which grant type
 or token to dispatch the request to.
+
+Then, you can extend your OAuth implementation by proposing introspect or
+revocation endpoints.

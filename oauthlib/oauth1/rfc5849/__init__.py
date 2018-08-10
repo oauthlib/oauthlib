@@ -27,10 +27,12 @@ from oauthlib.common import Request, urlencode, generate_nonce
 from oauthlib.common import generate_timestamp, to_unicode
 from . import parameters, signature
 
-SIGNATURE_HMAC = "HMAC-SHA1"
+SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
+SIGNATURE_HMAC_SHA256 = "HMAC-SHA256"
+SIGNATURE_HMAC = SIGNATURE_HMAC_SHA1
 SIGNATURE_RSA = "RSA-SHA1"
 SIGNATURE_PLAINTEXT = "PLAINTEXT"
-SIGNATURE_METHODS = (SIGNATURE_HMAC, SIGNATURE_RSA, SIGNATURE_PLAINTEXT)
+SIGNATURE_METHODS = (SIGNATURE_HMAC_SHA1, SIGNATURE_HMAC_SHA256, SIGNATURE_RSA, SIGNATURE_PLAINTEXT)
 
 SIGNATURE_TYPE_AUTH_HEADER = 'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = 'QUERY'
@@ -43,7 +45,8 @@ class Client(object):
 
     """A client used to sign OAuth 1.0 RFC 5849 requests."""
     SIGNATURE_METHODS = {
-        SIGNATURE_HMAC: signature.sign_hmac_sha1_with_client,
+        SIGNATURE_HMAC_SHA1: signature.sign_hmac_sha1_with_client,
+        SIGNATURE_HMAC_SHA256: signature.sign_hmac_sha256_with_client,
         SIGNATURE_RSA: signature.sign_rsa_sha1_with_client,
         SIGNATURE_PLAINTEXT: signature.sign_plaintext_with_client
     }
@@ -57,7 +60,7 @@ class Client(object):
                  resource_owner_key=None,
                  resource_owner_secret=None,
                  callback_uri=None,
-                 signature_method=SIGNATURE_HMAC,
+                 signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_AUTH_HEADER,
                  rsa_key=None, verifier=None, realm=None,
                  encoding='utf-8', decoding=None,
