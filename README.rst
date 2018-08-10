@@ -2,7 +2,7 @@ OAuthLib
 ========
 
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
-logic for Python 2.7 and 3.4+.*
+logic for Python
 
 .. image:: https://travis-ci.org/oauthlib/oauthlib.svg?branch=master
   :target: https://travis-ci.org/oauthlib/oauthlib
@@ -103,6 +103,18 @@ License
 
 OAuthLib is yours to use and abuse according to the terms of the BSD license.
 Check the LICENSE file for full details.
+
+Credits
+-------
+
+OAuthLib has been started and maintained several years by Idan Gazit and other
+amazing `AUTHORS`_. Thanks to their wonderful work, the open-source `community`_
+creation has been possible and the project can stay active and reactive to users
+requests.
+
+
+.. _`AUTHORS`: https://github.com/oauthlib/oauthlib/blob/master/AUTHORS
+.. _`community`: https://github.com/oauthlib/
 
 Changelog
 ---------
