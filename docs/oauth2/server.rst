@@ -493,9 +493,9 @@ at runtime by a function, rather then by a list.
 6. Let us know how it went!
 ---------------------------
 
-Drop a line in our `G+ community`_ or open a `GitHub issue`_ =)
+Drop a line in our `Gitter OAuthLib community`_ or open a `GitHub issue`_ =)
 
-.. _`G+ community`: https://plus.google.com/communities/101889017375384052571
+.. _`Gitter OAuthLib community`: https://gitter.im/oauthlib/Lobby
 .. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
 
 If you run into issues it can be helpful to enable debug logging.
