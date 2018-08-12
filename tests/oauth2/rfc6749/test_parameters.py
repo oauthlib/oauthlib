@@ -86,7 +86,7 @@ class ParameterTests(TestCase):
         'access_token': '2YotnFZFEjr1zCsicMWpAA',
         'state': state,
         'token_type': 'example',
-        'expires_in': '3600',
+        'expires_in': 3600,
         'expires_at': 4600,
         'scope': ['abc']
     }

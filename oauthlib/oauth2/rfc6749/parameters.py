@@ -279,6 +279,10 @@ def parse_implicit_response(uri, state=None, scope=None):
     fragment = urlparse.urlparse(uri).fragment
     params = dict(urlparse.parse_qsl(fragment, keep_blank_values=True))
 
+    for key in ('expires_in',):
+        if key in params:  # cast things to int
+            params[key] = int(params[key])
+
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
 
