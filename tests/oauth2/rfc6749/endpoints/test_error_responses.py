@@ -44,6 +44,22 @@ class ErrorResponseTest(TestCase):
         self.assertRaises(errors.InvalidRedirectURIError,
                 self.mobile.create_authorization_response, uri.format('token'), scopes=['foo'])
 
+    def test_invalid_default_redirect_uri(self):
+        uri = 'https://example.com/authorize?response_type={0}&client_id=foo'
+        self.validator.get_default_redirect_uri.return_value = "wrong"
+
+        # Authorization code grant
+        self.assertRaises(errors.InvalidRedirectURIError,
+                self.web.validate_authorization_request, uri.format('code'))
+        self.assertRaises(errors.InvalidRedirectURIError,
+                self.web.create_authorization_response, uri.format('code'), scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaises(errors.InvalidRedirectURIError,
+                self.mobile.validate_authorization_request, uri.format('token'))
+        self.assertRaises(errors.InvalidRedirectURIError,
+                self.mobile.create_authorization_response, uri.format('token'), scopes=['foo'])
+
     def test_missing_redirect_uri(self):
         uri = 'https://example.com/authorize?response_type={0}&client_id=foo'
 
