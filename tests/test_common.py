@@ -39,6 +39,8 @@ class EncodingTest(TestCase):
         self.assertItemsEqual(urldecode('foo=bar@spam'), [('foo', 'bar@spam')])
         self.assertItemsEqual(urldecode('foo=bar/baz'), [('foo', 'bar/baz')])
         self.assertItemsEqual(urldecode('foo=bar?baz'), [('foo', 'bar?baz')])
+        self.assertItemsEqual(urldecode('foo=bar\'s'), [('foo', 'bar\'s')])
+        self.assertItemsEqual(urldecode('foo=$'), [('foo', '$')])
         self.assertRaises(ValueError, urldecode, 'foo bar')
         self.assertRaises(ValueError, urldecode, '%R')
         self.assertRaises(ValueError, urldecode, '%RA')
