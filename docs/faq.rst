@@ -14,19 +14,23 @@ What parts of OAuth 1 & 2 are supported?
 OAuth 1 with RSA-SHA1 signatures says "could not import cryptography". What should I do?
 ----------------------------------------------------------------------------------
 
-    Install cryptography via pip.
+    Install oauthlib with rsa flag or install cryptography manually via pip.
 
 .. code-block:: sh
 
+    $ pip install oauthlib[rsa]
+    ..or..
     $ pip install cryptography
 
 OAuth 2 ServiceApplicationClient and OAuth 1 with RSA-SHA1 signatures say "could not import jwt". What should I do?
 -------------------------------------------------------------------------------------------------------------------
 
-    Install pyjwt and cryptography with pip.
+    Install oauthlib with signedtoken flag or install pyjwt and cryptography manually with pip.
 
 .. code-block:: sh
 
+    $ pip install oauthlib[signedtoken]
+    ..or..
     $ pip install pyjwt cryptography
 
 What does ValueError `Only unicode objects are escapable. Got one of type X.` mean?
@@ -72,8 +76,8 @@ How do I use OAuthlib as a provider with Django, Flask and other web frameworks?
     - Pyramid `pyramid-oauthlib`_
     - Bottle `bottle-oauthlib`_
 
-    For other frameworks, please get in touch by opening a `GitHub issue`_, on `G+`_ or
-    on IRC #oauthlib irc.freenode.net. If you have written an OAuthLib package that
+    For other frameworks, please get in touch by opening a `GitHub issue`_ or
+    on `Gitter OAuthLib community`_. If you have written an OAuthLib package that
     supports your favorite framework, please open a Pull Request to update the docs.
 
 
@@ -101,5 +105,5 @@ Some argue OAuth 2 is worse than 1, is that true?
 .. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
 .. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
 .. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
-.. _`G+`: https://plus.google.com/communities/101889017375384052571
+.. _`Gitter OAuthLib community`: https://gitter.im/oauthlib/Lobby
 .. _`difference`: https://www.cyberciti.biz/faq/authentication-vs-authorization/

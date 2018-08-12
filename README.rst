@@ -11,10 +11,10 @@ logic for Python 2.7 and 3.4+.*
   :target: https://coveralls.io/r/oauthlib/oauthlib
   :alt: Coveralls
 .. image:: https://img.shields.io/pypi/pyversions/oauthlib.svg
-  :target: https://pypi.python.org/pypi/oauthlib
+  :target: https://pypi.org/project/oauthlib/
   :alt: Download from PyPi
 .. image:: https://img.shields.io/pypi/l/oauthlib.svg
-  :target: https://pypi.python.org/pypi/oauthlib
+  :target: https://pypi.org/project/oauthlib/
   :alt: License
 .. image:: https://img.shields.io/readthedocs/oauthlib.svg
   :target: https://oauthlib.readthedocs.io/en/latest/index.html
@@ -103,6 +103,18 @@ License
 
 OAuthLib is yours to use and abuse according to the terms of the BSD license.
 Check the LICENSE file for full details.
+
+Credits
+-------
+
+OAuthLib has been started and maintained several years by Idan Gazit and other
+amazing `AUTHORS`_. Thanks to their wonderful work, the open-source `community`_
+creation has been possible and the project can stay active and reactive to users
+requests.
+
+
+.. _`AUTHORS`: https://github.com/oauthlib/oauthlib/blob/master/AUTHORS
+.. _`community`: https://github.com/oauthlib/
 
 Changelog
 ---------
