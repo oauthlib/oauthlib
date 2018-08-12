@@ -312,6 +312,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
                 raise errors.MissingRedirectURIError(request=request)
+            if not is_absolute_uri(request.redirect_uri):
+                raise errors.InvalidRedirectURIError(request=request)
 
         # Then check for normal errors.
 
