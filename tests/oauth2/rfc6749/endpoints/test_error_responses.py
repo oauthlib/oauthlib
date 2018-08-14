@@ -237,6 +237,8 @@ class ErrorResponseTest(TestCase):
 
     def test_access_denied(self):
         self.validator.authenticate_client.side_effect = self.set_client
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+        self.validator.confirm_redirect_uri.return_value = False
         token_uri = 'https://i.b/token'
         # Authorization code grant
         _, body, _ = self.web.create_token_response(token_uri,
