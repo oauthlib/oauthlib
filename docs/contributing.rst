@@ -38,11 +38,14 @@ rules.
 
 Code of Conduct
 ---------------
-This project adheres to No Code of Conduct. We are all adults. We accept
-anyone's contributions. Nothing else matters.
-For more information please visit the `No Code of Conduct`_ homepage.
+This project adheres to a `Code of Conduct`_ based on Django. As a community
+member you have to read and agree with it.
 
-.. _`No Code of Conduct`: https://github.com/domgetter/NCoC
+For more information please contact us and/or visit the original
+`Django Code of Conduct`_ homepage.
+
+.. _`Code of Conduct`: https://github.com/oauthlib/oauthlib/blob/master/CODE_OF_CONDUCT.md
+.. _`Django Code of Conduct`: https://www.djangoproject.com/conduct/
 
 Code of Merit
 -------------
