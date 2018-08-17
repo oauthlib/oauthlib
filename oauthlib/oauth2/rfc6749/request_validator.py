@@ -346,7 +346,6 @@ class RequestValidator(object):
         the claims dict, which should be saved for later use when generating the
         id_token and/or UserInfo response content.
 
-        :param client_id: Unicode client identifier
         :param token: A Bearer token dict
         :param request: The HTTP Request (oauthlib.common.Request)
         :rtype: The default redirect URI for the client
