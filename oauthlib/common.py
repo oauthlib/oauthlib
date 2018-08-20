@@ -426,7 +426,6 @@ class Request(object):
         }
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))
-        self._params.update(self.headers)
 
     def __getattr__(self, name):
         if name in self._params:
