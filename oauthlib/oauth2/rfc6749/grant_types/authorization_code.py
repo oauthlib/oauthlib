@@ -422,6 +422,17 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # REQUIRED, if the "redirect_uri" parameter was included in the
         # authorization request as described in Section 4.1.1, and their
         # values MUST be identical.
+        if request.redirect_uri is None:
+            request.using_default_redirect_uri = True
+            request.redirect_uri = self.request_validator.get_default_redirect_uri(
+                request.client_id, request)
+            log.debug('Using default redirect_uri %s.', request.redirect_uri)
+            if not request.redirect_uri:
+                raise errors.MissingRedirectURIError(request=request)
+        else:
+            request.using_default_redirect_uri = False
+            log.debug('Using provided redirect_uri %s', request.redirect_uri)
+
         if not self.request_validator.confirm_redirect_uri(request.client_id, request.code,
                                                            request.redirect_uri, request.client,
                                                            request):

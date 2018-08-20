@@ -116,3 +116,24 @@ class PreservationTest(TestCase):
         self.assertRaises(errors.MissingRedirectURIError,
                 self.mobile.create_authorization_response,
                 auth_uri + '&response_type=token', scopes=['random'])
+
+    def test_default_uri_in_token(self):
+        auth_uri = 'http://example.com/path?state=xyz&client_id=abc'
+        token_uri = 'http://example.com/path'
+
+        # authorization grant
+        h, _, s = self.web.create_authorization_response(
+                auth_uri + '&response_type=code', scopes=['random'])
+        self.assertEqual(s, 302)
+        self.assertIn('Location', h)
+        self.assertTrue(h['Location'].startswith(self.DEFAULT_REDIRECT_URI))
+
+        # confirm_redirect_uri should return true if the redirect uri
+        # was not given in the authorization AND not in the token request.
+        self.validator.confirm_redirect_uri.return_value = True
+        code = get_query_credentials(h['Location'])['code'][0]
+        self.validator.validate_code.side_effect = self.set_state('xyz')
+        _, body, s = self.web.create_token_response(token_uri,
+                body='grant_type=authorization_code&code=%s' % code)
+        self.assertEqual(s, 200)
+        self.assertEqual(self.validator.confirm_redirect_uri.call_args[0][2], self.DEFAULT_REDIRECT_URI)
