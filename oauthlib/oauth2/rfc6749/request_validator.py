@@ -74,6 +74,7 @@ class RequestValidator(object):
         to set request.client to the client object associated with the
         given client_id.
 
+        :param client_id: Unicode client identifier
         :param request: oauthlib.common.Request
         :rtype: True or False
 
@@ -306,6 +307,9 @@ class RequestValidator(object):
         """Persist the token with a token type specific method.
 
         Currently, only save_bearer_token is supported.
+
+        :param token: A (Bearer) token dict
+        :param request: The HTTP Request (oauthlib.common.Request)
         """
         return self.save_bearer_token(token, request, *args, **kwargs)
 
@@ -509,6 +513,7 @@ class RequestValidator(object):
         to set request.client to the client object associated with the
         given client_id.
 
+        :param client_id: Unicode client identifier
         :param request: oauthlib.common.Request
         :rtype: True or False
 

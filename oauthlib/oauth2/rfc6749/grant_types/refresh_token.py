@@ -46,6 +46,10 @@ class RefreshTokenGrant(GrantTypeBase):
         identical to that of the refresh token included by the client in the
         request.
 
+        :param request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
@@ -72,6 +76,10 @@ class RefreshTokenGrant(GrantTypeBase):
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
+        """
+        :param request: oauthlib.common.Request
+        """
+    
         # REQUIRED. Value MUST be set to "refresh_token".
         if request.grant_type != 'refresh_token':
             raise errors.UnsupportedGrantTypeError(request=request)
