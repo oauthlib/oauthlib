@@ -135,9 +135,9 @@ class GrantTypeBase(object):
     def add_token(self, token, token_handler, request):
         """
         :param token: 
-        :param request: oauthlib.common.Request
         :param token_handler: A token handler instace, for example of type
                               oauthlib.oauth2.BearerToken.
+        :param request: oauthlib.common.Request
         """
         # Only add a hybrid access token on auth step if asked for
         if not request.response_type in ["token", "code token", "id_token token", "code id_token token"]:
