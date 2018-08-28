@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foauthlib%2Foauthlib.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Foauthlib%2Foauthlib?ref=badge_shield)
+
 OAuthLib - Python Framework for OAuth1 & OAuth2
 ===============================================
 
@@ -126,3 +128,6 @@ details.
 .. _`supported features`: https://oauthlib.readthedocs.io/en/latest/feature_matrix.html
 
 For a full changelog see ``CHANGELOG.rst``.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foauthlib%2Foauthlib.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Foauthlib%2Foauthlib?ref=badge_large)
