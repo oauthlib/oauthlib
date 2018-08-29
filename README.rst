@@ -16,6 +16,9 @@ logic for Python 2.7 and 3.4+.*
 .. image:: https://img.shields.io/pypi/l/oauthlib.svg
   :target: https://pypi.org/project/oauthlib/
   :alt: License
+.. image:: https://app.fossa.io/api/projects/git%2Bgithub.com%2Foauthlib%2Foauthlib.svg?type=shield
+   :target: https://app.fossa.io/projects/git%2Bgithub.com%2Foauthlib%2Foauthlib?ref=badge_shield
+   :alt: FOSSA Status
 .. image:: https://img.shields.io/readthedocs/oauthlib.svg
   :target: https://oauthlib.readthedocs.io/en/latest/index.html
   :alt: Read the Docs
