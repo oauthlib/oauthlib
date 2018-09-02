@@ -140,7 +140,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
                               oauthlib.oauth2.BearerToken.
         :returns: headers, body, status
         :raises: FatalClientError on invalid redirect URI or client id.
-                 ValueError if scopes are not set on the request object.
 
         A few examples::
 
@@ -151,12 +150,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
             >>> from oauthlib.oauth2 import AuthorizationCodeGrant, BearerToken
             >>> token = BearerToken(your_validator)
             >>> grant = AuthorizationCodeGrant(your_validator)
-            >>> grant.create_authorization_response(request, token)
-            Traceback (most recent call last):
-                File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/rfc6749/grant_types.py", line 513, in create_authorization_response
-                    raise ValueError('Scopes must be set on post auth.')
-            ValueError: Scopes must be set on post auth.
             >>> request.scopes = ['authorized', 'in', 'some', 'form']
             >>> grant.create_authorization_response(request, token)
             (u'http://client.com/?error=invalid_request&error_description=Missing+response_type+parameter.', None, None, 400)
@@ -182,11 +175,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
         .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         """
         try:
-            # request.scopes is only mandated in post auth and both pre and
-            # post auth use validate_authorization_request
-            if not request.scopes:
-                raise ValueError('Scopes must be set on post auth.')
-
             self.validate_authorization_request(request)
             log.debug('Pre resource owner authorization validation ok for %r.',
                       request)
