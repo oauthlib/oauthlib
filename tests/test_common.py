@@ -214,6 +214,11 @@ class RequestTest(TestCase):
         self.assertNotIn('bar', repr(r))
         self.assertIn('<SANITIZED>', repr(r))
 
+    def test_headers_params(self):
+        r = Request(URI, headers={'token': 'foobar'}, body='token=banana')
+        self.assertEqual(r.headers['token'], 'foobar')
+        self.assertEqual(r.token, 'banana')
+
 
 class CaseInsensitiveDictTest(TestCase):
 

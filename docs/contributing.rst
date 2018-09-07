@@ -30,6 +30,31 @@ personal label matching your GitHub ID will be assigned to that issue.
 Feel free to propose issues that aren't described!
 
 
+oauthlib community rules
+========================
+
+oauthlib is a community of developers which adheres to a very simple set of
+rules.
+
+Code of Conduct
+---------------
+This project adheres to a `Code of Conduct`_ based on Django. As a community
+member you have to read and agree with it.
+
+For more information please contact us and/or visit the original
+`Django Code of Conduct`_ homepage.
+
+.. _`Code of Conduct`: https://github.com/oauthlib/oauthlib/blob/master/CODE_OF_CONDUCT.md
+.. _`Django Code of Conduct`: https://www.djangoproject.com/conduct/
+
+Code of Merit
+-------------
+Please read the community's `Code of Merit`_. Every contributor will know the
+real purpose of their contributions to this project.
+
+.. _`Code of Merit`: http://code-of-merit.org/
+
+
 Setting up topic branches and generating pull requests
 ======================================================
 

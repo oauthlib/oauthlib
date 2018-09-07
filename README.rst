@@ -1,5 +1,5 @@
-OAuthLib
-========
+OAuthLib - Python Framework for OAuth1 & OAuth2
+===============================================
 
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
 logic for Python 2.7 and 3.4+.*
@@ -16,6 +16,9 @@ logic for Python 2.7 and 3.4+.*
 .. image:: https://img.shields.io/pypi/l/oauthlib.svg
   :target: https://pypi.org/project/oauthlib/
   :alt: License
+.. image:: https://app.fossa.io/api/projects/git%2Bgithub.com%2Foauthlib%2Foauthlib.svg?type=shield
+   :target: https://app.fossa.io/projects/git%2Bgithub.com%2Foauthlib%2Foauthlib?ref=badge_shield
+   :alt: FOSSA Status
 .. image:: https://img.shields.io/readthedocs/oauthlib.svg
   :target: https://oauthlib.readthedocs.io/en/latest/index.html
   :alt: Read the Docs
@@ -34,7 +37,7 @@ both of the following:
 .. _`OAuth 1.0 spec`: https://tools.ietf.org/html/rfc5849
 .. _`OAuth 2.0 spec`: https://tools.ietf.org/html/rfc6749
 
-OAuthLib is a generic utility which implements the logic of OAuth without
+OAuthLib is a framework which implements the logic of OAuth1 or OAuth2 without
 assuming a specific HTTP request object or web framework. Use it to graft OAuth
 client support onto your favorite HTTP library, or provide support onto your
 favourite web framework. If you're a maintainer of such a library, write a thin
@@ -119,7 +122,7 @@ requests.
 Changelog
 ---------
 
-*OAuthLib is in active development, with the core of both OAuth 1 and 2
+*OAuthLib is in active development, with the core of both OAuth1 and OAuth2
 completed, for providers as well as clients.* See `supported features`_ for
 details.
 
