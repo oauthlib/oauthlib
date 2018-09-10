@@ -53,6 +53,11 @@ class ClientCredentialsGrant(GrantTypeBase):
     def create_token_response(self, request, token_handler):
         """Return token or error in JSON format.
 
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         If the access token request is valid and authorized, the
         authorization server issues an access token as described in
         `Section 5.1`_.  A refresh token SHOULD NOT be included.  If the request
@@ -85,6 +90,10 @@ class ClientCredentialsGrant(GrantTypeBase):
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         for validator in self.custom_validators.pre_token:
             validator(request)
 

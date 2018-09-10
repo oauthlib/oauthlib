@@ -121,6 +121,12 @@ class ImplicitGrant(GrantTypeBase):
 
     def create_authorization_response(self, request, token_handler):
         """Create an authorization response.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         The client constructs the request URI by adding the following
         parameters to the query component of the authorization endpoint URI
         using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
@@ -162,6 +168,11 @@ class ImplicitGrant(GrantTypeBase):
 
     def create_token_response(self, request, token_handler):
         """Return token or error embedded in the URI fragment.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
 
         If the resource owner grants the access request, the authorization
         server issues an access token and delivers it to the client by adding
@@ -243,10 +254,17 @@ class ImplicitGrant(GrantTypeBase):
             request, token, {}, None, 302)
 
     def validate_authorization_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         return self.validate_token_request(request)
 
     def validate_token_request(self, request):
         """Check the token request for normal and fatal errors.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
 
         This method is very similar to validate_authorization_request in
         the AuthorizationCodeGrant but differ in a few subtle areas.

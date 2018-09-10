@@ -73,6 +73,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     def create_token_response(self, request, token_handler):
         """Return token or error in json format.
 
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
         token as described in `Section 5.1`_.  If the request failed client
@@ -114,6 +119,9 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
 
     def validate_token_request(self, request):
         """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+
         The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
         format per Appendix B with a character encoding of UTF-8 in the HTTP

@@ -37,14 +37,13 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     using the ``application/x-www-form-urlencoded`` format as defined by
     [`W3C.REC-html401-19991224`_]:
 
+    :param client_id: The client identifier as described in `Section 2.2`_.
     :param response_type: To indicate which OAuth 2 grant/flow is required,
                           "code" and "token".
-    :param client_id: The client identifier as described in `Section 2.2`_.
     :param redirect_uri: The client provided URI to redirect back to after
                          authorization as described in `Section 3.1.2`_.
     :param scope: The scope of the access request as described by
                   `Section 3.3`_.
-
     :param state: An opaque value used by the client to maintain
                   state between the request and callback.  The authorization
                   server includes this value when redirecting the user-agent
@@ -133,15 +132,19 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
     using the "application/x-www-form-urlencoded" format in the HTTP request
     entity-body:
 
-    token   REQUIRED.  The token that the client wants to get revoked.
+    :param token: REQUIRED.  The token that the client wants to get revoked.
 
-    token_type_hint  OPTIONAL.  A hint about the type of the token submitted
-    for revocation.  Clients MAY pass this parameter in order to help the
-    authorization server to optimize the token lookup.  If the server is unable
-    to locate the token using the given hint, it MUST extend its search across
-    all of its supported token types.  An authorization server MAY ignore this
-    parameter, particularly if it is able to detect the token type
-    automatically.  This specification defines two such values:
+    param:token_type_hint: OPTIONAL.  A hint about the type of the token
+                           submitted for revocation. Clients MAY pass this
+                           parameter in order to help the authorization server
+                           to optimize the token lookup.  If the server is
+                           unable to locate the token using the given hint, it
+                           MUST extend its search across all of its supported
+                           token types.  An authorization server MAY ignore this
+                           parameter, particularly if it is able to detect the
+                           token type automatically.
+    
+    This specification defines two values for `token_type_hint`:
 
         * access_token: An access token as defined in [RFC6749],
              `Section 1.4`_

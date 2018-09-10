@@ -96,10 +96,14 @@ def prepare_mac_header(token, uri, key, http_method,
     .. _`MAC Access Authentication`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
     .. _`extension algorithms`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-7.1
 
+    :param token:
     :param uri: Request URI.
-    :param headers: Request headers as a dictionary.
-    :param http_method: HTTP Request method.
     :param key: MAC given provided by token endpoint.
+    :param http_method: HTTP Request method.
+    :param nonce:
+    :param headers: Request headers as a dictionary.
+    :param body:
+    :param ext:
     :param hash_algorithm: HMAC algorithm provided by token endpoint.
     :param issue_time: Time when the MAC credentials were issued (datetime).
     :param draft: MAC authentication specification version.
@@ -181,6 +185,9 @@ def prepare_bearer_uri(token, uri):
     http://www.example.com/path?access_token=h480djs93hd8
 
     .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
+
+    :param token:
+    :param uri:
     """
     return add_params_to_uri(uri, [(('access_token', token))])
 
@@ -192,6 +199,9 @@ def prepare_bearer_headers(token, headers=None):
     Authorization: Bearer h480djs93hd8
 
     .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
+
+    :param token:
+    :param headers:
     """
     headers = headers or {}
     headers['Authorization'] = 'Bearer %s' % token
@@ -204,15 +214,26 @@ def prepare_bearer_body(token, body=''):
     access_token=h480djs93hd8
 
     .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
+
+    :param token:
+    :param body:
     """
     return add_params_to_qs(body, [(('access_token', token))])
 
 
 def random_token_generator(request, refresh_token=False):
+    """
+    :param request: OAuthlib request.
+    :type request: oauthlib.common.Request
+    :param refresh_token:
+    """
     return common.generate_token()
 
 
 def signed_token_generator(private_pem, **kwargs):
+    """
+    :param private_pem:
+    """
     def signed_token_generator(request):
         request.claims = kwargs
         return common.generate_signed_token(private_pem, request)
@@ -223,7 +244,8 @@ def signed_token_generator(private_pem, **kwargs):
 def get_token_from_header(request):
     """
     Helper function to extract a token from the request header.
-    :param request: The request object
+    :param request: OAuthlib request.
+    :type request: oauthlib.common.Request
     :return: Return the token or None if the Authorization header is malformed.
     """
     token = None
@@ -244,9 +266,17 @@ class TokenBase(object):
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
     def estimate_type(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
 
@@ -266,7 +296,14 @@ class BearerToken(TokenBase):
         self.expires_in = expires_in or 3600
 
     def create_token(self, request, refresh_token=False, save_token=True):
-        """Create a BearerToken, by default without refresh token."""
+        """
+        Create a BearerToken, by default without refresh token.
+        
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param refresh_token:
+        :param save_token:
+        """
 
         if callable(self.expires_in):
             expires_in = self.expires_in(request)
@@ -304,11 +341,19 @@ class BearerToken(TokenBase):
         return token
 
     def validate_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         token = get_token_from_header(request)
         return self.request_validator.validate_bearer_token(
             token, request.scopes, request)
 
     def estimate_type(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         if request.headers.get('Authorization', '').split(' ')[0] == 'Bearer':
             return 9
         elif request.access_token is not None:
