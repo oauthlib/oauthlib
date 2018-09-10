@@ -152,6 +152,10 @@ class ImplicitGrant(GrantTypeBase):
         access token matches a redirection URI registered by the client as
         described in `Section 3.1.2`_.
 
+        :param request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
         .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
         .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
@@ -194,6 +198,10 @@ class ImplicitGrant(GrantTypeBase):
                 client.
 
         The authorization server MUST NOT issue a refresh token.
+
+        :param request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
 
         .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
         .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
@@ -243,6 +251,9 @@ class ImplicitGrant(GrantTypeBase):
             request, token, {}, None, 302)
 
     def validate_authorization_request(self, request):
+        """
+        :param request: oauthlib.common.Request
+        """
         return self.validate_token_request(request)
 
     def validate_token_request(self, request):
@@ -260,6 +271,8 @@ class ImplicitGrant(GrantTypeBase):
         missing. These must be caught by the provider and handled, how this
         is done is outside of the scope of OAuthLib but showing an error
         page describing the issue is a good idea.
+
+        :param request: oauthlib.common.Request
         """
 
         # First check for fatal errors

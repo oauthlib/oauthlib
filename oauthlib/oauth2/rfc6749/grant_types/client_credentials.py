@@ -59,6 +59,10 @@ class ClientCredentialsGrant(GrantTypeBase):
         failed client authentication or is invalid, the authorization server
         returns an error response as described in `Section 5.2`_.
 
+        :param request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
@@ -85,6 +89,9 @@ class ClientCredentialsGrant(GrantTypeBase):
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
+        """
+        :param request: oauthlib.common.Request
+        """
         for validator in self.custom_validators.pre_token:
             validator(request)
 

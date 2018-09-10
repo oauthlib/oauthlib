@@ -97,9 +97,9 @@ def prepare_mac_header(token, uri, key, http_method,
     .. _`extension algorithms`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-7.1
 
     :param uri: Request URI.
-    :param headers: Request headers as a dictionary.
-    :param http_method: HTTP Request method.
     :param key: MAC given provided by token endpoint.
+    :param http_method: HTTP Request method.
+    :param headers: Request headers as a dictionary.
     :param hash_algorithm: HMAC algorithm provided by token endpoint.
     :param issue_time: Time when the MAC credentials were issued (datetime).
     :param draft: MAC authentication specification version.
