@@ -79,6 +79,10 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         authentication or is invalid, the authorization server returns an
         error response as described in `Section 5.2`_.
 
+        :param request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
@@ -152,6 +156,8 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         password, the authorization server MUST protect the endpoint against
         brute force attacks (e.g., using rate-limitation or generating
         alerts).
+
+        :param request: oauthlib.common.Request
 
         .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
         .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1

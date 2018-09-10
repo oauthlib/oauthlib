@@ -116,14 +116,29 @@ class GrantTypeBase(object):
     def register_token_modifier(self, modifier):
         self._token_modifiers.append(modifier)
 
-
     def create_authorization_response(self, request, token_handler):
+        """
+        :param request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
     def create_token_response(self, request, token_handler):
+        """
+        :param request: oauthlib.common.Request
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
     def add_token(self, token, token_handler, request):
+        """
+        :param token: 
+        :param token_handler: A token handler instace, for example of type
+                              oauthlib.oauth2.BearerToken.
+        :param request: oauthlib.common.Request
+        """
         # Only add a hybrid access token on auth step if asked for
         if not request.response_type in ["token", "code token", "id_token token", "code id_token token"]:
             return token
@@ -132,6 +147,9 @@ class GrantTypeBase(object):
         return token
 
     def validate_grant_type(self, request):
+        """
+        :param request: oauthlib.common.Request
+        """
         client_id = getattr(request, 'client_id', None)
         if not self.request_validator.validate_grant_type(client_id,
                                                           request.grant_type, request.client, request):
@@ -140,6 +158,9 @@ class GrantTypeBase(object):
             raise errors.UnauthorizedClientError(request=request)
 
     def validate_scopes(self, request):
+        """
+        :param request: oauthlib.common.Request
+        """
         if not request.scopes:
             request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
                 self.request_validator.get_default_scopes(request.client_id, request))
@@ -154,6 +175,12 @@ class GrantTypeBase(object):
 
         Base classes can define a default response mode for their authorization
         response by overriding the static `default_response_mode` member.
+
+        :param request: oauthlib.common.Request
+        :param token: 
+        :param headers: 
+        :param body: 
+        :param status: 
         """
         request.response_mode = request.response_mode or self.default_response_mode
 
