@@ -17,10 +17,11 @@ install:
 - pip install -U setuptools
 - pip install tox coveralls
 script: tox
-after_success: coveralls
+after_success: COVERALLS_PARALLEL=true coveralls
 notifications:
   webhooks:
     urls:
+    - https://coveralls.io/webhook
     - https://webhooks.gitter.im/e/6008c872bf0ecee344f4
     on_success: change
     on_failure: always
