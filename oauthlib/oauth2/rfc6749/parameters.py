@@ -95,7 +95,7 @@ def prepare_token_request(grant_type, body='', **kwargs):
     format in the HTTP request entity-body:
 
     :param grant_type: To indicate grant type being used, i.e. "password",
-            "authorization_code" or "client_credentials".
+                       "authorization_code" or "client_credentials".
     :param body: Existing request body to embed parameters in.
     :param code: If using authorization code grant, pass the previously
                  obtained authorization code as the ``code`` argument.
