@@ -100,7 +100,7 @@ class RequestValidator(object):
         :param client_id: Unicode client identifier.
         :param code: Unicode authorization_code.
         :param redirect_uri: Unicode absolute URI.
-        :param client: Client object set by you, see authenticate_client.
+        :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
@@ -566,7 +566,7 @@ class RequestValidator(object):
 
         :param client_id: Unicode client identifier.
         :param code: Unicode authorization code.
-        :param client: Client object set by you, see authenticate_client.
+        :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
@@ -581,7 +581,7 @@ class RequestValidator(object):
 
         :param client_id: Unicode client identifier.
         :param grant_type: Unicode grant type, i.e. authorization_code, password.
-        :param client: Client object set by you, see authenticate_client.
+        :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
@@ -619,7 +619,7 @@ class RequestValidator(object):
         associated with this refresh token.
 
         :param refresh_token: Unicode refresh token.
-        :param client: Client object set by you, see authenticate_client.
+        :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
@@ -636,7 +636,7 @@ class RequestValidator(object):
 
         :param client_id: Unicode client identifier.
         :param response_type: Unicode response type, i.e. code, token.
-        :param client: Client object set by you, see authenticate_client.
+        :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
@@ -652,7 +652,7 @@ class RequestValidator(object):
 
         :param client_id: Unicode client identifier.
         :param scopes: List of scopes (defined by you).
-        :param client: Client object set by you, see authenticate_client.
+        :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
@@ -713,7 +713,7 @@ class RequestValidator(object):
 
         :param username: Unicode username.
         :param password: Unicode password.
-        :param client: Client object set by you, see authenticate_client.
+        :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False

@@ -37,6 +37,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     using the ``application/x-www-form-urlencoded`` format as defined by
     [`W3C.REC-html401-19991224`_]:
 
+    :param uri:
     :param client_id: The client identifier as described in `Section 2.2`_.
     :param response_type: To indicate which OAuth 2 grant/flow is required,
                           "code" and "token".
@@ -134,15 +135,15 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
 
     :param token: REQUIRED.  The token that the client wants to get revoked.
 
-    param:token_type_hint: OPTIONAL.  A hint about the type of the token
-                           submitted for revocation. Clients MAY pass this
-                           parameter in order to help the authorization server
-                           to optimize the token lookup.  If the server is
-                           unable to locate the token using the given hint, it
-                           MUST extend its search across all of its supported
-                           token types.  An authorization server MAY ignore this
-                           parameter, particularly if it is able to detect the
-                           token type automatically.
+    :param token_type_hint: OPTIONAL.  A hint about the type of the token
+                            submitted for revocation. Clients MAY pass this
+                            parameter in order to help the authorization server
+                            to optimize the token lookup.  If the server is
+                            unable to locate the token using the given hint, it
+                            MUST extend its search across all of its supported
+                            token types.  An authorization server MAY ignore
+                            this parameter, particularly if it is able to detect
+                            the token type automatically.
     
     This specification defines two values for `token_type_hint`:
 
@@ -266,6 +267,10 @@ def parse_implicit_response(uri, state=None, scope=None):
             REQUIRED if the "state" parameter was present in the client
             authorization request.  The exact value received from the
             client.
+
+    :param uri:
+    :param state:
+    :param scope:
 
     Similar to the authorization code response, but with a full token provided
     in the URL fragment:

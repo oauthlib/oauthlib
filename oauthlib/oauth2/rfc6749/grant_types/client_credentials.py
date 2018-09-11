@@ -55,7 +55,7 @@ class ClientCredentialsGrant(GrantTypeBase):
 
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
-        :param token_handler: A token handler instace, for example of type
+        :param token_handler: A token handler instance, for example of type
                               oauthlib.oauth2.BearerToken.
 
         If the access token request is valid and authorized, the

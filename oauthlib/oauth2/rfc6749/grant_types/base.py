@@ -120,7 +120,7 @@ class GrantTypeBase(object):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
-        :param token_handler: A token handler instace, for example of type
+        :param token_handler: A token handler instance, for example of type
                               oauthlib.oauth2.BearerToken.
         """
         raise NotImplementedError('Subclasses must implement this method.')
@@ -129,7 +129,7 @@ class GrantTypeBase(object):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
-        :param token_handler: A token handler instace, for example of type
+        :param token_handler: A token handler instance, for example of type
                               oauthlib.oauth2.BearerToken.
         """
         raise NotImplementedError('Subclasses must implement this method.')
@@ -137,7 +137,7 @@ class GrantTypeBase(object):
     def add_token(self, token, token_handler, request):
         """
         :param token:
-        :param token_handler: A token handler instace, for example of type
+        :param token_handler: A token handler instance, for example of type
                               oauthlib.oauth2.BearerToken.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request

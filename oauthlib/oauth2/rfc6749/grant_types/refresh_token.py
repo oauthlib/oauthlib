@@ -35,7 +35,7 @@ class RefreshTokenGrant(GrantTypeBase):
 
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
-        :param token_handler: A token handler instace, for example of type
+        :param token_handler: A token handler instance, for example of type
                               oauthlib.oauth2.BearerToken.
 
         If valid and authorized, the authorization server issues an access

@@ -54,7 +54,7 @@ class ServiceApplicationClient(Client):
                          ``https://provider.com/oauth2/token``.
 
         :param kwargs: Additional arguments to pass to base client, such as
-                       state and token. See Client.__init__.__doc__ for 
+                       state and token. See ``Client.__init__.__doc__`` for 
                        details.
         """
         super(ServiceApplicationClient, self).__init__(client_id, **kwargs)

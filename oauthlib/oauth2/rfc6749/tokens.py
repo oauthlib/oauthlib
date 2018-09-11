@@ -244,6 +244,7 @@ def signed_token_generator(private_pem, **kwargs):
 def get_token_from_header(request):
     """
     Helper function to extract a token from the request header.
+
     :param request: OAuthlib request.
     :type request: oauthlib.common.Request
     :return: Return the token or None if the Authorization header is malformed.
