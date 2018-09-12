@@ -18,10 +18,9 @@ def fread(fn):
     with open(join(dirname(__file__), fn), 'r') as f:
         return f.read()
 
-if sys.version_info[0] == 3:
-    tests_require = ['nose', 'cryptography', 'pyjwt>=1.0.0', 'blinker']
-else:
-    tests_require = ['nose', 'unittest2', 'cryptography', 'mock>=2.0', 'pyjwt>=1.0.0', 'blinker']
+tests_require = ['nose', 'cryptography', 'pyjwt>=1.0.0', 'blinker']
+if sys.version_info[0] == 2:
+    tests_require.append('mock>=2.0')
 rsa_require = ['cryptography']
 signedtoken_require = ['cryptography', 'pyjwt>=1.0.0']
 signals_require = ['blinker']
