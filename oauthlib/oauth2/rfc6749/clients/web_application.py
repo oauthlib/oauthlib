@@ -8,6 +8,8 @@ for consuming and providing OAuth 2.0 RFC6749.
 """
 from __future__ import absolute_import, unicode_literals
 
+import warnings
+
 from ..parameters import (parse_authorization_code_response,
                           parse_token_response, prepare_grant_uri,
                           prepare_token_request)
@@ -85,16 +87,13 @@ class WebApplicationClient(Client):
         return prepare_grant_uri(uri, self.client_id, 'code',
                                  redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
 
-    def prepare_request_body(self, client_id=None, code=None, body='',
-                             redirect_uri=None, **kwargs):
+    def prepare_request_body(self, code=None, redirect_uri=None, body='',
+                             include_client_id=True, **kwargs):
         """Prepare the access token request body.
 
         The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
         format in the HTTP request entity-body:
-
-        :param client_id:   REQUIRED, if the client is not authenticating with the
-                            authorization server as described in `Section 3.2.1`_.
 
         :param code:    REQUIRED. The authorization code received from the
                         authorization server.
@@ -102,6 +101,15 @@ class WebApplicationClient(Client):
         :param redirect_uri:    REQUIRED, if the "redirect_uri" parameter was included in the
                                 authorization request as described in `Section 4.1.1`_, and their
                                 values MUST be identical.
+
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
+
+        :param include_client_id: `True` (default) to send the `client_id` in the
+                                  body of the upstream request. This is required
+                                  if the client is not authenticating with the
+                                  authorization server as described in `Section 3.2.1`_.
+        :type include_client_id: Boolean
 
         :param kwargs: Extra parameters to include in the token request.
 
@@ -124,8 +132,18 @@ class WebApplicationClient(Client):
         .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         code = code or self.code
+        if 'client_id' in kwargs:
+            warnings.warn("`client_id` has been deprecated in favor of "
+                          "`include_client_id`, a boolean value which will "
+                          "include the already configured `self.client_id`.",
+                          DeprecationWarning)
+            if kwargs['client_id'] != self.client_id:
+                raise ValueError("`client_id` was supplied as an argument, but "
+                                 "it does not match `self.client_id`")
+        if include_client_id:
+            kwargs['client_id'] = self.client_id
         return prepare_token_request('authorization_code', code=code, body=body,
-                                     client_id=client_id, redirect_uri=redirect_uri, **kwargs)
+                                     redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
         """Parse the URI query for code and state.

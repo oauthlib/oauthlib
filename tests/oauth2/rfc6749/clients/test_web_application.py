@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 
 import datetime
 import os
+import warnings
 
 from mock import patch
 
@@ -38,7 +39,7 @@ class WebApplicationClientTest(TestCase):
     code = "zzzzaaaa"
     body = "not=empty"
 
-    body_code = "not=empty&grant_type=authorization_code&code=%s" % code
+    body_code = "not=empty&grant_type=authorization_code&code=%s&client_id=%s" % (code, client_id)
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 
@@ -177,3 +178,49 @@ class WebApplicationClientTest(TestCase):
         # verify default header and body only
         self.assertEqual(header, {'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertEqual(body, '')
+
+    def test_prepare_request_body(self):
+        """
+        see issue #585
+            https://github.com/oauthlib/oauthlib/issues/585
+
+        `prepare_request_body` should support the following scenarios:
+            1. Include client_id alone in the body (default)
+            2. Include client_id and client_secret in auth and not include them in the body (RFC preferred solution)
+            3. Include client_id and client_secret in the body (RFC alternative solution)
+        """
+        client = WebApplicationClient(self.client_id)
+
+        # scenario 1, default behavior to include `client_id`
+        r1 = client.prepare_request_body()
+        self.assertEqual(r1, 'grant_type=authorization_code&client_id=someclientid')
+
+        r1b = client.prepare_request_body(include_client_id=True)
+        self.assertEqual(r1b, 'grant_type=authorization_code&client_id=someclientid')
+
+        # scenario 2, do not include `client_id` in the body, so it can be sent in auth.
+        r2 = client.prepare_request_body(include_client_id=False)
+        self.assertEqual(r2, 'grant_type=authorization_code')
+
+        # scenario 3, Include client_id and client_secret in the body (RFC alternative solution)
+        r3 = client.prepare_request_body(client_secret='secret')
+        self.assertEqual(r3, 'grant_type=authorization_code&client_secret=secret&client_id=someclientid')
+        r3b = client.prepare_request_body(include_client_id=True, client_secret='secret')
+        self.assertEqual(r3b, 'grant_type=authorization_code&client_secret=secret&client_id=someclientid')
+
+        # scenario Warnings
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")  # catch all
+
+            # warning1 - raise a DeprecationWarning if a `client_id` is submitted
+            rWarnings1 = client.prepare_request_body(client_id=self.client_id)
+            self.assertEqual(len(w), 1)
+            self.assertIsInstance(w[0].message, DeprecationWarning)
+            self.assertEqual(w[0].message.message, """`client_id` has been deprecated in favor of `include_client_id`, a boolean value which will include the already configured `self.client_id`.""")
+
+        # scenario Exceptions
+        # exception1 - raise a ValueError if the a different `client_id` is submitted
+        with self.assertRaises(ValueError) as cm:
+            client.prepare_request_body(client_id='different_client_id')
+        self.assertEqual(cm.exception.message,
+                         "`client_id` was supplied as an argument, but it does not match `self.client_id`")

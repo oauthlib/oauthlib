@@ -37,6 +37,8 @@ class BackendApplicationClient(Client):
         following parameters using the "application/x-www-form-urlencoded"
         format per `Appendix B`_ in the HTTP request entity-body:
 
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
         :param scope:   The scope of the access request as described by
                         `Section 3.3`_.
         :param kwargs:  Extra credentials to include in the token request.

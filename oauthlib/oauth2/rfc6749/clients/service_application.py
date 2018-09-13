@@ -97,17 +97,18 @@ class ServiceApplicationClient(Client):
         :param issued_at: A unix timestamp of when the JWT was created.
                           Defaults to now, i.e. ``time.time()``.
 
+        :param extra_claims: A dict of additional claims to include in the JWT.
+
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
+
+        :param scope: The scope of the access request.
+
         :param not_before: A unix timestamp after which the JWT may be used.
                            Not included unless provided.
 
         :param jwt_id: A unique JWT token identifier. Not included unless
                        provided.
-
-        :param extra_claims: A dict of additional claims to include in the JWT.
-
-        :param scope: The scope of the access request.
-
-        :param body: Request body (string) with extra parameters.
 
         :param kwargs: Extra credentials to include in the token request.
 
