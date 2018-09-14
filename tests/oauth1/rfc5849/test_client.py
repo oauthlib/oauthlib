@@ -5,7 +5,7 @@ from oauthlib.common import Request
 from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_HMAC_SHA1,
                              SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
                              SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY)
-from oauthlib.oauth1.rfc5849 import Client, bytes_type
+from oauthlib.oauth1.rfc5849 import Client
 
 from ...unittest import TestCase
 
@@ -39,7 +39,7 @@ class ClientConstructorTests(TestCase):
     def test_convert_to_unicode_resource_owner(self):
         client = Client('client-key',
                         resource_owner_key=b'owner key')
-        self.assertFalse(isinstance(client.resource_owner_key, bytes_type))
+        self.assertFalse(isinstance(client.resource_owner_key, bytes))
         self.assertEqual(client.resource_owner_key, 'owner key')
 
     def test_give_explicit_timestamp(self):
@@ -57,11 +57,11 @@ class ClientConstructorTests(TestCase):
         uri, headers, body = client.sign('http://a.b/path?query',
                 http_method='POST', body='a=b',
                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertIsInstance(uri, bytes_type)
-        self.assertIsInstance(body, bytes_type)
+        self.assertIsInstance(uri, bytes)
+        self.assertIsInstance(body, bytes)
         for k, v in headers.items():
-            self.assertIsInstance(k, bytes_type)
-            self.assertIsInstance(v, bytes_type)
+            self.assertIsInstance(k, bytes)
+            self.assertIsInstance(v, bytes)
 
     def test_hmac_sha1(self):
         client = Client('client_key')
