@@ -146,7 +146,7 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
                             token types.  An authorization server MAY ignore
                             this parameter, particularly if it is able to detect
                             the token type automatically.
-    
+
     This specification defines two values for `token_type_hint`:
 
         * access_token: An access token as defined in [RFC6749],

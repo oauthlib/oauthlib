@@ -204,13 +204,13 @@ class WebApplicationClientTest(TestCase):
 
         # scenario 3, Include client_id and client_secret in the body (RFC alternative solution)
         # the order of kwargs being appended is not guaranteed. for brevity, check the 2 permutations instead of sorting
-        r3 = client.prepare_request_body(client_secret='secret')
-        self.assertIn(r3, ('grant_type=authorization_code&client_secret=secret&client_id=someclientid',
-                           'grant_type=authorization_code&client_id=someclientid&client_secret=secret',)
+        r3 = client.prepare_request_body(client_secret='someclientsecret')
+        self.assertIn(r3, ('grant_type=authorization_code&client_secret=someclientsecret&client_id=someclientid',
+                           'grant_type=authorization_code&client_id=someclientid&client_secret=someclientsecret',)
                            )
-        r3b = client.prepare_request_body(include_client_id=True, client_secret='secret')
-        self.assertIn(r3b, ('grant_type=authorization_code&client_secret=secret&client_id=someclientid',
-                            'grant_type=authorization_code&client_id=someclientid&client_secret=secret',)
+        r3b = client.prepare_request_body(include_client_id=True, client_secret='someclientsecret')
+        self.assertIn(r3b, ('grant_type=authorization_code&client_secret=someclientsecret&client_id=someclientid',
+                            'grant_type=authorization_code&client_id=someclientid&client_secret=someclientsecret',)
                             )
 
         # scenario Warnings

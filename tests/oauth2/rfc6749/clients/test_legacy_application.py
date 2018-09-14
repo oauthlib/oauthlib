@@ -21,8 +21,8 @@ class LegacyApplicationClientTest(TestCase):
         "require": "extra arguments"
     }
 
-    username = "foo"
-    password = "bar"
+    username = "user_username"
+    password = "user_password"
     body = "not=empty"
 
     body_up = "not=empty&grant_type=password&username=%s&password=%s" % (username, password)
