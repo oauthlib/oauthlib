@@ -1,32 +1,15 @@
 import collections
 import sys
+from unittest import TestCase
 try:
     import urlparse
 except ImportError:
     import urllib.parse as urlparse
 
-try:
-    # check the system path first
-    from unittest2 import *
-except ImportError:
-    if sys.version_info >= (2, 7):
-        # unittest2 features are native in Python 2.7
-        from unittest import *
-    else:
-        raise
-
-# Python 3.1 does not provide assertIsInstance
-if sys.version_info[1] == 1:
-    TestCase.assertIsInstance = lambda self, obj, cls: self.assertTrue(isinstance(obj, cls))
 
 # Somewhat consistent itemsequal between all python versions
-if sys.version_info[1] == 3:
+if sys.version_info[0] == 3:
     TestCase.assertItemsEqual = TestCase.assertCountEqual
-elif sys.version_info[0] == 2 and sys.version_info[1] == 6:
-    pass
-else:
-    TestCase.assertItemsEqual = lambda self, a, b: self.assertEqual(
-            collections.Counter(list(a)), collections.Counter(list(b)))
 
 
 # URL comparison where query param order is insignifcant
