@@ -39,7 +39,7 @@ class ClientConstructorTests(TestCase):
     def test_convert_to_unicode_resource_owner(self):
         client = Client('client-key',
                         resource_owner_key=b'owner key')
-        self.assertFalse(isinstance(client.resource_owner_key, bytes))
+        self.assertNotIsInstance(client.resource_owner_key, bytes)
         self.assertEqual(client.resource_owner_key, 'owner key')
 
     def test_give_explicit_timestamp(self):
