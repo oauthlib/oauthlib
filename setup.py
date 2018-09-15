@@ -18,7 +18,7 @@ def fread(fn):
     with open(join(dirname(__file__), fn), 'r') as f:
         return f.read()
 
-tests_require = ['nose', 'cryptography', 'pyjwt>=1.0.0', 'blinker']
+tests_require = ['cryptography', 'pyjwt>=1.0.0', 'blinker']
 if sys.version_info[0] == 2:
     tests_require.append('mock>=2.0')
 rsa_require = ['cryptography']
@@ -40,7 +40,6 @@ setup(
     platforms='any',
     license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
-    test_suite='nose.collector',
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
