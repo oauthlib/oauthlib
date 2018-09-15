@@ -98,7 +98,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
     response_types = ['code']
 
     def create_authorization_code(self, request):
-        """Generates an authorization grant represented as a dictionary."""
+        """
+        Generates an authorization grant represented as a dictionary.
+        
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         grant = {'code': common.generate_token()}
         if hasattr(request, 'state') and request.state:
             grant['state'] = request.state
@@ -135,8 +140,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         HTTP redirection response, or by other means available to it via the
         user-agent.
 
-        :param request: oauthlib.commong.Request
-        :param token_handler: A token handler instace, for example of type
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
                               oauthlib.oauth2.BearerToken.
         :returns: headers, body, status
         :raises: FatalClientError on invalid redirect URI or client id.
@@ -220,6 +226,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
         MUST deny the request and SHOULD revoke (when possible) all tokens
         previously issued based on that authorization code. The authorization
         code is bound to the client identifier and redirection URI.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         """
         headers = {
             'Content-Type': 'application/json',
@@ -253,6 +265,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         missing. These must be caught by the provider and handled, how this
         is done is outside of the scope of OAuthLib but showing an error
         page describing the issue is a good idea.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         """
 
         # First check for fatal errors
@@ -353,6 +368,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         return request.scopes, request_info
 
     def validate_token_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         # REQUIRED. Value MUST be set to "authorization_code".
         if request.grant_type not in ('authorization_code', 'openid'):
             raise errors.UnsupportedGrantTypeError(request=request)

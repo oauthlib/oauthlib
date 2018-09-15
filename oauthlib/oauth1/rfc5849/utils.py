@@ -8,7 +8,7 @@ spec.
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import bytes_type, quote, unicode_type, unquote
+from oauthlib.common import quote, unicode_type, unquote
 
 try:
     import urllib2
