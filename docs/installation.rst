@@ -9,7 +9,7 @@ For various reasons you may wish to install using your OS packaging system and
 install instructions for a few are shown below. Please send a PR to add a
 missing one.
 
-Latest release on PYPI
+Latest release on PyPI
 ----------------------
 
 
