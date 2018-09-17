@@ -72,7 +72,8 @@ class ServiceApplicationClient(Client):
                              issued_at=None,
                              extra_claims=None,
                              body='', 
-                             scope=None, 
+                             scope=None,
+                             include_client_id=None,
                              **kwargs):
         """Create and add a JWT assertion to the request body.
 
@@ -104,13 +105,24 @@ class ServiceApplicationClient(Client):
 
         :param scope: The scope of the access request.
 
+        :param include_client_id: `True` to send the `client_id` in the body of
+                                  the upstream request. Default `None`. This is
+                                  required if the client is not authenticating
+                                  with the authorization server as described
+                                  in `Section 3.2.1`_.
+        :type include_client_id: Boolean
+
         :param not_before: A unix timestamp after which the JWT may be used.
-                           Not included unless provided.
+                           Not included unless provided. *
 
         :param jwt_id: A unique JWT token identifier. Not included unless
-                       provided.
+                       provided. *
 
         :param kwargs: Extra credentials to include in the token request.
+
+        Parameters marked with a `*` above are not explicit arguments in the
+        function definition, but are specially documented arguments for items
+        appearing in the generic `**kwargs` keyworded input.
 
         The "scope" parameter may be used, as defined in the Assertion
         Framework for OAuth 2.0 Client Authentication and Authorization Grants
@@ -169,6 +181,8 @@ class ServiceApplicationClient(Client):
         assertion = jwt.encode(claim, key, 'RS256')
         assertion = to_unicode(assertion)
 
+        kwargs['client_id'] = self.client_id
+        kwargs['include_client_id'] = include_client_id
         return prepare_token_request(self.grant_type,
                                      body=body,
                                      assertion=assertion,

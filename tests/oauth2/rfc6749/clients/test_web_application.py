@@ -16,6 +16,12 @@ from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
 
 from ....unittest import TestCase
 
+# this is the same import method used in oauthlib/oauth2/rfc6749/parameters.py
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
+
 
 @patch('time.time', new=lambda: 1000)
 class WebApplicationClientTest(TestCase):
@@ -207,21 +213,34 @@ class WebApplicationClientTest(TestCase):
         # scenario 3, Include client_id and client_secret in the body (RFC alternative solution)
         # the order of kwargs being appended is not guaranteed. for brevity, check the 2 permutations instead of sorting
         r3 = client.prepare_request_body(client_secret=self.client_secret)
-        self.assertIn(r3, ('grant_type=authorization_code&client_secret=%s&client_id=%s' % (self.client_secret, self.client_id, ),
-                           'grant_type=authorization_code&client_id=%s&client_secret=%s' % (self.client_id, self.client_secret, ),
-                           ))
+        r3_params = dict(urlparse.parse_qsl(r3, keep_blank_values=True))
+        self.assertEqual(len(r3_params.keys()), 3)
+        self.assertEqual(r3_params['grant_type'], 'authorization_code')
+        self.assertEqual(r3_params['client_id'], self.client_id)
+        self.assertEqual(r3_params['client_secret'], self.client_secret)
+
         r3b = client.prepare_request_body(include_client_id=True, client_secret=self.client_secret)
-        self.assertIn(r3b, ('grant_type=authorization_code&client_secret=%s&client_id=%s' % (self.client_secret, self.client_id, ),
-                            'grant_type=authorization_code&client_id=%s&client_secret=%s' % (self.client_id, self.client_secret, ),
-                           ))
+        r3b_params = dict(urlparse.parse_qsl(r3b, keep_blank_values=True))
+        self.assertEqual(len(r3b_params.keys()), 3)
+        self.assertEqual(r3b_params['grant_type'], 'authorization_code')
+        self.assertEqual(r3b_params['client_id'], self.client_id)
+        self.assertEqual(r3b_params['client_secret'], self.client_secret)
 
         # scenario 4, `client_secret` is an empty string
         r4 = client.prepare_request_body(include_client_id=True, client_secret='')
-        self.assertEqual(r4, 'grant_type=authorization_code&client_id=%s&client_secret=' % self.client_id)
+        r4_params = dict(urlparse.parse_qsl(r4, keep_blank_values=True))
+        self.assertEqual(len(r4_params.keys()), 3)
+        self.assertEqual(r4_params['grant_type'], 'authorization_code')
+        self.assertEqual(r4_params['client_id'], self.client_id)
+        self.assertEqual(r4_params['client_secret'], '')
+
 
         # scenario 4b, `client_secret` is `None`
         r4b = client.prepare_request_body(include_client_id=True, client_secret=None)
-        self.assertEqual(r4b, 'grant_type=authorization_code&client_id=%s' % self.client_id)
+        r4b_params = dict(urlparse.parse_qsl(r4b, keep_blank_values=True))
+        self.assertEqual(len(r4b_params.keys()), 2)
+        self.assertEqual(r4b_params['grant_type'], 'authorization_code')
+        self.assertEqual(r4b_params['client_id'], self.client_id)
 
         # scenario Warnings
         with warnings.catch_warnings(record=True) as w:

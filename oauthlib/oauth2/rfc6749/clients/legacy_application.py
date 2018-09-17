@@ -38,7 +38,8 @@ class LegacyApplicationClient(Client):
     def __init__(self, client_id, **kwargs):
         super(LegacyApplicationClient, self).__init__(client_id, **kwargs)
 
-    def prepare_request_body(self, username, password, body='', scope=None, **kwargs):
+    def prepare_request_body(self, username, password, body='', scope=None,
+                             include_client_id=None, **kwargs):
         """Add the resource owner password and username to the request body.
 
         The client makes a request to the token endpoint by adding the
@@ -51,6 +52,12 @@ class LegacyApplicationClient(Client):
                      into. This may contain extra paramters. Default ''.
         :param scope:   The scope of the access request as described by
                         `Section 3.3`_.
+        :param include_client_id: `True` to send the `client_id` in the body of
+                                  the upstream request. Default `None`. This is
+                                  required if the client is not authenticating
+                                  with the authorization server as described
+                                  in `Section 3.2.1`_.
+        :type include_client_id: Boolean
         :param kwargs:  Extra credentials to include in the token request.
 
         If the client type is confidential or the client was issued client
@@ -70,5 +77,7 @@ class LegacyApplicationClient(Client):
         .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
         .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
+        kwargs['client_id'] = self.client_id
+        kwargs['include_client_id'] = include_client_id
         return prepare_token_request('password', body=body, username=username,
                                      password=password, scope=scope, **kwargs)

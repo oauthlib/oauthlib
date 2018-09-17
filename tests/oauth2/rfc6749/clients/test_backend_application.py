@@ -15,6 +15,7 @@ from ....unittest import TestCase
 class BackendApplicationClientTest(TestCase):
 
     client_id = "someclientid"
+    client_secret = 'someclientsecret'
     scope = ["/profile"]
     kwargs = {
         "some": "providers",

@@ -148,8 +148,9 @@ class WebApplicationClient(Client):
             if kwargs['client_id'] != self.client_id:
                 raise ValueError("`client_id` was supplied as an argument, but "
                                  "it does not match `self.client_id`")
-        if include_client_id:
-            kwargs['client_id'] = self.client_id
+
+        kwargs['client_id'] = self.client_id
+        kwargs['include_client_id'] = include_client_id
         return prepare_token_request('authorization_code', code=code, body=body,
                                      redirect_uri=redirect_uri, **kwargs)
 

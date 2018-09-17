@@ -87,7 +87,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     return add_params_to_uri(uri, params)
 
 
-def prepare_token_request(grant_type, body='', **kwargs):
+def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs):
     """Prepare the access token request.
 
     The client makes a request to the token endpoint by adding the
@@ -96,14 +96,32 @@ def prepare_token_request(grant_type, body='', **kwargs):
 
     :param grant_type: To indicate grant type being used, i.e. "password",
                        "authorization_code" or "client_credentials".
+
     :param body: Existing request body (URL encoded string) to embed parameters
                  into. This may contain extra paramters. Default ''.
-    :param code: If using authorization code grant, pass the previously
-                 obtained authorization code as the ``code`` argument.
+
+    :param code: If using authorization_code grant, pass the previously
+                 obtained authorization code as the ``code`` argument. 
+
     :param redirect_uri: If the "redirect_uri" parameter was included in the
                          authorization request as described in
-                         `Section 4.1.1`_, and their values MUST be identical.
+                         `Section 4.1.1`_, and their values MUST be identical. *
+
+    :param include_client_id: `True` (default) to send the `client_id` in the
+                              body of the upstream request. This is required
+                              if the client is not authenticating with the
+                              authorization server as described in
+                              `Section 3.2.1`_.
+    :type include_client_id: Boolean
+
+    :param client_id: Unicode client identifier. Will only appear if
+                      `include_client_id` is True. *
+
     :param kwargs: Extra arguments to embed in the request body.
+
+    Parameters marked with a `*` above are not explicit arguments in the
+    function definition, but are specially documented arguments for items
+    appearing in the generic `**kwargs` keyworded input.
 
     An example of an authorization code token request body:
 
@@ -118,6 +136,12 @@ def prepare_token_request(grant_type, body='', **kwargs):
 
     if 'scope' in kwargs:
         kwargs['scope'] = list_to_scope(kwargs['scope'])
+
+    # pull the `client_id` out of the kwargs. 
+    client_id = kwargs.pop('client_id', None)
+    if include_client_id:
+        if client_id is not None:
+            params.append((unicode_type('client_id'), client_id))
 
     for k in kwargs:
         # this handles: `code`, `redirect_uri`, or undocumented params
