@@ -15,6 +15,7 @@ from ....unittest import TestCase
 class LegacyApplicationClientTest(TestCase):
 
     client_id = "someclientid"
+    client_secret = 'someclientsecret'
     scope = ["/profile"]
     kwargs = {
         "some": "providers",
@@ -88,3 +89,30 @@ class LegacyApplicationClientTest(TestCase):
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
+
+    def test_prepare_request_body(self):
+        """
+        see issue #585
+            https://github.com/oauthlib/oauthlib/issues/585
+        """
+        client = LegacyApplicationClient(self.client_id)
+
+        # scenario 1, default behavior to not include `client_id`
+        r1 = client.prepare_request_body(username=self.username, password=self.password)
+        self.assertEqual(r1, 'grant_type=password&username=user_username&password=user_password')
+
+        # scenario 2, include `client_id` in the body
+        r2 = client.prepare_request_body(username=self.username, password=self.password, client_id=self.client_id)
+        self.assertEqual(r2, 'grant_type=password&username=user_username&password=user_password&client_id=%s' % self.client_id)
+
+        # scenario 3, include `client_id` + `client_secret` in the body
+        r3 = client.prepare_request_body(username=self.username, password=self.password, client_id=self.client_id, client_secret=self.client_secret)
+        self.assertEqual(r3, 'grant_type=password&username=user_username&password=user_password&client_id=%s&client_secret=%s' % (self.client_id, self.client_secret))
+
+        # scenario 4, `client_secret` is an empty string
+        r4 = client.prepare_request_body(username=self.username, password=self.password, client_id=self.client_id, client_secret='')
+        self.assertEqual(r4, 'grant_type=password&username=user_username&password=user_password&client_id=%s&client_secret=%s' % (self.client_id, ''))
+
+        # scenario 4b`,` client_secret is `None`
+        r4b = client.prepare_request_body(username=self.username, password=self.password, client_id=self.client_id, client_secret=None)
+        self.assertEqual(r4b, 'grant_type=password&username=user_username&password=user_password&client_id=%s' % (self.client_id, ))

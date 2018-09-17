@@ -124,6 +124,10 @@ def prepare_token_request(grant_type, body='', **kwargs):
         if kwargs[k]:
             params.append((unicode_type(k), kwargs[k]))
 
+    if ('client_secret' in kwargs) and ('client_secret' not in params):
+        if kwargs['client_secret'] == '':
+            params.append((unicode_type('client_secret'), kwargs['client_secret']))
+
     return add_params_to_qs(body, params)
 
 

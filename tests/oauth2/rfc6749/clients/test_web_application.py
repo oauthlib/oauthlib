@@ -21,6 +21,7 @@ from ....unittest import TestCase
 class WebApplicationClientTest(TestCase):
 
     client_id = "someclientid"
+    client_secret = 'someclientsecret'
     uri = "https://example.com/path?query=world"
     uri_id = uri + "&response_type=code&client_id=" + client_id
     uri_redirect = uri_id + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
@@ -188,15 +189,16 @@ class WebApplicationClientTest(TestCase):
             1. Include client_id alone in the body (default)
             2. Include client_id and client_secret in auth and not include them in the body (RFC preferred solution)
             3. Include client_id and client_secret in the body (RFC alternative solution)
+            4. Include client_id in the body and an empty string for client_secret.
         """
         client = WebApplicationClient(self.client_id)
 
         # scenario 1, default behavior to include `client_id`
         r1 = client.prepare_request_body()
-        self.assertEqual(r1, 'grant_type=authorization_code&client_id=someclientid')
+        self.assertEqual(r1, 'grant_type=authorization_code&client_id=%s' % self.client_id)
 
         r1b = client.prepare_request_body(include_client_id=True)
-        self.assertEqual(r1b, 'grant_type=authorization_code&client_id=someclientid')
+        self.assertEqual(r1b, 'grant_type=authorization_code&client_id=%s' % self.client_id)
 
         # scenario 2, do not include `client_id` in the body, so it can be sent in auth.
         r2 = client.prepare_request_body(include_client_id=False)
@@ -204,14 +206,22 @@ class WebApplicationClientTest(TestCase):
 
         # scenario 3, Include client_id and client_secret in the body (RFC alternative solution)
         # the order of kwargs being appended is not guaranteed. for brevity, check the 2 permutations instead of sorting
-        r3 = client.prepare_request_body(client_secret='someclientsecret')
-        self.assertIn(r3, ('grant_type=authorization_code&client_secret=someclientsecret&client_id=someclientid',
-                           'grant_type=authorization_code&client_id=someclientid&client_secret=someclientsecret',)
-                           )
-        r3b = client.prepare_request_body(include_client_id=True, client_secret='someclientsecret')
-        self.assertIn(r3b, ('grant_type=authorization_code&client_secret=someclientsecret&client_id=someclientid',
-                            'grant_type=authorization_code&client_id=someclientid&client_secret=someclientsecret',)
-                            )
+        r3 = client.prepare_request_body(client_secret=self.client_secret)
+        self.assertIn(r3, ('grant_type=authorization_code&client_secret=%s&client_id=%s' % (self.client_secret, self.client_id, ),
+                           'grant_type=authorization_code&client_id=%s&client_secret=%s' % (self.client_id, self.client_secret, ),
+                           ))
+        r3b = client.prepare_request_body(include_client_id=True, client_secret=self.client_secret)
+        self.assertIn(r3b, ('grant_type=authorization_code&client_secret=%s&client_id=%s' % (self.client_secret, self.client_id, ),
+                            'grant_type=authorization_code&client_id=%s&client_secret=%s' % (self.client_id, self.client_secret, ),
+                           ))
+
+        # scenario 4, `client_secret` is an empty string
+        r4 = client.prepare_request_body(include_client_id=True, client_secret='')
+        self.assertEqual(r4, 'grant_type=authorization_code&client_id=%s&client_secret=' % self.client_id)
+
+        # scenario 4b, `client_secret` is `None`
+        r4b = client.prepare_request_body(include_client_id=True, client_secret=None)
+        self.assertEqual(r4b, 'grant_type=authorization_code&client_id=%s' % self.client_id)
 
         # scenario Warnings
         with warnings.catch_warnings(record=True) as w:

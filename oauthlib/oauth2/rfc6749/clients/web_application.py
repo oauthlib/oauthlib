@@ -128,6 +128,14 @@ class WebApplicationClient(Client):
             >>> client.prepare_request_body(code='sh35ksdf09sf', foo='bar')
             'grant_type=authorization_code&code=sh35ksdf09sf&foo=bar'
 
+        `Section 3.2.1` also states:
+            In the "authorization_code" "grant_type" request to the token
+            endpoint, an unauthenticated client MUST send its "client_id" to
+            prevent itself from inadvertently accepting a code intended for a
+            client with a different "client_id".  This protects the client from
+            substitution of the authentication code.  (It provides no additional
+            security for the protected resource.)
+
         .. _`Section 4.1.1`: https://tools.ietf.org/html/rfc6749#section-4.1.1
         .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
