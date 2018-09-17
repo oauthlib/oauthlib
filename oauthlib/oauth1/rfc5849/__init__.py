@@ -18,11 +18,6 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 
-if sys.version_info[0] == 3:
-    bytes_type = bytes
-else:
-    bytes_type = str
-
 from oauthlib.common import Request, urlencode, generate_nonce
 from oauthlib.common import generate_timestamp, to_unicode
 from . import parameters, signature

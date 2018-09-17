@@ -12,7 +12,7 @@ logic for Python 2.7 and 3.4+.*
   :alt: Coveralls
 .. image:: https://img.shields.io/pypi/pyversions/oauthlib.svg
   :target: https://pypi.org/project/oauthlib/
-  :alt: Download from PyPi
+  :alt: Download from PyPI
 .. image:: https://img.shields.io/pypi/l/oauthlib.svg
   :target: https://pypi.org/project/oauthlib/
   :alt: License
