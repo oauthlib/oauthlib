@@ -8,29 +8,31 @@ for providing OpenID Connect servers.
 """
 from __future__ import absolute_import, unicode_literals
 
-from ..grant_types import (
+from oauthlib.oauth2.rfc6749.endpoints import (
+    AuthorizationEndpoint,
+    ResourceEndpoint,
+    RevocationEndpoint,
+    TokenEndpoint
+)
+from oauthlib.oauth2.rfc6749.grant_types import (
     AuthorizationCodeGrant as OAuth2AuthorizationCodeGrant,
-    ClientCredentialsGrant,
     ImplicitGrant as OAuth2ImplicitGrant,
+    ClientCredentialsGrant,
     RefreshTokenGrant,
     ResourceOwnerPasswordCredentialsGrant
 )
-
-from oauthlib.openid.connect.core.grant_types.authorization_code import AuthorizationCodeGrant
-from oauthlib.openid.connect.core.grant_types.dispatchers import (
+from oauthlib.oauth2.rfc6749.tokens import BearerToken
+from ..grant_types import (
+    AuthorizationCodeGrant,
+    ImplicitGrant,
+    HybridGrant,
+)
+from ..grant_types.dispatchers import (
     AuthorizationCodeGrantDispatcher,
     ImplicitTokenGrantDispatcher,
     AuthorizationTokenGrantDispatcher
 )
-from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
-from oauthlib.openid.connect.core.grant_types.hybrid import HybridGrant
-from oauthlib.openid.connect.core.tokens import JWTToken
-
-from ..tokens import BearerToken
-from .authorization import AuthorizationEndpoint
-from .resource import ResourceEndpoint
-from .revocation import RevocationEndpoint
-from .token import TokenEndpoint
+from ..tokens import JWTToken
 
 
 class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,

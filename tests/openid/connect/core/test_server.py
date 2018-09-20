@@ -14,7 +14,7 @@ from oauthlib.openid.connect.core.grant_types.authorization_code import Authoriz
 from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
 from oauthlib.openid.connect.core.grant_types.hybrid import HybridGrant
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class AuthorizationEndpointTest(TestCase):
