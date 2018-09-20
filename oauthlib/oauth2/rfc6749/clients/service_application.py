@@ -121,7 +121,7 @@ class ServiceApplicationClient(Client):
         :param kwargs: Extra credentials to include in the token request.
 
         Parameters marked with a `*` above are not explicit arguments in the
-        function definition, but are specially documented arguments for items
+        function signature, but are specially documented arguments for items
         appearing in the generic `**kwargs` keyworded input.
 
         The "scope" parameter may be used, as defined in the Assertion

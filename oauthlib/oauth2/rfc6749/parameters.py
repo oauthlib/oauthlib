@@ -100,13 +100,6 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
     :param body: Existing request body (URL encoded string) to embed parameters
                  into. This may contain extra paramters. Default ''.
 
-    :param code: If using authorization_code grant, pass the previously
-                 obtained authorization code as the ``code`` argument. 
-
-    :param redirect_uri: If the "redirect_uri" parameter was included in the
-                         authorization request as described in
-                         `Section 4.1.1`_, and their values MUST be identical. *
-
     :param include_client_id: `True` (default) to send the `client_id` in the
                               body of the upstream request. This is required
                               if the client is not authenticating with the
@@ -117,10 +110,22 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
     :param client_id: Unicode client identifier. Will only appear if
                       `include_client_id` is True. *
 
+    :param client_secret: Unicode client secret. Will only appear if set to a
+                          value that is not `None`. Invoking this function with
+                          an empty string will send an empty `client_secret`
+                          value to the server. *
+
+    :param code: If using authorization_code grant, pass the previously
+                 obtained authorization code as the ``code`` argument. *
+
+    :param redirect_uri: If the "redirect_uri" parameter was included in the
+                         authorization request as described in
+                         `Section 4.1.1`_, and their values MUST be identical. *
+
     :param kwargs: Extra arguments to embed in the request body.
 
     Parameters marked with a `*` above are not explicit arguments in the
-    function definition, but are specially documented arguments for items
+    function signature, but are specially documented arguments for items
     appearing in the generic `**kwargs` keyworded input.
 
     An example of an authorization code token request body:
@@ -143,14 +148,16 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
         if client_id is not None:
             params.append((unicode_type('client_id'), client_id))
 
+    # the kwargs iteration below only supports including boolean truth (truthy)
+    # values, but some servers may require an empty string for `client_secret`
+    client_secret = kwargs.pop('client_secret', None)
+    if client_secret is not None:
+        params.append((unicode_type('client_secret'), client_secret))
+
+    # this handles: `code`, `redirect_uri`, and other undocumented params
     for k in kwargs:
-        # this handles: `code`, `redirect_uri`, or undocumented params
         if kwargs[k]:
             params.append((unicode_type(k), kwargs[k]))
-
-    if ('client_secret' in kwargs) and ('client_secret' not in params):
-        if kwargs['client_secret'] == '':
-            params.append((unicode_type('client_secret'), kwargs['client_secret']))
 
     return add_params_to_qs(body, params)
 

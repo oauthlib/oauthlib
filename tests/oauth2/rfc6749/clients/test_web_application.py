@@ -234,7 +234,6 @@ class WebApplicationClientTest(TestCase):
         self.assertEqual(r4_params['client_id'], self.client_id)
         self.assertEqual(r4_params['client_secret'], '')
 
-
         # scenario 4b, `client_secret` is `None`
         r4b = client.prepare_request_body(include_client_id=True, client_secret=None)
         r4b_params = dict(urlparse.parse_qsl(r4b, keep_blank_values=True))
