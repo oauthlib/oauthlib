@@ -34,7 +34,8 @@ class RequestTokenEndpoint(BaseEndpoint):
     def create_request_token(self, request, credentials):
         """Create and save a new request token.
 
-        :param request: An oauthlib.common.Request object.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :param credentials: A dict of extra token credentials.
         :returns: The token as an urlencoded string.
         """
@@ -111,7 +112,8 @@ class RequestTokenEndpoint(BaseEndpoint):
     def validate_request_token_request(self, request):
         """Validate a request token request.
 
-        :param request: An oauthlib.common.Request object.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :raises: OAuth1Error if the request is invalid.
         :returns: A tuple of 2 elements.
                   1. The validation result (True or False).

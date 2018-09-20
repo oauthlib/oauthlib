@@ -21,23 +21,26 @@ class OAuth2Error(Exception):
     def __init__(self, description=None, uri=None, state=None,
                  status_code=None, request=None):
         """
-        description:    A human-readable ASCII [USASCII] text providing
-                        additional information, used to assist the client
-                        developer in understanding the error that occurred.
-                        Values for the "error_description" parameter MUST NOT
-                        include characters outside the set
-                        x20-21 / x23-5B / x5D-7E.
+        :param description: A human-readable ASCII [USASCII] text providing
+                            additional information, used to assist the client
+                            developer in understanding the error that occurred.
+                            Values for the "error_description" parameter
+                            MUST NOT include characters outside the set
+                            x20-21 / x23-5B / x5D-7E.
 
-        uri:    A URI identifying a human-readable web page with information
-                about the error, used to provide the client developer with
-                additional information about the error.  Values for the
-                "error_uri" parameter MUST conform to the URI- Reference
-                syntax, and thus MUST NOT include characters outside the set
-                x21 / x23-5B / x5D-7E.
+        :param uri: A URI identifying a human-readable web page with information
+                    about the error, used to provide the client developer with
+                    additional information about the error.  Values for the
+                    "error_uri" parameter MUST conform to the URI- Reference
+                    syntax, and thus MUST NOT include characters outside the set
+                    x21 / x23-5B / x5D-7E.
 
-        state:  A CSRF protection value received from the client.
+        :param state: A CSRF protection value received from the client.
 
-        request:  Oauthlib Request object
+        :param status_code:
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         """
         if description is not None:
             self.description = description
@@ -313,6 +316,7 @@ class ConsentRequired(OAuth2Error):
     error = 'consent_required'
     status_code = 401
 
+
 class LoginRequired(OAuth2Error):
     """
     The Authorization Server requires End-User authentication.
@@ -323,6 +327,16 @@ class LoginRequired(OAuth2Error):
     """
     error = 'login_required'
     status_code = 401
+
+
+class CustomOAuth2Error(OAuth2Error):
+    """
+    This error is a placeholder for all custom errors not described by the RFC.
+    Some of the popular OAuth2 providers are using custom errors.
+    """
+    def __init__(self, error, *args, **kwargs):
+        self.error = error
+        super(CustomOAuth2Error, self).__init__(*args, **kwargs)
 
 
 def raise_from_error(error, params=None):
@@ -336,3 +350,4 @@ def raise_from_error(error, params=None):
     for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
         if cls.error == error:
             raise cls(**kwargs)
+    raise CustomOAuth2Error(error=error, **kwargs)

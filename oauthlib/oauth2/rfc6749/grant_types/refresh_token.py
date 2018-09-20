@@ -33,6 +33,11 @@ class RefreshTokenGrant(GrantTypeBase):
     def create_token_response(self, request, token_handler):
         """Create a new access token from a refresh_token.
 
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         If valid and authorized, the authorization server issues an access
         token as described in `Section 5.1`_. If the request failed
         verification or is invalid, the authorization server returns an error
@@ -72,6 +77,10 @@ class RefreshTokenGrant(GrantTypeBase):
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         # REQUIRED. Value MUST be set to "refresh_token".
         if request.grant_type != 'refresh_token':
             raise errors.UnsupportedGrantTypeError(request=request)

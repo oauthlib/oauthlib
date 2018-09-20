@@ -37,7 +37,8 @@ class AccessTokenEndpoint(BaseEndpoint):
         Similar to OAuth 2, indication of granted scopes will be included as a
         space separated list in ``oauth_authorized_realms``.
 
-        :param request: An oauthlib.common.Request object.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :returns: The token as an urlencoded string.
         """
         request.realms = self.request_validator.get_realms(
@@ -120,7 +121,8 @@ class AccessTokenEndpoint(BaseEndpoint):
     def validate_access_token_request(self, request):
         """Validate an access token request.
 
-        :param request: An oauthlib.common.Request object.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :raises: OAuth1Error if the request is invalid.
         :returns: A tuple of 2 elements.
                   1. The validation result (True or False).
