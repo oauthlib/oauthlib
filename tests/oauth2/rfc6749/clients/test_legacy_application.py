@@ -10,19 +10,26 @@ from oauthlib.oauth2 import LegacyApplicationClient
 
 from ....unittest import TestCase
 
+# this is the same import method used in oauthlib/oauth2/rfc6749/parameters.py
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
+
 
 @patch('time.time', new=lambda: 1000)
 class LegacyApplicationClientTest(TestCase):
 
     client_id = "someclientid"
+    client_secret = 'someclientsecret'
     scope = ["/profile"]
     kwargs = {
         "some": "providers",
         "require": "extra arguments"
     }
 
-    username = "foo"
-    password = "bar"
+    username = "user_username"
+    password = "user_password"
     body = "not=empty"
 
     body_up = "not=empty&grant_type=password&username=%s&password=%s" % (username, password)
@@ -88,3 +95,54 @@ class LegacyApplicationClientTest(TestCase):
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
+
+    def test_prepare_request_body(self):
+        """
+        see issue #585
+            https://github.com/oauthlib/oauthlib/issues/585
+        """
+        client = LegacyApplicationClient(self.client_id)
+
+        # scenario 1, default behavior to not include `client_id`
+        r1 = client.prepare_request_body(username=self.username, password=self.password)
+        self.assertIn(r1, ('grant_type=password&username=%s&password=%s' % (self.username, self.password, ),
+                           'grant_type=password&password=%s&username=%s' % (self.password, self.username, ),
+                          ))
+
+        # scenario 2, include `client_id` in the body
+        r2 = client.prepare_request_body(username=self.username, password=self.password, include_client_id=True)
+        r2_params = dict(urlparse.parse_qsl(r2, keep_blank_values=True))
+        self.assertEqual(len(r2_params.keys()), 4)
+        self.assertEqual(r2_params['grant_type'], 'password')
+        self.assertEqual(r2_params['username'], self.username)
+        self.assertEqual(r2_params['password'], self.password)
+        self.assertEqual(r2_params['client_id'], self.client_id)
+
+        # scenario 3, include `client_id` + `client_secret` in the body
+        r3 = client.prepare_request_body(username=self.username, password=self.password, include_client_id=True, client_secret=self.client_secret)
+        r3_params = dict(urlparse.parse_qsl(r3, keep_blank_values=True))
+        self.assertEqual(len(r3_params.keys()), 5)
+        self.assertEqual(r3_params['grant_type'], 'password')
+        self.assertEqual(r3_params['username'], self.username)
+        self.assertEqual(r3_params['password'], self.password)
+        self.assertEqual(r3_params['client_id'], self.client_id)
+        self.assertEqual(r3_params['client_secret'], self.client_secret)
+
+        # scenario 4, `client_secret` is an empty string
+        r4 = client.prepare_request_body(username=self.username, password=self.password, include_client_id=True, client_secret='')
+        r4_params = dict(urlparse.parse_qsl(r4, keep_blank_values=True))
+        self.assertEqual(len(r4_params.keys()), 5)
+        self.assertEqual(r4_params['grant_type'], 'password')
+        self.assertEqual(r4_params['username'], self.username)
+        self.assertEqual(r4_params['password'], self.password)
+        self.assertEqual(r4_params['client_id'], self.client_id)
+        self.assertEqual(r4_params['client_secret'], '')
+
+        # scenario 4b`,` client_secret is `None`
+        r4b = client.prepare_request_body(username=self.username, password=self.password, include_client_id=True, client_secret=None)
+        r4b_params = dict(urlparse.parse_qsl(r4b, keep_blank_values=True))
+        self.assertEqual(len(r4b_params.keys()), 4)
+        self.assertEqual(r4b_params['grant_type'], 'password')
+        self.assertEqual(r4b_params['username'], self.username)
+        self.assertEqual(r4b_params['password'], self.password)
+        self.assertEqual(r4b_params['client_id'], self.client_id)
