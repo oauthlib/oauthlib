@@ -246,9 +246,11 @@ class InvalidGrantError(OAuth2Error):
     owner credentials) or refresh token is invalid, expired, revoked, does
     not match the redirection URI used in the authorization request, or was
     issued to another client.
+
+    https://tools.ietf.org/html/rfc6749#section-5.2
     """
     error = 'invalid_grant'
-    status_code = 401
+    status_code = 400
 
 
 class UnauthorizedClientError(OAuth2Error):
