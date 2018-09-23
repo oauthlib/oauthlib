@@ -1,21 +1,24 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-
 ---
-
 **Describe the bug**
-A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior
+A clear and concise description of what the problem is.
+
+**How to reproduce**
+
+Steps to reproduce the behavior.
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
 
-**Context**
-Are you using OAuth1 ? OAuth2 ?
-Using a client ? a public provider ?
-Implementing your own provider ?
-Using a downstream library ? (requests-oauthlib, django-oauth-toolkit ...)
-Add any other context.
+A description of what you expected to happen.
+
+**Additional context**
+
+Please provide any further context here.
+
+- Are you using OAuth1, OAuth2 or OIDC?
+- Are you writing client or server side code?
+- If client, what provider are you connecting to?
+- Are you using a downstream library, such as `requests-oauthlib`, `django-oauth-toolkit`, ...?
