@@ -28,7 +28,7 @@ import hashlib
 import hmac
 import logging
 
-from oauthlib.common import (bytes_type, extract_params, safe_string_equals,
+from oauthlib.common import (extract_params, safe_string_equals,
                              unicode_type, urldecode)
 
 from . import utils
@@ -635,7 +635,7 @@ def verify_hmac_sha1(request, client_secret=None,
 
 
 def _prepare_key_plus(alg, keystr):
-    if isinstance(keystr, bytes_type):
+    if isinstance(keystr, bytes):
         keystr = keystr.decode('utf-8')
     return alg.prepare_key(keystr)
 

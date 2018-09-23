@@ -5,10 +5,10 @@ import mock
 from oauthlib.oauth2 import InvalidRequestError
 from oauthlib.oauth2.rfc6749.endpoints.authorization import \
     AuthorizationEndpoint
-from oauthlib.oauth2.rfc6749.grant_types import OpenIDConnectAuthCode
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
+from oauthlib.openid.connect.core.grant_types import AuthorizationCodeGrant
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 try:
     from urllib.parse import urlencode
@@ -16,14 +16,12 @@ except ImportError:
     from urllib import urlencode
 
 
-
-
 class OpenIDConnectEndpointTest(TestCase):
 
     def setUp(self):
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
-        grant = OpenIDConnectAuthCode(request_validator=self.mock_validator)
+        grant = AuthorizationCodeGrant(request_validator=self.mock_validator)
         bearer = BearerToken(self.mock_validator)
         self.endpoint = AuthorizationEndpoint(grant, bearer,
                                               response_types={'code': grant})

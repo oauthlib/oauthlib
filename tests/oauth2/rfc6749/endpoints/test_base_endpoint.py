@@ -24,7 +24,9 @@ class BaseEndpointTest(TestCase):
         validator = RequestValidator()
         server = Server(validator)
         server.catch_errors = True
-        h, b, s = server.create_authorization_response('https://example.com')
+        h, b, s = server.create_token_response(
+            'https://example.com?grant_type=authorization_code&code=abc'
+        )
         self.assertIn("server_error", b)
         self.assertEqual(s, 500)
 

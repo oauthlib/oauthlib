@@ -54,10 +54,8 @@ PY3 = sys.version_info[0] == 3
 
 if PY3:
     unicode_type = str
-    bytes_type = bytes
 else:
     unicode_type = unicode
-    bytes_type = str
 
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
@@ -66,7 +64,7 @@ def quote(s, safe=b'/'):
     s = _quote(s, safe)
     # PY3 always returns unicode.  PY2 may return either, depending on whether
     # it had to modify the string.
-    if isinstance(s, bytes_type):
+    if isinstance(s, bytes):
         s = s.decode('utf-8')
     return s
 
@@ -76,7 +74,7 @@ def unquote(s):
     # PY3 always returns unicode.  PY2 seems to always return what you give it,
     # which differs from quote's behavior.  Just to be safe, make sure it is
     # unicode before we return.
-    if isinstance(s, bytes_type):
+    if isinstance(s, bytes):
         s = s.decode('utf-8')
     return s
 
@@ -109,8 +107,8 @@ def decode_params_utf8(params):
     decoded = []
     for k, v in params:
         decoded.append((
-            k.decode('utf-8') if isinstance(k, bytes_type) else k,
-            v.decode('utf-8') if isinstance(v, bytes_type) else v))
+            k.decode('utf-8') if isinstance(k, bytes) else k,
+            v.decode('utf-8') if isinstance(v, bytes) else v))
     return decoded
 
 
@@ -174,7 +172,7 @@ def extract_params(raw):
     empty list of parameters. Any other input will result in a return
     value of None.
     """
-    if isinstance(raw, bytes_type) or isinstance(raw, unicode_type):
+    if isinstance(raw, bytes) or isinstance(raw, unicode_type):
         try:
             params = urldecode(raw)
         except ValueError:
@@ -309,7 +307,7 @@ def to_unicode(data, encoding='UTF-8'):
     if isinstance(data, unicode_type):
         return data
 
-    if isinstance(data, bytes_type):
+    if isinstance(data, bytes):
         return unicode_type(data, encoding=encoding)
 
     if hasattr(data, '__iter__'):
@@ -426,7 +424,6 @@ class Request(object):
         }
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))
-        self._params.update(self.headers)
 
     def __getattr__(self, name):
         if name in self._params:

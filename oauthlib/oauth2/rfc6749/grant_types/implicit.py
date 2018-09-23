@@ -121,6 +121,12 @@ class ImplicitGrant(GrantTypeBase):
 
     def create_authorization_response(self, request, token_handler):
         """Create an authorization response.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         The client constructs the request URI by adding the following
         parameters to the query component of the authorization endpoint URI
         using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
@@ -163,6 +169,11 @@ class ImplicitGrant(GrantTypeBase):
     def create_token_response(self, request, token_handler):
         """Return token or error embedded in the URI fragment.
 
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         If the resource owner grants the access request, the authorization
         server issues an access token and delivers it to the client by adding
         the following parameters to the fragment component of the redirection
@@ -200,11 +211,6 @@ class ImplicitGrant(GrantTypeBase):
         .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
         """
         try:
-            # request.scopes is only mandated in post auth and both pre and
-            # post auth use validate_authorization_request
-            if not request.scopes:
-                raise ValueError('Scopes must be set on post auth.')
-
             self.validate_token_request(request)
 
         # If the request fails due to a missing, invalid, or mismatching
@@ -248,10 +254,17 @@ class ImplicitGrant(GrantTypeBase):
             request, token, {}, None, 302)
 
     def validate_authorization_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         return self.validate_token_request(request)
 
     def validate_token_request(self, request):
         """Check the token request for normal and fatal errors.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
 
         This method is very similar to validate_authorization_request in
         the AuthorizationCodeGrant but differ in a few subtle areas.

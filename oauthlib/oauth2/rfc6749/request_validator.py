@@ -26,7 +26,8 @@ class RequestValidator(object):
               client credentials or whenever Client provided client authentication, see
               `Section 6`_
 
-        :param request: oauthlib.common.Request
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -51,7 +52,8 @@ class RequestValidator(object):
         both body and query can be obtained by direct attribute access, i.e.
         request.client_id for client_id in the URL query.
 
-        :param request: oauthlib.common.Request
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -74,7 +76,9 @@ class RequestValidator(object):
         to set request.client to the client object associated with the
         given client_id.
 
-        :param request: oauthlib.common.Request
+        :param client_id: Unicode client identifier.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -93,11 +97,12 @@ class RequestValidator(object):
         the client's allowed redirect URIs, but against the URI used when the
         code was saved.
 
-        :param client_id: Unicode client identifier
+        :param client_id: Unicode client identifier.
         :param code: Unicode authorization_code.
-        :param redirect_uri: Unicode absolute URI
-        :param client: Client object set by you, see authenticate_client.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param redirect_uri: Unicode absolute URI.
+        :param client: Client object set by you, see ``.authenticate_client``.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -108,8 +113,9 @@ class RequestValidator(object):
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         """Get the default redirect URI for the client.
 
-        :param client_id: Unicode client identifier
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param client_id: Unicode client identifier.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: The default redirect URI for the client
 
         Method is used by:
@@ -121,8 +127,9 @@ class RequestValidator(object):
     def get_default_scopes(self, client_id, request, *args, **kwargs):
         """Get the default scopes for the client.
 
-        :param client_id: Unicode client identifier
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param client_id: Unicode client identifier.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: List of default scopes
 
         Method is used by all core grant types:
@@ -136,8 +143,9 @@ class RequestValidator(object):
     def get_original_scopes(self, refresh_token, request, *args, **kwargs):
         """Get the list of scopes associated with the refresh token.
 
-        :param refresh_token: Unicode refresh token
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param refresh_token: Unicode refresh token.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: List of scopes.
 
         Method is used by:
@@ -156,9 +164,10 @@ class RequestValidator(object):
         used in situations where returning all valid scopes from the
         get_original_scopes is not practical.
 
-        :param request_scopes: A list of scopes that were requested by client
-        :param refresh_token: Unicode refresh_token
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request_scopes: A list of scopes that were requested by client.
+        :param refresh_token: Unicode refresh_token.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -196,7 +205,8 @@ class RequestValidator(object):
 
         :param token: The token string.
         :param token_type_hint: access_token or refresh_token.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
 
         Method is used by:
             - Introspect Endpoint (all grants are compatible)
@@ -209,9 +219,10 @@ class RequestValidator(object):
     def invalidate_authorization_code(self, client_id, code, request, *args, **kwargs):
         """Invalidate an authorization code after use.
 
-        :param client_id: Unicode client identifier
+        :param client_id: Unicode client identifier.
         :param code: The authorization code grant (request.code).
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
 
         Method is used by:
             - Authorization Code Grant
@@ -223,7 +234,8 @@ class RequestValidator(object):
 
         :param token: The token string.
         :param token_type_hint: access_token or refresh_token.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
 
         Method is used by:
             - Revocation Endpoint
@@ -237,7 +249,8 @@ class RequestValidator(object):
         or replaced with a new one (rotated). Return True to rotate and
         and False for keeping original.
 
-        :param request: oauthlib.common.Request
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -269,9 +282,10 @@ class RequestValidator(object):
         http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
         This value should be saved in this method and used again in 'validate_code'.
 
-        :param client_id: Unicode client identifier
+        :param client_id: Unicode client identifier.
         :param code: A dict of the authorization code grant and, optionally, state.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
 
         Method is used by:
             - Authorization Code Grant
@@ -292,10 +306,12 @@ class RequestValidator(object):
         blank value `""` don't forget to check it before using those values
         in a select query if a database is used.
 
-        :param client_id: Unicode client identifier
-        :param code: Unicode authorization code grant
-        :param redirect_uri: Unicode absolute URI
-        :return: A list of scope
+        :param client_id: Unicode client identifier.
+        :param code: Unicode authorization code grant.
+        :param redirect_uri: Unicode absolute URI.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :return: A list of scopes
 
         Method is used by:
             - Authorization Token Grant Dispatcher
@@ -306,6 +322,10 @@ class RequestValidator(object):
         """Persist the token with a token type specific method.
 
         Currently, only save_bearer_token is supported.
+
+        :param token: A (Bearer) token dict.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         """
         return self.save_bearer_token(token, request, *args, **kwargs)
 
@@ -346,8 +366,9 @@ class RequestValidator(object):
         the claims dict, which should be saved for later use when generating the
         id_token and/or UserInfo response content.
 
-        :param token: A Bearer token dict
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param token: A Bearer token dict.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: The default redirect URI for the client
 
         Method is used by all core grant types issuing Bearer tokens:
@@ -363,9 +384,10 @@ class RequestValidator(object):
 
         If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
 
-        :param token: A Bearer token dict
-        :param token_handler: the token handler (BearerToken class)
-        :param request: the HTTP Request (oauthlib.common.Request)
+        :param token: A Bearer token dict.
+        :param token_handler: The token handler (BearerToken class).
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :return: The JWT Bearer token or OpenID Connect ID token (a JWS signed JWT)
 
         Method is used by JWT Bearer and OpenID Connect tokens:
@@ -398,9 +420,10 @@ class RequestValidator(object):
         .. _`3.2.2.10`: http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
         .. _`3.3.2.11`: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
 
-        :param token: A Bearer token dict
-        :param token_handler: the token handler (BearerToken class)
-        :param request: the HTTP Request (oauthlib.common.Request)
+        :param token: A Bearer token dict.
+        :param token_handler: The token handler (BearerToken class)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :return: The ID Token (a JWS signed JWT)
         """
         # the request.scope should be used by the get_id_token() method to determine which claims to include in the resulting id_token
@@ -419,9 +442,10 @@ class RequestValidator(object):
             - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation
             - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation2
 
-        :param token: Unicode Bearer token
-        :param scopes: List of scopes (defined by you)
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param token: Unicode Bearer token.
+        :param scopes: List of scopes (defined by you).
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is indirectly used by all core OpenID connect JWT token issuing grant types:
@@ -440,9 +464,10 @@ class RequestValidator(object):
             - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation
             - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation2
 
-        :param token: Unicode Bearer token
-        :param scopes: List of scopes (defined by you)
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param token: Unicode Bearer token.
+        :param scopes: List of scopes (defined by you).
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is indirectly used by all core OpenID connect JWT token issuing grant types:
@@ -457,7 +482,8 @@ class RequestValidator(object):
 
         :param token: A string of random characters.
         :param scopes: A list of scopes associated with the protected resource.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
 
         A key to OAuth 2 security and restricting impact of leaked tokens is
         the short expiration time of tokens, *always ensure the token has not
@@ -491,7 +517,8 @@ class RequestValidator(object):
 
         :param token: Unicode Bearer token
         :param scopes: List of scopes (defined by you)
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is indirectly used by all core Bearer token issuing grant types:
@@ -509,7 +536,9 @@ class RequestValidator(object):
         to set request.client to the client object associated with the
         given client_id.
 
-        :param request: oauthlib.common.Request
+        :param client_id: Unicode client identifier.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -535,10 +564,11 @@ class RequestValidator(object):
 
         The request.claims property, if it was given, should assigned a dict.
 
-        :param client_id: Unicode client identifier
-        :param code: Unicode authorization code
-        :param client: Client object set by you, see authenticate_client.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param client_id: Unicode client identifier.
+        :param code: Unicode authorization code.
+        :param client: Client object set by you, see ``.authenticate_client``.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -549,10 +579,11 @@ class RequestValidator(object):
     def validate_grant_type(self, client_id, grant_type, client, request, *args, **kwargs):
         """Ensure client is authorized to use the grant_type requested.
 
-        :param client_id: Unicode client identifier
+        :param client_id: Unicode client identifier.
         :param grant_type: Unicode grant type, i.e. authorization_code, password.
-        :param client: Client object set by you, see authenticate_client.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param client: Client object set by you, see ``.authenticate_client``.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -569,9 +600,10 @@ class RequestValidator(object):
         All clients should register the absolute URIs of all URIs they intend
         to redirect to. The registration is outside of the scope of oauthlib.
 
-        :param client_id: Unicode client identifier
-        :param redirect_uri: Unicode absolute URI
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param client_id: Unicode client identifier.
+        :param redirect_uri: Unicode absolute URI.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -586,9 +618,10 @@ class RequestValidator(object):
         OBS! The request.user attribute should be set to the resource owner
         associated with this refresh token.
 
-        :param refresh_token: Unicode refresh token
-        :param client: Client object set by you, see authenticate_client.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param refresh_token: Unicode refresh token.
+        :param client: Client object set by you, see ``.authenticate_client``.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -601,10 +634,11 @@ class RequestValidator(object):
     def validate_response_type(self, client_id, response_type, client, request, *args, **kwargs):
         """Ensure client is authorized to use the response_type requested.
 
-        :param client_id: Unicode client identifier
+        :param client_id: Unicode client identifier.
         :param response_type: Unicode response type, i.e. code, token.
-        :param client: Client object set by you, see authenticate_client.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param client: Client object set by you, see ``.authenticate_client``.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -616,10 +650,11 @@ class RequestValidator(object):
     def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
         """Ensure the client is authorized access to requested scopes.
 
-        :param client_id: Unicode client identifier
-        :param scopes: List of scopes (defined by you)
-        :param client: Client object set by you, see authenticate_client.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param client_id: Unicode client identifier.
+        :param scopes: List of scopes (defined by you).
+        :param client: Client object set by you, see ``.authenticate_client``.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by all core grant types:
@@ -636,7 +671,8 @@ class RequestValidator(object):
         Silent OpenID authorization allows access tokens and id tokens to be
         granted to clients without any user prompt or interaction.
 
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -656,7 +692,8 @@ class RequestValidator(object):
         not selected which one to link to the token then this method should
         raise an oauthlib.oauth2.AccountSelectionRequired error.
 
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -674,10 +711,11 @@ class RequestValidator(object):
         not set you will be unable to associate a token with a user in the
         persistance method used (commonly, save_bearer_token).
 
-        :param username: Unicode username
-        :param password: Unicode password
-        :param client: Client object set by you, see authenticate_client.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param username: Unicode username.
+        :param password: Unicode password.
+        :param client: Client object set by you, see ``.authenticate_client``.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -694,7 +732,8 @@ class RequestValidator(object):
         :param id_token_hint: User identifier string.
         :param scopes: List of OAuth 2 scopes and OpenID claims (strings).
         :param claims: OpenID Connect claims dict.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
