@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 
 import datetime
 import os
+import warnings
 
 from mock import patch
 
@@ -15,11 +16,18 @@ from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
 
 from ....unittest import TestCase
 
+# this is the same import method used in oauthlib/oauth2/rfc6749/parameters.py
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
+
 
 @patch('time.time', new=lambda: 1000)
 class WebApplicationClientTest(TestCase):
 
     client_id = "someclientid"
+    client_secret = 'someclientsecret'
     uri = "https://example.com/path?query=world"
     uri_id = uri + "&response_type=code&client_id=" + client_id
     uri_redirect = uri_id + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
@@ -38,7 +46,7 @@ class WebApplicationClientTest(TestCase):
     code = "zzzzaaaa"
     body = "not=empty"
 
-    body_code = "not=empty&grant_type=authorization_code&code=%s" % code
+    body_code = "not=empty&grant_type=authorization_code&code=%s&client_id=%s" % (code, client_id)
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 
@@ -177,3 +185,75 @@ class WebApplicationClientTest(TestCase):
         # verify default header and body only
         self.assertEqual(header, {'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertEqual(body, '')
+
+    def test_prepare_request_body(self):
+        """
+        see issue #585
+            https://github.com/oauthlib/oauthlib/issues/585
+
+        `prepare_request_body` should support the following scenarios:
+            1. Include client_id alone in the body (default)
+            2. Include client_id and client_secret in auth and not include them in the body (RFC preferred solution)
+            3. Include client_id and client_secret in the body (RFC alternative solution)
+            4. Include client_id in the body and an empty string for client_secret.
+        """
+        client = WebApplicationClient(self.client_id)
+
+        # scenario 1, default behavior to include `client_id`
+        r1 = client.prepare_request_body()
+        self.assertEqual(r1, 'grant_type=authorization_code&client_id=%s' % self.client_id)
+
+        r1b = client.prepare_request_body(include_client_id=True)
+        self.assertEqual(r1b, 'grant_type=authorization_code&client_id=%s' % self.client_id)
+
+        # scenario 2, do not include `client_id` in the body, so it can be sent in auth.
+        r2 = client.prepare_request_body(include_client_id=False)
+        self.assertEqual(r2, 'grant_type=authorization_code')
+
+        # scenario 3, Include client_id and client_secret in the body (RFC alternative solution)
+        # the order of kwargs being appended is not guaranteed. for brevity, check the 2 permutations instead of sorting
+        r3 = client.prepare_request_body(client_secret=self.client_secret)
+        r3_params = dict(urlparse.parse_qsl(r3, keep_blank_values=True))
+        self.assertEqual(len(r3_params.keys()), 3)
+        self.assertEqual(r3_params['grant_type'], 'authorization_code')
+        self.assertEqual(r3_params['client_id'], self.client_id)
+        self.assertEqual(r3_params['client_secret'], self.client_secret)
+
+        r3b = client.prepare_request_body(include_client_id=True, client_secret=self.client_secret)
+        r3b_params = dict(urlparse.parse_qsl(r3b, keep_blank_values=True))
+        self.assertEqual(len(r3b_params.keys()), 3)
+        self.assertEqual(r3b_params['grant_type'], 'authorization_code')
+        self.assertEqual(r3b_params['client_id'], self.client_id)
+        self.assertEqual(r3b_params['client_secret'], self.client_secret)
+
+        # scenario 4, `client_secret` is an empty string
+        r4 = client.prepare_request_body(include_client_id=True, client_secret='')
+        r4_params = dict(urlparse.parse_qsl(r4, keep_blank_values=True))
+        self.assertEqual(len(r4_params.keys()), 3)
+        self.assertEqual(r4_params['grant_type'], 'authorization_code')
+        self.assertEqual(r4_params['client_id'], self.client_id)
+        self.assertEqual(r4_params['client_secret'], '')
+
+        # scenario 4b, `client_secret` is `None`
+        r4b = client.prepare_request_body(include_client_id=True, client_secret=None)
+        r4b_params = dict(urlparse.parse_qsl(r4b, keep_blank_values=True))
+        self.assertEqual(len(r4b_params.keys()), 2)
+        self.assertEqual(r4b_params['grant_type'], 'authorization_code')
+        self.assertEqual(r4b_params['client_id'], self.client_id)
+
+        # scenario Warnings
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")  # catch all
+
+            # warning1 - raise a DeprecationWarning if a `client_id` is submitted
+            rWarnings1 = client.prepare_request_body(client_id=self.client_id)
+            self.assertEqual(len(w), 1)
+            self.assertIsInstance(w[0].message, DeprecationWarning)
+
+            # testing the exact warning message in Python2&Python3 is a pain
+
+        # scenario Exceptions
+        # exception1 - raise a ValueError if the a different `client_id` is submitted
+        with self.assertRaises(ValueError) as cm:
+            client.prepare_request_body(client_id='different_client_id')
+            # testing the exact exception message in Python2&Python3 is a pain

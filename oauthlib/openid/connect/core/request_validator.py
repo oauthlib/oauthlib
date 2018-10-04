@@ -45,7 +45,8 @@ class RequestValidator(OAuth2RequestValidator):
 
         :param token: A Bearer token dict
         :param token_handler: the token handler (BearerToken class)
-        :param request: the HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :return: The JWT Bearer token or OpenID Connect ID token (a JWS signed JWT)
 
         Method is used by JWT Bearer and OpenID Connect tokens:
@@ -80,7 +81,8 @@ class RequestValidator(OAuth2RequestValidator):
 
         :param token: A Bearer token dict
         :param token_handler: the token handler (BearerToken class)
-        :param request: the HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :return: The ID Token (a JWS signed JWT)
         """
         # the request.scope should be used by the get_id_token() method to determine which claims to include in the resulting id_token
@@ -101,7 +103,8 @@ class RequestValidator(OAuth2RequestValidator):
 
         :param token: Unicode Bearer token
         :param scopes: List of scopes (defined by you)
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is indirectly used by all core OpenID connect JWT token issuing grant types:
@@ -122,7 +125,8 @@ class RequestValidator(OAuth2RequestValidator):
 
         :param token: Unicode Bearer token
         :param scopes: List of scopes (defined by you)
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is indirectly used by all core OpenID connect JWT token issuing grant types:
@@ -138,7 +142,8 @@ class RequestValidator(OAuth2RequestValidator):
         Silent OpenID authorization allows access tokens and id tokens to be
         granted to clients without any user prompt or interaction.
 
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -158,7 +163,8 @@ class RequestValidator(OAuth2RequestValidator):
         not selected which one to link to the token then this method should
         raise an oauthlib.oauth2.AccountSelectionRequired error.
 
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:
@@ -177,7 +183,8 @@ class RequestValidator(OAuth2RequestValidator):
         :param id_token_hint: User identifier string.
         :param scopes: List of OAuth 2 scopes and OpenID claims (strings).
         :param claims: OpenID Connect claims dict.
-        :param request: The HTTP Request (oauthlib.common.Request)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :rtype: True or False
 
         Method is used by:

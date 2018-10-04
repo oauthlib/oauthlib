@@ -77,6 +77,12 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertTrue(self.mock_validator.validate_response_type.called)
         self.assertTrue(self.mock_validator.validate_scopes.called)
 
+    def test_create_authorization_grant_no_scopes(self):
+        bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
+        self.request.scopes = []
+        self.auth.create_authorization_response(self.request, bearer)
+
     def test_create_authorization_grant_state(self):
         self.request.state = 'abc'
         self.request.redirect_uri = None

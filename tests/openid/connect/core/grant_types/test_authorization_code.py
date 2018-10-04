@@ -11,8 +11,9 @@ from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types.authorization_code import AuthorizationCodeGrant
 from oauthlib.openid.connect.core.grant_types.exceptions import OIDCNoPrompt
 
-from ....unittest import TestCase
-from ....oauth2.rfc6749.grant_types.test_authorization_code import AuthorizationCodeGrantTest
+from tests.unittest import TestCase
+from tests.oauth2.rfc6749.grant_types.test_authorization_code import \
+    AuthorizationCodeGrantTest
 
 
 def get_id_token_mock(token, token_handler, request):
@@ -81,12 +82,7 @@ class OpenIDAuthCodeTest(TestCase):
                           self.auth.validate_authorization_request,
                           self.request)
 
-        # prompt == none requires id token hint
         bearer = BearerToken(self.mock_validator)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
-        self.assertIn('error=invalid_request', h['Location'])
-        self.assertEqual(b, None)
-        self.assertEqual(s, 302)
 
         self.request.response_mode = 'query'
         self.request.id_token_hint = 'me@email.com'

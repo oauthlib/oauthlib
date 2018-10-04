@@ -4,7 +4,7 @@ import mock
 
 from oauthlib.openid.connect.core.tokens import JWTToken
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class JWTTokenTestCase(TestCase):

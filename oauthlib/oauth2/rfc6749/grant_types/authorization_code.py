@@ -98,7 +98,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
     response_types = ['code']
 
     def create_authorization_code(self, request):
-        """Generates an authorization grant represented as a dictionary."""
+        """
+        Generates an authorization grant represented as a dictionary.
+        
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         grant = {'code': common.generate_token()}
         if hasattr(request, 'state') and request.state:
             grant['state'] = request.state
@@ -135,12 +140,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
         HTTP redirection response, or by other means available to it via the
         user-agent.
 
-        :param request: oauthlib.commong.Request
-        :param token_handler: A token handler instace, for example of type
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
                               oauthlib.oauth2.BearerToken.
         :returns: headers, body, status
         :raises: FatalClientError on invalid redirect URI or client id.
-                 ValueError if scopes are not set on the request object.
 
         A few examples::
 
@@ -151,12 +156,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
             >>> from oauthlib.oauth2 import AuthorizationCodeGrant, BearerToken
             >>> token = BearerToken(your_validator)
             >>> grant = AuthorizationCodeGrant(your_validator)
-            >>> grant.create_authorization_response(request, token)
-            Traceback (most recent call last):
-                File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/rfc6749/grant_types.py", line 513, in create_authorization_response
-                    raise ValueError('Scopes must be set on post auth.')
-            ValueError: Scopes must be set on post auth.
             >>> request.scopes = ['authorized', 'in', 'some', 'form']
             >>> grant.create_authorization_response(request, token)
             (u'http://client.com/?error=invalid_request&error_description=Missing+response_type+parameter.', None, None, 400)
@@ -182,11 +181,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
         .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         """
         try:
-            # request.scopes is only mandated in post auth and both pre and
-            # post auth use validate_authorization_request
-            if not request.scopes:
-                raise ValueError('Scopes must be set on post auth.')
-
             self.validate_authorization_request(request)
             log.debug('Pre resource owner authorization validation ok for %r.',
                       request)
@@ -232,6 +226,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
         MUST deny the request and SHOULD revoke (when possible) all tokens
         previously issued based on that authorization code. The authorization
         code is bound to the client identifier and redirection URI.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         """
         headers = {
             'Content-Type': 'application/json',
@@ -265,6 +265,9 @@ class AuthorizationCodeGrant(GrantTypeBase):
         missing. These must be caught by the provider and handled, how this
         is done is outside of the scope of OAuthLib but showing an error
         page describing the issue is a good idea.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         """
 
         # First check for fatal errors
@@ -365,6 +368,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         return request.scopes, request_info
 
     def validate_token_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         # REQUIRED. Value MUST be set to "authorization_code".
         if request.grant_type not in ('authorization_code', 'openid'):
             raise errors.UnsupportedGrantTypeError(request=request)

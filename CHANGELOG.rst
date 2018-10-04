@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Unreleased
+------------------
+
+* OAuth2's `prepare_token_request` supports sending an empty string for `client_id` (#585)
+* OAuth2's `WebApplicationClient.prepare_request_body` was refactored to better
+  support sending or omitting the `client_id` via a new `include_client_id` kwarg.
+  By default this is included. The method will also emit a DeprecationWarning if
+  a `client_id` parameter is submitted; the already configured `self.client_id`
+  is the preferred option. (#585)
+
 2.1.0 (2018-05-21)
 ------------------
 

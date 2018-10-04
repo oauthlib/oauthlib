@@ -17,7 +17,7 @@ from oauthlib.oauth2.rfc6749.grant_types import (
 )
 
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ImplicitTokenGrantDispatcherTest(TestCase):
@@ -36,23 +36,23 @@ class ImplicitTokenGrantDispatcherTest(TestCase):
         self.request.scopes = ('hello', 'openid')
         self.request.response_type = 'id_token'
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertTrue(isinstance(handler, ImplicitGrant))
+        self.assertIsInstance(handler, ImplicitGrant)
 
     def test_validate_authorization_request_openid(self):
         self.request.scopes = ('hello', 'openid')
         self.request.response_type = 'id_token'
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertTrue(isinstance(handler, ImplicitGrant))
+        self.assertIsInstance(handler, ImplicitGrant)
 
     def test_create_authorization_response_oauth(self):
         self.request.scopes = ('hello', 'world')
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertTrue(isinstance(handler, ImplicitGrant))
+        self.assertIsInstance(handler, OAuth2ImplicitGrant)
 
     def test_validate_authorization_request_oauth(self):
         self.request.scopes = ('hello', 'world')
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertTrue(isinstance(handler, ImplicitGrant))
+        self.assertIsInstance(handler, OAuth2ImplicitGrant)
 
 
 class DispatcherTest(TestCase):
@@ -66,7 +66,7 @@ class DispatcherTest(TestCase):
 
         self.request_validator = mock.MagicMock()
         self.auth_grant = OAuth2AuthorizationCodeGrant(self.request_validator)
-        self.openid_connect_auth = OAuth2AuthorizationCodeGrant(self.request_validator)
+        self.openid_connect_auth = AuthorizationCodeGrant(self.request_validator)
 
 
 class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
@@ -82,7 +82,7 @@ class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
 
     def test_create_token_response_openid(self):
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertTrue(isinstance(handler, AuthorizationCodeGrant))
+        self.assertIsInstance(handler, AuthorizationCodeGrant)
         self.assertTrue(self.dispatcher.request_validator.get_authorization_code_scopes.called)
 
 
@@ -104,7 +104,7 @@ class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
 
     def test_create_token_response_openid_without_code(self):
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertTrue(isinstance(handler, OAuth2AuthorizationCodeGrant))
+        self.assertIsInstance(handler, OAuth2AuthorizationCodeGrant)
         self.assertFalse(self.dispatcher.request_validator.get_authorization_code_scopes.called)
 
 
@@ -121,5 +121,5 @@ class AuthTokenGrantDispatcherOAuthTest(DispatcherTest):
 
     def test_create_token_response_oauth(self):
         handler = self.dispatcher._handler_for_request(self.request)
-        self.assertTrue(isinstance(handler, OAuth2AuthorizationCodeGrant))
+        self.assertIsInstance(handler, OAuth2AuthorizationCodeGrant)
         self.assertTrue(self.dispatcher.request_validator.get_authorization_code_scopes.called)

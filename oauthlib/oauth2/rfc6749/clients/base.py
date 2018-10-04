@@ -254,7 +254,8 @@ class Client(object):
         :param redirect_url: The redirect_url supplied with the authorization
         request (if there was one).
 
-        :param body: Request body (URL encoded string).
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
 
         :param kwargs: Additional parameters to included in the request.
 
@@ -286,7 +287,8 @@ class Client(object):
 
         :param refresh_token: Refresh token string.
 
-        :param body: Request body (URL encoded string).
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
 
         :param scope: List of scopes to request. Must be equal to
         or a subset of the scopes granted when obtaining the refresh
