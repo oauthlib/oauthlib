@@ -18,6 +18,7 @@ OAuth 2 client and provider support for
 - Draft MAC tokens
 - Token Revocation
 - Token Introspection
+- OAuth Authorization Server Metadata
 - OpenID Connect Authentication
 
 with support for SAML2 and JWT tokens, dynamic client registration and more to
