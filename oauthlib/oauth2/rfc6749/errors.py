@@ -224,7 +224,7 @@ class TemporarilyUnavailableError(OAuth2Error):
     error = 'temporarily_unavailable'
 
 
-class InvalidClientError(OAuth2Error):
+class InvalidClientError(FatalClientError):
     """
     Client authentication failed (e.g. unknown client, no client
     authentication included, or unsupported authentication method).
