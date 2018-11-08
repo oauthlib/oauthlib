@@ -69,5 +69,6 @@ class BackendApplicationClient(Client):
         """
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
-        return prepare_token_request('client_credentials', body=body,
+        grant_type = kwargs.pop('grant_type', 'client_credentials')
+        return prepare_token_request(grant_type, body=body,
                                      scope=scope, **kwargs)
