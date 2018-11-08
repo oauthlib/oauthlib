@@ -435,7 +435,8 @@ class Client(object):
                 resource owner.
         """
         refresh_token = refresh_token or self.refresh_token
-        return prepare_token_request('refresh_token', body=body, scope=scope,
+        grant_type = kwargs.pop('grant_type', 'refresh_token')
+        return prepare_token_request(grant_type, body=body, scope=scope,
                                      refresh_token=refresh_token, **kwargs)
 
     def _add_bearer_token(self, uri, http_method='GET', body=None,
