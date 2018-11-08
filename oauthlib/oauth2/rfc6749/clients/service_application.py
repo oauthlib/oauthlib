@@ -183,7 +183,8 @@ class ServiceApplicationClient(Client):
 
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
-        return prepare_token_request(self.grant_type,
+        grant_type = kwargs.pop('grant_type', self.grant_type)
+        return prepare_token_request(grant_type,
                                      body=body,
                                      assertion=assertion,
                                      scope=scope, 
