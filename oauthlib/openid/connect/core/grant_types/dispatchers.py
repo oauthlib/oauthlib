@@ -2,20 +2,25 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class AuthorizationCodeGrantDispatcher(object):
+class Dispatcher(object):
+    default_grant = None
+    oidc_grant = None
+
+
+class AuthorizationCodeGrantDispatcher(Dispatcher):
     """
     This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
-    including 'openid' to either the default_auth_grant or the oidc_auth_grant based on the scopes requested.
+    including 'openid' to either the default_grant or the oidc_grant based on the scopes requested.
     """
-    def __init__(self, default_auth_grant=None, oidc_auth_grant=None):
-        self.default_auth_grant = default_auth_grant
-        self.oidc_auth_grant = oidc_auth_grant
+    def __init__(self, default_grant=None, oidc_grant=None):
+        self.default_grant = default_grant
+        self.oidc_grant = oidc_grant
 
     def _handler_for_request(self, request):
-        handler = self.default_auth_grant
+        handler = self.default_grant
 
         if request.scopes and "openid" in request.scopes:
-            handler = self.oidc_auth_grant
+            handler = self.oidc_grant
 
         log.debug('Selecting handler for request %r.', handler)
         return handler
@@ -27,20 +32,20 @@ class AuthorizationCodeGrantDispatcher(object):
         return self._handler_for_request(request).validate_authorization_request(request)
 
 
-class ImplicitTokenGrantDispatcher(object):
+class ImplicitTokenGrantDispatcher(Dispatcher):
     """
     This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
-    including 'openid' to either the default_auth_grant or the oidc_auth_grant based on the scopes requested.
+    including 'openid' to either the default_grant or the oidc_grant based on the scopes requested.
     """
-    def __init__(self, default_implicit_grant=None, oidc_implicit_grant=None):
-        self.default_implicit_grant = default_implicit_grant
-        self.oidc_implicit_grant = oidc_implicit_grant
+    def __init__(self, default_grant=None, oidc_grant=None):
+        self.default_grant = default_grant
+        self.oidc_grant = oidc_grant
 
     def _handler_for_request(self, request):
-        handler = self.default_implicit_grant
+        handler = self.default_grant
 
         if request.scopes and "openid" in request.scopes and 'id_token' in request.response_type:
-            handler = self.oidc_implicit_grant
+            handler = self.oidc_grant
 
         log.debug('Selecting handler for request %r.', handler)
         return handler
@@ -52,31 +57,31 @@ class ImplicitTokenGrantDispatcher(object):
         return self._handler_for_request(request).validate_authorization_request(request)
 
 
-class AuthorizationTokenGrantDispatcher(object):
+class AuthorizationTokenGrantDispatcher(Dispatcher):
     """
     This is an adapter class that will route simple Token requests, those that authorization_code have a scope
-    including 'openid' to either the default_token_grant or the oidc_token_grant based on the scopes requested.
+    including 'openid' to either the default_grant or the oidc_grant based on the scopes requested.
     """
-    def __init__(self, request_validator, default_token_grant=None, oidc_token_grant=None):
-        self.default_token_grant = default_token_grant
-        self.oidc_token_grant = oidc_token_grant
+    def __init__(self, request_validator, default_grant=None, oidc_grant=None):
+        self.default_grant = default_grant
+        self.oidc_grant = oidc_grant
         self.request_validator = request_validator
 
     def _handler_for_request(self, request):
-        handler = self.default_token_grant
+        handler = self.default_grant
         scopes = ()
         parameters = dict(request.decoded_body)
         client_id = parameters.get('client_id', None)
         code = parameters.get('code', None)
         redirect_uri = parameters.get('redirect_uri', None)
 
-        # If code is not pressent fallback to `default_token_grant` wich will
+        # If code is not pressent fallback to `default_grant` wich will
         # raise an error for the missing `code` in `create_token_response` step.
         if code:
             scopes = self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri, request)
 
         if 'openid' in scopes:
-            handler = self.oidc_token_grant
+            handler = self.oidc_grant
 
         log.debug('Selecting handler for request %r.', handler)
         return handler
