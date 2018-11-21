@@ -89,8 +89,8 @@ class MetadataEndpoint(BaseEndpoint):
                     raise ValueError("array {}: {} must contains only string (not {})".format(key, array[key], elem))
 
     def validate_metadata_token(self, claims, endpoint):
-        claims["grant_types_supported"] = list(endpoint._grant_types.keys())
-        claims["token_endpoint_auth_methods_supported"] = ["client_secret_post", "client_secret_basic"]
+        claims.setdefault("grant_types_supported", list(endpoint._grant_types.keys()))
+        claims.setdefault("token_endpoint_auth_methods_supported", ["client_secret_post", "client_secret_basic"])
 
         self.validate_metadata(claims, "grant_types_supported", is_list=True)
         self.validate_metadata(claims, "token_endpoint_auth_methods_supported", is_list=True)
@@ -98,8 +98,8 @@ class MetadataEndpoint(BaseEndpoint):
         self.validate_metadata(claims, "token_endpoint", is_required=True, is_url=True)
 
     def validate_metadata_authorization(self, claims, endpoint):
-        claims["response_types_supported"] = list(self._response_types.keys())
-        claims["response_modes_supported"] = ["query", "fragment"]
+        claims.setdefault("response_types_supported", list(self._response_types.keys()))
+        claims.setdefault("response_modes_supported", ["query", "fragment"])
 
         self.validate_metadata(claims, "response_types_supported", is_required=True, is_list=True)
         self.validate_metadata(claims, "response_modes_supported", is_list=True)
@@ -108,14 +108,16 @@ class MetadataEndpoint(BaseEndpoint):
         self.validate_metadata(claims, "authorization_endpoint", is_required=True, is_url=True)
 
     def validate_metadata_revocation(self, claims, endpoint):
-        claims["revocation_endpoint_auth_methods_supported"] = ["client_secret_post", "client_secret_basic"]
+        claims.setdefault("revocation_endpoint_auth_methods_supported",
+                          ["client_secret_post", "client_secret_basic"])
 
         self.validate_metadata(claims, "revocation_endpoint_auth_methods_supported", is_list=True)
         self.validate_metadata(claims, "revocation_endpoint_auth_signing_alg_values_supported", is_list=True)
         self.validate_metadata(claims, "revocation_endpoint", is_required=True, is_url=True)
 
     def validate_metadata_introspection(self, claims, endpoint):
-        claims["introspection_endpoint_auth_methods_supported"] = ["client_secret_post", "client_secret_basic"]
+        claims.setdefault("introspection_endpoint_auth_methods_supported",
+                          ["client_secret_post", "client_secret_basic"])
 
         self.validate_metadata(claims, "introspection_endpoint_auth_methods_supported", is_list=True)
         self.validate_metadata(claims, "introspection_endpoint_auth_signing_alg_values_supported", is_list=True)
