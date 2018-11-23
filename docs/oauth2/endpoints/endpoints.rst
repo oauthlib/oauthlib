@@ -16,8 +16,8 @@ client attempts to access the user resources on their behalf.
     authorization
     introspect
     token
-    resource
     revocation
+    resource
 
 There are three main endpoints, the authorization endpoint which mainly
 handles user authorization, the token endpoint which provides tokens and the
