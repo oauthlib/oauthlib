@@ -24,6 +24,7 @@ class ErrorResponseTest(TestCase):
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = None
+        self.validator.get_code_challenge.return_value = None
         self.web = WebApplicationServer(self.validator)
         self.mobile = MobileApplicationServer(self.validator)
         self.legacy = LegacyApplicationServer(self.validator)

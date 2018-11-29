@@ -246,6 +246,17 @@ the token.
 
         expires_at = django.db.models.DateTimeField()
 
+**PKCE Challenge (optional)**
+
+    If you want to support PKCE, you have to associate a `code_challenge`
+    and a `code_challenge_method` to the actual Authorization Code.
+
+    .. code-block:: python
+
+        challenge = django.db.models.CharField(max_length=100)
+        challenge_method = django.db.models.CharField(max_length=6)
+
+
 2. Implement a validator
 ------------------------
 

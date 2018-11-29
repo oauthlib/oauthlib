@@ -180,6 +180,26 @@ class MissingResponseTypeError(InvalidRequestError):
     description = 'Missing response_type parameter.'
 
 
+class MissingCodeChallengeError(InvalidRequestError):
+    """
+    If the server requires Proof Key for Code Exchange (PKCE) by OAuth
+    public clients and the client does not send the "code_challenge" in
+    the request, the authorization endpoint MUST return the authorization
+    error response with the "error" value set to "invalid_request".  The
+    "error_description" or the response of "error_uri" SHOULD explain the
+    nature of error, e.g., code challenge required.
+    """
+    description = 'Code challenge required.'
+
+
+class MissingCodeVerifierError(InvalidRequestError):
+    """
+    The request to the token endpoint, when PKCE is enabled, has
+    the parameter `code_verifier` REQUIRED.
+    """
+    description = 'Code verifier required.'
+
+
 class AccessDeniedError(OAuth2Error):
     """
     The resource owner or authorization server denied the request.
@@ -194,6 +214,18 @@ class UnsupportedResponseTypeError(OAuth2Error):
     code using this method.
     """
     error = 'unsupported_response_type'
+
+
+class UnsupportedCodeChallengeMethodError(InvalidRequestError):
+    """
+    If the server supporting PKCE does not support the requested
+    transformation, the authorization endpoint MUST return the
+    authorization error response with "error" value set to
+    "invalid_request".  The "error_description" or the response of
+    "error_uri" SHOULD explain the nature of error, e.g., transform
+    algorithm not supported.
+    """
+    description = 'Transform algorithm not supported.'
 
 
 class InvalidScopeError(OAuth2Error):
