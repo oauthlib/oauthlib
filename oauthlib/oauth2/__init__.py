@@ -16,6 +16,7 @@ from .rfc6749.clients import BackendApplicationClient
 from .rfc6749.clients import ServiceApplicationClient
 from .rfc6749.endpoints import AuthorizationEndpoint
 from .rfc6749.endpoints import IntrospectEndpoint
+from .rfc6749.endpoints import MetadataEndpoint
 from .rfc6749.endpoints import TokenEndpoint
 from .rfc6749.endpoints import ResourceEndpoint
 from .rfc6749.endpoints import RevocationEndpoint

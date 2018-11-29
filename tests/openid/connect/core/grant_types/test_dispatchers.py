@@ -28,8 +28,8 @@ class ImplicitTokenGrantDispatcherTest(TestCase):
         openid_connect_implicit = ImplicitGrant(request_validator)
 
         self.dispatcher = ImplicitTokenGrantDispatcher(
-            default_implicit_grant=implicit_grant,
-            oidc_implicit_grant=openid_connect_implicit
+            default_grant=implicit_grant,
+            oidc_grant=openid_connect_implicit
         )
 
     def test_create_authorization_response_openid(self):
@@ -76,8 +76,8 @@ class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
         self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'openid')
         self.dispatcher = AuthorizationTokenGrantDispatcher(
             self.request_validator,
-            default_token_grant=self.auth_grant,
-            oidc_token_grant=self.openid_connect_auth
+            default_grant=self.auth_grant,
+            oidc_grant=self.openid_connect_auth
         )
 
     def test_create_token_response_openid(self):
@@ -98,8 +98,8 @@ class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
         self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'openid')
         self.dispatcher = AuthorizationTokenGrantDispatcher(
             self.request_validator,
-            default_token_grant=self.auth_grant,
-            oidc_token_grant=self.openid_connect_auth
+            default_grant=self.auth_grant,
+            oidc_grant=self.openid_connect_auth
         )
 
     def test_create_token_response_openid_without_code(self):
@@ -115,8 +115,8 @@ class AuthTokenGrantDispatcherOAuthTest(DispatcherTest):
         self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'world')
         self.dispatcher = AuthorizationTokenGrantDispatcher(
             self.request_validator,
-            default_token_grant=self.auth_grant,
-            oidc_token_grant=self.openid_connect_auth
+            default_grant=self.auth_grant,
+            oidc_grant=self.openid_connect_auth
         )
 
     def test_create_token_response_oauth(self):

@@ -72,8 +72,8 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
         jwt = JWTToken(request_validator, token_generator,
                        token_expires_in, refresh_token_generator)
 
-        auth_grant_choice = AuthorizationCodeGrantDispatcher(default_auth_grant=auth_grant, oidc_auth_grant=openid_connect_auth)
-        implicit_grant_choice = ImplicitTokenGrantDispatcher(default_implicit_grant=implicit_grant, oidc_implicit_grant=openid_connect_implicit)
+        auth_grant_choice = AuthorizationCodeGrantDispatcher(default_grant=auth_grant, oidc_grant=openid_connect_auth)
+        implicit_grant_choice = ImplicitTokenGrantDispatcher(default_grant=implicit_grant, oidc_grant=openid_connect_implicit)
 
         # See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Combinations for valid combinations
         # internally our AuthorizationEndpoint will ensure they can appear in any order for any valid combination
@@ -90,7 +90,7 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
                                        },
                                        default_token_type=bearer)
 
-        token_grant_choice = AuthorizationTokenGrantDispatcher(request_validator, default_token_grant=auth_grant, oidc_token_grant=openid_connect_auth)
+        token_grant_choice = AuthorizationTokenGrantDispatcher(request_validator, default_grant=auth_grant, oidc_grant=openid_connect_auth)
 
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                                grant_types={
