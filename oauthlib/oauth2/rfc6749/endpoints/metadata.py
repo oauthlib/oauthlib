@@ -104,6 +104,8 @@ class MetadataEndpoint(BaseEndpoint):
         self.validate_metadata(claims, "response_types_supported", is_required=True, is_list=True)
         self.validate_metadata(claims, "response_modes_supported", is_list=True)
         if "code" in claims["response_types_supported"]:
+            claims.setdefault("code_challenge_methods_supported",
+                              list(endpoint._response_types["code"]._code_challenge_methods.keys()))
             self.validate_metadata(claims, "code_challenge_methods_supported", is_list=True)
         self.validate_metadata(claims, "authorization_endpoint", is_required=True, is_url=True)
 
