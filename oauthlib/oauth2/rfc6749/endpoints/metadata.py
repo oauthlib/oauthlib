@@ -89,17 +89,19 @@ class MetadataEndpoint(BaseEndpoint):
                     raise ValueError("array {}: {} must contains only string (not {})".format(key, array[key], elem))
 
     def validate_metadata_token(self, claims, endpoint):
-        claims.setdefault("grant_types_supported", list(endpoint._grant_types.keys()))
+        self._grant_types += list(endpoint._grant_types.keys())
         claims.setdefault("token_endpoint_auth_methods_supported", ["client_secret_post", "client_secret_basic"])
 
-        self.validate_metadata(claims, "grant_types_supported", is_list=True)
         self.validate_metadata(claims, "token_endpoint_auth_methods_supported", is_list=True)
         self.validate_metadata(claims, "token_endpoint_auth_signing_alg_values_supported", is_list=True)
         self.validate_metadata(claims, "token_endpoint", is_required=True, is_url=True)
 
     def validate_metadata_authorization(self, claims, endpoint):
-        claims.setdefault("response_types_supported", list(self._response_types.keys()))
+        claims.setdefault("response_types_supported",
+                          list(filter(lambda x: x != "none", endpoint._response_types.keys())))
         claims.setdefault("response_modes_supported", ["query", "fragment"])
+        if "token" in claims["response_types_supported"]:
+            self._grant_types.append("implicit")
 
         self.validate_metadata(claims, "response_types_supported", is_required=True, is_list=True)
         self.validate_metadata(claims, "response_modes_supported", is_list=True)
@@ -183,6 +185,7 @@ class MetadataEndpoint(BaseEndpoint):
         self.validate_metadata(claims, "op_policy_uri", is_url=True)
         self.validate_metadata(claims, "op_tos_uri", is_url=True)
 
+        self._grant_types = []
         for endpoint in self.endpoints:
             if isinstance(endpoint, TokenEndpoint):
                 self.validate_metadata_token(claims, endpoint)
@@ -192,4 +195,7 @@ class MetadataEndpoint(BaseEndpoint):
                 self.validate_metadata_revocation(claims, endpoint)
             if isinstance(endpoint, IntrospectEndpoint):
                 self.validate_metadata_introspection(claims, endpoint)
+
+        claims.setdefault("grant_types_supported", self._grant_types)
+        self.validate_metadata(claims, "grant_types_supported", is_list=True)
         return claims
