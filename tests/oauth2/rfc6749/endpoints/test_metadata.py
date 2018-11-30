@@ -49,7 +49,7 @@ class MetadataEndpointTest(TestCase):
             "jwks_uri": "https://foo.bar/certs",
             "scopes_supported": ["email", "profile"]
         })
-        self.assertEqual(metadata.claims, {
+        expected_claims = {
             "issuer": "https://foo.bar",
             "authorization_endpoint": "https://foo.bar/authorize",
             "introspection_endpoint": "https://foo.bar/introspect",
@@ -88,4 +88,12 @@ class MetadataEndpointTest(TestCase):
                 "client_secret_post",
                 "client_secret_basic"
             ]
-        })
+        }
+
+        def sort_list(claims):
+            for k in claims.keys():
+                claims[k] = sorted(claims[k])
+
+        sort_list(metadata.claims)
+        sort_list(expected_claims)
+        self.assertEqual(sorted(metadata.claims.items()), sorted(expected_claims.items()))
