@@ -1,4 +1,5 @@
 *.pyc
+.idea
 *.sublime-project
 *.sublime-workspace
 *.swp
@@ -22,6 +23,7 @@ develop-eggs
 pip-log.txt
 
 # Unit test / coverage reports
+.cache
 .coverage
 .tox
 coverage
