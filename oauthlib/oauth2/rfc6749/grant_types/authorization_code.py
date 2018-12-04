@@ -243,6 +243,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
             log.debug('Token request validation ok for %r.', request)
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
+            if e.status_code == 401:
+                headers.update({"WWW-Authenticate": "Basic"})
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=self.refresh_token, save_token=False)

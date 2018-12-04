@@ -185,7 +185,6 @@ class AccessDeniedError(OAuth2Error):
     The resource owner or authorization server denied the request.
     """
     error = 'access_denied'
-    status_code = 401
 
 
 class UnsupportedResponseTypeError(OAuth2Error):
@@ -198,12 +197,12 @@ class UnsupportedResponseTypeError(OAuth2Error):
 
 class InvalidScopeError(OAuth2Error):
     """
-    The requested scope is invalid, unknown, or malformed.
+    The requested scope is invalid, unknown, or malformed, or
+    exceeds the scope granted by the resource owner.
 
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
     error = 'invalid_scope'
-    status_code = 400
 
 
 class ServerError(OAuth2Error):
@@ -261,7 +260,6 @@ class UnauthorizedClientError(OAuth2Error):
     grant type.
     """
     error = 'unauthorized_client'
-    status_code = 401
 
 
 class UnsupportedGrantTypeError(OAuth2Error):
@@ -318,7 +316,6 @@ class ConsentRequired(OAuth2Error):
     completed without displaying a user interface for End-User consent.
     """
     error = 'consent_required'
-    status_code = 401
 
 
 class LoginRequired(OAuth2Error):
@@ -330,7 +327,6 @@ class LoginRequired(OAuth2Error):
     completed without displaying a user interface for End-User authentication.
     """
     error = 'login_required'
-    status_code = 401
 
 
 class CustomOAuth2Error(OAuth2Error):

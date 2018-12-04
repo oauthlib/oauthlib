@@ -69,6 +69,8 @@ class RevocationEndpoint(BaseEndpoint):
             response_body = e.json
             if self.enable_jsonp and request.callback:
                 response_body = '%s(%s);' % (request.callback, response_body)
+            if e.status_code == 401:
+                return {"WWW-Authenticate": "Basic"}, response_body, e.status_code
             return {}, response_body, e.status_code
 
         self.request_validator.revoke_token(request.token,

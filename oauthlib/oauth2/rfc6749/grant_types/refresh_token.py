@@ -63,6 +63,9 @@ class RefreshTokenGrant(GrantTypeBase):
             log.debug('Validating refresh token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
+            log.debug('Client error in token request, %s.', e)
+            if e.status_code == 401:
+                headers.update({"WWW-Authenticate": "Basic"})
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request,

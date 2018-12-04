@@ -63,6 +63,8 @@ class IntrospectEndpoint(BaseEndpoint):
             log.debug('Token introspect valid for %r.', request)
         except OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
+            if e.status_code == 401:
+                return {"WWW-Authenticate": "Basic"}, e.json, e.status_code
             return {}, e.json, e.status_code
 
         claims = self.request_validator.introspect_token(

@@ -86,7 +86,7 @@ class IntrospectEndpointTest(TestCase):
                           ('token_type_hint', 'access_token')])
         h, b, s = self.endpoint.create_introspect_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {})
+        self.assertEqual(h, {"WWW-Authenticate": "Basic"})
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
@@ -109,7 +109,7 @@ class IntrospectEndpointTest(TestCase):
                           ('token_type_hint', 'access_token')])
         h, b, s = self.endpoint.create_introspect_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {})
+        self.assertEqual(h, {"WWW-Authenticate": "Basic"})
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
