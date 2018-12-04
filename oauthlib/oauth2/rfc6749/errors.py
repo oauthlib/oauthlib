@@ -199,9 +199,11 @@ class UnsupportedResponseTypeError(OAuth2Error):
 class InvalidScopeError(OAuth2Error):
     """
     The requested scope is invalid, unknown, or malformed.
+
+    https://tools.ietf.org/html/rfc6749#section-5.2
     """
     error = 'invalid_scope'
-    status_code = 401
+    status_code = 400
 
 
 class ServerError(OAuth2Error):
