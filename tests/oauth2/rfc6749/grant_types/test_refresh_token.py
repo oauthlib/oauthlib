@@ -99,7 +99,7 @@ class RefreshTokenGrantTest(TestCase):
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
         self.assertEqual(token['error'], 'invalid_scope')
-        self.assertEqual(status_code, 401)
+        self.assertEqual(status_code, 400)
 
     def test_invalid_token(self):
         self.mock_validator.validate_refresh_token.return_value = False
