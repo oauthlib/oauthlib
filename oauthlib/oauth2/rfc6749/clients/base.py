@@ -13,8 +13,7 @@ import warnings
 
 from oauthlib.common import generate_token
 from oauthlib.oauth2.rfc6749 import tokens
-from oauthlib.oauth2.rfc6749.errors import (InsecureTransportError,
-                                            TokenExpiredError)
+from oauthlib.oauth2.rfc6749.errors import InsecureTransportError
 from oauthlib.oauth2.rfc6749.parameters import (parse_token_response,
                                                 prepare_token_request,
                                                 prepare_token_revocation_request)
@@ -87,7 +86,7 @@ class Client(object):
         :param mac_algorithm:  Hashing algorithm for MAC tokens.
 
         :param token: A dict of token attributes such as ``access_token``,
-        ``token_type`` and ``expires_at``.
+        ``token_type`` and ``expires_in``.
 
         :param scope: A list of default scopes to request authorization for.
 
@@ -114,7 +113,6 @@ class Client(object):
         self.redirect_url = redirect_url
         self.code = None
         self.expires_in = None
-        self._expires_at = None
         self.populate_token_attributes(self.token)
 
     @property
@@ -192,9 +190,6 @@ class Client(object):
 
         if not (self.access_token or self.token.get('access_token')):
             raise ValueError("Missing access token.")
-
-        if self._expires_at and self._expires_at < time.time():
-            raise TokenExpiredError()
 
         return case_insensitive_token_types[self.token_type.lower()](uri, http_method, body,
                                                                      headers, token_placement, **kwargs)
@@ -490,10 +485,6 @@ class Client(object):
 
         if 'expires_in' in response:
             self.expires_in = response.get('expires_in')
-            self._expires_at = time.time() + int(self.expires_in)
-
-        if 'expires_at' in response:
-            self._expires_at = int(response.get('expires_at'))
 
         if 'mac_key' in response:
             self.mac_key = response.get('mac_key')

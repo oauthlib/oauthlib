@@ -97,10 +97,6 @@ class OAuth2Error(Exception):
         return json.dumps(dict(self.twotuples))
 
 
-class TokenExpiredError(OAuth2Error):
-    error = 'token_expired'
-
-
 class InsecureTransportError(OAuth2Error):
     error = 'insecure_transport'
     description = 'OAuth 2 MUST utilize https.'

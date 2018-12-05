@@ -4,7 +4,7 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 
 from oauthlib import common
-from oauthlib.oauth2 import Client, InsecureTransportError, TokenExpiredError
+from oauthlib.oauth2 import Client, InsecureTransportError
 from oauthlib.oauth2.rfc6749 import utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
 
@@ -61,15 +61,6 @@ class ClientTest(TestCase):
         # Missing access token
         client = Client(self.client_id)
         self.assertRaises(ValueError, client.add_token, self.uri)
-
-        # Expired token
-        expired = 523549800
-        expired_token = {
-                'expires_at': expired,
-        }
-        client = Client(self.client_id, token=expired_token, access_token=self.access_token, token_type="Bearer")
-        self.assertRaises(TokenExpiredError, client.add_token, self.uri,
-                body=self.body, headers=self.headers)
 
         # The default token placement, bearer in auth header
         client = Client(self.client_id, access_token=self.access_token)
@@ -172,18 +163,6 @@ class ClientTest(TestCase):
                 body=self.body,
                 headers=self.headers,
                 issue_time=datetime.datetime.now())
-        # Expired Token
-        expired = 523549800
-        expired_token = {
-                'expires_at': expired,
-        }
-        client = Client(self.client_id, token=expired_token, token_type="MAC",
-                access_token=self.access_token, mac_key=self.mac_key,
-                mac_algorithm="hmac-sha-1")
-        self.assertRaises(TokenExpiredError, client.add_token, self.uri,
-                body=self.body,
-                headers=self.headers,
-                issue_time=datetime.datetime.now())
 
         # Add the Authorization header (draft 01)
         client = Client(self.client_id, token_type="MAC",
@@ -197,18 +176,6 @@ class ClientTest(TestCase):
         # Non-HTTPS
         insecure_uri = 'http://example.com/path?query=world'
         self.assertRaises(InsecureTransportError, client.add_token, insecure_uri,
-                body=self.body,
-                headers=self.headers,
-                draft=1)
-        # Expired Token
-        expired = 523549800
-        expired_token = {
-                'expires_at': expired,
-        }
-        client = Client(self.client_id, token=expired_token, token_type="MAC",
-                access_token=self.access_token, mac_key=self.mac_key,
-                mac_algorithm="hmac-sha-1")
-        self.assertRaises(TokenExpiredError, client.add_token, self.uri,
                 body=self.body,
                 headers=self.headers,
                 draft=1)

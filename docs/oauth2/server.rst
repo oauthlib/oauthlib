@@ -188,7 +188,7 @@ tokens as text.
 
     .. code-block:: python
 
-        expires_at = django.db.models.DateTimeField()
+        expires = django.db.models.DateTimeField()
 
 Authorization Code
 ^^^^^^^^^^^^^^^^^^
@@ -244,7 +244,7 @@ the token.
 
     .. code-block:: python
 
-        expires_at = django.db.models.DateTimeField()
+        expires = django.db.models.DateTimeField()
 
 2. Implement a validator
 ------------------------

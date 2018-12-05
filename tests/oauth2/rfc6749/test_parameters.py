@@ -87,7 +87,6 @@ class ParameterTests(TestCase):
         'state': state,
         'token_type': 'example',
         'expires_in': 3600,
-        'expires_at': 4600,
         'scope': ['abc']
     }
 
@@ -120,7 +119,6 @@ class ParameterTests(TestCase):
        'access_token': '2YotnFZFEjr1zCsicMWpAA',
        'token_type': 'example',
        'expires_in': 3600,
-       'expires_at': 4600,
        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
        'example_parameter': 'example_value',
        'scope': ['abc', 'def']
@@ -130,7 +128,6 @@ class ParameterTests(TestCase):
        'access_token': '2YotnFZFEjr1zCsicMWpAA',
        'token_type': 'example',
        'expires_in': 3600,
-       'expires_at': 4600,
        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
        'example_parameter': 'example_value'
     }
@@ -138,7 +135,6 @@ class ParameterTests(TestCase):
     json_notype_dict = {
        'access_token': '2YotnFZFEjr1zCsicMWpAA',
        'expires_in': 3600,
-       'expires_at': 4600,
        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
        'example_parameter': 'example_value',
     }

@@ -41,7 +41,6 @@ class MobileApplicationClientTest(TestCase):
         "access_token": "2YotnFZFEjr1zCsicMWpAA",
         "token_type": "example",
         "expires_in": 3600,
-        "expires_at": 4600,
         "scope": scope,
         "example_parameter": "example_value"
     }

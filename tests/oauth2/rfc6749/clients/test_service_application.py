@@ -78,7 +78,6 @@ mfvGGg3xNjTMO7IdrwIDAQAB
     @patch('time.time')
     def test_request_body(self, t):
         t.return_value = time()
-        self.token['expires_at'] = self.token['expires_in'] + t.return_value
 
         client = ServiceApplicationClient(
                 self.client_id, private_key=self.private_key)
@@ -139,7 +138,6 @@ mfvGGg3xNjTMO7IdrwIDAQAB
     @patch('time.time')
     def test_request_body_no_initial_private_key(self, t):
         t.return_value = time()
-        self.token['expires_at'] = self.token['expires_in'] + t.return_value
 
         client = ServiceApplicationClient(
                 self.client_id, private_key=None)
@@ -168,7 +166,6 @@ mfvGGg3xNjTMO7IdrwIDAQAB
     @patch('time.time')
     def test_parse_token_response(self, t):
         t.return_value = time()
-        self.token['expires_at'] = self.token['expires_in'] + t.return_value
 
         client = ServiceApplicationClient(self.client_id)
 

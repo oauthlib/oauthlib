@@ -45,7 +45,6 @@ class LegacyApplicationClientTest(TestCase):
         "access_token": "2YotnFZFEjr1zCsicMWpAA",
         "token_type": "example",
         "expires_in": 3600,
-        "expires_at": 4600,
         "scope": scope,
         "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",
         "example_parameter": "example_value"
