@@ -96,6 +96,27 @@ class OAuth2Error(Exception):
     def json(self):
         return json.dumps(dict(self.twotuples))
 
+    @property
+    def headers(self):
+        if self.status_code == 401:
+            """
+            https://tools.ietf.org/html/rfc6750#section-3
+
+            All challenges defined by this specification MUST use the auth-scheme
+            value "Bearer".  This scheme MUST be followed by one or more
+            auth-param values.
+            """
+            authvalues = [
+                "Bearer",
+                "error={}".format(self.error)
+            ]
+            if self.description:
+                authvalues.append("error_description={}".format(self.description))
+            if self.uri:
+                authvalues.append("error_uri={}".format(self.uri))
+            return {"WWW-Authenticate": ", ".join(authvalues)}
+        return {}
+
 
 class TokenExpiredError(OAuth2Error):
     error = 'token_expired'

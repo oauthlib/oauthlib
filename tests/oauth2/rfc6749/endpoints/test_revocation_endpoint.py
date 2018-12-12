@@ -49,7 +49,7 @@ class RevocationEndpointTest(TestCase):
                           ('token_type_hint', 'access_token')])
         h, b, s = self.endpoint.create_revocation_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {"WWW-Authenticate": "Basic"})
+        self.assertEqual(h, {"WWW-Authenticate": "Bearer, error=invalid_client"})
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
@@ -72,7 +72,7 @@ class RevocationEndpointTest(TestCase):
                           ('token_type_hint', 'access_token')])
         h, b, s = self.endpoint.create_revocation_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {"WWW-Authenticate": "Basic"})
+        self.assertEqual(h, {"WWW-Authenticate": "Bearer, error=invalid_client"})
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
