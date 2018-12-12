@@ -108,12 +108,12 @@ class OAuth2Error(Exception):
             """
             authvalues = [
                 "Bearer",
-                "error={}".format(self.error)
+                'error="{}"'.format(self.error)
             ]
             if self.description:
-                authvalues.append("error_description={}".format(self.description))
+                authvalues.append('error_description="{}"'.format(self.description))
             if self.uri:
-                authvalues.append("error_uri={}".format(self.uri))
+                authvalues.append('error_uri="{}"'.format(self.uri))
             return {"WWW-Authenticate": ", ".join(authvalues)}
         return {}
 
