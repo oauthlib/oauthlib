@@ -29,7 +29,9 @@ class BackendApplicationClient(Client):
     Since the client authentication is used as the authorization grant,
     no additional authorization request is needed.
     """
-
+    
+    grant_type = 'client_credentials'
+    
     def prepare_request_body(self, body='', scope=None,
                              include_client_id=None, **kwargs):
         """Add the client credentials to the request body.
@@ -69,5 +71,5 @@ class BackendApplicationClient(Client):
         """
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
-        return prepare_token_request('client_credentials', body=body,
+        return prepare_token_request(self.grant_type, body=body,
                                      scope=scope, **kwargs)

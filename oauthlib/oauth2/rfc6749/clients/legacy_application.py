@@ -34,6 +34,8 @@ class LegacyApplicationClient(Client):
     credentials is beyond the scope of this specification.  The client
     MUST discard the credentials once an access token has been obtained.
     """
+    
+    grant_type = 'password'
 
     def __init__(self, client_id, **kwargs):
         super(LegacyApplicationClient, self).__init__(client_id, **kwargs)
@@ -79,5 +81,5 @@ class LegacyApplicationClient(Client):
         """
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
-        return prepare_token_request('password', body=body, username=username,
+        return prepare_token_request(self.grant_type, body=body, username=username,
                                      password=password, scope=scope, **kwargs)

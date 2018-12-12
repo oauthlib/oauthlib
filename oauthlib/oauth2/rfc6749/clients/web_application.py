@@ -34,6 +34,8 @@ class WebApplicationClient(Client):
     browser) and capable of receiving incoming requests (via redirection)
     from the authorization server.
     """
+    
+    grant_type = 'authorization_code'
 
     def __init__(self, client_id, code=None, **kwargs):
         super(WebApplicationClient, self).__init__(client_id, **kwargs)
@@ -151,7 +153,7 @@ class WebApplicationClient(Client):
 
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
-        return prepare_token_request('authorization_code', code=code, body=body,
+        return prepare_token_request(self.grant_type, code=code, body=body,
                                      redirect_uri=redirect_uri, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
