@@ -89,7 +89,7 @@ class MetadataEndpoint(BaseEndpoint):
                     raise ValueError("array {}: {} must contains only string (not {})".format(key, array[key], elem))
 
     def validate_metadata_token(self, claims, endpoint):
-        self._grant_types += list(endpoint._grant_types.keys())
+        self._grant_types.extend(endpoint._grant_types.keys())
         claims.setdefault("token_endpoint_auth_methods_supported", ["client_secret_post", "client_secret_basic"])
 
         self.validate_metadata(claims, "token_endpoint_auth_methods_supported", is_list=True)
