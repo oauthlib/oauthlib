@@ -173,10 +173,12 @@ class Client(object):
             params.append(('oauth_verifier', self.verifier))
 
         # providing body hash for requests other than x-www-form-urlencoded
-        # as described in http://oauth.googlecode.com/svn/spec/ext/body_hash/1.0/oauth-bodyhash.html
+        # as described in https://tools.ietf.org/html/draft-eaton-oauth-bodyhash-00#section-4.1.1
         # 4.1.1. When to include the body hash
         #    *  [...] MUST NOT include an oauth_body_hash parameter on requests with form-encoded request bodies
         #    *  [...] SHOULD include the oauth_body_hash parameter on all other requests.
+        # Note that SHA-1 is vulnerable. The spec acknowledges that in https://tools.ietf.org/html/draft-eaton-oauth-bodyhash-00#section-6.2
+        # At this time, no further effort has been made to replace SHA-1 for the OAuth Request Body Hash extension.
         content_type = request.headers.get('Content-Type', None)
         content_type_eligible = content_type and content_type.find('application/x-www-form-urlencoded') < 0
         if request.body is not None and content_type_eligible:
