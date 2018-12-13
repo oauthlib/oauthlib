@@ -108,7 +108,7 @@ class MetadataEndpoint(BaseEndpoint):
         claims.setdefault("response_modes_supported", ["query", "fragment"])
 
         # The OAuth2.0 Implicit flow is defined as a "grant type" but it is not
-        # using the "token" endpoint, at such, we have to add it explicitly to
+        # using the "token" endpoint, as such, we have to add it explicitly to
         # the list of "grant_types_supported" when enabled.
         if "token" in claims["response_types_supported"]:
             self._grant_types.append("implicit")
