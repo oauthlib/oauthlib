@@ -253,7 +253,7 @@ the token.
 
     .. code-block:: python
 
-        challenge = django.db.models.CharField(max_length=100)
+        challenge = django.db.models.CharField(max_length=128)
         challenge_method = django.db.models.CharField(max_length=6)
 
 
