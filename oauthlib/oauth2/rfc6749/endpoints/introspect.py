@@ -57,24 +57,25 @@ class IntrospectEndpoint(BaseEndpoint):
         an introspection response indicating the token is not active
         as described in Section 2.2.
         """
+        headers = {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+        }
         request = Request(uri, http_method, body, headers)
         try:
             self.validate_introspect_request(request)
             log.debug('Token introspect valid for %r.', request)
         except OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
-            return e.headers, e.json, e.status_code
+            headers.update(e.headers)
+            return headers, e.json, e.status_code
 
         claims = self.request_validator.introspect_token(
             request.token,
             request.token_type_hint,
             request
         )
-        headers = {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-            'Pragma': 'no-cache',
-        }
         if claims is None:
             return headers, json.dumps(dict(active=False)), 200
         if "active" in claims:

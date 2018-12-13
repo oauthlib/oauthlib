@@ -24,6 +24,11 @@ class RevocationEndpointTest(TestCase):
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
+        self.resp_h = {
+            'Cache-Control': 'no-store',
+            'Content-Type': 'application/json',
+            'Pragma': 'no-cache'
+        }
 
     def test_revoke_token(self):
         for token_type in ('access_token', 'refresh_token', 'invalid'):
@@ -49,7 +54,12 @@ class RevocationEndpointTest(TestCase):
                           ('token_type_hint', 'access_token')])
         h, b, s = self.endpoint.create_revocation_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {"WWW-Authenticate": 'Bearer, error="invalid_client"'})
+        self.assertEqual(h, {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+            "WWW-Authenticate": 'Bearer, error="invalid_client"'
+        })
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
@@ -72,7 +82,12 @@ class RevocationEndpointTest(TestCase):
                           ('token_type_hint', 'access_token')])
         h, b, s = self.endpoint.create_revocation_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {"WWW-Authenticate": 'Bearer, error="invalid_client"'})
+        self.assertEqual(h, {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+            "WWW-Authenticate": 'Bearer, error="invalid_client"'
+        })
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
@@ -96,12 +111,12 @@ class RevocationEndpointTest(TestCase):
                           ('token_type_hint', 'refresh_token')])
         h, b, s = endpoint.create_revocation_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {})
+        self.assertEqual(h, self.resp_h)
         self.assertEqual(loads(b)['error'], 'unsupported_token_type')
         self.assertEqual(s, 400)
 
         h, b, s = endpoint.create_revocation_response(self.uri,
                 headers=self.headers, body='')
-        self.assertEqual(h, {})
+        self.assertEqual(h, self.resp_h)
         self.assertEqual(loads(b)['error'], 'invalid_request')
         self.assertEqual(s, 400)
