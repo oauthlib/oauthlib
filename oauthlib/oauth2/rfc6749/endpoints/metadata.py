@@ -89,6 +89,12 @@ class MetadataEndpoint(BaseEndpoint):
                     raise ValueError("array {}: {} must contains only string (not {})".format(key, array[key], elem))
 
     def validate_metadata_token(self, claims, endpoint):
+        """
+        If the token endpoint is used in the grant type, the value of this
+        parameter MUST be the same as the value of the "grant_type"
+        parameter passed to the token endpoint defined in the grant type
+        definition.
+        """
         self._grant_types.extend(endpoint._grant_types.keys())
         claims.setdefault("token_endpoint_auth_methods_supported", ["client_secret_post", "client_secret_basic"])
 
@@ -100,6 +106,10 @@ class MetadataEndpoint(BaseEndpoint):
         claims.setdefault("response_types_supported",
                           list(filter(lambda x: x != "none", endpoint._response_types.keys())))
         claims.setdefault("response_modes_supported", ["query", "fragment"])
+
+        # The OAuth2.0 Implicit flow is defined as a "grant type" but it is not
+        # using the "token" endpoint, at such, we have to add it explicitly to
+        # the list of "grant_types_supported" when enabled.
         if "token" in claims["response_types_supported"]:
             self._grant_types.append("implicit")
 
@@ -196,6 +206,8 @@ class MetadataEndpoint(BaseEndpoint):
             if isinstance(endpoint, IntrospectEndpoint):
                 self.validate_metadata_introspection(claims, endpoint)
 
+        # "grant_types_supported" is a combination of all OAuth2 grant types
+        # allowed in the current provider implementation.
         claims.setdefault("grant_types_supported", self._grant_types)
         self.validate_metadata(claims, "grant_types_supported", is_list=True)
         return claims
