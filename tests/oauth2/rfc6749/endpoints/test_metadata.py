@@ -14,6 +14,33 @@ class MetadataEndpointTest(TestCase):
             "issuer": 'https://foo.bar'
         }
 
+    def test_openid_oauth2_preconfigured(self):
+        default_claims = {
+            "issuer": 'https://foo.bar',
+            "authorization_endpoint": "https://foo.bar/authorize",
+            "revocation_endpoint": "https://foo.bar/revoke",
+            "introspection_endpoint": "https://foo.bar/introspect",
+            "token_endpoint": "https://foo.bar/token"
+        }
+        from oauthlib.oauth2 import Server as OAuth2Server
+        from oauthlib.openid import Server as OpenIDServer
+
+        endpoint = OAuth2Server(None)
+        metadata = MetadataEndpoint([endpoint], default_claims)
+        oauth2_claims = metadata.claims
+
+        endpoint = OpenIDServer(None)
+        metadata = MetadataEndpoint([endpoint], default_claims)
+        openid_claims = metadata.claims
+
+        # Pure OAuth2 Authorization Metadata are similar with OpenID but
+        # response_type not! (OIDC contains "id_token" and hybrid flows)
+        del oauth2_claims['response_types_supported']
+        del openid_claims['response_types_supported']
+
+        self.maxDiff = None
+        self.assertEqual(openid_claims, oauth2_claims)
+
     def test_token_endpoint(self):
         endpoint = TokenEndpoint(None, None, grant_types={"password": None})
         metadata = MetadataEndpoint([endpoint], {
