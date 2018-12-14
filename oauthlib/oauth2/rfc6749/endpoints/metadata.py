@@ -19,6 +19,7 @@ from .authorization import AuthorizationEndpoint
 from .introspect import IntrospectEndpoint
 from .token import TokenEndpoint
 from .revocation import RevocationEndpoint
+from .. import grant_types
 
 
 log = logging.getLogger(__name__)
@@ -116,8 +117,12 @@ class MetadataEndpoint(BaseEndpoint):
         self.validate_metadata(claims, "response_types_supported", is_required=True, is_list=True)
         self.validate_metadata(claims, "response_modes_supported", is_list=True)
         if "code" in claims["response_types_supported"]:
+            code_grant = endpoint._response_types["code"]
+            if not isinstance(code_grant, grant_types.AuthorizationCodeGrant) and hasattr(code_grant, "default_grant"):
+                code_grant = code_grant.default_grant
+
             claims.setdefault("code_challenge_methods_supported",
-                              list(endpoint._response_types["code"]._code_challenge_methods.keys()))
+                              list(code_grant._code_challenge_methods.keys()))
             self.validate_metadata(claims, "code_challenge_methods_supported", is_list=True)
         self.validate_metadata(claims, "authorization_endpoint", is_required=True, is_url=True)
 
