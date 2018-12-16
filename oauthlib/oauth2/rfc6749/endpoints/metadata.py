@@ -98,7 +98,7 @@ class MetadataEndpoint(BaseEndpoint):
         self.validate_metadata(claims, "token_endpoint", is_required=True, is_url=True)
 
     def validate_metadata_authorization(self, claims, endpoint):
-        claims.setdefault("response_types_supported", list(self._response_types.keys()))
+        claims.setdefault("response_types_supported", list(endpoint._response_types.keys()))
         claims.setdefault("response_modes_supported", ["query", "fragment"])
 
         self.validate_metadata(claims, "response_types_supported", is_required=True, is_list=True)
