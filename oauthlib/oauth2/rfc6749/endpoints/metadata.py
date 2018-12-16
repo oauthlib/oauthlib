@@ -19,6 +19,7 @@ from .authorization import AuthorizationEndpoint
 from .introspect import IntrospectEndpoint
 from .token import TokenEndpoint
 from .revocation import RevocationEndpoint
+from .. import grant_types
 
 
 log = logging.getLogger(__name__)
@@ -89,21 +90,39 @@ class MetadataEndpoint(BaseEndpoint):
                     raise ValueError("array {}: {} must contains only string (not {})".format(key, array[key], elem))
 
     def validate_metadata_token(self, claims, endpoint):
-        claims.setdefault("grant_types_supported", list(endpoint._grant_types.keys()))
+        """
+        If the token endpoint is used in the grant type, the value of this
+        parameter MUST be the same as the value of the "grant_type"
+        parameter passed to the token endpoint defined in the grant type
+        definition.
+        """
+        self._grant_types.extend(endpoint._grant_types.keys())
         claims.setdefault("token_endpoint_auth_methods_supported", ["client_secret_post", "client_secret_basic"])
 
-        self.validate_metadata(claims, "grant_types_supported", is_list=True)
         self.validate_metadata(claims, "token_endpoint_auth_methods_supported", is_list=True)
         self.validate_metadata(claims, "token_endpoint_auth_signing_alg_values_supported", is_list=True)
         self.validate_metadata(claims, "token_endpoint", is_required=True, is_url=True)
 
     def validate_metadata_authorization(self, claims, endpoint):
-        claims.setdefault("response_types_supported", list(endpoint._response_types.keys()))
+        claims.setdefault("response_types_supported",
+                          list(filter(lambda x: x != "none", endpoint._response_types.keys())))
         claims.setdefault("response_modes_supported", ["query", "fragment"])
+
+        # The OAuth2.0 Implicit flow is defined as a "grant type" but it is not
+        # using the "token" endpoint, as such, we have to add it explicitly to
+        # the list of "grant_types_supported" when enabled.
+        if "token" in claims["response_types_supported"]:
+            self._grant_types.append("implicit")
 
         self.validate_metadata(claims, "response_types_supported", is_required=True, is_list=True)
         self.validate_metadata(claims, "response_modes_supported", is_list=True)
         if "code" in claims["response_types_supported"]:
+            code_grant = endpoint._response_types["code"]
+            if not isinstance(code_grant, grant_types.AuthorizationCodeGrant) and hasattr(code_grant, "default_grant"):
+                code_grant = code_grant.default_grant
+
+            claims.setdefault("code_challenge_methods_supported",
+                              list(code_grant._code_challenge_methods.keys()))
             self.validate_metadata(claims, "code_challenge_methods_supported", is_list=True)
         self.validate_metadata(claims, "authorization_endpoint", is_required=True, is_url=True)
 
@@ -181,6 +200,7 @@ class MetadataEndpoint(BaseEndpoint):
         self.validate_metadata(claims, "op_policy_uri", is_url=True)
         self.validate_metadata(claims, "op_tos_uri", is_url=True)
 
+        self._grant_types = []
         for endpoint in self.endpoints:
             if isinstance(endpoint, TokenEndpoint):
                 self.validate_metadata_token(claims, endpoint)
@@ -190,4 +210,9 @@ class MetadataEndpoint(BaseEndpoint):
                 self.validate_metadata_revocation(claims, endpoint)
             if isinstance(endpoint, IntrospectEndpoint):
                 self.validate_metadata_introspection(claims, endpoint)
+
+        # "grant_types_supported" is a combination of all OAuth2 grant types
+        # allowed in the current provider implementation.
+        claims.setdefault("grant_types_supported", self._grant_types)
+        self.validate_metadata(claims, "grant_types_supported", is_list=True)
         return claims
