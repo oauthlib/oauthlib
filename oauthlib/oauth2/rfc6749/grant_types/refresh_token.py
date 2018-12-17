@@ -54,11 +54,7 @@ class RefreshTokenGrant(GrantTypeBase):
         .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
-        headers = {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-            'Pragma': 'no-cache',
-        }
+        headers = self._get_default_headers()
         try:
             log.debug('Validating refresh token request, %r.', request)
             self.validate_token_request(request)

@@ -100,7 +100,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
     def create_authorization_code(self, request):
         """
         Generates an authorization grant represented as a dictionary.
-        
+
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
@@ -233,11 +233,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                               oauthlib.oauth2.BearerToken.
 
         """
-        headers = {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-            'Pragma': 'no-cache',
-        }
+        headers = self._get_default_headers()
         try:
             self.validate_token_request(request)
             log.debug('Token request validation ok for %r.', request)

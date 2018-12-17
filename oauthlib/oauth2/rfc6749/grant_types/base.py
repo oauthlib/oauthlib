@@ -216,3 +216,11 @@ class GrantTypeBase(object):
 
         raise NotImplementedError(
             'Subclasses must set a valid default_response_mode')
+
+    def _get_default_headers(self):
+        """Create default headers for grant responses."""
+        return {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+        }
