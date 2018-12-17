@@ -8,7 +8,6 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from oauthlib import common
-from oauthlib.uri_validate import is_absolute_uri
 
 from .. import errors
 from .base import GrantTypeBase
@@ -307,29 +306,7 @@ class ImplicitGrant(GrantTypeBase):
 
         # OPTIONAL. As described in Section 3.1.2.
         # https://tools.ietf.org/html/rfc6749#section-3.1.2
-        if request.redirect_uri is not None:
-            request.using_default_redirect_uri = False
-            log.debug('Using provided redirect_uri %s', request.redirect_uri)
-            if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(request=request)
-
-            # The authorization server MUST verify that the redirection URI
-            # to which it will redirect the access token matches a
-            # redirection URI registered by the client as described in
-            # Section 3.1.2.
-            # https://tools.ietf.org/html/rfc6749#section-3.1.2
-            if not self.request_validator.validate_redirect_uri(
-                    request.client_id, request.redirect_uri, request):
-                raise errors.MismatchingRedirectURIError(request=request)
-        else:
-            request.redirect_uri = self.request_validator.get_default_redirect_uri(
-                request.client_id, request)
-            request.using_default_redirect_uri = True
-            log.debug('Using default redirect_uri %s.', request.redirect_uri)
-            if not request.redirect_uri:
-                raise errors.MissingRedirectURIError(request=request)
-            if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(request=request)
+        self._handle_redirects(request)
 
         # Then check for normal errors.
 
