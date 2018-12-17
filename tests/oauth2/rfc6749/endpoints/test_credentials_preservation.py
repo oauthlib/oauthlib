@@ -24,6 +24,7 @@ class PreservationTest(TestCase):
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = self.DEFAULT_REDIRECT_URI
+        self.validator.get_code_challenge.return_value = None
         self.validator.authenticate_client.side_effect = self.set_client
         self.web = WebApplicationServer(self.validator)
         self.mobile = MobileApplicationServer(self.validator)

@@ -1,0 +1,48 @@
+{
+  "errors": [],
+  "generated_at": "2018-12-13T10:39:37Z",
+  "results": [
+    {
+      "code": "182         if request.body is not None and content_type_eligible:\n183             params.append(('oauth_body_hash', base64.b64encode(hashlib.sha1(request.body.encode('utf-8')).digest()).decode('utf-8')))\n184 \n",
+      "filename": "oauthlib/oauth1/rfc5849/__init__.py",
+      "issue_confidence": "HIGH",
+      "issue_severity": "MEDIUM",
+      "issue_text": "Use of insecure MD2, MD4, MD5, or SHA1 hash function.",
+      "line_number": 183,
+      "line_range": [
+        183
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b303-md5",
+      "test_id": "B303",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "45     def __init__(self, endpoints, claims={}, raise_errors=True):\n46         assert isinstance(claims, dict)\n47         for endpoint in endpoints:\n",
+      "filename": "oauthlib/oauth2/rfc6749/endpoints/metadata.py",
+      "issue_confidence": "HIGH",
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 46,
+      "line_range": [
+        46
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "47         for endpoint in endpoints:\n48             assert isinstance(endpoint, BaseEndpoint)\n49 \n",
+      "filename": "oauthlib/oauth2/rfc6749/endpoints/metadata.py",
+      "issue_confidence": "HIGH",
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 48,
+      "line_range": [
+        48
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    }
+  ]
+}

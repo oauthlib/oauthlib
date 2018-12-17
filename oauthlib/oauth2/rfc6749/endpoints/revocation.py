@@ -58,6 +58,11 @@ class RevocationEndpoint(BaseEndpoint):
         An invalid token type hint value is ignored by the authorization server
         and does not influence the revocation response.
         """
+        headers = {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+        }
         request = Request(
             uri, http_method=http_method, body=body, headers=headers)
         try:
@@ -68,7 +73,8 @@ class RevocationEndpoint(BaseEndpoint):
             response_body = e.json
             if self.enable_jsonp and request.callback:
                 response_body = '%s(%s);' % (request.callback, response_body)
-            return {}, response_body, e.status_code
+            headers.update(e.headers)
+            return headers, response_body, e.status_code
 
         self.request_validator.revoke_token(request.token,
                                             request.token_type_hint, request)

@@ -262,25 +262,29 @@ class RequestValidator(object):
         """Persist the authorization_code.
 
         The code should at minimum be stored with:
-            - the client_id (client_id)
-            - the redirect URI used (request.redirect_uri)
-            - a resource owner / user (request.user)
-            - the authorized scopes (request.scopes)
-            - the client state, if given (code.get('state'))
+            - the client_id (``client_id``)
+            - the redirect URI used (``request.redirect_uri``)
+            - a resource owner / user (``request.user``)
+            - the authorized scopes (``request.scopes``)
+            - the client state, if given (``code.get('state')``)
 
-        The 'code' argument is actually a dictionary, containing at least a
-        'code' key with the actual authorization code:
+        To support PKCE, you MUST associate the code with:
+            - Code Challenge (``request.code_challenge``) and
+            - Code Challenge Method (``request.code_challenge_method``)
 
-            {'code': 'sdf345jsdf0934f'}
+        The ``code`` argument is actually a dictionary, containing at least a
+        ``code`` key with the actual authorization code:
 
-        It may also have a 'state' key containing a nonce for the client, if it
+            ``{'code': 'sdf345jsdf0934f'}``
+
+        It may also have a ``state`` key containing a nonce for the client, if it
         chose to send one.  That value should be saved and used in
-        'validate_code'.
+        ``.validate_code``.
 
-        It may also have a 'claims' parameter which, when present, will be a dict
+        It may also have a ``claims`` parameter which, when present, will be a dict
         deserialized from JSON as described at
         http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
-        This value should be saved in this method and used again in 'validate_code'.
+        This value should be saved in this method and used again in ``.validate_code``.
 
         :param client_id: Unicode client identifier.
         :param code: A dict of the authorization code grant and, optionally, state.
@@ -564,6 +568,11 @@ class RequestValidator(object):
 
         The request.claims property, if it was given, should assigned a dict.
 
+        If PKCE is enabled (see 'is_pkce_required' and 'save_authorization_code')
+        you MUST set the following based on the information stored:
+            - request.code_challenge
+            - request.code_challenge_method
+
         :param client_id: Unicode client identifier.
         :param code: Unicode authorization code.
         :param client: Client object set by you, see ``.authenticate_client``.
@@ -740,5 +749,80 @@ class RequestValidator(object):
             - OpenIDConnectAuthCode
             - OpenIDConnectImplicit
             - OpenIDConnectHybrid
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def is_pkce_required(self, client_id, request):
+        """Determine if current request requires PKCE. Default, False.
+        This is called for both "authorization" and "token" requests.
+
+        Override this method by ``return True`` to enable PKCE for everyone.
+        You might want to enable it only for public clients.
+        Note that PKCE can also be used in addition of a client authentication.
+
+        OAuth 2.0 public clients utilizing the Authorization Code Grant are
+        susceptible to the authorization code interception attack.  This
+        specification describes the attack as well as a technique to mitigate
+        against the threat through the use of Proof Key for Code Exchange
+        (PKCE, pronounced "pixy"). See `RFC7636`_.
+
+        :param client_id: Client identifier.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :rtype: True or False
+
+        Method is used by:
+            - Authorization Code Grant
+
+        .. _`RFC7636`: https://tools.ietf.org/html/rfc7636
+        """
+        return False
+
+    def get_code_challenge(self, code, request):
+        """Is called for every "token" requests.
+
+        When the server issues the authorization code in the authorization
+        response, it MUST associate the ``code_challenge`` and
+        ``code_challenge_method`` values with the authorization code so it can
+        be verified later.
+
+        Typically, the ``code_challenge`` and ``code_challenge_method`` values
+        are stored in encrypted form in the ``code`` itself but could
+        alternatively be stored on the server associated with the code.  The
+        server MUST NOT include the ``code_challenge`` value in client requests
+        in a form that other entities can extract.
+
+        Return the ``code_challenge`` associated to the code.
+        If ``None`` is returned, code is considered to not be associated to any
+        challenges.
+
+        :param code: Authorization code.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :rtype: code_challenge string
+
+        Method is used by:
+            - Authorization Code Grant - when PKCE is active
+
+        """
+        return None
+
+    def get_code_challenge_method(self, code, request):
+        """Is called during the "token" request processing, when a
+        ``code_verifier`` and a ``code_challenge`` has been provided.
+
+        See ``.get_code_challenge``.
+
+        Must return ``plain`` or ``S256``. You can return a custom value if you have
+        implemented your own ``AuthorizationCodeGrant`` class.
+
+        :param code: Authorization code.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :rtype: code_challenge_method string
+
+        Method is used by:
+            - Authorization Code Grant - when PKCE is active
+
         """
         raise NotImplementedError('Subclasses must implement this method.')
