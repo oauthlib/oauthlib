@@ -117,8 +117,4 @@ class RevocationEndpoint(BaseEndpoint):
         """
         self._raise_on_missing_token(request)
         self._raise_on_invalid_client(request)
-
-        if (request.token_type_hint and
-                request.token_type_hint in self.valid_token_types and
-                request.token_type_hint not in self.supported_token_types):
-            raise UnsupportedTokenTypeError(request=request)
+        self._raise_on_unspported_token(request)

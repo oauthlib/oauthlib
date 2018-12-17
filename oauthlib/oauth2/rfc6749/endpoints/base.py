@@ -13,7 +13,7 @@ import logging
 
 from ..errors import (FatalClientError, OAuth2Error, ServerError,
                       TemporarilyUnavailableError, InvalidRequestError,
-                      InvalidClientError)
+                      InvalidClientError, UnsupportedTokenTypeError)
 
 log = logging.getLogger(__name__)
 
@@ -54,6 +54,13 @@ class BaseEndpoint(object):
         elif not self.request_validator.authenticate_client_id(request.client_id, request):
             log.debug('Client authentication failed, %r.', request)
             raise InvalidClientError(request=request)
+
+    def _raise_on_unspported_token(self, request):
+        """Raise on unsupported tokens."""
+        if (request.token_type_hint and
+            request.token_type_hint in self.valid_token_types and
+            request.token_type_hint not in self.supported_token_types):
+            raise UnsupportedTokenTypeError(request=request)
 
 
 def catch_errors_and_unavailability(f):
