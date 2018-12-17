@@ -23,6 +23,7 @@ class AuthorizationEndpointTest(TestCase):
 
     def setUp(self):
         self.mock_validator = mock.MagicMock()
+        self.mock_validator.get_code_challenge.return_value = None
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
         auth_code = AuthorizationCodeGrant(
             request_validator=self.mock_validator)
@@ -117,6 +118,7 @@ class TokenEndpointTest(TestCase):
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = set_user
+        self.mock_validator.get_code_challenge.return_value = None
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
         auth_code = AuthorizationCodeGrant(
             request_validator=self.mock_validator)
@@ -218,6 +220,7 @@ class SignedTokenEndpointTest(TestCase):
             return True
 
         self.mock_validator = mock.MagicMock()
+        self.mock_validator.get_code_challenge.return_value = None
         self.mock_validator.authenticate_client.side_effect = set_user
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
 
