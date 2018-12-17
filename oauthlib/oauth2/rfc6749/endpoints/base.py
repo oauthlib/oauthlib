@@ -55,7 +55,7 @@ class BaseEndpoint(object):
             log.debug('Client authentication failed, %r.', request)
             raise InvalidClientError(request=request)
 
-    def _raise_on_unspported_token(self, request):
+    def _raise_on_unsupported_token(self, request):
         """Raise on unsupported tokens."""
         if (request.token_type_hint and
             request.token_type_hint in self.valid_token_types and

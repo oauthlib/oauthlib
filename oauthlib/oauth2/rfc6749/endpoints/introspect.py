@@ -119,4 +119,4 @@ class IntrospectEndpoint(BaseEndpoint):
         """
         self._raise_on_missing_token(request)
         self._raise_on_invalid_client(request)
-        self._raise_on_unspported_token(request)
+        self._raise_on_unsupported_token(request)
