@@ -13,8 +13,7 @@ import logging
 
 from oauthlib.common import Request
 
-from ..errors import (InvalidClientError, InvalidRequestError, OAuth2Error,
-                      UnsupportedTokenTypeError)
+from ..errors import OAuth2Error, UnsupportedTokenTypeError
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
 log = logging.getLogger(__name__)
@@ -117,14 +116,7 @@ class RevocationEndpoint(BaseEndpoint):
         .. _`RFC6749`: https://tools.ietf.org/html/rfc6749
         """
         self._raise_on_missing_token(request)
-
-        if self.request_validator.client_authentication_required(request):
-            if not self.request_validator.authenticate_client(request):
-                log.debug('Client authentication failed, %r.', request)
-                raise InvalidClientError(request=request)
-        elif not self.request_validator.authenticate_client_id(request.client_id, request):
-            log.debug('Client authentication failed, %r.', request)
-            raise InvalidClientError(request=request)
+        self._raise_on_invalid_client(request)
 
         if (request.token_type_hint and
                 request.token_type_hint in self.valid_token_types and
