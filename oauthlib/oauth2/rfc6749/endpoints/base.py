@@ -12,7 +12,7 @@ import functools
 import logging
 
 from ..errors import (FatalClientError, OAuth2Error, ServerError,
-                      TemporarilyUnavailableError)
+                      TemporarilyUnavailableError, InvalidRequestError)
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +38,12 @@ class BaseEndpoint(object):
     @catch_errors.setter
     def catch_errors(self, catch_errors):
         self._catch_errors = catch_errors
+
+    def _raise_on_missing_token(self, request):
+        """Raise error on missing token."""
+        if not request.token:
+            raise InvalidRequestError(request=request,
+                                      description='Missing token parameter.')
 
 
 def catch_errors_and_unavailability(f):

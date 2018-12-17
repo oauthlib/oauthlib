@@ -117,10 +117,8 @@ class IntrospectEndpoint(BaseEndpoint):
         .. _`section 1.5`: http://tools.ietf.org/html/rfc6749#section-1.5
         .. _`RFC6749`: http://tools.ietf.org/html/rfc6749
         """
-        if not request.token:
-            raise InvalidRequestError(request=request,
-                                      description='Missing token parameter.')
-
+        self._raise_on_missing_token(request)
+        
         if self.request_validator.client_authentication_required(request):
             if not self.request_validator.authenticate_client(request):
                 log.debug('Client authentication failed, %r.', request)

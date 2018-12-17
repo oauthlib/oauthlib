@@ -116,9 +116,7 @@ class RevocationEndpoint(BaseEndpoint):
         .. _`Section 4.1.2`: https://tools.ietf.org/html/draft-ietf-oauth-revocation-11#section-4.1.2
         .. _`RFC6749`: https://tools.ietf.org/html/rfc6749
         """
-        if not request.token:
-            raise InvalidRequestError(request=request,
-                                      description='Missing token parameter.')
+        self._raise_on_missing_token(request)
 
         if self.request_validator.client_authentication_required(request):
             if not self.request_validator.authenticate_client(request):
@@ -126,7 +124,7 @@ class RevocationEndpoint(BaseEndpoint):
                 raise InvalidClientError(request=request)
         elif not self.request_validator.authenticate_client_id(request.client_id, request):
             log.debug('Client authentication failed, %r.', request)
-            raise InvalidClientError(request=request) 
+            raise InvalidClientError(request=request)
 
         if (request.token_type_hint and
                 request.token_type_hint in self.valid_token_types and
