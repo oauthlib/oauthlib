@@ -22,12 +22,10 @@ class DeviceCodeGrant(GrantTypeBase):
     """`Device Code Grant`_
 
     The authorization code grant type is used to obtain both access
-    tokens and refresh tokens and is optimized for confidential clients.
-    Since this is a redirection-based flow, the client must be capable of
-    interacting with the resource owner's user-agent (typically a web
-    browser) and capable of receiving incoming requests (via redirection)
-    from the authorization server::
+    tokens and refresh tokens and is optimized for embedded or input restricted clients
+    
 
+    
         +----------+
         | Resource |
         |   Owner  |
@@ -91,7 +89,7 @@ class DeviceCodeGrant(GrantTypeBase):
          step (C).  If valid, the authorization server responds back with
          an access token and, optionally, a refresh token.
 
-    .. _`Authorization Code Grant`: https://tools.ietf.org/html/rfc6749#section-4.1
+    .. _`Device code grant`: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-13#section-3.1
     """
 
     default_response_mode = 'query'
@@ -107,7 +105,7 @@ class DeviceCodeGrant(GrantTypeBase):
         grant = {'code': common.generate_token()}
         if hasattr(request, 'state') and request.state:
             grant['state'] = request.state
-        log.debug('Created authorization code grant %r for request %r.',
+        log.debug('Created device code grant %r for request %r.',
                   grant, request)
         return grant
 
