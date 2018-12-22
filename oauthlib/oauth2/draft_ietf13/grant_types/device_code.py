@@ -25,37 +25,27 @@ class DeviceCodeGrant(GrantTypeBase):
     tokens and refresh tokens and is optimized for embedded or input restricted clients
     
 
-    
-        +----------+
-        | Resource |
-        |   Owner  |
-        |          |
-        +----------+
-             ^
-             |
-            (B)
-        +----|-----+          Client Identifier      +---------------+
-        |         -+----(A)-- & Redirection URI ---->|               |
-        |  User-   |                                 | Authorization |
-        |  Agent  -+----(B)-- User authenticates --->|     Server    |
+        +----|-----+                                 +---------------+
+        |         -+----(B)-- Authorization URI ---->|               |
+        | Resource |                                 | Authorization |
+        |   Owner -+----(C)-- User authenticates --->|     Server    |
         |          |                                 |               |
-        |         -+----(C)-- Authorization Code ---<|               |
+        |         -+                                 |               |
         +-|----|---+                                 +---------------+
-          |    |                                         ^      v
-         (A)  (C)                                        |      |
-          |    |                                         |      |
-          ^    v                                         |      |
-        +---------+                                      |      |
-        |         |>---(D)-- Authorization Code ---------'      |
-        |  Client |          & Redirection URI                  |
+                                                         ^      v
+                                                         |      |
+                                                         |      |
+                                                         |      |
+        +---------+          Requests device token,      |      |
+        |         |          displays user code and      |      |
+        |         |          Authorization URI then      |      | 
+        |         |>---(A)-- polls for access token -----'      |
+        |  Client |          whilst user completes (B)          |
         |         |                                             |
-        |         |<---(E)----- Access Token -------------------'
+        |         |<---(D)----- Access Token -------------------'
         +---------+       (w/ Optional Refresh Token)
 
-    Note: The lines illustrating steps (A), (B), and (C) are broken into
-    two parts as they pass through the user-agent.
-
-    Figure 3: Authorization Code Flow
+    Figure 3: Device Code Flow
 
     The flow illustrated in Figure 3 includes the following steps:
 
