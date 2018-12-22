@@ -73,12 +73,6 @@ class DeviceCodeGrant(GrantTypeBase):
          includes the redirection URI used to obtain the authorization
          code for verification.
 
-    (E)  The authorization server authenticates the client, validates the
-         authorization code, and ensures that the redirection URI
-         received matches the URI used to redirect the client in
-         step (C).  If valid, the authorization server responds back with
-         an access token and, optionally, a refresh token.
-
     .. _`Device code grant`: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-13#section-3.1
     """
 
