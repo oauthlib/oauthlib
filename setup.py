@@ -18,9 +18,7 @@ def fread(fn):
     with open(join(dirname(__file__), fn), 'r') as f:
         return f.read()
 
-tests_require = ['cryptography', 'pyjwt>=1.0.0', 'blinker']
-if sys.version_info[0] == 2:
-    tests_require.append('mock>=2.0')
+
 rsa_require = ['cryptography']
 signedtoken_require = ['cryptography', 'pyjwt>=1.0.0']
 signals_require = ['blinker']
@@ -38,9 +36,7 @@ setup(
     platforms='any',
     license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
-    tests_require=tests_require,
     extras_require={
-        'test': tests_require,
         'rsa': rsa_require,
         'signedtoken': signedtoken_require,
         'signals': signals_require,
