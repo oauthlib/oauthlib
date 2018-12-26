@@ -23,8 +23,6 @@ rsa_require = ['cryptography']
 signedtoken_require = ['cryptography', 'pyjwt>=1.0.0']
 signals_require = ['blinker']
 
-requires = []
-
 setup(
     name='oauthlib',
     version=oauthlib.__version__,
@@ -43,7 +41,6 @@ setup(
         'signedtoken': signedtoken_require,
         'signals': signals_require,
     },
-    install_requires=requires,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
