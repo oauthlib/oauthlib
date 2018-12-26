@@ -60,7 +60,7 @@ class BaseEndpointTest(TestCase):
     def test_expired_timestamp(self):
         headers = {}
         for pattern in ('12345678901', '4567890123', '123456789K'):
-            headers['Authorization'] = sub('timestamp="\d*k?"',
+            headers['Authorization'] = sub(r'timestamp="\d*k?"',
                     'timestamp="%s"' % pattern,
                      self.headers['Authorization'])
             h, b, s = self.endpoint.create_request_token_response(
