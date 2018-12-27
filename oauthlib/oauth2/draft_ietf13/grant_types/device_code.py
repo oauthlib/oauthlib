@@ -107,14 +107,10 @@ class DeviceCodeGrant(GrantTypeBase):
         using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
 
         response_type
-                REQUIRED.  Value MUST be set to "code" for standard OAuth2
-                authorization flow.  For OpenID Connect it must be one of
-                "code token", "code id_token", or "code token id_token" - we
-                essentially test that "code" appears in the response_type.
+                REQUIRED.  Value MUST be set to "device_code" for standard OAuth2
+                authorization flow.
         client_id
                 REQUIRED.  The client identifier as described in `Section 2.2`_.
-        redirect_uri
-                OPTIONAL.  As described in `Section 3.1.2`_.
         scope
                 OPTIONAL.  The scope of the access request as described by
                 `Section 3.3`_.
@@ -284,29 +280,6 @@ class DeviceCodeGrant(GrantTypeBase):
         if not self.request_validator.validate_client_id(request.client_id, request):
             raise errors.InvalidClientIdError(request=request)
 
-        # OPTIONAL. As described in Section 3.1.2.
-        # https://tools.ietf.org/html/rfc6749#section-3.1.2
-        log.debug('Validating redirection uri %s for client %s.',
-                  request.redirect_uri, request.client_id)
-        if request.redirect_uri is not None:
-            request.using_default_redirect_uri = False
-            log.debug('Using provided redirect_uri %s', request.redirect_uri)
-            if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(request=request)
-
-            if not self.request_validator.validate_redirect_uri(
-                    request.client_id, request.redirect_uri, request):
-                raise errors.MismatchingRedirectURIError(request=request)
-        else:
-            request.redirect_uri = self.request_validator.get_default_redirect_uri(
-                request.client_id, request)
-            request.using_default_redirect_uri = True
-            log.debug('Using default redirect_uri %s.', request.redirect_uri)
-            if not request.redirect_uri:
-                raise errors.MissingRedirectURIError(request=request)
-            if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(request=request)
-
         # Then check for normal errors.
 
         # If the resource owner denies the access request or if the request
@@ -345,7 +318,6 @@ class DeviceCodeGrant(GrantTypeBase):
 
         request_info.update({
             'client_id': request.client_id,
-            'redirect_uri': request.redirect_uri,
             'response_type': request.response_type,
             'state': request.state,
             'request': request
