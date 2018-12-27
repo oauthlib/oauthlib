@@ -135,8 +135,7 @@ class DeviceCodeGrant(GrantTypeBase):
         A few examples::
 
             >>> from your_validator import your_validator
-            >>> request = Request('https://example.com/authorize?client_id=valid'
-            ...                   '&redirect_uri=http%3A%2F%2Fclient.com%2F')
+            >>> request = Request('https://example.com/authorize?client_id=valid')
             >>> from oauthlib.common import Request
             >>> from oauthlib.oauth2 import AuthorizationCodeGrant, BearerToken
             >>> token = BearerToken(your_validator)
@@ -145,7 +144,6 @@ class DeviceCodeGrant(GrantTypeBase):
             >>> grant.create_authorization_response(request, token)
             (u'http://client.com/?error=invalid_request&error_description=Missing+response_type+parameter.', None, None, 400)
             >>> request = Request('https://example.com/authorize?client_id=valid'
-            ...                   '&redirect_uri=http%3A%2F%2Fclient.com%2F'
             ...                   '&response_type=code')
             >>> request.scopes = ['authorized', 'in', 'some', 'form']
             >>> grant.create_authorization_response(request, token)
