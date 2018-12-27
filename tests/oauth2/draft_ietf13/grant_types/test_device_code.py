@@ -7,7 +7,7 @@ import mock
 
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749 import errors
-from oauthlib.oauth2.rfc6749.grant_types import AuthorizationCodeGrant
+from oauthlib.oauth2.draft_ietf13.grant_type import DeviceCodeGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from ....unittest import TestCase
@@ -23,11 +23,11 @@ class DeviceCodeGrantTest(TestCase):
         self.request.client_id = 'abcdef'
         self.request.code = '1234'
         self.request.response_type = 'code'
-        self.request.grant_type = 'authorization_code'
+        self.request.grant_type = 'device_code'
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
-        self.auth = AuthorizationCodeGrant(request_validator=self.mock_validator)
+        self.auth = DeviceCodeGrant(request_validator=self.mock_validator)
 
     def set_client(self, request):
         request.client = mock.MagicMock()
