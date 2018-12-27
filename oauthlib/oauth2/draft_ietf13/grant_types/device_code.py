@@ -344,7 +344,7 @@ class DeviceCodeGrant(GrantTypeBase):
             raise errors.InvalidRequestError(
                 description='Missing code parameter.', request=request)
 
-        for param in ('client_id', 'grant_type', 'redirect_uri'):
+        for param in ('client_id', 'grant_type'):
             if param in request.duplicate_params:
                 raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param,
                                                  request=request)
@@ -386,27 +386,6 @@ class DeviceCodeGrant(GrantTypeBase):
         for attr in ('user', 'scopes'):
             if getattr(request, attr, None) is None:
                 log.debug('request.%s was not set on code validation.', attr)
-
-        # REQUIRED, if the "redirect_uri" parameter was included in the
-        # authorization request as described in Section 4.1.1, and their
-        # values MUST be identical.
-        if request.redirect_uri is None:
-            request.using_default_redirect_uri = True
-            request.redirect_uri = self.request_validator.get_default_redirect_uri(
-                request.client_id, request)
-            log.debug('Using default redirect_uri %s.', request.redirect_uri)
-            if not request.redirect_uri:
-                raise errors.MissingRedirectURIError(request=request)
-        else:
-            request.using_default_redirect_uri = False
-            log.debug('Using provided redirect_uri %s', request.redirect_uri)
-
-        if not self.request_validator.confirm_redirect_uri(request.client_id, request.code,
-                                                           request.redirect_uri, request.client,
-                                                           request):
-            log.debug('Redirect_uri (%r) invalid for client %r (%r).',
-                      request.redirect_uri, request.client_id, request.client)
-            raise errors.MismatchingRedirectURIError(request=request)
 
         for validator in self.custom_validators.post_token:
             validator(request)
