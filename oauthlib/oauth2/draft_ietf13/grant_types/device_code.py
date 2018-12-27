@@ -49,22 +49,24 @@ class DeviceCodeGrant(GrantTypeBase):
 
     The flow illustrated in Figure 3 includes the following steps:
 
-    (A)  The client initiates the flow by directing the resource owner's
-         user-agent to the authorization endpoint.  The client includes
-         its client identifier, requested scope, local state, and a
-         redirection URI to which the authorization server will send the
-         user-agent back once access is granted (or denied).
+    (A)  The client initiates the flow by requesting a device and user code
+         pair from the authorization endpoint.  The client includes
+         its client identifier and optionally a requested scope. The 
+         authorization URI returned from the authorization will be presented
+         to the resource owner along with the user code with instructions
+         on how they can authorize the client.
 
-    (B)  The authorization server authenticates the resource owner (via
-         the user-agent) and establishes whether the resource owner
-         grants or denies the client's access request.
+         The client polls the authoriation endpoint until the resource owner
+         authorizes the access token or the device code is invalidated or expired.
+
+    (B)  The resource owner navigates to the authorization URI presented by the
+         client.
+
+    (C)  The resource owner is presented with permission dialog.
 
     (C)  Assuming the resource owner grants access, the authorization
-         server redirects the user-agent back to the client using the
-         redirection URI provided earlier (in the request or during
-         client registration).  The redirection URI includes an
-         authorization code and any local state provided by the client
-         earlier.
+         server returns a access token and refresh token via the authorization
+         end point.
 
     (D)  The client requests an access token from the authorization
          server's token endpoint by including the authorization code
@@ -78,6 +80,7 @@ class DeviceCodeGrant(GrantTypeBase):
 
     default_response_mode = 'query'
     response_types = ['code']
+    user_code_length = 6
 
     def create_authorization_code(self, request):
         """
@@ -86,7 +89,11 @@ class DeviceCodeGrant(GrantTypeBase):
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
-        grant = {'code': common.generate_token()}
+        grant = {
+            'device_code': common.generate_token(),
+            'user_code': common.generate_token(length=self.user_code_length)
+        }
+
         if hasattr(request, 'state') and request.state:
             grant['state'] = request.state
         log.debug('Created device code grant %r for request %r.',
