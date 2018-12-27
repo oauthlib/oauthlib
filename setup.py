@@ -36,6 +36,7 @@ setup(
     platforms='any',
     license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     extras_require={
         'rsa': rsa_require,
         'signedtoken': signedtoken_require,
