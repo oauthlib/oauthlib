@@ -27,7 +27,9 @@ class DeviceCodeGrantTest(TestCase):
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
-        self.auth = DeviceCodeGrant(request_validator=self.mock_validator)
+        
+        # self.auth = DeviceCodeGrant(request_validator=self.mock_validator)
+        self.auth = DeviceCodeGrant()
 
     def set_client(self, request):
         request.client = mock.MagicMock()
@@ -41,10 +43,11 @@ class DeviceCodeGrantTest(TestCase):
         self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
         self.tknval1.return_value = None
         self.tknval2.return_value = None
-        self.auth.custom_validators.pre_token.append(self.tknval1)
-        self.auth.custom_validators.post_token.append(self.tknval2)
-        self.auth.custom_validators.pre_auth.append(self.authval1)
-        self.auth.custom_validators.post_auth.append(self.authval2)
+
+        # self.auth.custom_validators.pre_token.append(self.tknval1)
+        # self.auth.custom_validators.post_token.append(self.tknval2)
+        # self.auth.custom_validators.pre_auth.append(self.authval1)
+        # self.auth.custom_validators.post_auth.append(self.authval2)
 
     def test_custom_auth_validators(self):
         self.setup_validators()

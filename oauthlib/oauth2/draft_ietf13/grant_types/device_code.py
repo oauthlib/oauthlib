@@ -294,8 +294,8 @@ class DeviceCodeGrant:
         # populated through the use of specific exceptions.
 
         request_info = {}
-        for validator in self.custom_validators.pre_auth:
-            request_info.update(validator(request))
+        # for validator in self.custom_validators.pre_auth:
+        #     request_info.update(validator(request))
 
         # REQUIRED.
         if request.response_type is None:
@@ -324,8 +324,8 @@ class DeviceCodeGrant:
             'request': request
         })
 
-        for validator in self.custom_validators.post_auth:
-            request_info.update(validator(request))
+        # for validator in self.custom_validators.post_auth:
+        #     request_info.update(validator(request))
 
         return request.scopes, request_info
 
@@ -338,8 +338,8 @@ class DeviceCodeGrant:
         if request.grant_type not in ('authorization_code', 'openid'):
             raise errors.UnsupportedGrantTypeError(request=request)
 
-        for validator in self.custom_validators.pre_token:
-            validator(request)
+        # for validator in self.custom_validators.pre_token:
+        #     validator(request)
 
         if request.code is None:
             raise errors.InvalidRequestError(
@@ -388,5 +388,5 @@ class DeviceCodeGrant:
             if getattr(request, attr, None) is None:
                 log.debug('request.%s was not set on code validation.', attr)
 
-        for validator in self.custom_validators.post_token:
-            validator(request)
+        # for validator in self.custom_validators.post_token:
+        #     validator(request)
