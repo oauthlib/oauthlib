@@ -8,6 +8,8 @@ and Server classes.
 """
 from __future__ import absolute_import, unicode_literals
 
+from .draft_ietf13.grant_types import DeviceCodeGrant
+
 from .rfc6749.clients import Client
 from .rfc6749.clients import WebApplicationClient
 from .rfc6749.clients import MobileApplicationClient

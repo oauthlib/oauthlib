@@ -11,13 +11,16 @@ import logging
 from oauthlib import common
 from oauthlib.uri_validate import is_absolute_uri
 
-from .. import errors
-from .base import GrantTypeBase
+# from .. import errors
+
+# TODO: How do we import this base class ?
+#
+# from oauthlib.oauth2.grant_types.base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 
 
-class DeviceCodeGrant(GrantTypeBase):
+class DeviceCodeGrant:
 
     """`Device Code Grant`_
 
