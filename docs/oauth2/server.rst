@@ -25,7 +25,17 @@ as well as provide an interface for a backend to store tokens, clients, etc.
 .. contents:: Tutorial Contents
     :depth: 3
 
-1. Create your datastore models
+1. OAuth2.0 Provider flows
+-------------------------------
+
+OAuthLib interface between web framework and provider implementation are not always easy to follow, it's why a graph below has been done to better understand the implication of OAuthLib in the request's  lifecycle.
+
+
+.. graphviz:: oauth2provider-legend.dot
+.. graphviz:: oauth2provider-server.dot
+
+
+2. Create your datastore models
 -------------------------------
 
 These models will represent various OAuth specific concepts. There are a few
@@ -257,7 +267,7 @@ the token.
         challenge_method = django.db.models.CharField(max_length=6)
 
 
-2. Implement a validator
+3. Implement a validator
 ------------------------
 
 The majority of the work involved in implementing an OAuth 2 provider
@@ -301,7 +311,7 @@ Relevant sections include:
     security
 
 
-3. Create your composite endpoint
+4. Create your composite endpoint
 ---------------------------------
 
 Each of the endpoints can function independently from each other, however
@@ -326,7 +336,7 @@ Relevant sections include:
     preconfigured_servers
 
 
-4. Create your endpoint views
+5. Create your endpoint views
 -----------------------------
 
 We are implementing support for the Authorization Code Grant and will
@@ -430,7 +440,7 @@ The example using Django but should be transferable to any framework.
         return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
 
 
-5. Protect your APIs using scopes
+6. Protect your APIs using scopes
 ---------------------------------
 
 Let's define a decorator we can use to protect the views.
@@ -501,7 +511,7 @@ at runtime by a function, rather then by a list.
         # A view that has its views functionally set.
         return HttpResponse('pictures of cats')
 
-6. Let us know how it went!
+7. Let us know how it went!
 ---------------------------
 
 Drop a line in our `Gitter OAuthLib community`_ or open a `GitHub issue`_ =)
