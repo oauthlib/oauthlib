@@ -16,67 +16,76 @@ from ....unittest import TestCase
 class DeviceCodeGrantTest(TestCase):
 
     def setUp(self):
-    #     self.request = Request('http://a.b/path')
-    #     self.request.scopes = ('hello', 'world')
-    #     self.request.expires_in = 1800
-    #     self.request.client = 'batman'
-    #     self.request.client_id = 'abcdef'
-    #     self.request.code = '1234'
-    #     self.request.response_type = 'code'
-    #     self.request.grant_type = 'device_code'
+        self.request = Request('http://a.b/path')
+        self.request.scopes = ('hello', 'world')
+        self.request.expires_in = 1800
+        self.request.client = 'batman'
+        self.request.client_id = 'abcdef'
+        self.request.code = '1234'
+        self.request.response_type = 'code'
+        self.request.grant_type = 'device_code'
 
-    #     self.mock_validator = mock.MagicMock()
-    #     self.mock_validator.authenticate_client.side_effect = self.set_client
+        self.mock_validator = mock.MagicMock()
+        self.mock_validator.authenticate_client.side_effect = self.set_client
         
         self.auth = DeviceCodeGrant(request_validator=self.mock_validator)
 
-    # def set_client(self, request):
-    #     request.client = mock.MagicMock()
-    #     request.client.client_id = 'mocked'
-    #     return True
+    def set_client(self, request):
+        request.client = mock.MagicMock()
+        request.client.client_id = 'mocked'
+        
+        return True
 
-    # def setup_validators(self):
-    #     self.authval1, self.authval2 = mock.Mock(), mock.Mock()
-    #     self.authval1.return_value = {}
-    #     self.authval2.return_value = {}
-    #     self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
-    #     self.tknval1.return_value = None
-    #     self.tknval2.return_value = None
+    def setup_validators(self):
+        self.authval1, self.authval2 = mock.Mock(), mock.Mock()
+        self.authval1.return_value = {}
+        self.authval2.return_value = {}
+        self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
+        self.tknval1.return_value = None
+        self.tknval2.return_value = None
 
-        # self.auth.custom_validators.pre_token.append(self.tknval1)
-        # self.auth.custom_validators.post_token.append(self.tknval2)
-        # self.auth.custom_validators.pre_auth.append(self.authval1)
-        # self.auth.custom_validators.post_auth.append(self.authval2)
+        self.auth.custom_validators.pre_token.append(self.tknval1)
+        self.auth.custom_validators.post_token.append(self.tknval2)
+        self.auth.custom_validators.pre_auth.append(self.authval1)
+        self.auth.custom_validators.post_auth.append(self.authval2)
 
-    # def test_custom_auth_validators(self):
-    #     self.setup_validators()
+    def test_custom_auth_validators(self):
+        self.setup_validators()
 
-    #     bearer = BearerToken(self.mock_validator)
-    #     self.auth.create_authorization_response(self.request, bearer)
-    #     self.assertTrue(self.authval1.called)
-    #     self.assertTrue(self.authval2.called)
-    #     self.assertFalse(self.tknval1.called)
-    #     self.assertFalse(self.tknval2.called)
+        bearer = BearerToken(self.mock_validator)
+        self.auth.create_authorization_response(self.request, bearer)
+        self.assertTrue(self.authval1.called)
+        self.assertTrue(self.authval2.called)
+        self.assertFalse(self.tknval1.called)
+        self.assertFalse(self.tknval2.called)
 
-    # def test_custom_token_validators(self):
-    #     self.setup_validators()
+    def test_custom_token_validators(self):
+        self.setup_validators()
 
-    #     bearer = BearerToken(self.mock_validator)
-    #     self.auth.create_token_response(self.request, bearer)
-    #     self.assertTrue(self.tknval1.called)
-    #     self.assertTrue(self.tknval2.called)
-    #     self.assertFalse(self.authval1.called)
-    #     self.assertFalse(self.authval2.called)
+        bearer = BearerToken(self.mock_validator)
+        self.auth.create_token_response(self.request, bearer)
+        self.assertTrue(self.tknval1.called)
+        self.assertTrue(self.tknval2.called)
+        self.assertFalse(self.authval1.called)
+        self.assertFalse(self.authval2.called)
 
-    # def test_create_authorization_grant(self):
-        # bearer = BearerToken(self.mock_validator)
-        # self.request.response_mode = 'query'
-        # h, b, s = self.auth.create_authorization_response(self.request, bearer)
-        # grant = dict(Request(h['Location']).uri_query_params)
-        # self.assertIn('code', grant)
-        # self.assertTrue(self.mock_validator.validate_redirect_uri.called)
-        # self.assertTrue(self.mock_validator.validate_response_type.called)
-        # self.assertTrue(self.mock_validator.validate_scopes.called)
+    def test_create_authorization_grant(self):
+        bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+
+        self.assertIn('user_code', b)
+        self.assertIn('device_code', b)
+        self.assertIn('expires_in', b)
+        self.assertIn('interval', b)
+
+        # These seem to be web URL based not sure how these work
+        #
+        self.assertIn('verification_uri', b)
+        self.assertIn('verification_uri_complete', b)
+
+        self.assertTrue(self.mock_validator.validate_response_type.called)
+        self.assertTrue(self.mock_validator.validate_scopes.called)
 
     # def test_create_authorization_grant_no_scopes(self):
     #     bearer = BearerToken(self.mock_validator)
