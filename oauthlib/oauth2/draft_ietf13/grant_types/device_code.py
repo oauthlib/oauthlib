@@ -24,59 +24,108 @@ class DeviceCodeGrant:
 
     """`Device Code Grant`_
 
-    The authorization code grant type is used to obtain both access
-    tokens and refresh tokens and is optimized for embedded or input restricted clients
-    
+    This OAuth 2.0 [RFC6749] protocol flow for browserless and input-
+    constrained devices, often referred to as the device flow, enables
+    OAuth clients to request user authorization from applications on
+    devices that have an Internet connection, but don't have an easy
+    input method (such as a smart TV, media console, picture frame, or
+    printer), or lack a suitable browser for a more traditional OAuth
+    flow.  This authorization flow instructs the user to perform the
+    authorization request on a secondary device, such as a smartphone.
 
-        +----|-----+                                 +---------------+
-        |         -+----(B)-- Authorization URI ---->|               |
-        | Resource |                                 | Authorization |
-        |   Owner -+----(C)-- User authenticates --->|     Server    |
-        |          |                                 |               |
-        |         -+                                 |               |
-        +-|----|---+                                 +---------------+
-                                                         ^      v
-                                                         |      |
-                                                         |      |
-                                                         |      |
-        +---------+          Requests device token,      |      |
-        |         |          displays user code and      |      |
-        |         |          Authorization URI then      |      | 
-        |         |>---(A)-- polls for access token -----'      |
-        |  Client |          whilst user completes (B)          |
-        |         |                                             |
-        |         |<---(D)----- Access Token -------------------'
-        +---------+       (w/ Optional Refresh Token)
+    The device flow is not intended to replace browser-based OAuth in
+    native apps on capable devices (like smartphones).  Those apps should
+    follow the practices specified in OAuth 2.0 for Native Apps
+    [RFC8252].
 
-    Figure 3: Device Code Flow
+    The operating requirements to be able to use this authorization flow
+    are:
 
-    The flow illustrated in Figure 3 includes the following steps:
+    (1)  The device is already connected to the Internet.
 
-    (A)  The client initiates the flow by requesting a device and user code
-         pair from the authorization endpoint.  The client includes
-         its client identifier and optionally a requested scope. The 
-         authorization URI returned from the authorization will be presented
-         to the resource owner along with the user code with instructions
-         on how they can authorize the client.
+    (2)  The device is able to make outbound HTTPS requests.
 
-         The client polls the authoriation endpoint until the resource owner
-         authorizes the access token or the device code is invalidated or expired.
+    (3)  The device is able to display or otherwise communicate a URI and
+            code sequence to the user.
 
-    (B)  The resource owner navigates to the authorization URI presented by the
-         client.
+    (4)  The user has a secondary device (e.g., personal computer or
+            smartphone) from which they can process the request.
 
-    (C)  The resource owner is presented with permission dialog.
+    As the device flow does not require two-way communication between the
+    OAuth client and the user-agent (unlike other OAuth 2 flows), it
+    supports several use cases that cannot be served by those other
+    approaches.
 
-    (C)  Assuming the resource owner grants access, the authorization
-         server returns a access token and refresh token via the authorization
-         end point.
+    Instead of interacting with the end user's user agent, the client
+    instructs the end user to use another computer or device and connect
+    to the authorization server to approve the access request.  Since the
+    client cannot receive incoming requests, it polls the authorization
+    server repeatedly until the end user completes the approval process.
 
-    (D)  The client requests an access token from the authorization
-         server's token endpoint by including the authorization code
-         received in the previous step.  When making the request, the
-         client authenticates with the authorization server.  The client
-         includes the redirection URI used to obtain the authorization
-         code for verification.
+    The device typically chooses the set of authorization servers to
+    support (i.e., its own authorization server, or those by providers it
+    has relationships with).  It is not uncommon for the device
+    application to support only a single authorization server, such as
+    with a TV application for a specific media provider that supports
+    only that media provider's authorization server.  The user may not
+    have an established relationship yet with that authorization
+    provider, though one can potentially be set up during the
+    authorization flow.
+
+    +----------+                                +----------------+
+    |          |>---(A)-- Client Identifier --->|                |
+    |          |                                |                |
+    |          |<---(B)-- Verification Code, --<|                |
+    |          |              User Code,        |                |
+    |          |         & Verification URI     |                |
+    |  Device  |                                |                |
+    |  Client  |         Client Identifier &    |                |
+    |          |>---(E)-- Verification Code --->|                |
+    |          |    polling...                  |                |
+    |          |>---(E)-- Verification Code --->|                |
+    |          |                                |  Authorization |
+    |          |<---(F)-- Access Token --------<|     Server     |
+    +----------+  (w/ Optional Refresh Token)   |                |
+            v                                     |                |
+            :                                     |                |
+        (C) User Code & Verification URI       |                |
+            :                                     |                |
+            v                                     |                |
+    +----------+                                |                |
+    | End user |                                |                |
+    |    at    |<---(D)-- User authenticates -->|                |
+    |  Browser |                                |                |
+    +----------+                                +----------------+
+
+                        Figure 1: Device Flow.
+
+    The device flow illustrated in Figure 1 includes the following steps:
+
+    (A) The client requests access from the authorization server and
+    includes its client identifier in the request.
+
+    (B) The authorization server issues a verification code, an end-
+    user code, and provides the end-user verification URI.
+
+    (C) The client instructs the end user to use its user agent
+    (elsewhere) and visit the provided end-user verification URI.  The
+    client provides the user with the end-user code to enter in order
+    to grant access.
+
+    (D) The authorization server authenticates the end user (via the
+    user agent) and prompts the user to grant the client's access
+    request.  If the user agrees to the client's access request, the
+    user enters the user code provided by the client.  The
+    authorization server validates the user code provided by the user.
+
+    (E) While the end user authorizes (or denies) the client's request
+    (step D), the client repeatedly polls the authorization server to
+    find out if the user completed the user authorization step.  The
+    client includes the verification code and its client identifier.
+
+    (F) Assuming the end user granted access, the authorization server
+    validates the verification code provided by the client and
+    responds back with the access token.
 
     .. _`Device code grant`: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-13#section-3.1
     """
@@ -196,13 +245,13 @@ class DeviceCodeGrant:
         #     return {'Location': redirect_uri}, None, 302
 
         grant = self.create_authorization_code(request)
-        for modifier in self._code_modifiers:
-            grant = modifier(grant, token_handler, request)
+        # for modifier in self._code_modifiers:
+        #     grant = modifier(grant, token_handler, request)
         log.debug('Saving grant %r for %r.', grant, request)
-        self.request_validator.save_authorization_code(
-            request.client_id, grant, request)
-        return self.prepare_authorization_response(
-            request, grant, {}, None, 302)
+        # self.request_validator.save_authorization_code(
+        #     request.client_id, grant, request)
+        # return self.prepare_authorization_response(
+        #     request, grant, {}, None, 302)
 
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.
