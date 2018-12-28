@@ -143,13 +143,16 @@ class DeviceCodeGrant(GrantTypeBase):
         """
         grant = {
             'device_code': common.generate_token(),
-            'user_code': common.generate_token(length=self.user_code_length)
+            'user_code': common.generate_token(length=self.user_code_length),
+            'expires_in': 0,
+            'interval': 5,
+            'verification_uri': '',
+            'verification_uri_complete': ''
         }
 
-        if hasattr(request, 'state') and request.state:
-            grant['state'] = request.state
         log.debug('Created device code grant %r for request %r.',
                   grant, request)
+
         return grant
 
     def create_authorization_response(self, request, token_handler):
@@ -166,12 +169,6 @@ class DeviceCodeGrant(GrantTypeBase):
         scope
                 OPTIONAL.  The scope of the access request as described by
                 `Section 3.3`_.
-        state
-                RECOMMENDED.  An opaque value used by the client to maintain
-                state between the request and callback.  The authorization
-                server includes this value when redirecting the user-agent back
-                to the client.  The parameter SHOULD be used for preventing
-                cross-site request forgery as described in `Section 10.12`_.
 
         The client directs the resource owner to the constructed URI using an
         HTTP redirection response, or by other means available to it via the
@@ -369,7 +366,6 @@ class DeviceCodeGrant(GrantTypeBase):
         request_info.update({
             'client_id': request.client_id,
             'response_type': request.response_type,
-            'state': request.state,
             'request': request
         })
 
