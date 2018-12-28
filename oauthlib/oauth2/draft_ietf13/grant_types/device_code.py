@@ -166,20 +166,20 @@ class DeviceCodeGrant:
         .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
         .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         """
-        try:
-            self.validate_authorization_request(request)
-            log.debug('Pre resource owner authorization validation ok for %r.',
-                      request)
+        # try:
+        #     self.validate_authorization_request(request)
+        #     log.debug('Pre resource owner authorization validation ok for %r.',
+        #               request)
 
-        # If the request fails due to a missing, invalid, or mismatching
-        # redirection URI, or if the client identifier is missing or invalid,
-        # the authorization server SHOULD inform the resource owner of the
-        # error and MUST NOT automatically redirect the user-agent to the
-        # invalid redirection URI.
-        except errors.FatalClientError as e:
-            log.debug('Fatal client error during validation of %r. %r.',
-                      request, e)
-            raise
+        # # If the request fails due to a missing, invalid, or mismatching
+        # # redirection URI, or if the client identifier is missing or invalid,
+        # # the authorization server SHOULD inform the resource owner of the
+        # # error and MUST NOT automatically redirect the user-agent to the
+        # # invalid redirection URI.
+        # except errors.FatalClientError as e:
+        #     log.debug('Fatal client error during validation of %r. %r.',
+        #               request, e)
+        #     raise
 
         # If the resource owner denies the access request or if the request
         # fails for reasons other than a missing or invalid redirection URI,
@@ -187,13 +187,13 @@ class DeviceCodeGrant:
         # parameters to the query component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B:
         # https://tools.ietf.org/html/rfc6749#appendix-B
-        except errors.OAuth2Error as e:
-            log.debug('Client error during validation of %r. %r.', request, e)
-            request.redirect_uri = request.redirect_uri or self.error_uri
-            redirect_uri = common.add_params_to_uri(
-                request.redirect_uri, e.twotuples,
-                fragment=request.response_mode == "fragment")
-            return {'Location': redirect_uri}, None, 302
+        # except errors.OAuth2Error as e:
+        #     log.debug('Client error during validation of %r. %r.', request, e)
+        #     request.redirect_uri = request.redirect_uri or self.error_uri
+        #     redirect_uri = common.add_params_to_uri(
+        #         request.redirect_uri, e.twotuples,
+        #         fragment=request.response_mode == "fragment")
+        #     return {'Location': redirect_uri}, None, 302
 
         grant = self.create_authorization_code(request)
         for modifier in self._code_modifiers:
@@ -224,12 +224,12 @@ class DeviceCodeGrant:
             'Cache-Control': 'no-store',
             'Pragma': 'no-cache',
         }
-        try:
-            self.validate_token_request(request)
-            log.debug('Token request validation ok for %r.', request)
-        except errors.OAuth2Error as e:
-            log.debug('Client error during validation of %r. %r.', request, e)
-            return headers, e.json, e.status_code
+        # try:
+        #     self.validate_token_request(request)
+        #     log.debug('Token request validation ok for %r.', request)
+        # except errors.OAuth2Error as e:
+        #     log.debug('Client error during validation of %r. %r.', request, e)
+        #     return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=self.refresh_token, save_token=False)
         for modifier in self._token_modifiers:
@@ -265,21 +265,21 @@ class DeviceCodeGrant:
         # invalid redirection URI.
 
         # First check duplicate parameters
-        for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
-            try:
-                duplicate_params = request.duplicate_params
-            except ValueError:
-                raise errors.InvalidRequestFatalError(description='Unable to parse query string', request=request)
-            if param in duplicate_params:
-                raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param, request=request)
+        # for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
+        #     try:
+        #         duplicate_params = request.duplicate_params
+        #     except ValueError:
+        #         raise errors.InvalidRequestFatalError(description='Unable to parse query string', request=request)
+        #     if param in duplicate_params:
+        #         raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param, request=request)
 
-        # REQUIRED. The client identifier as described in Section 2.2.
-        # https://tools.ietf.org/html/rfc6749#section-2.2
-        if not request.client_id:
-            raise errors.MissingClientIdError(request=request)
+        # # REQUIRED. The client identifier as described in Section 2.2.
+        # # https://tools.ietf.org/html/rfc6749#section-2.2
+        # if not request.client_id:
+        #     raise errors.MissingClientIdError(request=request)
 
-        if not self.request_validator.validate_client_id(request.client_id, request):
-            raise errors.InvalidClientIdError(request=request)
+        # if not self.request_validator.validate_client_id(request.client_id, request):
+        #     raise errors.InvalidClientIdError(request=request)
 
         # Then check for normal errors.
 
@@ -298,20 +298,20 @@ class DeviceCodeGrant:
         #     request_info.update(validator(request))
 
         # REQUIRED.
-        if request.response_type is None:
-            raise errors.MissingResponseTypeError(request=request)
-        # Value MUST be set to "code" or one of the OpenID authorization code including
-        # response_types "code token", "code id_token", "code token id_token"
-        elif not 'code' in request.response_type and request.response_type != 'none':
-            raise errors.UnsupportedResponseTypeError(request=request)
+        # if request.response_type is None:
+        #     raise errors.MissingResponseTypeError(request=request)
+        # # Value MUST be set to "code" or one of the OpenID authorization code including
+        # # response_types "code token", "code id_token", "code token id_token"
+        # elif not 'code' in request.response_type and request.response_type != 'none':
+        #     raise errors.UnsupportedResponseTypeError(request=request)
 
-        if not self.request_validator.validate_response_type(request.client_id,
-                                                             request.response_type,
-                                                             request.client, request):
+        # if not self.request_validator.validate_response_type(request.client_id,
+        #                                                      request.response_type,
+        #                                                      request.client, request):
 
-            log.debug('Client %s is not authorized to use response_type %s.',
-                      request.client_id, request.response_type)
-            raise errors.UnauthorizedClientError(request=request)
+        #     log.debug('Client %s is not authorized to use response_type %s.',
+        #               request.client_id, request.response_type)
+        #     raise errors.UnauthorizedClientError(request=request)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # https://tools.ietf.org/html/rfc6749#section-3.3
@@ -335,36 +335,36 @@ class DeviceCodeGrant:
         :type request: oauthlib.common.Request
         """
         # REQUIRED. Value MUST be set to "authorization_code".
-        if request.grant_type not in ('authorization_code', 'openid'):
-            raise errors.UnsupportedGrantTypeError(request=request)
+        # if request.grant_type not in ('authorization_code', 'openid'):
+        #     raise errors.UnsupportedGrantTypeError(request=request)
 
         # for validator in self.custom_validators.pre_token:
         #     validator(request)
 
-        if request.code is None:
-            raise errors.InvalidRequestError(
-                description='Missing code parameter.', request=request)
+        # if request.code is None:
+        #     raise errors.InvalidRequestError(
+        #         description='Missing code parameter.', request=request)
 
-        for param in ('client_id', 'grant_type'):
-            if param in request.duplicate_params:
-                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param,
-                                                 request=request)
+        # for param in ('client_id', 'grant_type'):
+        #     if param in request.duplicate_params:
+        #         raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param,
+        #                                          request=request)
 
-        if self.request_validator.client_authentication_required(request):
-            # If the client type is confidential or the client was issued client
-            # credentials (or assigned other authentication requirements), the
-            # client MUST authenticate with the authorization server as described
-            # in Section 3.2.1.
-            # https://tools.ietf.org/html/rfc6749#section-3.2.1
-            if not self.request_validator.authenticate_client(request):
-                log.debug('Client authentication failed, %r.', request)
-                raise errors.InvalidClientError(request=request)
-        elif not self.request_validator.authenticate_client_id(request.client_id, request):
-            # REQUIRED, if the client is not authenticating with the
-            # authorization server as described in Section 3.2.1.
-            # https://tools.ietf.org/html/rfc6749#section-3.2.1
-            log.debug('Client authentication failed, %r.', request)
-            raise errors.InvalidClientError(request=request)
+        # if self.request_validator.client_authentication_required(request):
+        #     # If the client type is confidential or the client was issued client
+        #     # credentials (or assigned other authentication requirements), the
+        #     # client MUST authenticate with the authorization server as described
+        #     # in Section 3.2.1.
+        #     # https://tools.ietf.org/html/rfc6749#section-3.2.1
+        #     if not self.request_validator.authenticate_client(request):
+        #         log.debug('Client authentication failed, %r.', request)
+        #         raise errors.InvalidClientError(request=request)
+        # elif not self.request_validator.authenticate_client_id(request.client_id, request):
+        #     # REQUIRED, if the client is not authenticating with the
+        #     # authorization server as described in Section 3.2.1.
+        #     # https://tools.ietf.org/html/rfc6749#section-3.2.1
+        #     log.debug('Client authentication failed, %r.', request)
+        #     raise errors.InvalidClientError(request=request)
 
         if not hasattr(request.client, 'client_id'):
             raise NotImplementedError('Authenticate client must set the '
@@ -378,11 +378,11 @@ class DeviceCodeGrant:
 
         # REQUIRED. The authorization code received from the
         # authorization server.
-        if not self.request_validator.validate_code(request.client_id,
-                                                    request.code, request.client, request):
-            log.debug('Client, %r (%r), is not allowed access to scopes %r.',
-                      request.client_id, request.client, request.scopes)
-            raise errors.InvalidGrantError(request=request)
+        # if not self.request_validator.validate_code(request.client_id,
+        #                                             request.code, request.client, request):
+        #     log.debug('Client, %r (%r), is not allowed access to scopes %r.',
+        #               request.client_id, request.client, request.scopes)
+        #     raise errors.InvalidGrantError(request=request)
 
         for attr in ('user', 'scopes'):
             if getattr(request, attr, None) is None:
