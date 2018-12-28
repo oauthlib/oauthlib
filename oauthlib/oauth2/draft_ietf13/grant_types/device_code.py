@@ -11,6 +11,7 @@ import logging
 from oauthlib import common
 from oauthlib.uri_validate import is_absolute_uri
 
+from oauthlib.oauth2.rfc6749.grant_types.base import GrantTypeBase
 # from .. import errors
 
 # TODO: How do we import this base class ?
@@ -20,7 +21,7 @@ from oauthlib.uri_validate import is_absolute_uri
 log = logging.getLogger(__name__)
 
 
-class DeviceCodeGrant:
+class DeviceCodeGrant(GrantTypeBase):
 
     """`Device Code Grant`_
 
@@ -130,7 +131,6 @@ class DeviceCodeGrant:
     .. _`Device code grant`: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-13#section-3.1
     """
 
-    default_response_mode = 'query'
     response_types = ['code']
     user_code_length = 6
 
