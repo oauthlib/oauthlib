@@ -191,7 +191,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'OAuthLib.tex', u'OAuthLib Documentation',
-   u'Idan Gazit and the Python Community', 'manual'),
+   u'The OAuhthlib Community', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -221,7 +221,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'oauthlib', u'OAuthLib Documentation',
-     [u'Idan Gazit and the Python Community'], 1)
+     [u'The OAuthlib Community'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -235,7 +235,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'OAuthLib', u'OAuthLib Documentation',
-   u'Idan Gazit and the Python Community', 'OAuthLib', 'One line description of project.',
+   u'The OAuthlib Community', 'OAuthLib', 'One line description of project.',
    'Miscellaneous'),
 ]
 
