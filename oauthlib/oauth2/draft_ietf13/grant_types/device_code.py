@@ -134,27 +134,6 @@ class DeviceCodeGrant(GrantTypeBase):
     response_types = ['code']
     user_code_length = 6
 
-    def create_authorization_code(self, request):
-        """
-        Generates an authorization grant represented as a dictionary.
-        
-        :param request: OAuthlib request.
-        :type request: oauthlib.common.Request
-        """
-        grant = {
-            'device_code': common.generate_token(),
-            'user_code': common.generate_token(length=self.user_code_length),
-            'expires_in': 0,
-            'interval': 5,
-            'verification_uri': '',
-            'verification_uri_complete': ''
-        }
-
-        log.debug('Created device code grant %r for request %r.',
-                  grant, request)
-
-        return grant
-
     def create_authorization_response(self, request, token_handler):
         """
         The client constructs the request URI by adding the following
@@ -212,41 +191,44 @@ class DeviceCodeGrant(GrantTypeBase):
         .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
         .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         """
-        # try:
-        self.validate_authorization_request(request)
-        #     log.debug('Pre resource owner authorization validation ok for %r.',
-        #               request)
+        try:
+            self.validate_authorization_request(request)
+            log.debug('Pre resource owner authorization validation ok for %r.',
+                      request)
 
-        # # If the request fails due to a missing, invalid, or mismatching
-        # # redirection URI, or if the client identifier is missing or invalid,
-        # # the authorization server SHOULD inform the resource owner of the
-        # # error and MUST NOT automatically redirect the user-agent to the
-        # # invalid redirection URI.
-        # except errors.FatalClientError as e:
-        #     log.debug('Fatal client error during validation of %r. %r.',
-        #               request, e)
-        #     raise
+        # If the request fails due to the client identifier missing or invalid,
+        # the authorization server SHOULD inform the resource owner of the
+        # error
+        except errors.FatalClientError as e:
+            log.debug('Fatal client error during validation of %r. %r.', request, e)
+            raise
 
-        # If the resource owner denies the access request or if the request
-        # fails for reasons other than a missing or invalid redirection URI,
-        # the authorization server informs the client by adding the following
-        # parameters to the query component of the redirection URI using the
-        # "application/x-www-form-urlencoded" format, per Appendix B:
-        # https://tools.ietf.org/html/rfc6749#appendix-B
-        # except errors.OAuth2Error as e:
-        #     log.debug('Client error during validation of %r. %r.', request, e)
-        #     request.redirect_uri = request.redirect_uri or self.error_uri
-        #     redirect_uri = common.add_params_to_uri(
-        #         request.redirect_uri, e.twotuples,
-        #         fragment=request.response_mode == "fragment")
-        #     return {'Location': redirect_uri}, None, 302
+        # If the resource owner denies the access request or if the request fails
+        # the authorization server SHOULD inform the resource owner of the
+        # error
+        except errors.OAuth2Error as e:
+            log.debug('Client error during validation of %r. %r.', request, e)
+            raise
 
-        grant = self.create_authorization_code(request)
+        grant = token_handler.create_device_code(request)
+        
+        # {
+        #     'device_code': common.generate_token(),
+        #     'user_code': common.generate_token(length=self.user_code_length),
+        #     'expires_in': 0,
+        #     'interval': 5,
+        #     'verification_uri': '',
+        #     'verification_uri_complete': ''
+        # }
+
+        log.debug('Created device code grant %r for request %r.',
+                  grant, request)
+
         for modifier in self._code_modifiers:
             grant = modifier(grant, token_handler, request)
+
         log.debug('Saving grant %r for %r.', grant, request)
-        self.request_validator.save_authorization_code(
-            request.client_id, grant, request)
+        self.request_validator.save_device_code(request.client_id, grant, request)
 
         return {}, grant, 201
 
