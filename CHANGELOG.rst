@@ -10,17 +10,20 @@ OAuth2.0 Provider - outstanding Features
 * RFC8414 OAuth2.0 Authorization Server Metadata support (#605)
 * RFC7636 PKCE support (#617 #624)
 
-OAuth2.0 Provider - Bugfixes
+OAuth2.0 Provider - API/Breaking Changes
 
 * Add "request" to confirm_redirect_uri #504
 * confirm_redirect_uri/get_default_redirect_uri has a bit changed #445
-* empty scopes no longer raise exceptions for implicit and authorization_code #475 / #406
 * invalid_client is now a FatalError #606
 * Changed errors status code from 401 to 400:
-- invalid_grant: #264
-- invalid_scope: #620
-- access_denied/unauthorized_client/consent_required/login_required #623
-- 401 must have WWW-Authenticate HTTP Header set. #623
+ - invalid_grant: #264
+ - invalid_scope: #620
+ - access_denied/unauthorized_client/consent_required/login_required #623
+ - 401 must have WWW-Authenticate HTTP Header set. #623
+
+OAuth2.0 Provider - Bugfixes
+
+* empty scopes no longer raise exceptions for implicit and authorization_code #475 / #406
 
 OAuth2.0 Client - Bugfixes / Changes:
 
