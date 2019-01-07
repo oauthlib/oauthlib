@@ -34,19 +34,21 @@ def random_user_code_generator(request):
 class DeviceToken(TokenBase):
     __slots__ = (
         'request_validator', 'device_code_generator', 'user_code_generator',
-        'verification_url', 'expires_in'
+        'verification_url', 'expires_in', 'interval'
     )
 
     def __init__(self, request_validator=None,
                  device_code_generator=None,
                  user_code_generator=None,
                  verification_url,
-                 expires_in=None):
+                 expires_in=None,
+                 interval=None):
         self.request_validator = request_validator
         self.device_code_generator = device_code_generator or random_device_code_generator
         self.user_code_generator = user_code_generator or random_user_code_generator
         self.expires_in = expires_in or 3600
         self.verification_url = verification_url
+        self.interval = interval or 5
 
     def create_token(self, request, save_token=True):
         """
@@ -64,13 +66,15 @@ class DeviceToken(TokenBase):
 
         request.expires_in = expires_in
 
+        user_code = self.user_code_generator(request)
+
         token = {
-            'device_code': self.token_generator(request),
-            'user_code': '',
-            'verification_uri': '',
-            'verification_uri_complete': '',
+            'device_code': self.device_code_generator(request),
+            'user_code': user_code,
+            'verification_uri': self.verification_url,
+            'verification_uri_complete': '{}?user_code={}'.format(self.verification_url, user_code),
             'expires_in': expires_in,
-            'interval': 'Bearer'
+            'interval': self.interval
         }
 
         # If provided, include - this is optional in some cases https://tools.ietf.org/html/rfc6749#section-3.3 but
