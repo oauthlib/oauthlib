@@ -12,13 +12,28 @@ import logging
 log = logging.getLogger(__name__)
 
 class RequestValidator(RequestValidator):
-    pass
 
-    # get_verification_url
-    # get_verification_url_complete
-    # get_interval
-    # save_device_code
-    # validate_device_code
-    # validate_user_code
-    # update_user_code_authorization_status
-    # invalidate_device_code
+    def get_verification_url(self):
+        pass
+        
+    def get_verification_url_complete(self):
+        pass
+        
+    def get_interval(self):
+        pass
+        
+    def save_device_code(self):
+        pass
+        
+    def validate_device_code(self):
+        pass
+        
+    def validate_user_code(self):
+        pass
+        
+    def update_user_code_authorization_status(self):
+        pass
+        
+    def invalidate_device_code(self):
+        pass
+        
