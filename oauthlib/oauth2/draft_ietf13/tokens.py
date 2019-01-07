@@ -10,16 +10,25 @@ from __future__ import absolute_import, unicode_literals
 
 from oauth2.rfc6749.tokens import OAuth2Token, TokenBase
 
+def random_code_generator(request):
+    """
+    :param request: OAuthlib request.
+    :type request: oauthlib.common.Request
+    """
+
+    # Match this format :FGHU-GHTY
+
+    return common.generate_token()
+
 class DeviceToken(TokenBase):
     __slots__ = (
-        'request_validator', 'token_generator',
-        'refresh_token_generator', 'expires_in'
+        'request_validator', 'code_generator', 'expires_in'
     )
 
-    def __init__(self, request_validator=None, token_generator=None,
-                 expires_in=None, refresh_token_generator=None):
+    def __init__(self, request_validator=None, code_generator=None,
+                 expires_in=None):
         self.request_validator = request_validator
-        self.token_generator = token_generator or random_token_generator
+        self.code_generator = code_generator or random_code_generator
         self.expires_in = expires_in or 3600
 
     def create_token(self, request, save_token=True):
