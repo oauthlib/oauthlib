@@ -69,23 +69,18 @@ class DeviceCodeGrantTest(TestCase):
     #     self.assertFalse(self.authval1.called)
     #     self.assertFalse(self.authval2.called)
 
-    # def test_create_authorization_grant(self):
-    #     device = DeviceToken(self.mock_validator)
-    #     self.request.response_mode = 'query'
-    #     h, b, s = self.auth.create_authorization_response(self.request, device)
+    def test_create_authorization_grant(self):
+        device = DeviceToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, device)
 
-    #     self.assertIn('user_code', b)
-    #     self.assertIn('device_code', b)
-    #     self.assertIn('expires_in', b)
-    #     self.assertIn('interval', b)
+        self.assertIn('user_code', b)
+        self.assertIn('device_code', b)
+        self.assertIn('expires_in', b)
+        self.assertIn('interval', b)
+        self.assertIn('verification_uri', b)
+        self.assertIn('verification_uri_complete', b)
 
-    #     # These seem to be web URL based not sure how these work
-    #     #
-    #     self.assertIn('verification_uri', b)
-    #     self.assertIn('verification_uri_complete', b)
-
-    #     self.assertTrue(self.mock_validator.validate_response_type.called)
-    #     self.assertTrue(self.mock_validator.validate_scopes.called)
+        self.assertTrue(self.mock_validator.validate_scopes.called)
 
     def test_create_authorization_grant_no_scopes(self):
         device = DeviceToken(self.mock_validator)
