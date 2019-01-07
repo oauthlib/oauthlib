@@ -13,14 +13,30 @@ log = logging.getLogger(__name__)
 
 class RequestValidator(OAuth2RequestValidator):
 
-    def get_verification_url(self):
-        pass
+    def get_verification_url(self, request):
+        """Get the verification URI for the client.
+        
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_verification_url_complete(self):
-        pass
+    def get_verification_url_complete(self, request, user_code):
+        """Get the complete verification URI for the client.
+        
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param code: Unicode user code
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_interval(self):
-        pass
+    def get_interval(self, request):
+        """Get the polling interval URI for the client.
+        
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
+        return 5
 
     def save_device_code(self):
         pass

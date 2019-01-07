@@ -201,7 +201,7 @@ class DeviceCodeGrant(GrantTypeBase):
 
         grant = token_handler.create_code(request)
         grant['verification_uri'] = self.request_validator.get_verification_url(request)
-        grant['verification_uri_complete'] = self.request_validator.get_verification_url_complete(request, grant)
+        grant['verification_uri_complete'] = self.request_validator.get_verification_url_complete(request, grant['user_code'])
         grant['interval'] = self.request_validator.get_interval(request)
 
         log.debug('Created device code grant %r for request %r.',

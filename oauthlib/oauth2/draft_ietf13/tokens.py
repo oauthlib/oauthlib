@@ -61,11 +61,9 @@ class DeviceToken(TokenBase):
 
         request.expires_in = expires_in
 
-        user_code = self.user_code_generator(request)
-
         token = {
             'device_code': self.device_code_generator(request),
-            'user_code': user_code,
+            'user_code': self.user_code_generator(request),
             'expires_in': expires_in
         }
 
