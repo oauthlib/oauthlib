@@ -8,6 +8,8 @@ This module contains methods for adding device codes to requests.
 """
 from __future__ import absolute_import, unicode_literals
 
+import common
+
 from oauth2.rfc6749.tokens import OAuth2Token, TokenBase
 
 def random_code_generator(request):
@@ -16,9 +18,10 @@ def random_code_generator(request):
     :type request: oauthlib.common.Request
     """
 
-    # Match this format :FGHU-GHTY
+    first_component = common.generate_token(length=4)
+    second_component = common.generate_token(length=4)
 
-    return common.generate_token()
+    return '{}-{}'.format(first_component, second_component)
 
 class DeviceToken(TokenBase):
     __slots__ = (
