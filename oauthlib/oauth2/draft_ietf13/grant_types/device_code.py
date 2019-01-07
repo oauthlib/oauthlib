@@ -14,12 +14,7 @@ from oauthlib.uri_validate import is_absolute_uri
 from oauthlib.oauth2.rfc6749.grant_types.base import GrantTypeBase
 from oauthlib.oauth2.rfc6749 import errors
 
-# TODO: How do we import this base class ?
-#
-# from oauthlib.oauth2.grant_types.base import GrantTypeBase
-
 log = logging.getLogger(__name__)
-
 
 class DeviceCodeGrant(GrantTypeBase):
 

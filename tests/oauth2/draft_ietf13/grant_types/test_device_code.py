@@ -6,8 +6,8 @@ import json
 import mock
 
 from oauthlib.common import Request
-from oauthlib.oauth2.draft_ietf13.grant_types import DeviceCodeGrant
-from oauthlib.oauth2.draft_ietf13.tokens import DeviceToken
+from oauthlib.oauth2 import DeviceCodeGrant
+from oauthlib.oauth2 import DeviceToken
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 

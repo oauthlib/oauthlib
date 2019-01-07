@@ -9,6 +9,8 @@ and Server classes.
 from __future__ import absolute_import, unicode_literals
 
 from .draft_ietf13.grant_types import DeviceCodeGrant
+from .draft_ietf13.tokens import DeviceToken
+from .draft_ietf13.request_validator import RequestValidator as DeviceCodeRequestValidator
 
 from .rfc6749.clients import Client
 from .rfc6749.clients import WebApplicationClient
