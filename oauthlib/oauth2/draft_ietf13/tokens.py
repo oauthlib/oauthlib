@@ -8,7 +8,7 @@ This module contains methods for adding device codes to requests.
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauth2.rfc6749.tokens import TokenBase
+from oauth2.rfc6749.tokens import OAuth2Token, TokenBase
 
 class DeviceToken(TokenBase):
     __slots__ = (
