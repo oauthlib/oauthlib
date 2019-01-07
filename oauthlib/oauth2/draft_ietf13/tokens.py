@@ -12,7 +12,15 @@ import common
 
 from oauth2.rfc6749.tokens import OAuth2Token, TokenBase
 
-def random_code_generator(request):
+def random_device_code_generator(request):
+    """
+    :param request: OAuthlib request.
+    :type request: oauthlib.common.Request
+    """
+
+    return common.generate_token()
+
+def random_user_code_generator(request):
     """
     :param request: OAuthlib request.
     :type request: oauthlib.common.Request
@@ -25,13 +33,17 @@ def random_code_generator(request):
 
 class DeviceToken(TokenBase):
     __slots__ = (
-        'request_validator', 'code_generator', 'expires_in'
+        'request_validator', 'device_code_generator', 'user_code_generator',
+        'expires_in'
     )
 
-    def __init__(self, request_validator=None, code_generator=None,
+    def __init__(self, request_validator=None,
+                 device_code_generator=None,
+                 user_code_generator=None,
                  expires_in=None):
         self.request_validator = request_validator
-        self.code_generator = code_generator or random_code_generator
+        self.device_code_generator = device_code_generator or random_device_code_generator
+        self.user_code_generator = user_code_generator or random_user_code_generator
         self.expires_in = expires_in or 3600
 
     def create_token(self, request, save_token=True):
