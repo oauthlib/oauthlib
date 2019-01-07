@@ -216,19 +216,48 @@ class DeviceCodeGrant(GrantTypeBase):
         return {}, grant, 201
 
     def create_token_response(self, request, token_handler):
-        """Validate the authorization code.
+        """
+        After displaying instructions to the user, the client makes an Access
+        Token Request to the token endpoint (as defined by Section 3.2 of
+        [RFC6749]) with a "grant_type" of "urn:ietf:params:oauth:grant-type:device_code".  This is an extension
+        grant type (as defined by Section 4.5 of [RFC6749]) created by this
+        specification, with the following parameters:
 
-        The client MUST NOT use the authorization code more than once. If an
-        authorization code is used more than once, the authorization server
-        MUST deny the request and SHOULD revoke (when possible) all tokens
-        previously issued based on that authorization code. The authorization
-        code is bound to the client identifier and redirection URI.
+        grant_type
+            REQUIRED.  Value MUST be set to
+            "urn:ietf:params:oauth:grant-type:device_code".
 
-        :param request: OAuthlib request.
-        :type request: oauthlib.common.Request
-        :param token_handler: A token handler instance, for example of type
-                              oauthlib.oauth2.BearerToken.
+        device_code
+            REQUIRED.  The device verification code, "device_code" from the
+            Device Authorization Response, defined in Section 3.2.
 
+        client_id
+            REQUIRED, if the client is not authenticating with the
+            authorization server as described in Section 3.2.1. of [RFC6749].
+
+        For example, the client makes the following HTTPS request (line
+        breaks are for display purposes only):
+
+
+            POST /token HTTP/1.1
+            Host: server.example.com
+            Content-Type: application/x-www-form-urlencoded
+
+            grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code
+            &device_code=GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS
+            &client_id=459691054427
+
+
+        If the client was issued client credentials (or assigned other
+        authentication requirements), the client MUST authenticate with the
+        authorization server as described in Section 3.2.1 of [RFC6749].
+        Note that there are security implications of statically distributed
+        client credentials, see Section 5.6.
+
+        The response to this request is defined in Section 3.5.  Unlike other
+        OAuth grant types, it is expected for the client to try the Access
+        Token Request repeatedly in a polling fashion, based on the error
+        code in the response.
         """
         headers = {
             'Content-Type': 'application/json',
@@ -251,19 +280,6 @@ class DeviceCodeGrant(GrantTypeBase):
         return headers, json.dumps(token), 200
 
     def validate_authorization_request(self, request):
-        """Check the authorization request for normal and fatal errors.
-
-        A normal error could be a missing response_type parameter or the client
-        attempting to access scope it is not allowed to ask authorization for.
-
-        Fatal errors occur when the client_id is invalid or
-        missing. These must be caught by the provider and handled, how this
-        is done is outside of the scope of OAuthLib but showing an error
-        page describing the issue is a good idea.
-
-        :param request: OAuthlib request.
-        :type request: oauthlib.common.Request
-        """
 
         # First check for fatal errors
 
@@ -342,8 +358,8 @@ class DeviceCodeGrant(GrantTypeBase):
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
-        # REQUIRED. Value MUST be set to "device_code".
-        if request.grant_type not in ('device_code'):
+        # REQUIRED. Value MUST be set to "urn:ietf:params:oauth:grant-type:device_code".
+        if request.grant_type not in ('urn:ietf:params:oauth:grant-type:device_code'):
             raise errors.UnsupportedGrantTypeError(request=request)
 
         for validator in self.custom_validators.pre_token:
