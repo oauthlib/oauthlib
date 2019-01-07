@@ -66,85 +66,67 @@ class RequestValidator(OAuth2RequestValidator):
 
 
     def validate_device_code(self, client_id, code, client, request):
-        """Verify that the authorization_code is valid and assigned to the given
+        """Verify that the device_code is valid and assigned to the given
         client.
 
+        In this method you should also check if the user authorized the code and
+        return true or false based on that fact.
+
+        Rate limiting should also be implemented in this method if needed but
+        it should be done as specified in the RFC
+
         Before returning true, set the following based on the information stored
-        with the code in 'save_authorization_code':
+        with the code in 'save_device_code':
 
             - request.user
-            - request.state (if given)
             - request.scopes
-            - request.claims (if given)
+
         OBS! The request.user attribute should be set to the resource owner
-        associated with this authorization code. Similarly request.scopes
+        associated with this device code. Similarly request.scopes
         must also be set.
 
-        The request.claims property, if it was given, should assigned a dict.
-
         :param client_id: Unicode client identifier.
-        :param code: Unicode authorization code.
+        :param code: Unicode device code.
         :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
-
-        Method is used by:
-            - Authorization Code Grant
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
 
     def validate_user_code(self, code, request):
-        """Verify that the authorization_code is valid and assigned to the given
+        """Verify that the user_code is valid and assigned to the given
         client.
 
         Before returning true, set the following based on the information stored
-        with the code in 'save_authorization_code':
+        with the code in 'save_device_code':
 
             - request.user
-            - request.state (if given)
             - request.scopes
-            - request.claims (if given)
+
         OBS! The request.user attribute should be set to the resource owner
-        associated with this authorization code. Similarly request.scopes
+        associated with this device code. Similarly request.scopes
         must also be set.
 
-        The request.claims property, if it was given, should assigned a dict.
-
         :param client_id: Unicode client identifier.
-        :param code: Unicode authorization code.
+        :param code: Unicode device code.
         :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
-
-        Method is used by:
-            - Authorization Code Grant
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
 
-    def update_user_code_authorization_status(self, code, request):
-        """Verify that the authorization_code is valid and assigned to the given
-        client.
+    def update_user_code_authorization_status(self, code, authorized, request):
+        """Update the authorization state of the user_code
 
-        Before returning true, set the following based on the information stored
-        with the code in 'save_authorization_code':
+        You should update the user_code's authorization state with the value of
+        the authorized variable and persist it.
 
-            - request.user
-            - request.state (if given)
-            - request.scopes
-            - request.claims (if given)
-        OBS! The request.user attribute should be set to the resource owner
-        associated with this authorization code. Similarly request.scopes
-        must also be set.
-
-        The request.claims property, if it was given, should assigned a dict.
-
-        :param client_id: Unicode client identifier.
-        :param code: Unicode authorization code.
-        :param client: Client object set by you, see ``.authenticate_client``.
+        :param code: Unicode user code.
+        :param authorized: The new authorized state of the code either True for authorized or False for un-authorized
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
