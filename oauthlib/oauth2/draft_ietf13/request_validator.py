@@ -13,3 +13,12 @@ log = logging.getLogger(__name__)
 
 class RequestValidator(RequestValidator):
     pass
+
+    # get_verification_url
+    # get_verification_url_complete
+    # get_interval
+    # save_device_code
+    # validate_device_code
+    # validate_user_code
+    # update_user_code_authorization_status
+    # invalidate_device_code
