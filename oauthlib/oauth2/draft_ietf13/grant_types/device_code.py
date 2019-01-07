@@ -156,14 +156,14 @@ class DeviceCodeGrant(GrantTypeBase):
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :param token_handler: A token handler instance, for example of type
-                              oauthlib.oauth2.BearerToken.
+                              oauthlib.oauth2.DeviceCode.
         :returns: headers, body, status
         :raises: FatalClientError on invalid redirect URI or client id.
 
         A few examples::
 
             >>> from your_validator import your_validator
-            >>> request = Request('https://example.com/authorize?client_id=valid')
+            >>> request = Request('https://example.com/device')
             >>> from oauthlib.common import Request
             >>> from oauthlib.oauth2 import AuthorizationCodeGrant, BearerToken
             >>> token = BearerToken(your_validator)
@@ -212,9 +212,14 @@ class DeviceCodeGrant(GrantTypeBase):
 
         grant = token_handler.create_device_code(request)
         
+        # These bits from the token generator:
+        #
         # {
         #     'device_code': common.generate_token(),
         #     'user_code': common.generate_token(length=self.user_code_length),
+        # }
+        
+        # These bits from the validator:
         #     'expires_in': 0,
         #     'interval': 5,
         #     'verification_uri': '',
