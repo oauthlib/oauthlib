@@ -136,60 +136,52 @@ class DeviceCodeGrant(GrantTypeBase):
 
     def create_authorization_response(self, request, token_handler):
         """
-        The client constructs the request URI by adding the following
-        parameters to the query component of the authorization endpoint URI
-        using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
+        In response, the authorization server generates a unique device
+        verification code and an end-user code that are valid for a limited
+        time and includes them in the HTTP response body using the
+        "application/json" format [RFC8259] with a 200 (OK) status code.  The
+        response contains the following parameters:
 
-        response_type
-                REQUIRED.  Value MUST be set to "device_code" for standard OAuth2
-                authorization flow.
-        client_id
-                REQUIRED.  The client identifier as described in `Section 2.2`_.
-        scope
-                OPTIONAL.  The scope of the access request as described by
-                `Section 3.3`_.
+        device_code
+            REQUIRED.  The device verification code.
 
-        The client directs the resource owner to the constructed URI using an
-        HTTP redirection response, or by other means available to it via the
-        user-agent.
+        user_code
+            REQUIRED.  The end-user verification code.
 
-        :param request: OAuthlib request.
-        :type request: oauthlib.common.Request
-        :param token_handler: A token handler instance, for example of type
-                              oauthlib.oauth2.DeviceCode.
-        :returns: headers, body, status
-        :raises: FatalClientError on invalid redirect URI or client id.
+        verification_uri
+            REQUIRED.  The end-user verification URI on the authorization
+            server.  The URI should be short and easy to remember as end users
+            will be asked to manually type it into their user-agent.
 
-        A few examples::
+        verification_uri_complete
+            OPTIONAL.  A verification URI that includes the "user_code" (or
+            other information with the same function as the "user_code"),
+            designed for non-textual transmission.
 
-            >>> from your_validator import your_validator
-            >>> request = Request('https://example.com/device')
-            >>> from oauthlib.common import Request
-            >>> from oauthlib.oauth2 import AuthorizationCodeGrant, BearerToken
-            >>> token = BearerToken(your_validator)
-            >>> grant = AuthorizationCodeGrant(your_validator)
-            >>> request.scopes = ['authorized', 'in', 'some', 'form']
-            >>> grant.create_authorization_response(request, token)
-            (u'http://client.com/?error=invalid_request&error_description=Missing+response_type+parameter.', None, None, 400)
-            >>> request = Request('https://example.com/authorize?client_id=valid'
-            ...                   '&response_type=code')
-            >>> request.scopes = ['authorized', 'in', 'some', 'form']
-            >>> grant.create_authorization_response(request, token)
-            (u'http://client.com/?code=u3F05aEObJuP2k7DordviIgW5wl52N', None, None, 200)
-            >>> # If the client id or redirect uri fails validation
-            >>> grant.create_authorization_response(request, token)
-            Traceback (most recent call last):
-                File "<stdin>", line 1, in <module>
-                File "oauthlib/oauth2/rfc6749/grant_types.py", line 515, in create_authorization_response
-                    >>> grant.create_authorization_response(request, token)
-                File "oauthlib/oauth2/rfc6749/grant_types.py", line 591, in validate_authorization_request
-            oauthlib.oauth2.rfc6749.errors.InvalidClientIdError
+        expires_in
+            REQUIRED.  The lifetime in seconds of the "device_code" and
+            "user_code".
 
-        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
-        .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
-        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
+        interval
+            OPTIONAL.  The minimum amount of time in seconds that the client
+            SHOULD wait between polling requests to the token endpoint.  If no
+            value is provided, clients MUST use 5 as the default.
+
+        For example:
+
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            Cache-Control: no-store
+
+            {
+                "device_code": "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+                "user_code": "WDJB-MJHT",
+                "verification_uri": "https://example.com/device",
+                "verification_uri_complete":
+                    "https://example.com/device?user_code=WDJB-MJHT",
+                "expires_in": 1800,
+                "interval": 5
+            }
         """
         try:
             self.validate_authorization_request(request)
