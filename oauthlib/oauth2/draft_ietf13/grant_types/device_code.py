@@ -312,7 +312,23 @@ class DeviceCodeGrant(GrantTypeBase):
                                 Complete Verification URI
 
         """
-        pass
+
+        if request.authorized is None:
+            raise errors.InvalidRequestError(
+                description='Missing authorized parameter.', request=request)
+
+        if request.user_code is None:
+            raise errors.InvalidRequestError(
+                description='Missing user_code parameter.', request=request)
+
+        if not self.request_validator.validate_user_code(request.user_code, request):
+            log.debug('Client, %r (%r), is not allowed access to scopes %r.',
+                      request.client_id, request.client, request.scopes)
+            raise errors.InvalidGrantError(request=request)
+
+        self.request_validator.update_user_code_authorization_status(request.user_code, request.authorized, request)
+
+        return {}, None, 200
 
     def create_token_response(self, request, token_handler):
         """
@@ -485,9 +501,6 @@ class DeviceCodeGrant(GrantTypeBase):
             request_info.update(validator(request))
 
         return request.scopes, request_info
-
-    def validate_verification_response(self, request, token_handler):
-        pass
 
     def validate_token_request(self, request):
         """
