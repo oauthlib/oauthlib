@@ -258,6 +258,56 @@ class DeviceCodeGrant(GrantTypeBase):
         OAuth grant types, it is expected for the client to try the Access
         Token Request repeatedly in a polling fashion, based on the error
         code in the response.
+
+        If the user has approved the grant, the token endpoint responds with
+        a success response defined in Section 5.1 of [RFC6749]; otherwise it
+        responds with an error, as defined in Section 5.2 of [RFC6749].
+
+        In addition to the error codes defined in Section 5.2 of [RFC6749],
+        the following error codes are specified by the device flow for use in
+        token endpoint responses:
+
+        authorization_pending
+            The authorization request is still pending as the end user hasn't
+            yet completed the user interaction steps (Section 3.3).  The
+            client SHOULD repeat the Access Token Request to the token
+            endpoint (a process known as polling).  Before each new request
+            the client MUST wait at least the number of seconds specified by
+            the "interval" parameter of the Device Authorization Response (see
+            Section 3.2), or 5 seconds if none was provided, and respect any
+            increase in the polling interval required by the "slow_down"
+            error.
+
+        slow_down
+            A variant of "authorization_pending", the authorization request is
+            still pending and polling should continue, but the interval MUST
+            be increased by 5 seconds for this and all subsequent requests.
+
+        access_denied
+            The end user denied the authorization request.
+
+        expired_token
+            The "device_code" has expired and the device flow authorization
+            session has concluded.  The client MAY commence a new Device
+            Authorization Request but SHOULD wait for user interaction before
+            restarting to avoid unnecessary polling.
+
+        A client receiving an error response as defined in Section 5.2 of
+        [RFC6749] MUST stop polling and SHOULD react accordingly, for
+        example, by displaying an error to the user, except for the error
+        codes "authorization_pending" and "slow_down" which are processed as
+        described above.
+
+        The assumption of this specification is that the secondary device the
+        user is authorizing the request on does not have a way to communicate
+        back to the OAuth client.  Only a one-way channel is required to make
+        this flow useful in many scenarios.  For example, an HTML application
+        on a TV that can only make outbound requests.  If a return channel
+        were to exist for the chosen user interaction interface, then the
+        device MAY wait until notified on that channel that the user has
+        completed the action before initiating the token request (as an
+        alternative to polling).  Such behavior is, however, outside the
+        scope of this specification.
         """
         headers = {
             'Content-Type': 'application/json',

@@ -23,7 +23,7 @@ class DeviceCodeGrantTest(TestCase):
         self.request.client_id = 'abcdef'
         self.request.code = '1234'
         self.request.response_type = 'code'
-        self.request.grant_type = 'device_code'
+        self.request.grant_type = 'urn:ietf:params:oauth:grant-type:device_code'
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
@@ -166,9 +166,9 @@ class DeviceCodeGrantTest(TestCase):
     #     self.assertRaises(errors.UnsupportedGrantTypeError,
     #                       self.auth.validate_token_request, self.request)
 
-    # def test_authenticate_client_id(self):
-    #     self.mock_validator.client_authentication_required.return_value = False
-    #     self.mock_validator.authenticate_client_id.return_value = False
+    def test_authenticate_client_id(self):
+        self.mock_validator.client_authentication_required.return_value = False
+        self.mock_validator.authenticate_client_id.return_value = False
 
-    #     self.assertRaises(errors.InvalidClientError,
-    #                       self.auth.validate_token_request, self.request)
+        self.assertRaises(errors.InvalidClientError,
+                          self.auth.validate_token_request, self.request)
