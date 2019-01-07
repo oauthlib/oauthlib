@@ -131,9 +131,6 @@ class DeviceCodeGrant(GrantTypeBase):
     .. _`Device code grant`: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-13#section-3.1
     """
 
-    response_types = ['code']
-    user_code_length = 6
-
     def create_authorization_response(self, request, token_handler):
         """
         In response, the authorization server generates a unique device
