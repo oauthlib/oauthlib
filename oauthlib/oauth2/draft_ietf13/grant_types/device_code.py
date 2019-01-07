@@ -215,6 +215,9 @@ class DeviceCodeGrant(GrantTypeBase):
 
         return {}, grant, 201
 
+    def create_polling_response(self, request, token_handler):
+        return {}, None, 400
+
     def create_token_response(self, request, token_handler):
         """Validate the authorization code.
 
@@ -336,6 +339,9 @@ class DeviceCodeGrant(GrantTypeBase):
             request_info.update(validator(request))
 
         return request.scopes, request_info
+
+    def validate_polling_request(self, request):
+        pass
 
     def validate_token_request(self, request):
         """
