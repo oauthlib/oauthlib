@@ -210,20 +210,12 @@ class DeviceCodeGrant(GrantTypeBase):
             log.debug('Client error during validation of %r. %r.', request, e)
             raise
 
-        grant = token_handler.create_device_code(request)
-        
-        # These bits from the token generator:
-        #
-        # {
-        #     'device_code': common.generate_token(),
-        #     'user_code': common.generate_token(length=self.user_code_length),
-        # }
-        
+        grant = token_handler.create_code(request)
+                
         # These bits from the validator:
-        #     'expires_in': 0,
-        #     'interval': 5,
         #     'verification_uri': '',
         #     'verification_uri_complete': ''
+        #     'interval': ''
         # }
 
         log.debug('Created device code grant %r for request %r.',

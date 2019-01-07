@@ -34,29 +34,25 @@ def random_user_code_generator(request):
 class DeviceToken(TokenBase):
     __slots__ = (
         'request_validator', 'device_code_generator', 'user_code_generator',
-        'verification_url', 'expires_in', 'interval'
+        'expires_in'
     )
 
     def __init__(self, request_validator=None,
                  device_code_generator=None,
                  user_code_generator=None,
-                 verification_url,
-                 expires_in=None,
-                 interval=None):
+                 expires_in=None):
         self.request_validator = request_validator
         self.device_code_generator = device_code_generator or random_device_code_generator
         self.user_code_generator = user_code_generator or random_user_code_generator
         self.expires_in = expires_in or 3600
-        self.verification_url = verification_url
-        self.interval = interval or 5
 
-    def create_token(self, request, save_token=True):
+    def create_code(self, request, save_code=True):
         """
         Create a DeviceToken.
         
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
-        :param save_token:
+        :param save_code:
         """
 
         if callable(self.expires_in):
@@ -71,10 +67,7 @@ class DeviceToken(TokenBase):
         token = {
             'device_code': self.device_code_generator(request),
             'user_code': user_code,
-            'verification_uri': self.verification_url,
-            'verification_uri_complete': '{}?user_code={}'.format(self.verification_url, user_code),
-            'expires_in': expires_in,
-            'interval': self.interval
+            'expires_in': expires_in
         }
 
         # If provided, include - this is optional in some cases https://tools.ietf.org/html/rfc6749#section-3.3 but
@@ -89,7 +82,7 @@ class DeviceToken(TokenBase):
         #
         token = OAuth2Token(token)
 
-        if save_token:
+        if save_code:
             self.request_validator.save_device_code(token, request)
 
         return token
