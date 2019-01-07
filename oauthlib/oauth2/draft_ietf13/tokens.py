@@ -34,17 +34,19 @@ def random_user_code_generator(request):
 class DeviceToken(TokenBase):
     __slots__ = (
         'request_validator', 'device_code_generator', 'user_code_generator',
-        'expires_in'
+        'verification_url', 'expires_in'
     )
 
     def __init__(self, request_validator=None,
                  device_code_generator=None,
                  user_code_generator=None,
+                 verification_url,
                  expires_in=None):
         self.request_validator = request_validator
         self.device_code_generator = device_code_generator or random_device_code_generator
         self.user_code_generator = user_code_generator or random_user_code_generator
         self.expires_in = expires_in or 3600
+        self.verification_url = verification_url
 
     def create_token(self, request, save_token=True):
         """
