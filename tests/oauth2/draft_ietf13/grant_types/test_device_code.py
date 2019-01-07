@@ -177,14 +177,14 @@ class DeviceCodeGrantTest(TestCase):
     #     self.assertRaises(errors.InvalidGrantError,
     #                       self.auth.validate_token_request, self.request)
 
-    # def test_invalid_grant_type(self):
-    #     self.request.grant_type = 'foo'
-    #     self.assertRaises(errors.UnsupportedGrantTypeError,
-    #                       self.auth.validate_token_request, self.request)
+    def test_invalid_grant_type(self):
+        self.request.grant_type = 'foo'
+        self.assertRaises(errors.UnsupportedGrantTypeError,
+                          self.auth.validate_token_request, self.request)
 
-    # def test_authenticate_client_id(self):
-    #     self.mock_validator.client_authentication_required.return_value = False
-    #     self.mock_validator.authenticate_client_id.return_value = False
-    #     self.request.state = 'abc'
-    #     self.assertRaises(errors.InvalidClientError,
-    #                       self.auth.validate_token_request, self.request)
+    def test_authenticate_client_id(self):
+        self.mock_validator.client_authentication_required.return_value = False
+        self.mock_validator.authenticate_client_id.return_value = False
+
+        self.assertRaises(errors.InvalidClientError,
+                          self.auth.validate_token_request, self.request)
