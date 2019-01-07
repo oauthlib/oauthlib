@@ -21,7 +21,7 @@ class DeviceCodeGrantTest(TestCase):
         self.request.expires_in = 1800
         self.request.client = 'batman'
         self.request.client_id = 'abcdef'
-        self.request.code = '1234'
+        self.request.device_code = '1234'
         self.request.response_type = 'code'
         self.request.grant_type = 'urn:ietf:params:oauth:grant-type:device_code'
 
@@ -59,15 +59,15 @@ class DeviceCodeGrantTest(TestCase):
         self.assertFalse(self.tknval1.called)
         self.assertFalse(self.tknval2.called)
 
-    # def test_custom_token_validators(self):
-    #     self.setup_validators()
+    def test_custom_token_validators(self):
+        self.setup_validators()
 
-    #     device = DeviceToken(self.mock_validator)
-    #     self.auth.create_token_response(self.request, device)
-    #     self.assertTrue(self.tknval1.called)
-    #     self.assertTrue(self.tknval2.called)
-    #     self.assertFalse(self.authval1.called)
-    #     self.assertFalse(self.authval2.called)
+        device = DeviceToken(self.mock_validator)
+        self.auth.create_token_response(self.request, device)
+        self.assertTrue(self.tknval1.called)
+        self.assertTrue(self.tknval2.called)
+        self.assertFalse(self.authval1.called)
+        self.assertFalse(self.authval2.called)
 
     def test_create_authorization_grant(self):
         device = DeviceToken(self.mock_validator)
@@ -121,50 +121,50 @@ class DeviceCodeGrantTest(TestCase):
     #     self.assertTrue(self.mock_validator.validate_grant_type.called)
     #     self.assertTrue(self.mock_validator.invalidate_authorization_code.called)
 
-    # def test_invalid_request(self):
-    #     del self.request.code
-    #     self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
-    #                       self.request)
+    def test_invalid_request(self):
+        del self.request.device_code
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
+                          self.request)
 
-    # def test_invalid_request_duplicates(self):
-    #     request = mock.MagicMock(wraps=self.request)
-    #     request.grant_type = 'authorization_code'
-    #     request.duplicate_params = ['client_id']
-    #     self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
-    #                       request)
+    def test_invalid_request_duplicates(self):
+        request = mock.MagicMock(wraps=self.request)
+        request.grant_type = 'urn:ietf:params:oauth:grant-type:device_code'
+        request.duplicate_params = ['client_id']
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
+                          request)
 
-    # def test_authentication_required(self):
-    #     """
-    #     ensure client_authentication_required() is properly called
-    #     """
-    #     self.auth.validate_token_request(self.request)
-    #     self.mock_validator.client_authentication_required.assert_called_once_with(self.request)
+    def test_authentication_required(self):
+        """
+        ensure client_authentication_required() is properly called
+        """
+        self.auth.validate_token_request(self.request)
+        self.mock_validator.client_authentication_required.assert_called_once_with(self.request)
 
-    # def test_authenticate_client(self):
-    #     self.mock_validator.authenticate_client.side_effect = None
-    #     self.mock_validator.authenticate_client.return_value = False
-    #     self.assertRaises(errors.InvalidClientError, self.auth.validate_token_request,
-    #                       self.request)
+    def test_authenticate_client(self):
+        self.mock_validator.authenticate_client.side_effect = None
+        self.mock_validator.authenticate_client.return_value = False
+        self.assertRaises(errors.InvalidClientError, self.auth.validate_token_request,
+                          self.request)
 
-    # def test_client_id_missing(self):
-    #     self.mock_validator.authenticate_client.side_effect = None
-    #     request = mock.MagicMock(wraps=self.request)
-    #     request.grant_type = 'device_code'
-    #     del request.client.client_id
-    #     self.assertRaises(NotImplementedError, self.auth.validate_token_request,
-    #                       request)
+    def test_client_id_missing(self):
+        self.mock_validator.authenticate_client.side_effect = None
+        request = mock.MagicMock(wraps=self.request)
+        request.grant_type = 'urn:ietf:params:oauth:grant-type:device_code'
+        del request.client.client_id
+        self.assertRaises(NotImplementedError, self.auth.validate_token_request,
+                          request)
 
-    # def test_invalid_grant(self):
-    #     self.request.client = 'batman'
-    #     self.mock_validator.authenticate_client = self.set_client
-    #     self.mock_validator.validate_code.return_value = False
-    #     self.assertRaises(errors.InvalidGrantError,
-    #                       self.auth.validate_token_request, self.request)
+    def test_invalid_grant(self):
+        self.request.client = 'batman'
+        self.mock_validator.authenticate_client = self.set_client
+        self.mock_validator.validate_code.return_value = False
+        self.assertRaises(errors.InvalidGrantError,
+                          self.auth.validate_token_request, self.request)
 
-    # def test_invalid_grant_type(self):
-    #     self.request.grant_type = 'foo'
-    #     self.assertRaises(errors.UnsupportedGrantTypeError,
-    #                       self.auth.validate_token_request, self.request)
+    def test_invalid_grant_type(self):
+        self.request.grant_type = 'foo'
+        self.assertRaises(errors.UnsupportedGrantTypeError,
+                          self.auth.validate_token_request, self.request)
 
     def test_authenticate_client_id(self):
         self.mock_validator.client_authentication_required.return_value = False

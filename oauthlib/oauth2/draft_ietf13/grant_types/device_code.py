@@ -314,12 +314,12 @@ class DeviceCodeGrant(GrantTypeBase):
             'Cache-Control': 'no-store',
             'Pragma': 'no-cache',
         }
-        # try:
-        self.validate_token_request(request)
-        #     log.debug('Token request validation ok for %r.', request)
-        # except errors.OAuth2Error as e:
-        #     log.debug('Client error during validation of %r. %r.', request, e)
-        #     return headers, e.json, e.status_code
+        try:
+            self.validate_token_request(request)
+            log.debug('Token request validation ok for %r.', request)
+        except errors.OAuth2Error as e:
+            log.debug('Client error during validation of %r. %r.', request, e)
+            return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, refresh_token=self.refresh_token, save_token=False)
         for modifier in self._token_modifiers:
@@ -415,9 +415,9 @@ class DeviceCodeGrant(GrantTypeBase):
         for validator in self.custom_validators.pre_token:
             validator(request)
 
-        if request.code is None:
+        if request.device_code is None:
             raise errors.InvalidRequestError(
-                description='Missing code parameter.', request=request)
+                description='Missing device_code parameter.', request=request)
 
         for param in ('client_id', 'grant_type'):
             if param in request.duplicate_params:
