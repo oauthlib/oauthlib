@@ -215,6 +215,9 @@ class DeviceCodeGrant(GrantTypeBase):
 
         return {}, grant, 201
 
+    def create_verification_response(self, request, token_handler):
+        pass
+
     def create_token_response(self, request, token_handler):
         """
         After displaying instructions to the user, the client makes an Access
@@ -386,6 +389,9 @@ class DeviceCodeGrant(GrantTypeBase):
             request_info.update(validator(request))
 
         return request.scopes, request_info
+
+    def validate_verification_response(self, request, token_handler):
+        pass
 
     def validate_token_request(self, request):
         """
