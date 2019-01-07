@@ -216,6 +216,102 @@ class DeviceCodeGrant(GrantTypeBase):
         return {}, grant, 201
 
     def create_verification_response(self, request, token_handler):
+        """
+        After receiving a successful Authorization Response, the client
+        displays or otherwise communicates the "user_code" and the
+        "verification_uri" to the end user and instructs them to visit the
+        URI in a user agent on a secondary device (for example, in a browser
+        on their mobile phone), and enter the user code.
+
+                        +-----------------------------------------------+
+                        |                                               |
+                        |  Using a browser on another device, visit:    |
+                        |  https://example.com/device                   |
+                        |                                               |
+                        |  And enter the code:                          |
+                        |  WDJB-MJHT                                    |
+                        |                                               |
+                        +-----------------------------------------------+
+
+                            Figure 2: Example User Instruction
+
+        The authorizing user navigates to the "verification_uri" and
+        authenticates with the authorization server in a secure TLS-protected
+        ([RFC8446]) session.  The authorization server prompts the end user
+        to identify the device authorization session by entering the
+        "user_code" provided by the client.  The authorization server should
+        then inform the user about the action they are undertaking and ask
+        them to approve or deny the request.  Once the user interaction is
+        complete, the server MAY inform the user to return to their device.
+
+        During the user interaction, the device continuously polls the token
+        endpoint with the "device_code", as detailed in Section 3.4, until
+        the user completes the interaction, the code expires, or another
+        error occurs.  The "device_code" is not intended for the end user
+        directly, and thus should not be displayed during the interaction to
+        avoid confusing the end user.
+
+        Authorization servers supporting this specification MUST implement a
+        user interaction sequence that starts with the user navigating to
+        "verification_uri" and continues with them supplying the "user_code"
+        at some stage during the interaction.  Other than that, the exact
+        sequence and implementation of the user interaction is up to the
+        authorization server, for example, the authorization server may
+        enable new users to sign up for an account during the authorization
+        flow, or add additional security verification steps.
+
+        It is NOT RECOMMENDED for authorization servers to include the user
+        code in the verification URI ("verification_uri"), as this increases
+        the length and complexity of the URI that the user must type.  While
+        the user must still type the same number of characters with the
+        user_code separated, once they successfully navigate to the
+        verification_uri, any errors in entering the code can be highlighted
+        by the authorization server to improve the user experience.  The next
+        section documents user interaction with "verification_uri_complete",
+        which is designed to carry both pieces of information.
+
+        3.3.1.  Non-textual Verification URI Optimization
+
+        When "verification_uri_complete" is included in the Authorization
+        Response (Section 3.2), clients MAY present this URI in a non-textual
+        manner using any method that results in the browser being opened with
+        the URI, such as with QR (Quick Response) codes or NFC (Near Field
+        Communication), to save the user typing the URI.
+
+        For usability reasons, it is RECOMMENDED for clients to still display
+        the textual verification URI ("verification_uri") for users not able
+        to use such a shortcut.  Clients MUST still display the "user_code",
+        as the authorization server will require the user to confirm it to
+        disambiguate devices, or as a remote phishing mitigation (See
+        Section 5.4).
+
+        If the user starts the user interaction by browsing to
+        "verification_uri_complete", then the user interaction described in
+        Section 3.3 is still followed, but with the optimization that the
+        user does not need to type the "user_code".  The server SHOULD
+        display the "user_code" to the user and ask them to verify that it
+        matches the "user_code" being displayed on the device, to confirm
+        they are authorizing the correct device.  As before, in addition to
+        taking steps to confirm the identity of the device, the user should
+        also be afforded the choice to approve or deny the authorization
+        request.
+
+                        +-------------------------------------------------+
+                        |                                                 |
+                        |  Scan the QR code, or using     +------------+  |
+                        |  a browser on another device,   |[_]..  . [_]|  |
+                        |  visit:                         | .  ..   . .|  |
+                        |  https://example.com/device     | . .  . ....|  |
+                        |                                 |.   . . .   |  |
+                        |  And enter the code:            |[_]. ... .  |  |
+                        |  WDJB-MJHT                      +------------+  |
+                        |                                                 |
+                        +-------------------------------------------------+
+
+        Figure 3: Example User Instruction with QR Code Representation of the
+                                Complete Verification URI
+
+        """
         pass
 
     def create_token_response(self, request, token_handler):
