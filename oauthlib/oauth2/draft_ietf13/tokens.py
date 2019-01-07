@@ -1,16 +1,15 @@
 """
-oauthlib.oauth2.rfc6749.tokens
+oauthlib.oauth2.draft_ietf13.tokens
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This module contains methods for adding device codes to requests.
+This module contains methods for adding device and user codes to requests.
 
 - Bearer https://tools.ietf.org/html/rfc6750
 """
 from __future__ import absolute_import, unicode_literals
 
-import common
-
-from oauth2.rfc6749.tokens import OAuth2Token, TokenBase
+from oauthlib import common
+from oauthlib.oauth2.rfc6749.tokens import OAuth2Token, TokenBase
 
 def random_device_code_generator(request):
     """
