@@ -325,8 +325,8 @@ class DeviceCodeGrant(GrantTypeBase):
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
         self.request_validator.save_token(token, request)
-        self.request_validator.invalidate_authorization_code(
-            request.client_id, request.code, request)
+        self.request_validator.invalidate_device_code(
+            request.client_id, request.device_code, request)
         return headers, json.dumps(token), 200
 
     def validate_authorization_request(self, request):
@@ -340,7 +340,7 @@ class DeviceCodeGrant(GrantTypeBase):
         # invalid redirection URI.
 
         # First check duplicate parameters
-        for param in ('client_id', 'response_type', 'scope', 'state'):
+        for param in ('client_id', 'response_type', 'scope'):
             try:
                 duplicate_params = request.duplicate_params
             except ValueError:

@@ -6,9 +6,10 @@ import json
 import mock
 
 from oauthlib.common import Request
-from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.draft_ietf13.grant_types import DeviceCodeGrant
 from oauthlib.oauth2.draft_ietf13.tokens import DeviceToken
+from oauthlib.oauth2.rfc6749 import errors
+from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from ....unittest import TestCase
 
@@ -62,8 +63,8 @@ class DeviceCodeGrantTest(TestCase):
     def test_custom_token_validators(self):
         self.setup_validators()
 
-        device = DeviceToken(self.mock_validator)
-        self.auth.create_token_response(self.request, device)
+        token = BearerToken(self.mock_validator)
+        self.auth.create_token_response(self.request, token)
         self.assertTrue(self.tknval1.called)
         self.assertTrue(self.tknval2.called)
         self.assertFalse(self.authval1.called)
@@ -87,39 +88,38 @@ class DeviceCodeGrantTest(TestCase):
         self.request.scopes = []
         self.auth.create_authorization_response(self.request, device)
 
-    # def test_create_token_response(self):
-    #     bearer = BearerToken(self.mock_validator)
+    def test_create_token_response(self):
+        bearer = BearerToken(self.mock_validator)
 
-    #     h, token, s = self.auth.create_token_response(self.request, bearer)
-    #     token = json.loads(token)
-    #     self.assertEqual(self.mock_validator.save_token.call_count, 1)
-    #     self.assertIn('access_token', token)
-    #     self.assertIn('refresh_token', token)
-    #     self.assertIn('expires_in', token)
-    #     self.assertIn('scope', token)
-    #     self.assertTrue(self.mock_validator.client_authentication_required.called)
-    #     self.assertTrue(self.mock_validator.authenticate_client.called)
-    #     self.assertTrue(self.mock_validator.validate_code.called)
-    #     self.assertTrue(self.mock_validator.confirm_redirect_uri.called)
-    #     self.assertTrue(self.mock_validator.validate_grant_type.called)
-    #     self.assertTrue(self.mock_validator.invalidate_authorization_code.called)
+        h, token, s = self.auth.create_token_response(self.request, bearer)
+        token = json.loads(token)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
+        self.assertIn('access_token', token)
+        self.assertIn('refresh_token', token)
+        self.assertIn('expires_in', token)
+        self.assertIn('scope', token)
+        self.assertTrue(self.mock_validator.client_authentication_required.called)
+        self.assertTrue(self.mock_validator.authenticate_client.called)
+        self.assertTrue(self.mock_validator.validate_device_code.called)
+        self.assertTrue(self.mock_validator.validate_grant_type.called)
+        self.assertTrue(self.mock_validator.invalidate_device_code.called)
 
-    # def test_create_token_response_without_refresh_token(self):
-    #     self.auth.refresh_token = False  # Not to issue refresh token.
+    def test_create_token_response_without_refresh_token(self):
+        self.auth.refresh_token = False  # Not to issue refresh token.
 
-    #     bearer = BearerToken(self.mock_validator)
-    #     h, token, s = self.auth.create_token_response(self.request, bearer)
-    #     token = json.loads(token)
-    #     self.assertEqual(self.mock_validator.save_token.call_count, 1)
-    #     self.assertIn('access_token', token)
-    #     self.assertNotIn('refresh_token', token)
-    #     self.assertIn('expires_in', token)
-    #     self.assertIn('scope', token)
-    #     self.assertTrue(self.mock_validator.client_authentication_required.called)
-    #     self.assertTrue(self.mock_validator.authenticate_client.called)
-    #     self.assertTrue(self.mock_validator.validate_code.called)
-    #     self.assertTrue(self.mock_validator.validate_grant_type.called)
-    #     self.assertTrue(self.mock_validator.invalidate_authorization_code.called)
+        bearer = BearerToken(self.mock_validator)
+        h, token, s = self.auth.create_token_response(self.request, bearer)
+        token = json.loads(token)
+        self.assertEqual(self.mock_validator.save_token.call_count, 1)
+        self.assertIn('access_token', token)
+        self.assertNotIn('refresh_token', token)
+        self.assertIn('expires_in', token)
+        self.assertIn('scope', token)
+        self.assertTrue(self.mock_validator.client_authentication_required.called)
+        self.assertTrue(self.mock_validator.authenticate_client.called)
+        self.assertTrue(self.mock_validator.validate_device_code.called)
+        self.assertTrue(self.mock_validator.validate_grant_type.called)
+        self.assertTrue(self.mock_validator.invalidate_device_code.called)
 
     def test_invalid_request(self):
         self.request.device_code = None
