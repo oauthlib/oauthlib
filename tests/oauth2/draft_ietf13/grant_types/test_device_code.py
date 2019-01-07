@@ -122,7 +122,7 @@ class DeviceCodeGrantTest(TestCase):
     #     self.assertTrue(self.mock_validator.invalidate_authorization_code.called)
 
     def test_invalid_request(self):
-        del self.request.device_code
+        self.request.device_code = None
         self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
                           self.request)
 
@@ -157,7 +157,7 @@ class DeviceCodeGrantTest(TestCase):
     def test_invalid_grant(self):
         self.request.client = 'batman'
         self.mock_validator.authenticate_client = self.set_client
-        self.mock_validator.validate_code.return_value = False
+        self.mock_validator.validate_device_code.return_value = False
         self.assertRaises(errors.InvalidGrantError,
                           self.auth.validate_token_request, self.request)
 

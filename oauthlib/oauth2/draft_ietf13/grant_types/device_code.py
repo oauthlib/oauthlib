@@ -372,22 +372,6 @@ class DeviceCodeGrant(GrantTypeBase):
         for validator in self.custom_validators.pre_auth:
             request_info.update(validator(request))
 
-        # REQUIRED.
-        # if request.response_type is None:
-        #     raise errors.MissingResponseTypeError(request=request)
-        # # Value MUST be set to "code" or one of the OpenID authorization code including
-        # # response_types "code token", "code id_token", "code token id_token"
-        # elif not 'code' in request.response_type and request.response_type != 'none':
-        #     raise errors.UnsupportedResponseTypeError(request=request)
-
-        # if not self.request_validator.validate_response_type(request.client_id,
-        #                                                      request.response_type,
-        #                                                      request.client, request):
-
-        #     log.debug('Client %s is not authorized to use response_type %s.',
-        #               request.client_id, request.response_type)
-        #     raise errors.UnauthorizedClientError(request=request)
-
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # https://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
@@ -408,6 +392,7 @@ class DeviceCodeGrant(GrantTypeBase):
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
+        
         # REQUIRED. Value MUST be set to "urn:ietf:params:oauth:grant-type:device_code".
         if request.grant_type not in ('urn:ietf:params:oauth:grant-type:device_code'):
             raise errors.UnsupportedGrantTypeError(request=request)
@@ -452,11 +437,11 @@ class DeviceCodeGrant(GrantTypeBase):
 
         # REQUIRED. The authorization code received from the
         # authorization server.
-        # if not self.request_validator.validate_code(request.client_id,
-        #                                             request.code, request.client, request):
-        #     log.debug('Client, %r (%r), is not allowed access to scopes %r.',
-        #               request.client_id, request.client, request.scopes)
-        #     raise errors.InvalidGrantError(request=request)
+        if not self.request_validator.validate_device_code(request.client_id,
+                                                    request.device_code, request.client, request):
+            log.debug('Client, %r (%r), is not allowed access to scopes %r.',
+                      request.client_id, request.client, request.scopes)
+            raise errors.InvalidGrantError(request=request)
 
         for attr in ('user', 'scopes'):
             if getattr(request, attr, None) is None:
