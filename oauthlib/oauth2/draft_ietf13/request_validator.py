@@ -65,7 +65,7 @@ class RequestValidator(OAuth2RequestValidator):
         raise NotImplementedError('Subclasses must implement this method.')
 
 
-    def validate_device_code(self):
+    def validate_device_code(self, client_id, code, client, request):
         """Verify that the authorization_code is valid and assigned to the given
         client.
 
@@ -95,7 +95,7 @@ class RequestValidator(OAuth2RequestValidator):
         raise NotImplementedError('Subclasses must implement this method.')
 
 
-    def validate_user_code(self, client_id, device_code, request):
+    def validate_user_code(self, code, request):
         """Verify that the authorization_code is valid and assigned to the given
         client.
 
@@ -125,7 +125,7 @@ class RequestValidator(OAuth2RequestValidator):
         raise NotImplementedError('Subclasses must implement this method.')
 
 
-    def update_user_code_authorization_status(self):
+    def update_user_code_authorization_status(self, code, request):
         """Verify that the authorization_code is valid and assigned to the given
         client.
 
