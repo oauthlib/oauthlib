@@ -87,17 +87,6 @@ class DeviceCodeGrantTest(TestCase):
         self.request.scopes = []
         self.auth.create_authorization_response(self.request, device)
 
-    # @mock.patch('oauthlib.common.generate_token')
-    # def test_create_authorization_response(self, generate_token):
-    #     generate_token.return_value = 'abc'
-    #     bearer = DeviceToken(self.mock_validator)
-    #     self.request.response_mode = 'query'
-    #     h, b, s = self.auth.create_authorization_response(self.request, bearer)
-    #     self.assertURLEqual(h['Location'], 'https://a.b/cb?code=abc')
-    #     self.request.response_mode = 'fragment'
-    #     h, b, s = self.auth.create_authorization_response(self.request, bearer)
-    #     self.assertURLEqual(h['Location'], 'https://a.b/cb#code=abc')
-
     # def test_create_token_response(self):
     #     bearer = BearerToken(self.mock_validator)
 
@@ -160,7 +149,7 @@ class DeviceCodeGrantTest(TestCase):
     # def test_client_id_missing(self):
     #     self.mock_validator.authenticate_client.side_effect = None
     #     request = mock.MagicMock(wraps=self.request)
-    #     request.grant_type = 'authorization_code'
+    #     request.grant_type = 'device_code'
     #     del request.client.client_id
     #     self.assertRaises(NotImplementedError, self.auth.validate_token_request,
     #                       request)
@@ -172,14 +161,14 @@ class DeviceCodeGrantTest(TestCase):
     #     self.assertRaises(errors.InvalidGrantError,
     #                       self.auth.validate_token_request, self.request)
 
-    def test_invalid_grant_type(self):
-        self.request.grant_type = 'foo'
-        self.assertRaises(errors.UnsupportedGrantTypeError,
-                          self.auth.validate_token_request, self.request)
+    # def test_invalid_grant_type(self):
+    #     self.request.grant_type = 'foo'
+    #     self.assertRaises(errors.UnsupportedGrantTypeError,
+    #                       self.auth.validate_token_request, self.request)
 
-    def test_authenticate_client_id(self):
-        self.mock_validator.client_authentication_required.return_value = False
-        self.mock_validator.authenticate_client_id.return_value = False
+    # def test_authenticate_client_id(self):
+    #     self.mock_validator.client_authentication_required.return_value = False
+    #     self.mock_validator.authenticate_client_id.return_value = False
 
-        self.assertRaises(errors.InvalidClientError,
-                          self.auth.validate_token_request, self.request)
+    #     self.assertRaises(errors.InvalidClientError,
+    #                       self.auth.validate_token_request, self.request)

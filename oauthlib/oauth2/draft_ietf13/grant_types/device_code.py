@@ -255,10 +255,8 @@ class DeviceCodeGrant(GrantTypeBase):
 
         A normal error could be a missing response_type parameter or the client
         attempting to access scope it is not allowed to ask authorization for.
-        Normal errors can safely be included in the redirection URI and
-        sent back to the client.
 
-        Fatal errors occur when the client_id or redirect_uri is invalid or
+        Fatal errors occur when the client_id is invalid or
         missing. These must be caught by the provider and handled, how this
         is done is outside of the scope of OAuthLib but showing an error
         page describing the issue is a good idea.
@@ -289,8 +287,8 @@ class DeviceCodeGrant(GrantTypeBase):
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
 
-        # if not self.request_validator.validate_client_id(request.client_id, request):
-        #     raise errors.InvalidClientIdError(request=request)
+        if not self.request_validator.validate_client_id(request.client_id, request):
+            raise errors.InvalidClientIdError(request=request)
 
         # Then check for normal errors.
 
