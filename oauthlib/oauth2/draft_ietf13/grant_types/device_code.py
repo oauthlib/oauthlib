@@ -321,7 +321,8 @@ class DeviceCodeGrant(GrantTypeBase):
                       request.client_id, request.client, request.scopes)
             raise errors.InvalidGrantError(request=request)
 
-        self.request_validator.update_user_code_authorization_status(request.user_code, request.authorized, request)
+        if request.authorized is not None:
+            self.request_validator.update_user_code_authorization_status(request.user_code, request.authorized, request)
 
         return {}, None, 200
 
