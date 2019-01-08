@@ -100,7 +100,7 @@ digraph oauthlib {
         if_redirect_uri_missing -> f_get_default_redirect_uri;
 
         f_confirm_redirect_uri:true:s -> f_save_bearer_token;
-        f_get_default_redirect_uri -> f_save_bearer_token;
+        f_get_default_redirect_uri:redirect_uri:s -> f_save_bearer_token;
 
         f_save_bearer_token -> f_invalidate_authorization_code;
         f_invalidate_authorization_code -> webapi_response;
@@ -121,7 +121,7 @@ digraph oauthlib {
         r_redirect_uri_code -> f_validate_response_type;v
         f_validate_response_type:true:s -> f_is_pkce_required;
         f_is_pkce_required:true:s -> if_code_challenge;
-        f_is_pkce_required:false -> f_validate_scopes;
+        f_is_pkce_required:false:s -> f_validate_scopes;
 
         if_code_challenge -> f_validate_scopes [ label="present" ];
         if_code_challenge -> e_normal [ label="missing" ];
@@ -175,7 +175,7 @@ digraph oauthlib {
         edge [ color=blue ];
 
         endpoint_token:client_credentials:s -> f_authenticate_client;
-        f_authenticate_client -> f_validate_grant_type;
+        f_authenticate_client:true:s -> f_validate_grant_type;
         f_validate_grant_type:true:s -> f_validate_scopes;
         f_validate_scopes:true:s -> f_save_bearer_token;
         f_save_bearer_token -> webapi_response;
