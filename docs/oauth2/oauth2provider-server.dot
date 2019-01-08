@@ -113,6 +113,7 @@ digraph oauthlib {
         if_code_challenge -> e_normal [ label="missing" ];
 
         f_validate_scopes:true:s -> f_save_authorization_code;
+        f_save_authorization_code -> webapi_response;
     }
 
     /* Implicit */ 
@@ -130,6 +131,7 @@ digraph oauthlib {
         f_get_default_redirect_uri -> f_validate_response_type;
         f_validate_response_type:true:s -> f_validate_scopes;
         f_validate_scopes:true:s -> f_save_bearer_token;
+        f_save_bearer_token -> webapi_response;
     }
 
     /* Resource Owner Password Grant */
