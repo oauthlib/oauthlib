@@ -187,7 +187,7 @@ digraph oauthlib {
     {
         edge [ color=yellow ];
 
-        endpoint_introspect:s -> f_client_authentication_required [ label="" ];
+        endpoint_introspect:s -> f_client_authentication_required;
         f_client_authentication_required:true:s -> f_authenticate_client;
         f_client_authentication_required:false -> f_authenticate_client_id;
         f_authenticate_client:true:s -> f_introspect_token;
