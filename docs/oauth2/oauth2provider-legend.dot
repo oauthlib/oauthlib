@@ -18,8 +18,8 @@ digraph oauthlib_legend {
         flow_introspect [shape=none,label="Token Introspection"];
         flow_revoke [shape=none,label="Token Revoke"];
         flow_resource [shape=none,label="Resource Access"];
-        flow_code_token -> a [style=bold,color=green];
-        flow_code_auth -> b [style=bold,color=darkgreen];
+        flow_code_token -> a [style=bold,color=darkgreen];
+        flow_code_auth -> b [style=bold,color=green];
         flow_implicit -> c [style=bold,color=orange];
         flow_password -> d [style=bold,color=red];
         flow_clicreds -> e [style=bold,color=blue];

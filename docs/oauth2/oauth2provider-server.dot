@@ -71,7 +71,7 @@ digraph oauthlib {
 
     /* Authorization Code - Access Token Request */
     {
-        edge [ color=green ];
+        edge [ color=darkgreen ];
 
         endpoint_token:authorization_code:s -> f_client_authentication_required;
         f_client_authentication_required:true:s -> f_authenticate_client;
@@ -94,7 +94,7 @@ digraph oauthlib {
     }
     /* Authorization Code - Authorization Request */
     {
-        edge [ color=darkgreen ];
+        edge [ color=green ];
 
         endpoint_authorize:code:s -> f_validate_client_id;
         f_validate_client_id:true:s -> if_redirect_uri;
