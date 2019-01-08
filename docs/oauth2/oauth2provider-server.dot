@@ -81,6 +81,43 @@ digraph oauthlib {
     /* OAuthlib errors */
     e_normal [ shape=none,label="ERROR" ];
 
+    /* Ranking by functional roles */
+    {
+        rank = same;
+        f_validate_client_id;
+        f_validate_code;
+        /* f_validate_user; */
+        f_validate_bearer_token;
+        f_validate_refresh_token;
+        f_introspect_token;
+        f_revoke_token;
+    }
+    {
+        rank = same;
+        f_validate_redirect_uri;
+        f_get_default_redirect_uri;
+        f_confirm_redirect_uri;
+    }
+    {
+        rank = same;
+        f_save_bearer_token;
+        f_save_authorization_code;
+    }
+    {
+        rank = same;
+        f_invalidate_authorization_code;
+    }
+    {
+        rank = same;
+        f_get_original_scopes;
+        f_get_default_scopes;
+    }
+    {
+        rank = same;
+        f_is_within_original_scope;
+        f_validate_scopes;
+    }
+
     /* Authorization Code - Access Token Request */
     {
         edge [ color=darkgreen ];
@@ -116,15 +153,14 @@ digraph oauthlib {
         if_redirect_uri_present -> f_validate_redirect_uri;
         if_redirect_uri_missing -> f_get_default_redirect_uri;
 
-        f_validate_redirect_uri:true:s -> r_redirect_uri_code [ arrowhead=none ];
-        f_get_default_redirect_uri:redirect_uri:s -> r_redirect_uri_code [ arrowhead=none ];
-        r_redirect_uri_code -> f_validate_response_type;v
+        f_validate_redirect_uri:true:s -> f_validate_response_type;
+        f_get_default_redirect_uri:redirect_uri:s -> f_validate_response_type;
         f_validate_response_type:true:s -> f_is_pkce_required;
         f_is_pkce_required:true:s -> if_code_challenge;
         f_is_pkce_required:false:s -> f_validate_scopes;
 
         if_code_challenge -> f_validate_scopes [ label="present" ];
-        if_code_challenge -> e_normal [ label="missing" ];
+        if_code_challenge -> e_normal [ label="missing",style=dashed ];
 
         f_validate_scopes:true:s -> f_save_authorization_code;
         f_save_authorization_code -> webapi_response;
@@ -141,9 +177,8 @@ digraph oauthlib {
         if_redirect_uri_present -> f_validate_redirect_uri;
         if_redirect_uri_missing -> f_get_default_redirect_uri;
 
-        f_validate_redirect_uri:true:s -> r_redirect_uri_token [ arrowhead=none ];
-        f_get_default_redirect_uri:redirect_uri:s -> r_redirect_uri_token [ arrowhead=none ];
-        r_redirect_uri_token -> f_validate_response_type;
+        f_validate_redirect_uri:true:s -> f_validate_response_type;
+        f_get_default_redirect_uri:redirect_uri:s -> f_validate_response_type;
         f_validate_response_type:true:s -> f_validate_scopes;
         f_validate_scopes:true:s -> f_save_bearer_token;
         f_save_bearer_token -> webapi_response;
