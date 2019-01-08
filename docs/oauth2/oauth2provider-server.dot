@@ -93,7 +93,6 @@ digraph oauthlib {
     {
         rank = same;
         f_validate_redirect_uri;
-        f_get_default_redirect_uri;
         f_confirm_redirect_uri;
     }
     {
@@ -107,13 +106,13 @@ digraph oauthlib {
     }
     {
         rank = same;
+        f_validate_scopes;
         f_get_original_scopes;
         f_get_default_scopes;
     }
     {
         rank = same;
         f_is_within_original_scope;
-        f_validate_scopes;
     }
 
     /* Authorization Code - Access Token Request */
@@ -133,10 +132,9 @@ digraph oauthlib {
         if_redirect_uri -> if_redirect_uri_missing [ arrowhead=none ];
         if_redirect_uri_present -> f_confirm_redirect_uri;
         if_redirect_uri_missing -> f_get_default_redirect_uri;
+        f_get_default_redirect_uri:redirect_uri:s -> f_confirm_redirect_uri;
 
         f_confirm_redirect_uri:true:s -> f_save_bearer_token;
-        f_get_default_redirect_uri:redirect_uri:s -> f_save_bearer_token;
-
         f_save_bearer_token -> f_invalidate_authorization_code;
         f_invalidate_authorization_code -> webapi_response;
     }
