@@ -178,6 +178,9 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         if not request.grant_type == 'password':
             raise errors.UnsupportedGrantTypeError(request=request)
 
+        # Ensure client is authorized use of this grant type
+        self.validate_grant_type(request)
+
         log.debug('Validating username %s.', request.username)
         if not self.request_validator.validate_user(request.username,
                                                     request.password, request.client, request):
@@ -190,9 +193,6 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
                     'request.client.client_id attribute '
                     'in authenticate_client.')
         log.debug('Authorizing access to user %r.', request.user)
-
-        # Ensure client is authorized use of this grant type
-        self.validate_grant_type(request)
 
         if request.client:
             request.client_id = request.client_id or request.client.client_id

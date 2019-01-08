@@ -83,12 +83,7 @@ digraph oauthlib {
     {
         rank = same;
         f_validate_client_id;
-        f_validate_code;
-        /* f_validate_user; */
-        f_validate_bearer_token;
-        f_validate_refresh_token;
-        f_introspect_token;
-        f_revoke_token;
+        f_authenticate_client;
     }
     {
         rank = same;
@@ -102,17 +97,18 @@ digraph oauthlib {
     }
     {
         rank = same;
-        f_invalidate_authorization_code;
+        f_validate_code;
+        f_validate_user;
+        f_validate_bearer_token;
+        f_validate_refresh_token;
+        f_introspect_token;
+        f_revoke_token;
     }
     {
         rank = same;
         f_validate_scopes;
         f_get_original_scopes;
         f_get_default_scopes;
-    }
-    {
-        rank = same;
-        f_is_within_original_scope;
     }
 
     /* Authorization Code - Access Token Request */
@@ -189,10 +185,10 @@ digraph oauthlib {
         f_client_authentication_required:false:s -> f_authenticate_client_id;
         f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
         f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
-        r_client_authenticated -> f_validate_user;
-        f_validate_user:true:s -> f_validate_grant_type;
+        r_client_authenticated -> f_validate_grant_type;
+        f_validate_grant_type:true:s -> f_validate_user;
 
-        f_validate_grant_type:true:s -> if_scopes;
+        f_validate_user:true:s -> if_scopes;
         if_scopes -> f_validate_scopes [ label="present" ];
         if_scopes -> f_get_default_scopes [ label="missing" ];
 
