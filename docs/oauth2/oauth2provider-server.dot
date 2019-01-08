@@ -74,9 +74,7 @@ digraph oauthlib {
     if_all [ label="all(request_scopes not in scopes)"; ];
 
     /* OAuthlib functions returns helpers */
-    r_client_authenticated [ shape=none,label="True"; ];
-    r_redirect_uri_code [ shape=none,label="",width=0,height=0 ];
-    r_redirect_uri_token [ shape=none,label="",width=0,height=0 ];
+    r_client_authenticated [ shape=none,label="client authenticated"; ];
 
     /* OAuthlib errors */
     e_normal [ shape=none,label="ERROR" ];
