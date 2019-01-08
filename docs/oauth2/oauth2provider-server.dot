@@ -1,4 +1,11 @@
 digraph oauthlib {
+    /* Naming conventions:
+    f_ : functions in shape=record
+    endpoint_ : endpoints in shape=record
+    webapi_ : oauthlib entry/exit points in shape=hexagon
+    if_ : internal conditions
+    r_ : used when returning from two functions into one for improving clarity
+    */
     center="1"
     edge [ style=bold ];
 
@@ -66,18 +73,58 @@ digraph oauthlib {
     if_scopes [ label="if scopes"; ];
     if_all [ label="all(request_scopes not in scopes)"; ];
 
+    /* OAuthlib functions returns helpers */
+    r_client_authenticated [ shape=none,label="client authenticated"; ];
+
     /* OAuthlib errors */
     e_normal [ shape=none,label="ERROR" ];
 
+    /* Ranking by functional roles */
+    {
+        rank = same;
+        f_validate_client_id;
+        f_validate_code;
+        /* f_validate_user; */
+        f_validate_bearer_token;
+        f_validate_refresh_token;
+        f_introspect_token;
+        f_revoke_token;
+    }
+    {
+        rank = same;
+        f_validate_redirect_uri;
+        f_confirm_redirect_uri;
+    }
+    {
+        rank = same;
+        f_save_bearer_token;
+        f_save_authorization_code;
+    }
+    {
+        rank = same;
+        f_invalidate_authorization_code;
+    }
+    {
+        rank = same;
+        f_validate_scopes;
+        f_get_original_scopes;
+        f_get_default_scopes;
+    }
+    {
+        rank = same;
+        f_is_within_original_scope;
+    }
+
     /* Authorization Code - Access Token Request */
     {
-        edge [ color=green ];
+        edge [ color=darkgreen ];
 
         endpoint_token:authorization_code:s -> f_client_authentication_required;
         f_client_authentication_required:true:s -> f_authenticate_client;
-        f_client_authentication_required:false -> f_authenticate_client_id;
-        f_authenticate_client:true:s -> f_validate_grant_type;
-        f_authenticate_client_id:true:s -> f_validate_grant_type;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_validate_grant_type;
         f_validate_grant_type:true:s -> f_validate_code;
 
         f_validate_code:true:s -> if_redirect_uri;
@@ -85,16 +132,15 @@ digraph oauthlib {
         if_redirect_uri -> if_redirect_uri_missing [ arrowhead=none ];
         if_redirect_uri_present -> f_confirm_redirect_uri;
         if_redirect_uri_missing -> f_get_default_redirect_uri;
+        f_get_default_redirect_uri:redirect_uri:s -> f_confirm_redirect_uri;
 
         f_confirm_redirect_uri:true:s -> f_save_bearer_token;
-        f_get_default_redirect_uri -> f_save_bearer_token;
-
         f_save_bearer_token -> f_invalidate_authorization_code;
         f_invalidate_authorization_code -> webapi_response;
     }
     /* Authorization Code - Authorization Request */
     {
-        edge [ color=darkgreen ];
+        edge [ color=green ];
 
         endpoint_authorize:code:s -> f_validate_client_id;
         f_validate_client_id:true:s -> if_redirect_uri;
@@ -104,15 +150,16 @@ digraph oauthlib {
         if_redirect_uri_missing -> f_get_default_redirect_uri;
 
         f_validate_redirect_uri:true:s -> f_validate_response_type;
-        f_get_default_redirect_uri -> f_validate_response_type;
+        f_get_default_redirect_uri:redirect_uri:s -> f_validate_response_type;
         f_validate_response_type:true:s -> f_is_pkce_required;
         f_is_pkce_required:true:s -> if_code_challenge;
-        f_is_pkce_required:false -> f_validate_scopes;
+        f_is_pkce_required:false:s -> f_validate_scopes;
 
         if_code_challenge -> f_validate_scopes [ label="present" ];
-        if_code_challenge -> e_normal [ label="missing" ];
+        if_code_challenge -> e_normal [ label="missing",style=dashed ];
 
         f_validate_scopes:true:s -> f_save_authorization_code;
+        f_save_authorization_code -> webapi_response;
     }
 
     /* Implicit */ 
@@ -127,9 +174,10 @@ digraph oauthlib {
         if_redirect_uri_missing -> f_get_default_redirect_uri;
 
         f_validate_redirect_uri:true:s -> f_validate_response_type;
-        f_get_default_redirect_uri -> f_validate_response_type;
+        f_get_default_redirect_uri:redirect_uri:s -> f_validate_response_type;
         f_validate_response_type:true:s -> f_validate_scopes;
         f_validate_scopes:true:s -> f_save_bearer_token;
+        f_save_bearer_token -> webapi_response;
     }
 
     /* Resource Owner Password Grant */
@@ -138,9 +186,10 @@ digraph oauthlib {
 
         endpoint_token:password:s -> f_client_authentication_required;
         f_client_authentication_required:true:s -> f_authenticate_client;
-        f_client_authentication_required:false -> f_authenticate_client_id;
-        f_authenticate_client:true:s -> f_validate_user;
-        f_authenticate_client_id:true:s -> f_validate_user;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_validate_user;
         f_validate_user:true:s -> f_validate_grant_type;
 
         f_validate_grant_type:true:s -> if_scopes;
@@ -157,7 +206,7 @@ digraph oauthlib {
         edge [ color=blue ];
 
         endpoint_token:client_credentials:s -> f_authenticate_client;
-        f_authenticate_client -> f_validate_grant_type;
+        f_authenticate_client:true:s -> f_validate_grant_type;
         f_validate_grant_type:true:s -> f_validate_scopes;
         f_validate_scopes:true:s -> f_save_bearer_token;
         f_save_bearer_token -> webapi_response;
@@ -169,9 +218,11 @@ digraph oauthlib {
 
         endpoint_token:refresh_token:s -> f_client_authentication_required;
         f_client_authentication_required:true:s -> f_authenticate_client;
-        f_client_authentication_required:false -> f_authenticate_client_id;
-        f_authenticate_client:true:s -> f_validate_grant_type;
-        f_authenticate_client_id:true:s -> f_validate_grant_type;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_validate_grant_type;
+
         f_validate_grant_type:true:s -> f_validate_refresh_token;
         f_validate_refresh_token:true:s -> f_get_original_scopes;
         f_get_original_scopes -> if_all;
@@ -185,11 +236,12 @@ digraph oauthlib {
     {
         edge [ color=yellow ];
 
-        endpoint_introspect:s -> f_client_authentication_required [ label="" ];
+        endpoint_introspect:s -> f_client_authentication_required;
         f_client_authentication_required:true:s -> f_authenticate_client;
-        f_client_authentication_required:false -> f_authenticate_client_id;
-        f_authenticate_client:true:s -> f_introspect_token;
-        f_authenticate_client_id:true:s -> f_introspect_token;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_introspect_token;
         f_introspect_token:claims -> webapi_response;
     }
 
@@ -199,9 +251,10 @@ digraph oauthlib {
 
         endpoint_revoke:s -> f_client_authentication_required;
         f_client_authentication_required:true:s -> f_authenticate_client;
-        f_client_authentication_required:false -> f_authenticate_client_id;
-        f_authenticate_client:true:s -> f_revoke_token;
-        f_authenticate_client_id:true:s -> f_revoke_token;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_revoke_token;
         f_revoke_token:s -> webapi_response;
     }
 
