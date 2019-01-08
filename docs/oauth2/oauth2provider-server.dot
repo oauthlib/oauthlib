@@ -1,4 +1,11 @@
 digraph oauthlib {
+    /* Naming conventions:
+    f_ : functions in shape=record
+    endpoint_ : endpoints in shape=record
+    webapi_ : oauthlib entry/exit points in shape=hexagon
+    if_ : internal conditions
+    r_ : used when returning from two functions into one for improving clarity
+    */
     center="1"
     edge [ style=bold ];
 
