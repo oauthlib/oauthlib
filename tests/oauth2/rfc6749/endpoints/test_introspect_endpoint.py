@@ -123,7 +123,6 @@ class IntrospectEndpointTest(TestCase):
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
-
     def test_introspect_unsupported_token(self):
         endpoint = IntrospectEndpoint(self.validator,
                                       supported_token_types=['access_token'])
