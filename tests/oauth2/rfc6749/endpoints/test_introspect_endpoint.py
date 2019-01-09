@@ -86,7 +86,12 @@ class IntrospectEndpointTest(TestCase):
                           ('token_type_hint', 'access_token')])
         h, b, s = self.endpoint.create_introspect_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {})
+        self.assertEqual(h, {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+            "WWW-Authenticate": 'Bearer, error="invalid_client"'
+        })
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
@@ -109,7 +114,12 @@ class IntrospectEndpointTest(TestCase):
                           ('token_type_hint', 'access_token')])
         h, b, s = self.endpoint.create_introspect_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {})
+        self.assertEqual(h, {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+            "WWW-Authenticate": 'Bearer, error="invalid_client"'
+        })
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
@@ -121,12 +131,12 @@ class IntrospectEndpointTest(TestCase):
                           ('token_type_hint', 'refresh_token')])
         h, b, s = endpoint.create_introspect_response(self.uri,
                 headers=self.headers, body=body)
-        self.assertEqual(h, {})
+        self.assertEqual(h, self.resp_h)
         self.assertEqual(loads(b)['error'], 'unsupported_token_type')
         self.assertEqual(s, 400)
 
         h, b, s = endpoint.create_introspect_response(self.uri,
                 headers=self.headers, body='')
-        self.assertEqual(h, {})
+        self.assertEqual(h, self.resp_h)
         self.assertEqual(loads(b)['error'], 'invalid_request')
         self.assertEqual(s, 400)

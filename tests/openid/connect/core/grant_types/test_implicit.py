@@ -120,6 +120,7 @@ class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
         super(OpenIDHybridCodeIdTokenTest, self).setUp()
+        self.mock_validator.get_code_challenge.return_value = None
         self.request.response_type = 'code id_token'
         self.auth = HybridGrant(request_validator=self.mock_validator)
         token = 'MOCKED_TOKEN'
@@ -131,6 +132,7 @@ class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
         super(OpenIDHybridCodeIdTokenTokenTest, self).setUp()
+        self.mock_validator.get_code_challenge.return_value = None
         self.request.response_type = 'code id_token token'
         self.auth = HybridGrant(request_validator=self.mock_validator)
         token = 'MOCKED_TOKEN'

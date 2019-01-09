@@ -1,0 +1,32 @@
+digraph oauthlib_legend {
+
+    subgraph cluster_legend {
+        label="Legend";
+
+        /*
+        method [ shape=record; label="{{RequestValidator\nmethod name|arguments}|return values}" ];
+        endpoint [ shape=record; label="{Endpoint name|{function name|arguments}|grant type}" ];
+        webframework [ shape=hexagon; label="Upstream functions" ];
+        */
+
+        flow_code_token [shape=none,label="Authorization Code\nAccess Token Request"];
+        flow_code_auth [shape=none,label="Authorization Code\nAuthorization Request"];
+        flow_implicit [shape=none,label="Implicit Grant"];
+        flow_password [shape=none,label="Resource Owner Password\nCredentials Grant"];
+        flow_clicreds [shape=none,label="Client Credentials Grant"];
+        flow_refresh [shape=none,label="Refresh Grant"];
+        flow_introspect [shape=none,label="Token Introspection"];
+        flow_revoke [shape=none,label="Token Revoke"];
+        flow_resource [shape=none,label="Resource Access"];
+        flow_code_token -> a [style=bold,color=darkgreen];
+        flow_code_auth -> b [style=bold,color=green];
+        flow_implicit -> c [style=bold,color=orange];
+        flow_password -> d [style=bold,color=red];
+        flow_clicreds -> e [style=bold,color=blue];
+        flow_refresh -> f [style=bold,color=brown];
+        flow_introspect -> g [style=bold,color=yellow];
+        flow_revoke -> h [style=bold,color=purple];
+        flow_resource -> i [style=bold,color=pink];
+        a, b, c, d, e, f, g, h, i [shape=none,label=""];
+    }
+}

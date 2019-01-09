@@ -10,6 +10,7 @@ from __future__ import absolute_import, unicode_literals
 
 from oauthlib.oauth2.rfc6749.endpoints import (
     AuthorizationEndpoint,
+    IntrospectEndpoint,
     ResourceEndpoint,
     RevocationEndpoint,
     TokenEndpoint
@@ -35,8 +36,8 @@ from ..grant_types.dispatchers import (
 from ..tokens import JWTToken
 
 
-class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
-             RevocationEndpoint):
+class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
+             ResourceEndpoint, RevocationEndpoint):
 
     """An all-in-one endpoint featuring all four major grant types."""
 
@@ -103,3 +104,4 @@ class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint,
         ResourceEndpoint.__init__(self, default_token='Bearer',
                                   token_types={'Bearer': bearer, 'JWT': jwt})
         RevocationEndpoint.__init__(self, request_validator)
+        IntrospectEndpoint.__init__(self, request_validator)

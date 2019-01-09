@@ -18,14 +18,16 @@ OAuth 2.0 client and provider support for:
 - `RFC7009`_: Token Revocation
 - `RFC Draft MAC tokens`_
 - OAuth2.0 Provider: `OpenID Connect Core`_
+- OAuth2.0 Provider: `RFC7636`_: Proof Key for Code Exchange by OAuth Public Clients (PKCE)
 - OAuth2.0 Provider: `RFC7662`_: Token Introspection
 - OAuth2.0 Provider: `RFC8414`_: Authorization Server Metadata
 
 Features to be implemented (any help/PR are welcomed):
 
-- OAuth2.0 Client: `OpenID Connect Core`_
-- OAuth2.0 Client: `RFC7662`_: Token Introspection
-- OAuth2.0 Client: `RFC8414`_: Authorization Server Metadata
+- OAuth2.0 **Client**: `OpenID Connect Core`_
+- OAuth2.0 **Client**: `RFC7636`_: Proof Key for Code Exchange by OAuth Public Clients (PKCE)
+- OAuth2.0 **Client**: `RFC7662`_: Token Introspection
+- OAuth2.0 **Client**: `RFC8414`_: Authorization Server Metadata
 - SAML2
 - Bearer JWT as Client Authentication
 - Dynamic client registration
@@ -51,5 +53,6 @@ RSA you are limited to the platforms supported by `cryptography`_.
 .. _`RFC Draft MAC tokens`: https://tools.ietf.org/id/draft-ietf-oauth-v2-http-mac-02.html
 .. _`RFC7009`: https://tools.ietf.org/html/rfc7009
 .. _`RFC7662`: https://tools.ietf.org/html/rfc7662
+.. _`RFC7636`: https://tools.ietf.org/html/rfc7636
 .. _`OpenID Connect Core`: https://openid.net/specs/openid-connect-core-1_0.html
 .. _`RFC8414`: https://tools.ietf.org/html/rfc8414

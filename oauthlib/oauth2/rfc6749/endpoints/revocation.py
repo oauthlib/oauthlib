@@ -13,8 +13,7 @@ import logging
 
 from oauthlib.common import Request
 
-from ..errors import (InvalidClientError, InvalidRequestError, OAuth2Error,
-                      UnsupportedTokenTypeError)
+from ..errors import OAuth2Error, UnsupportedTokenTypeError
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
 log = logging.getLogger(__name__)
@@ -59,6 +58,11 @@ class RevocationEndpoint(BaseEndpoint):
         An invalid token type hint value is ignored by the authorization server
         and does not influence the revocation response.
         """
+        headers = {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+        }
         request = Request(
             uri, http_method=http_method, body=body, headers=headers)
         try:
@@ -69,7 +73,8 @@ class RevocationEndpoint(BaseEndpoint):
             response_body = e.json
             if self.enable_jsonp and request.callback:
                 response_body = '%s(%s);' % (request.callback, response_body)
-            return {}, response_body, e.status_code
+            headers.update(e.headers)
+            return headers, response_body, e.status_code
 
         self.request_validator.revoke_token(request.token,
                                             request.token_type_hint, request)
@@ -116,19 +121,6 @@ class RevocationEndpoint(BaseEndpoint):
         .. _`Section 4.1.2`: https://tools.ietf.org/html/draft-ietf-oauth-revocation-11#section-4.1.2
         .. _`RFC6749`: https://tools.ietf.org/html/rfc6749
         """
-        if not request.token:
-            raise InvalidRequestError(request=request,
-                                      description='Missing token parameter.')
-
-        if self.request_validator.client_authentication_required(request):
-            if not self.request_validator.authenticate_client(request):
-                log.debug('Client authentication failed, %r.', request)
-                raise InvalidClientError(request=request)
-        elif not self.request_validator.authenticate_client_id(request.client_id, request):
-            log.debug('Client authentication failed, %r.', request)
-            raise InvalidClientError(request=request) 
-
-        if (request.token_type_hint and
-                request.token_type_hint in self.valid_token_types and
-                request.token_type_hint not in self.supported_token_types):
-            raise UnsupportedTokenTypeError(request=request)
+        self._raise_on_missing_token(request)
+        self._raise_on_invalid_client(request)
+        self._raise_on_unsupported_token(request)

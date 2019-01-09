@@ -43,6 +43,7 @@ class OpenIDAuthCodeTest(TestCase):
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
+        self.mock_validator.get_code_challenge.return_value = None
         self.mock_validator.get_id_token.side_effect = get_id_token_mock
         self.auth = AuthorizationCodeGrant(request_validator=self.mock_validator)
 

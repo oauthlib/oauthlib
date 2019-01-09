@@ -87,11 +87,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
-        headers = {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-            'Pragma': 'no-cache',
-        }
+        headers = self._get_default_headers()
         try:
             if self.request_validator.client_authentication_required(request):
                 log.debug('Authenticating client, %r.', request)
@@ -105,6 +101,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
             log.debug('Client error in token request, %s.', e)
+            headers.update(e.headers)
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, self.refresh_token, save_token=False)

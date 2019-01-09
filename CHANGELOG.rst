@@ -1,15 +1,56 @@
 Changelog
 =========
 
-Unreleased
+3.0.0 (2019-01-01)
 ------------------
+OAuth2.0 Provider - outstanding Features
 
+* OpenID Connect Core support
+* RFC7662 Introspect support
+* RFC8414 OAuth2.0 Authorization Server Metadata support (#605)
+* RFC7636 PKCE support (#617 #624)
+
+OAuth2.0 Provider - API/Breaking Changes
+
+* Add "request" to confirm_redirect_uri #504
+* confirm_redirect_uri/get_default_redirect_uri has a bit changed #445
+* invalid_client is now a FatalError #606
+* Changed errors status code from 401 to 400:
+ - invalid_grant: #264
+ - invalid_scope: #620
+ - access_denied/unauthorized_client/consent_required/login_required #623
+ - 401 must have WWW-Authenticate HTTP Header set. #623
+
+OAuth2.0 Provider - Bugfixes
+
+* empty scopes no longer raise exceptions for implicit and authorization_code #475 / #406
+
+OAuth2.0 Client - Bugfixes / Changes:
+
+* expires_in in Implicit flow is now an integer #569
+* expires is no longer overriding expires_in #506
+* parse_request_uri_response is now required #499
+* Unknown error=xxx raised by OAuth2 providers was not understood #431
 * OAuth2's `prepare_token_request` supports sending an empty string for `client_id` (#585)
 * OAuth2's `WebApplicationClient.prepare_request_body` was refactored to better
   support sending or omitting the `client_id` via a new `include_client_id` kwarg.
   By default this is included. The method will also emit a DeprecationWarning if
   a `client_id` parameter is submitted; the already configured `self.client_id`
   is the preferred option. (#585)
+
+OAuth1.0 Client:
+
+* Support for HMAC-SHA256 #498
+
+General fixes:
+
+* $ and ' are allowed to be unencoded in query strings #564
+* Request attributes are no longer overriden by HTTP Headers #409
+* Removed unnecessary code for handling python2.6
+* Add support of python3.7 #621
+* Several minors updates to setup.py and tox
+* Set pytest as the default unittest framework
+
 
 2.1.0 (2018-05-21)
 ------------------

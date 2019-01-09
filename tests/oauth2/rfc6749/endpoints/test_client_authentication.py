@@ -32,6 +32,8 @@ class ClientAuthenticationTest(TestCase):
 
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator.is_pkce_required.return_value = False
+        self.validator.get_code_challenge.return_value = None
         self.validator.get_default_redirect_uri.return_value = 'http://i.b./path'
         self.web = WebApplicationServer(self.validator,
                 token_generator=self.inspect_client)
