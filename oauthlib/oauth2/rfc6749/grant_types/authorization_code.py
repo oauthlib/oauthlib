@@ -9,9 +9,9 @@ import json
 import logging
 
 from oauthlib import common
+from oauthlib.oauth2.common import errors
 from oauthlib.uri_validate import is_absolute_uri
 
-from .. import errors
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
@@ -172,7 +172,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 File "oauthlib/oauth2/rfc6749/grant_types.py", line 515, in create_authorization_response
                     >>> grant.create_authorization_response(request, token)
                 File "oauthlib/oauth2/rfc6749/grant_types.py", line 591, in validate_authorization_request
-            oauthlib.oauth2.rfc6749.errors.InvalidClientIdError
+            oauthlib.oauth2.common.errors.InvalidClientIdError
 
         .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
         .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2

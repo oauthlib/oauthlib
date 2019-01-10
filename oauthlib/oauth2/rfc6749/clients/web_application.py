@@ -198,7 +198,7 @@ class WebApplicationClient(Client):
                     back from the provider to you, the client.
                 File "oauthlib/oauth2/rfc6749/parameters.py", line 153, in parse_authorization_code_response
                     raise MismatchingStateError()
-            oauthlib.oauth2.rfc6749.errors.MismatchingStateError
+            oauthlib.oauth2.common.errors.MismatchingStateError
         """
         response = parse_authorization_code_response(uri, state=state)
         self.populate_code_attributes(response)

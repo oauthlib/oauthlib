@@ -8,7 +8,9 @@ from __future__ import absolute_import, unicode_literals
 import json
 import logging
 
-from .. import errors, utils
+from oauthlib.oauth2.common import errors
+
+from .. import utils
 from ..request_validator import RequestValidator
 from .base import GrantTypeBase
 

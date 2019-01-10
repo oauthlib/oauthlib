@@ -9,7 +9,8 @@ import logging
 from itertools import chain
 
 from oauthlib.common import add_params_to_uri
-from oauthlib.oauth2.rfc6749 import errors, utils
+from oauthlib.oauth2.common import errors
+from oauthlib.oauth2.rfc6749 import utils
 
 from ..request_validator import RequestValidator
 

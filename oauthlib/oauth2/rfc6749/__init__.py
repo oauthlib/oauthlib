@@ -11,8 +11,8 @@ from __future__ import absolute_import, unicode_literals
 import functools
 import logging
 
-from .errors import TemporarilyUnavailableError, ServerError
-from .errors import FatalClientError, OAuth2Error
+from ..common.errors import TemporarilyUnavailableError, ServerError
+from ..common.errors import FatalClientError, OAuth2Error
 
 
 log = logging.getLogger(__name__)
