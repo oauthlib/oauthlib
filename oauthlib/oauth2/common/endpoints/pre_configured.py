@@ -56,6 +56,8 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
 
+        # Code Endpoint
+
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                                        response_types={
                                            'code': auth_grant,
@@ -63,6 +65,8 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
                                            'none': auth_grant
                                        },
                                        default_token_type=bearer)
+
+        # Verification Endpoint
 
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                                grant_types={
@@ -254,6 +258,8 @@ class DeviceApplicationServer(TokenEndpoint, IntrospectEndpoint,
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
 
+        # Code Endpoint
+
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                                        response_types={
                                            'device_code': device_code_grant
@@ -265,7 +271,7 @@ class DeviceApplicationServer(TokenEndpoint, IntrospectEndpoint,
                                    'device_code': device_code_grant},
                                default_token_type=bearer)
 
-        # Build endpoint for verification
+        # Verification Endpoint
 
         ResourceEndpoint.__init__(self, default_token='Bearer',
                                   token_types={'Bearer': bearer})
