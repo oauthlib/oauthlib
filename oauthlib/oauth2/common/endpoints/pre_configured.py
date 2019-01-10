@@ -32,6 +32,7 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
     """An all-in-one endpoint featuring all four major grant types."""
 
     def __init__(self, request_validator, token_expires_in=None,
+                 device_code_generator=None, user_code_generator=None,
                  token_generator=None, refresh_token_generator=None,
                  *args, **kwargs):
         """Construct a new all-grants-in-one server.
