@@ -18,9 +18,9 @@ from .base import BaseEndpoint, catch_errors_and_unavailability
 log = logging.getLogger(__name__)
 
 
-class AuthorizationEndpoint(BaseEndpoint):
+class VerificationEndpoint(BaseEndpoint):
 
-    """Authorization endpoint - used by the client to obtain authorization
+    """Verification endpoint - used by the client to obtain authorization
     from the resource owner via user-agent redirection.
 
     The authorization endpoint is used to interact with the resource
