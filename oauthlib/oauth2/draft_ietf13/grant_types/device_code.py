@@ -12,7 +12,7 @@ from oauthlib import common
 from oauthlib.uri_validate import is_absolute_uri
 
 from oauthlib.oauth2.rfc6749.grant_types.base import GrantTypeBase
-from oauthlib.oauth2.rfc6749 import errors
+from oauthlib.oauth2.common import errors
 
 log = logging.getLogger(__name__)
 

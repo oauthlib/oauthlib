@@ -8,12 +8,12 @@ for providing OAuth 2.0 RFC6749 servers.
 """
 from __future__ import absolute_import, unicode_literals
 
-from ..grant_types import (AuthorizationCodeGrant,
+from oauthlib.oauth2.rfc6749.grant_types import (AuthorizationCodeGrant,
                            ClientCredentialsGrant,
                            ImplicitGrant,
                            RefreshTokenGrant,
                            ResourceOwnerPasswordCredentialsGrant)
-from ..tokens import BearerToken
+from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from .authorization import AuthorizationEndpoint
 from .introspect import IntrospectEndpoint
 from .resource import ResourceEndpoint

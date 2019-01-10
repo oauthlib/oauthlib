@@ -11,7 +11,8 @@ from oauthlib import common, signals
 from oauthlib.oauth2 import (BackendApplicationClient, Client,
                              LegacyApplicationClient, MobileApplicationClient,
                              WebApplicationClient)
-from oauthlib.oauth2.rfc6749 import errors, utils
+from oauthlib.oauth2.common import errors
+from oauthlib.oauth2.rfc6749 import utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
 
 from ....unittest import TestCase

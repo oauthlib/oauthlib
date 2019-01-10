@@ -8,7 +8,7 @@ for providing OpenID Connect servers.
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.oauth2.rfc6749.endpoints import (
+from oauthlib.oauth2.common.endpoints import (
     AuthorizationEndpoint,
     ResourceEndpoint,
     RevocationEndpoint,

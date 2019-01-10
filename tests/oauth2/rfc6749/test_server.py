@@ -6,11 +6,12 @@ import json
 import mock
 
 from oauthlib import common
-from oauthlib.oauth2.rfc6749 import errors, tokens
-from oauthlib.oauth2.rfc6749.endpoints import Server
-from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
-from oauthlib.oauth2.rfc6749.endpoints.resource import ResourceEndpoint
-from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
+from oauthlib.oauth2.common import errors
+from oauthlib.oauth2.common.endpoints import Server
+from oauthlib.oauth2.common.endpoints.authorization import AuthorizationEndpoint
+from oauthlib.oauth2.common.endpoints.resource import ResourceEndpoint
+from oauthlib.oauth2.common.endpoints.token import TokenEndpoint
+from oauthlib.oauth2.rfc6749 import tokens
 from oauthlib.oauth2.rfc6749.grant_types import (AuthorizationCodeGrant,
                                                  ClientCredentialsGrant,
                                                  ImplicitGrant,
