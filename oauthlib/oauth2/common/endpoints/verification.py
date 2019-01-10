@@ -4,7 +4,7 @@ oauthlib.oauth2.common
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various logic needed
-for consuming and providing OAuth 2.0 RFC6749.
+for consuming and providing OAuth 2.0 Draft IETF 13.
 """
 from __future__ import absolute_import, unicode_literals
 
