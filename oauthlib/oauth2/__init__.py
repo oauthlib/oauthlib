@@ -20,10 +20,10 @@ from .common.endpoints import WebApplicationServer
 from .common.endpoints import MobileApplicationServer
 from .common.endpoints import LegacyApplicationServer
 from .common.endpoints import BackendApplicationServer
+from .common.request_validator import RequestValidator
 
 from .draft_ietf13.grant_types import DeviceCodeGrant
 from .draft_ietf13.tokens import DeviceToken
-from .draft_ietf13.request_validator import RequestValidator as DeviceCodeRequestValidator
 
 from .rfc6749.clients import Client
 from .rfc6749.clients import WebApplicationClient
@@ -36,6 +36,5 @@ from .rfc6749.grant_types import ImplicitGrant
 from .rfc6749.grant_types import ResourceOwnerPasswordCredentialsGrant
 from .rfc6749.grant_types import ClientCredentialsGrant
 from .rfc6749.grant_types import RefreshTokenGrant
-from .rfc6749.request_validator import RequestValidator
 from .rfc6749.tokens import BearerToken, OAuth2Token
 from .rfc6749.utils import is_secure_transport

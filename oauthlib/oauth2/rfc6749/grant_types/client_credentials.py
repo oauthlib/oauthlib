@@ -9,8 +9,8 @@ import json
 import logging
 
 from oauthlib.oauth2.common import errors
+from oauthlib.oauth2.common.request_validator import RequestValidator
 
-from ..request_validator import RequestValidator
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
