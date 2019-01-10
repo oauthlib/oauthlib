@@ -18,6 +18,7 @@ from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.oauth2.draft_ietf13.grant_types import DeviceCodeGrant
 from oauthlib.oauth2.draft_ietf13.tokens import DeviceToken
 
+from .code import CodeEndpoint
 from .authorization import AuthorizationEndpoint
 from .introspect import IntrospectEndpoint
 from .resource import ResourceEndpoint
@@ -46,6 +47,7 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
+        device_code_grant = DeviceCodeGrant(request_validator)
         auth_grant = AuthorizationCodeGrant(request_validator)
         implicit_grant = ImplicitGrant(request_validator)
         password_grant = ResourceOwnerPasswordCredentialsGrant(
@@ -55,8 +57,13 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
 
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
+        device = DeviceToken(request_validator, device_code_generator, user_code_generator,
+                             token_expires_in)
 
-        # Code Endpoint
+        CodeEndpoint.__init__(self,
+            default_grant_type=device_code_grant,
+            default_token_type=device
+        )
 
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                                        response_types={
@@ -258,13 +265,10 @@ class DeviceApplicationServer(TokenEndpoint, IntrospectEndpoint,
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
 
-        # Code Endpoint
-
-        AuthorizationEndpoint.__init__(self, default_response_type='code',
-                                       response_types={
-                                           'device_code': device_code_grant
-                                       },
-                                       default_token_type=device)
+        CodeEndpoint.__init__(self,
+            default_grant_type=device_code_grant,
+            default_token_type=device
+        )
 
         TokenEndpoint.__init__(self, default_grant_type='device_code',
                                grant_types={

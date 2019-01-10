@@ -45,16 +45,22 @@ class CodeEndpoint(BaseEndpoint):
     .. _`Section 3.1`: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-13#section-3.1
     """
 
-    def __init__(self, default_token_type):
+    def __init__(self, default_grant_type, default_token_type):
         BaseEndpoint.__init__(self)
+
+        self._default_grant_type = default_grant_type
         self._default_token_type = default_token_type
+
+    @property
+    def default_grant_type(self):
+        return self._default_grant_type
 
     @property
     def default_token_type(self):
         return self._default_token_type
 
     @catch_errors_and_unavailability
-    def create_authorization_response(self, uri, http_method='GET', body=None,
+    def create_code_response(self, uri, http_method='POST', body=None,
                                       headers=None, scopes=None, credentials=None):
         """Extract response_type and route to the designated handler."""
         request = Request(
@@ -64,15 +70,12 @@ class CodeEndpoint(BaseEndpoint):
         request.user = None     # TODO: explain this in docs
         for k, v in (credentials or {}).items():
             setattr(request, k, v)
-        response_type_handler = self.response_types.get(
-            request.response_type, self.default_response_type_handler)
-        log.debug('Dispatching response_type %s request to %r.',
-                  request.response_type, response_type_handler)
-        return response_type_handler.create_authorization_response(
+
+        return self.default_grant_type.create_authorization_response(
             request, self.default_token_type)
 
     @catch_errors_and_unavailability
-    def validate_authorization_request(self, uri, http_method='GET', body=None,
+    def validate_code_request(self, uri, http_method='POST', body=None,
                                        headers=None):
         """Extract response_type and route to the designated handler."""
         request = Request(
@@ -80,6 +83,4 @@ class CodeEndpoint(BaseEndpoint):
 
         request.scopes = utils.scope_to_list(request.scope)
 
-        response_type_handler = self.response_types.get(
-            request.response_type, self.default_response_type_handler)
-        return response_type_handler.validate_authorization_request(request)
+        return self.default_grant_type.validate_authorization_request(request)
