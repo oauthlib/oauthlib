@@ -17,8 +17,6 @@ from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from oauthlib.oauth2.draft_ietf13.grant_types import DeviceCodeGrant
 from oauthlib.oauth2.draft_ietf13.tokens import DeviceToken
-from oauthlib.oauth2.draft_ietf13.endpoints.code import CodeEndpoint
-from oauthlib.oauth2.draft_ietf13.endpoints.verification import VerificationEndpoint
 
 from .authorization import AuthorizationEndpoint
 from .introspect import IntrospectEndpoint
@@ -50,6 +48,12 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
+
+        # We import in this context to prevent a circular dependency
+        #
+        from oauthlib.oauth2.draft_ietf13.endpoints.code import CodeEndpoint
+        from oauthlib.oauth2.draft_ietf13.endpoints.verification import VerificationEndpoint
+
         device_code_grant = DeviceCodeGrant(request_validator)
         auth_grant = AuthorizationCodeGrant(request_validator)
         implicit_grant = ImplicitGrant(request_validator)
@@ -264,6 +268,12 @@ class DeviceApplicationServer(TokenEndpoint, IntrospectEndpoint,
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
+
+        # We import in this context to prevent a circular dependency
+        #
+        from oauthlib.oauth2.draft_ietf13.endpoints.code import CodeEndpoint
+        from oauthlib.oauth2.draft_ietf13.endpoints.verification import VerificationEndpoint
+
         device_code_grant = DeviceCodeGrant(request_validator)
 
         device = DeviceToken(request_validator, device_code_generator, user_code_generator,
