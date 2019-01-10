@@ -24,6 +24,7 @@ from .introspect import IntrospectEndpoint
 from .resource import ResourceEndpoint
 from .revocation import RevocationEndpoint
 from .token import TokenEndpoint
+from .verification import VerificationEndpoint
 
 
 class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
@@ -76,7 +77,10 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
                                        },
                                        default_token_type=bearer)
 
-        # Verification Endpoint
+        VerificationEndpoint.__init__(self,
+            default_grant_type=device_code_grant,
+            default_token_type=device
+        )
 
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                                grant_types={
@@ -278,7 +282,10 @@ class DeviceApplicationServer(TokenEndpoint, IntrospectEndpoint,
                                    'device_code': device_code_grant},
                                default_token_type=bearer)
 
-        # Verification Endpoint
+        VerificationEndpoint.__init__(self,
+            default_grant_type=device_code_grant,
+            default_token_type=device
+        )
 
         ResourceEndpoint.__init__(self, default_token='Bearer',
                                   token_types={'Bearer': bearer})
