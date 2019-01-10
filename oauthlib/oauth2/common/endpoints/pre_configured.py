@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.rfc6749.endpoints.pre_configured
+oauthlib.oauth2.common.endpoints.pre_configured
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various endpoints needed

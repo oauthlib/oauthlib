@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.rfc6749.endpoint.metadata
+oauthlib.oauth2.common.endpoint.metadata
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An implementation of the `OAuth 2.0 Authorization Server Metadata`.

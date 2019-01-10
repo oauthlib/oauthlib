@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.rfc6749.endpoint.revocation
+oauthlib.oauth2.common.endpoint.revocation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An implementation of the OAuth 2 `Token Revocation`_ spec (draft 11).
