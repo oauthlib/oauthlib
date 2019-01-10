@@ -8,7 +8,7 @@ import mock
 from oauthlib.common import Request
 from oauthlib.oauth2 import DeviceCodeGrant
 from oauthlib.oauth2 import DeviceToken
-from oauthlib.oauth2.common import errors
+from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from ....unittest import TestCase

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.common
+oauthlib.oauth2.rf6749
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various logic needed

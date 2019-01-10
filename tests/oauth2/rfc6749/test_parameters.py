@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from mock import patch
 
 from oauthlib import signals
-from oauthlib.oauth2.common.errors import *
+from oauthlib.oauth2.rfc6749.errors import *
 from oauthlib.oauth2.rfc6749.parameters import *
 
 from ...unittest import TestCase

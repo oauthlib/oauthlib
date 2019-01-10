@@ -42,7 +42,7 @@ class JWTTokenTestCase(TestCase):
         """
         request_mock = mock.MagicMock()
 
-        with mock.patch('oauthlib.oauth2.common.request_validator.RequestValidator',
+        with mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator',
                         autospec=True) as RequestValidatorMock:
 
             request_validator = RequestValidatorMock()
@@ -58,7 +58,7 @@ class JWTTokenTestCase(TestCase):
         """
 
         with mock.patch('oauthlib.common.Request', autospec=True) as RequestMock, \
-                mock.patch('oauthlib.oauth2.common.request_validator.RequestValidator',
+                mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator',
                            autospec=True) as RequestValidatorMock:
             request_validator_mock = RequestValidatorMock()
 
@@ -84,7 +84,7 @@ class JWTTokenTestCase(TestCase):
         """
 
         with mock.patch('oauthlib.common.Request', autospec=True) as RequestMock, \
-                mock.patch('oauthlib.oauth2.common.request_validator.RequestValidator',
+                mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator',
                            autospec=True) as RequestValidatorMock:
             request_validator_mock = RequestValidatorMock()
 

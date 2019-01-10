@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.common
+oauthlib.oauth2.draft_ietf13
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various logic needed
@@ -12,8 +12,7 @@ import logging
 
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749 import utils
-
-from .base import BaseEndpoint, catch_errors_and_unavailability
+from oauthlib.oauth2.rfc6749.endpoints.base import BaseEndpoint, catch_errors_and_unavailability
 
 log = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ import datetime
 import logging
 from json import loads
 
-from oauthlib.oauth2.common.errors import ConsentRequired, InvalidRequestError, LoginRequired
+from oauthlib.oauth2.rfc6749.errors import ConsentRequired, InvalidRequestError, LoginRequired
 
 log = logging.getLogger(__name__)
 

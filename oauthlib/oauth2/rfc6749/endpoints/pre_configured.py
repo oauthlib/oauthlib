@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.common.endpoints.pre_configured
+oauthlib.oauth2.rfc6469.endpoints.pre_configured
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various endpoints needed
@@ -17,15 +17,14 @@ from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from oauthlib.oauth2.draft_ietf13.grant_types import DeviceCodeGrant
 from oauthlib.oauth2.draft_ietf13.tokens import DeviceToken
+from oauthlib.oauth2.draft_ietf13.endpoints.code import CodeEndpoint
+from oauthlib.oauth2.draft_ietf13.endpoints.verification import VerificationEndpoint
 
-from .code import CodeEndpoint
 from .authorization import AuthorizationEndpoint
 from .introspect import IntrospectEndpoint
 from .resource import ResourceEndpoint
 from .revocation import RevocationEndpoint
 from .token import TokenEndpoint
-from .verification import VerificationEndpoint
-
 
 class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
              ResourceEndpoint, RevocationEndpoint):

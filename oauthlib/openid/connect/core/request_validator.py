@@ -7,7 +7,7 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
-from oauthlib.oauth2.common.request_validator import RequestValidator as OAuth2RequestValidator
+from oauthlib.oauth2.rfc6749.request_validator import RequestValidator as OAuth2RequestValidator
 
 log = logging.getLogger(__name__)
 

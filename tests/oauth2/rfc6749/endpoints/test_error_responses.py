@@ -9,7 +9,7 @@ import mock
 from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
                              MobileApplicationServer, RequestValidator,
                              WebApplicationServer)
-from oauthlib.oauth2.common import errors
+from oauthlib.oauth2.rfc6749 import errors
 
 from ....unittest import TestCase
 

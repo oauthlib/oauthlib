@@ -16,7 +16,7 @@ import time
 from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
 from oauthlib.signals import scope_changed
 
-from ..common.errors import (InsecureTransportError, MismatchingStateError,
+from .errors import (InsecureTransportError, MismatchingStateError,
                      MissingCodeError, MissingTokenError,
                      MissingTokenTypeError, raise_from_error)
 from .tokens import OAuth2Token

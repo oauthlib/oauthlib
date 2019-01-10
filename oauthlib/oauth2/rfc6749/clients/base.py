@@ -13,7 +13,7 @@ import warnings
 
 from oauthlib.common import generate_token
 from oauthlib.oauth2.rfc6749 import tokens
-from oauthlib.oauth2.common.errors import (InsecureTransportError,
+from ..errors import (InsecureTransportError,
                                             TokenExpiredError)
 from oauthlib.oauth2.rfc6749.parameters import (parse_token_response,
                                                 prepare_token_request,

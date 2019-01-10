@@ -5,9 +5,9 @@ import json
 
 import mock
 
-from oauthlib.oauth2.common import errors
-from oauthlib.oauth2.common.endpoints.authorization import AuthorizationEndpoint
-from oauthlib.oauth2.common.endpoints.token import TokenEndpoint
+from oauthlib.oauth2.rfc6749 import errors
+from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from oauthlib.openid.connect.core.grant_types.authorization_code import AuthorizationCodeGrant

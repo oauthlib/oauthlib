@@ -11,7 +11,7 @@ import mock
 
 from oauthlib.oauth2 import (MobileApplicationServer, RequestValidator,
                              WebApplicationServer)
-from oauthlib.oauth2.common import errors
+from oauthlib.oauth2.rfc6749 import errors
 
 from ....unittest import TestCase
 from .test_utils import get_fragment_credentials, get_query_credentials

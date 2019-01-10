@@ -8,7 +8,7 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from oauthlib import common
-from oauthlib.oauth2.common import errors
+from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.uri_validate import is_absolute_uri
 
 from .base import GrantTypeBase

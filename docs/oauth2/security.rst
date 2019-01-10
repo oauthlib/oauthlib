@@ -33,7 +33,7 @@ checks in order to run automated tests. *Never* bypass these checks in productio
 .. envvar:: OAUTHLIB_INSECURE_TRANSPORT
 
     Normally, OAuthLib will raise an
-    :class:`~oauthlib.oauth2.common.errors.InsecureTransportError`
+    :class:`~oauthlib.oauth2.rfc6749.errors.InsecureTransportError`
     if you attempt to use OAuth2 over HTTP, rather than HTTPS. Setting this
     environment variable will prevent this error from being raised.
     This is mostly useful for local testing, or automated tests.
@@ -44,5 +44,5 @@ checks in order to run automated tests. *Never* bypass these checks in productio
     When parsing an OAuth2 token response, OAuthLib normally ignores the
     ``token_type`` parameter. Setting this variable will cause OAuthLib to
     specifically check for this parameter in the response, and raise an
-    :class:`~oauthlib.oauth2.common.errors.MissingTokenTypeError` if the
+    :class:`~oauthlib.oauth2.rfc6749.errors.MissingTokenTypeError` if the
     parameter is missing.

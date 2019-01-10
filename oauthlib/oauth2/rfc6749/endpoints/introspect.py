@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth2.common.endpoint.introspect
+oauthlib.oauth2.rf6469.endpoint.introspect
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An implementation of the OAuth 2.0 `Token Introspection`.

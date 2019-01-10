@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import mock
 
 from oauthlib.oauth2 import InvalidRequestError
-from oauthlib.oauth2.common.endpoints.authorization import \
+from oauthlib.oauth2.rfc6749.endpoints.authorization import \
     AuthorizationEndpoint
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types import AuthorizationCodeGrant

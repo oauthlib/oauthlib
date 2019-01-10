@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-oauthlib.oauth2.common.errors
+oauthlib.oauth2.rfc6749.errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Error used both by OAuth 2 clients and providers to represent the spec
@@ -8,7 +8,7 @@ defined error responses for all four core grant types.
 """
 from __future__ import unicode_literals
 
-from oauthlib.oauth2.common.errors import FatalClientError, OAuth2Error
+from oauthlib.oauth2.rfc6749.errors import FatalClientError, OAuth2Error
 
 
 class FatalOpenIDClientError(FatalClientError):
