@@ -254,15 +254,18 @@ class DeviceApplicationServer(TokenEndpoint, IntrospectEndpoint,
         bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
 
-        # How do we do this bit ?
-        #
+        AuthorizationEndpoint.__init__(self, default_response_type='code',
+                                       response_types={
+                                           'device_code': device_code_grant
+                                       },
+                                       default_token_type=device)
+
         TokenEndpoint.__init__(self, default_grant_type='device_code',
                                grant_types={
                                    'device_code': device_code_grant},
-                               default_token_type=device)
+                               default_token_type=bearer)
 
         # Build endpoint for verification
-        # Build endpoint for authorization
 
         ResourceEndpoint.__init__(self, default_token='Bearer',
                                   token_types={'Bearer': bearer})
