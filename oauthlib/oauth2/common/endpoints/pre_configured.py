@@ -42,6 +42,8 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
         :param token_expires_in: An int or a function to generate a token
                                  expiration offset (in seconds) given a
                                  oauthlib.common.Request object.
+        :param device_code_generator: A function to generate a device code from a request.
+        :param user_code_generator: A function to generate a user code from a request.
         :param token_generator: A function to generate a token from a request.
         :param refresh_token_generator: A function to generate a token from a
                                         request for the refresh token.
