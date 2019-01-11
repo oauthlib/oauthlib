@@ -43,6 +43,11 @@ class ClientAuthenticationTest(TestCase):
                 token_generator=self.inspect_client)
         self.backend = BackendApplicationServer(self.validator,
                 token_generator=self.inspect_client)
+        self.token_uri = 'http://example.com/path'
+        self.auth_uri = 'http://example.com/path?client_id=abc&response_type=token'
+        # should be base64 but no added value in this unittest
+        self.basicauth_client_creds = {"Authorization": "john:doe"}
+        self.basicauth_client_id = {"Authorization": "john:"}
 
     def set_client(self, request):
         request.client = mock.MagicMock()
@@ -54,7 +59,9 @@ class ClientAuthenticationTest(TestCase):
         request.client.client_id = 'mocked'
         return True
 
-    def set_username(self, username, password, client, request):
+    def basicauth_authenticate_client(self, request):
+        assert "Authorization" in request.headers
+        assert "john:doe" in request.headers["Authorization"]
         request.client = mock.MagicMock()
         request.client.client_id = 'mocked'
         return True
@@ -85,6 +92,55 @@ class ClientAuthenticationTest(TestCase):
         self.assertEqual(302, s)
         self.assertIn('Location', h)
         self.assertIn('access_token', get_fragment_credentials(h['Location']))
+
+    def test_basicauth_web(self):
+        self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
+        _, body, _ = self.web.create_token_response(
+            self.token_uri,
+            body='grant_type=authorization_code&code=mock',
+            headers=self.basicauth_client_creds
+        )
+        self.assertIn('access_token', json.loads(body))
+
+    def test_basicauth_legacy(self):
+        self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
+        _, body, _ = self.legacy.create_token_response(
+            self.token_uri,
+            body='grant_type=password&username=abc&password=secret',
+            headers=self.basicauth_client_creds
+        )
+        self.assertIn('access_token', json.loads(body))
+
+    def test_basicauth_backend(self):
+        self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
+        _, body, _ = self.backend.create_token_response(
+            self.token_uri,
+            body='grant_type=client_credentials',
+            headers=self.basicauth_client_creds
+        )
+        self.assertIn('access_token', json.loads(body))
+
+    def test_basicauth_revoke(self):
+        self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
+
+        # legacy or any other uses the same RevocationEndpoint
+        _, body, status = self.legacy.create_revocation_response(
+            self.token_uri,
+            body='token=foobar',
+            headers=self.basicauth_client_creds
+        )
+        self.assertEqual(status, 200, body)
+
+    def test_basicauth_introspect(self):
+        self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
+
+        # legacy or any other uses the same IntrospectEndpoint
+        _, body, status = self.legacy.create_introspect_response(
+            self.token_uri,
+            body='token=foobar',
+            headers=self.basicauth_client_creds
+        )
+        self.assertEqual(status, 200, body)
 
     def test_custom_authentication(self):
         token_uri = 'http://example.com/path'
