@@ -11,11 +11,16 @@ from __future__ import absolute_import, unicode_literals
 import collections
 import datetime
 import logging
-import random
 import re
 import sys
 import time
 
+try:
+    from secrets import randbits
+    from secrets import SystemRandom
+except ImportError:
+    from random import getrandbits as randbits
+    from random import SystemRandom
 try:
     from urllib import quote as _quote
     from urllib import unquote as _unquote
@@ -49,10 +54,8 @@ PY3 = sys.version_info[0] == 3
 
 if PY3:
     unicode_type = str
-    bytes_type = bytes
 else:
     unicode_type = unicode
-    bytes_type = str
 
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
@@ -61,7 +64,7 @@ def quote(s, safe=b'/'):
     s = _quote(s, safe)
     # PY3 always returns unicode.  PY2 may return either, depending on whether
     # it had to modify the string.
-    if isinstance(s, bytes_type):
+    if isinstance(s, bytes):
         s = s.decode('utf-8')
     return s
 
@@ -71,7 +74,7 @@ def unquote(s):
     # PY3 always returns unicode.  PY2 seems to always return what you give it,
     # which differs from quote's behavior.  Just to be safe, make sure it is
     # unicode before we return.
-    if isinstance(s, bytes_type):
+    if isinstance(s, bytes):
         s = s.decode('utf-8')
     return s
 
@@ -104,12 +107,12 @@ def decode_params_utf8(params):
     decoded = []
     for k, v in params:
         decoded.append((
-            k.decode('utf-8') if isinstance(k, bytes_type) else k,
-            v.decode('utf-8') if isinstance(v, bytes_type) else v))
+            k.decode('utf-8') if isinstance(k, bytes) else k,
+            v.decode('utf-8') if isinstance(v, bytes) else v))
     return decoded
 
 
-urlencoded = set(always_safe) | set('=&;:%+~,*@!()/?')
+urlencoded = set(always_safe) | set('=&;:%+~,*@!()/?\'$')
 
 
 def urldecode(query):
@@ -169,7 +172,7 @@ def extract_params(raw):
     empty list of parameters. Any other input will result in a return
     value of None.
     """
-    if isinstance(raw, bytes_type) or isinstance(raw, unicode_type):
+    if isinstance(raw, bytes) or isinstance(raw, unicode_type):
         try:
             params = urldecode(raw)
         except ValueError:
@@ -199,10 +202,10 @@ def generate_nonce():
     A random 64-bit number is appended to the epoch timestamp for both
     randomness and to decrease the likelihood of collisions.
 
-    .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
-    .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+    .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
+    .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode_type(unicode_type(random.getrandbits(64)) + generate_timestamp())
+    return unicode_type(unicode_type(randbits(64)) + generate_timestamp())
 
 
 def generate_timestamp():
@@ -211,8 +214,8 @@ def generate_timestamp():
     Per `section 3.3`_ of the OAuth 1 RFC 5849 spec.
     Per `section 3.2.1`_ of the MAC Access Authentication spec.
 
-    .. _`section 3.2.1`: http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
-    .. _`section 3.3`: http://tools.ietf.org/html/rfc5849#section-3.3
+    .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
+    .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
     return unicode_type(int(time.time()))
 
@@ -225,7 +228,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     and entropy when generating the random characters is important. Which is
     why SystemRandom is used instead of the default random.choice method.
     """
-    rand = random.SystemRandom()
+    rand = SystemRandom()
     return ''.join(rand.choice(chars) for x in range(length))
 
 
@@ -257,7 +260,7 @@ def generate_client_id(length=30, chars=CLIENT_ID_CHARACTER_SET):
     """Generates an OAuth client_id
 
     OAuth 2 specify the format of client_id in
-    http://tools.ietf.org/html/rfc6749#appendix-A.
+    https://tools.ietf.org/html/rfc6749#appendix-A.
     """
     return generate_token(length, chars)
 
@@ -304,7 +307,7 @@ def to_unicode(data, encoding='UTF-8'):
     if isinstance(data, unicode_type):
         return data
 
-    if isinstance(data, bytes_type):
+    if isinstance(data, bytes):
         return unicode_type(data, encoding=encoding)
 
     if hasattr(data, '__iter__'):
@@ -394,6 +397,9 @@ class Request(object):
             "client_id": None,
             "client_secret": None,
             "code": None,
+            "code_challenge": None,
+            "code_challenge_method": None,
+            "code_verifier": None,
             "extra_credentials": None,
             "grant_type": None,
             "redirect_uri": None,
@@ -421,7 +427,6 @@ class Request(object):
         }
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))
-        self._params.update(self.headers)
 
     def __getattr__(self, name):
         if name in self._params:

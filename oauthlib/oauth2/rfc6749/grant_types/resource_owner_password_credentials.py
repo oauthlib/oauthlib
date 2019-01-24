@@ -67,11 +67,16 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             the resource owner credentials, and if valid, issues an access
             token.
 
-    .. _`Resource Owner Password Credentials Grant`: http://tools.ietf.org/html/rfc6749#section-4.3
+    .. _`Resource Owner Password Credentials Grant`: https://tools.ietf.org/html/rfc6749#section-4.3
     """
 
     def create_token_response(self, request, token_handler):
         """Return token or error in json format.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
 
         If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
@@ -79,14 +84,10 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         authentication or is invalid, the authorization server returns an
         error response as described in `Section 5.2`_.
 
-        .. _`Section 5.1`: http://tools.ietf.org/html/rfc6749#section-5.1
-        .. _`Section 5.2`: http://tools.ietf.org/html/rfc6749#section-5.2
+        .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
+        .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
-        headers = {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-            'Pragma': 'no-cache',
-        }
+        headers = self._get_default_headers()
         try:
             if self.request_validator.client_authentication_required(request):
                 log.debug('Authenticating client, %r.', request)
@@ -100,6 +101,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
             log.debug('Client error in token request, %s.', e)
+            headers.update(e.headers)
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, self.refresh_token, save_token=False)
@@ -114,6 +116,9 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
 
     def validate_token_request(self, request):
         """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+
         The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
         format per Appendix B with a character encoding of UTF-8 in the HTTP
@@ -153,8 +158,8 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         brute force attacks (e.g., using rate-limitation or generating
         alerts).
 
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         for validator in self.custom_validators.pre_token:
             validator(request)

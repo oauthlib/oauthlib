@@ -18,19 +18,16 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 
-if sys.version_info[0] == 3:
-    bytes_type = bytes
-else:
-    bytes_type = str
-
 from oauthlib.common import Request, urlencode, generate_nonce
 from oauthlib.common import generate_timestamp, to_unicode
 from . import parameters, signature
 
-SIGNATURE_HMAC = "HMAC-SHA1"
+SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
+SIGNATURE_HMAC_SHA256 = "HMAC-SHA256"
+SIGNATURE_HMAC = SIGNATURE_HMAC_SHA1
 SIGNATURE_RSA = "RSA-SHA1"
 SIGNATURE_PLAINTEXT = "PLAINTEXT"
-SIGNATURE_METHODS = (SIGNATURE_HMAC, SIGNATURE_RSA, SIGNATURE_PLAINTEXT)
+SIGNATURE_METHODS = (SIGNATURE_HMAC_SHA1, SIGNATURE_HMAC_SHA256, SIGNATURE_RSA, SIGNATURE_PLAINTEXT)
 
 SIGNATURE_TYPE_AUTH_HEADER = 'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = 'QUERY'
@@ -43,7 +40,8 @@ class Client(object):
 
     """A client used to sign OAuth 1.0 RFC 5849 requests."""
     SIGNATURE_METHODS = {
-        SIGNATURE_HMAC: signature.sign_hmac_sha1_with_client,
+        SIGNATURE_HMAC_SHA1: signature.sign_hmac_sha1_with_client,
+        SIGNATURE_HMAC_SHA256: signature.sign_hmac_sha256_with_client,
         SIGNATURE_RSA: signature.sign_rsa_sha1_with_client,
         SIGNATURE_PLAINTEXT: signature.sign_plaintext_with_client
     }
@@ -57,7 +55,7 @@ class Client(object):
                  resource_owner_key=None,
                  resource_owner_secret=None,
                  callback_uri=None,
-                 signature_method=SIGNATURE_HMAC,
+                 signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_AUTH_HEADER,
                  rsa_key=None, verifier=None, realm=None,
                  encoding='utf-8', decoding=None,
@@ -119,7 +117,7 @@ class Client(object):
         replace any netloc part of the request argument's uri attribute
         value.
 
-        .. _`section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
+        .. _`section 3.4.1.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.2
         """
         if self.signature_method == SIGNATURE_PLAINTEXT:
             # fast-path
@@ -175,10 +173,12 @@ class Client(object):
             params.append(('oauth_verifier', self.verifier))
 
         # providing body hash for requests other than x-www-form-urlencoded
-        # as described in http://oauth.googlecode.com/svn/spec/ext/body_hash/1.0/oauth-bodyhash.html
+        # as described in https://tools.ietf.org/html/draft-eaton-oauth-bodyhash-00#section-4.1.1
         # 4.1.1. When to include the body hash
         #    *  [...] MUST NOT include an oauth_body_hash parameter on requests with form-encoded request bodies
         #    *  [...] SHOULD include the oauth_body_hash parameter on all other requests.
+        # Note that SHA-1 is vulnerable. The spec acknowledges that in https://tools.ietf.org/html/draft-eaton-oauth-bodyhash-00#section-6.2
+        # At this time, no further effort has been made to replace SHA-1 for the OAuth Request Body Hash extension.
         content_type = request.headers.get('Content-Type', None)
         content_type_eligible = content_type and content_type.find('application/x-www-form-urlencoded') < 0
         if request.body is not None and content_type_eligible:
@@ -297,7 +297,7 @@ class Client(object):
             raise ValueError(
                 'Body signatures may only be used with form-urlencoded content')
 
-        # We amend http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
+        # We amend https://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
         # with the clause that parameters from body should only be included
         # in non GET or HEAD requests. Extracting the request body parameters
         # and including them in the signature base string would give semantic

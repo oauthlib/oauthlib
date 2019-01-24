@@ -119,7 +119,7 @@ class ResourceEndpoint(BaseEndpoint):
         # However they could be seen as a scope or realm to which the
         # client has access and as such every client should be checked
         # to ensure it is authorized access to that scope or realm.
-        # .. _`realm`: http://tools.ietf.org/html/rfc2617#section-1.2
+        # .. _`realm`: https://tools.ietf.org/html/rfc2617#section-1.2
         #
         # Note that early exit would enable client realm access enumeration.
         #

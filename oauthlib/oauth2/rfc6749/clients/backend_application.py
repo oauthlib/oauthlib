@@ -29,16 +29,29 @@ class BackendApplicationClient(Client):
     Since the client authentication is used as the authorization grant,
     no additional authorization request is needed.
     """
-
-    def prepare_request_body(self, body='', scope=None, **kwargs):
+    
+    grant_type = 'client_credentials'
+    
+    def prepare_request_body(self, body='', scope=None,
+                             include_client_id=None, **kwargs):
         """Add the client credentials to the request body.
 
         The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
         format per `Appendix B`_ in the HTTP request entity-body:
 
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
         :param scope:   The scope of the access request as described by
                         `Section 3.3`_.
+
+        :param include_client_id: `True` to send the `client_id` in the body of
+                                  the upstream request. Default `None`. This is
+                                  required if the client is not authenticating
+                                  with the authorization server as described
+                                  in `Section 3.2.1`_.
+        :type include_client_id: Boolean
+
         :param kwargs:  Extra credentials to include in the token request.
 
         The client MUST authenticate with the authorization server as
@@ -52,9 +65,11 @@ class BackendApplicationClient(Client):
             >>> client.prepare_request_body(scope=['hello', 'world'])
             'grant_type=client_credentials&scope=hello+world'
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
-        return prepare_token_request('client_credentials', body=body,
+        kwargs['client_id'] = self.client_id
+        kwargs['include_client_id'] = include_client_id
+        return prepare_token_request(self.grant_type, body=body,
                                      scope=scope, **kwargs)

@@ -9,7 +9,7 @@ For various reasons you may wish to install using your OS packaging system and
 install instructions for a few are shown below. Please send a PR to add a
 missing one.
 
-Latest release on PYPI
+Latest release on PyPI
 ----------------------
 
 
@@ -22,7 +22,7 @@ Bleeding edge from GitHub master
 
 .. code-block:: bash
 
-    pip install -e git+https://github.com/idan/oauthlib.git#egg=oauthlib
+    pip install -e git+https://github.com/oauthlib/oauthlib.git#egg=oauthlib
 
 Debian and derivatives like Ubuntu, Mint, etc.
 ---------------------------------------------

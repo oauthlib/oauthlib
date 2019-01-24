@@ -8,7 +8,7 @@ spec.
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import bytes_type, quote, unicode_type, unquote
+from oauthlib.common import quote, unicode_type, unquote
 
 try:
     import urllib2
@@ -49,7 +49,7 @@ def escape(u):
 
     Per `section 3.6`_ of the spec.
 
-    .. _`section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
+    .. _`section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
 
     """
     if not isinstance(u, unicode_type):

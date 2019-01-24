@@ -18,38 +18,30 @@ def fread(fn):
     with open(join(dirname(__file__), fn), 'r') as f:
         return f.read()
 
-if sys.version_info[0] == 3:
-    tests_require = ['nose', 'cryptography', 'pyjwt>=1.0.0', 'blinker']
-else:
-    tests_require = ['nose', 'unittest2', 'cryptography', 'mock', 'pyjwt>=1.0.0', 'blinker']
+
 rsa_require = ['cryptography']
 signedtoken_require = ['cryptography', 'pyjwt>=1.0.0']
 signals_require = ['blinker']
-
-requires = []
 
 setup(
     name='oauthlib',
     version=oauthlib.__version__,
     description='A generic, spec-compliant, thorough implementation of the OAuth request-signing logic',
     long_description=fread('README.rst'),
-    author='Idan Gazit',
+    author='The OAuthlib Community',
     author_email='idan@gazit.me',
     maintainer='Ib Lundgren',
     maintainer_email='ib.lundgren@gmail.com',
-    url='https://github.com/idan/oauthlib',
+    url='https://github.com/oauthlib/oauthlib',
     platforms='any',
     license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
-    test_suite='nose.collector',
-    tests_require=tests_require,
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     extras_require={
-        'test': tests_require,
         'rsa': rsa_require,
         'signedtoken': signedtoken_require,
         'signals': signals_require,
     },
-    install_requires=requires,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
@@ -66,6 +58,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',

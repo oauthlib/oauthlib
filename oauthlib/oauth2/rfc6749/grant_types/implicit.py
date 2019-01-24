@@ -8,7 +8,6 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from oauthlib import common
-from oauthlib.uri_validate import is_absolute_uri
 
 from .. import errors
 from .base import GrantTypeBase
@@ -111,9 +110,9 @@ class ImplicitGrant(GrantTypeBase):
     See `Section 10.3`_ and `Section 10.16`_ for important security considerations
     when using the implicit grant.
 
-    .. _`Implicit Grant`: http://tools.ietf.org/html/rfc6749#section-4.2
-    .. _`Section 10.3`: http://tools.ietf.org/html/rfc6749#section-10.3
-    .. _`Section 10.16`: http://tools.ietf.org/html/rfc6749#section-10.16
+    .. _`Implicit Grant`: https://tools.ietf.org/html/rfc6749#section-4.2
+    .. _`Section 10.3`: https://tools.ietf.org/html/rfc6749#section-10.3
+    .. _`Section 10.16`: https://tools.ietf.org/html/rfc6749#section-10.16
     """
 
     response_types = ['token']
@@ -121,6 +120,12 @@ class ImplicitGrant(GrantTypeBase):
 
     def create_authorization_response(self, request, token_handler):
         """Create an authorization response.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         The client constructs the request URI by adding the following
         parameters to the query component of the authorization endpoint URI
         using the "application/x-www-form-urlencoded" format, per `Appendix B`_:
@@ -152,16 +157,21 @@ class ImplicitGrant(GrantTypeBase):
         access token matches a redirection URI registered by the client as
         described in `Section 3.1.2`_.
 
-        .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
-        .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
+        .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
         """
         return self.create_token_response(request, token_handler)
 
     def create_token_response(self, request, token_handler):
         """Return token or error embedded in the URI fragment.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
 
         If the resource owner grants the access request, the authorization
         server issues an access token and delivers it to the client by adding
@@ -195,16 +205,11 @@ class ImplicitGrant(GrantTypeBase):
 
         The authorization server MUST NOT issue a refresh token.
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 7.1`: http://tools.ietf.org/html/rfc6749#section-7.1
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
         """
         try:
-            # request.scopes is only mandated in post auth and both pre and
-            # post auth use validate_authorization_request
-            if not request.scopes:
-                raise ValueError('Scopes must be set on post auth.')
-
             self.validate_token_request(request)
 
         # If the request fails due to a missing, invalid, or mismatching
@@ -222,7 +227,7 @@ class ImplicitGrant(GrantTypeBase):
         # the authorization server informs the client by adding the following
         # parameters to the fragment component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B:
-        # http://tools.ietf.org/html/rfc6749#appendix-B
+        # https://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
@@ -248,10 +253,17 @@ class ImplicitGrant(GrantTypeBase):
             request, token, {}, None, 302)
 
     def validate_authorization_request(self, request):
+        """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
         return self.validate_token_request(request)
 
     def validate_token_request(self, request):
         """Check the token request for normal and fatal errors.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
 
         This method is very similar to validate_authorization_request in
         the AuthorizationCodeGrant but differ in a few subtle areas.
@@ -285,7 +297,7 @@ class ImplicitGrant(GrantTypeBase):
                 raise errors.InvalidRequestFatalError(description='Duplicate %s parameter.' % param, request=request)
 
         # REQUIRED. The client identifier as described in Section 2.2.
-        # http://tools.ietf.org/html/rfc6749#section-2.2
+        # https://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
 
@@ -293,30 +305,8 @@ class ImplicitGrant(GrantTypeBase):
             raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
-        # http://tools.ietf.org/html/rfc6749#section-3.1.2
-        if request.redirect_uri is not None:
-            request.using_default_redirect_uri = False
-            log.debug('Using provided redirect_uri %s', request.redirect_uri)
-            if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(request=request)
-
-            # The authorization server MUST verify that the redirection URI
-            # to which it will redirect the access token matches a
-            # redirection URI registered by the client as described in
-            # Section 3.1.2.
-            # http://tools.ietf.org/html/rfc6749#section-3.1.2
-            if not self.request_validator.validate_redirect_uri(
-                    request.client_id, request.redirect_uri, request):
-                raise errors.MismatchingRedirectURIError(request=request)
-        else:
-            request.redirect_uri = self.request_validator.get_default_redirect_uri(
-                request.client_id, request)
-            request.using_default_redirect_uri = True
-            log.debug('Using default redirect_uri %s.', request.redirect_uri)
-            if not request.redirect_uri:
-                raise errors.MissingRedirectURIError(request=request)
-            if not is_absolute_uri(request.redirect_uri):
-                raise errors.InvalidRedirectURIError(request=request)
+        # https://tools.ietf.org/html/rfc6749#section-3.1.2
+        self._handle_redirects(request)
 
         # Then check for normal errors.
 
@@ -328,7 +318,7 @@ class ImplicitGrant(GrantTypeBase):
         # the authorization server informs the client by adding the following
         # parameters to the fragment component of the redirection URI using the
         # "application/x-www-form-urlencoded" format, per Appendix B.
-        # http://tools.ietf.org/html/rfc6749#appendix-B
+        # https://tools.ietf.org/html/rfc6749#appendix-B
 
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions
@@ -351,7 +341,7 @@ class ImplicitGrant(GrantTypeBase):
             raise errors.UnauthorizedClientError(request=request)
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
-        # http://tools.ietf.org/html/rfc6749#section-3.3
+        # https://tools.ietf.org/html/rfc6749#section-3.3
         self.validate_scopes(request)
 
         request_info.update({

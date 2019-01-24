@@ -1,6 +1,89 @@
 Changelog
 =========
 
+3.0.0 (2019-01-01)
+------------------
+OAuth2.0 Provider - outstanding Features
+
+* OpenID Connect Core support
+* RFC7662 Introspect support
+* RFC8414 OAuth2.0 Authorization Server Metadata support (#605)
+* RFC7636 PKCE support (#617 #624)
+
+OAuth2.0 Provider - API/Breaking Changes
+
+* Add "request" to confirm_redirect_uri #504
+* confirm_redirect_uri/get_default_redirect_uri has a bit changed #445
+* invalid_client is now a FatalError #606
+* Changed errors status code from 401 to 400:
+ - invalid_grant: #264
+ - invalid_scope: #620
+ - access_denied/unauthorized_client/consent_required/login_required #623
+ - 401 must have WWW-Authenticate HTTP Header set. #623
+
+OAuth2.0 Provider - Bugfixes
+
+* empty scopes no longer raise exceptions for implicit and authorization_code #475 / #406
+
+OAuth2.0 Client - Bugfixes / Changes:
+
+* expires_in in Implicit flow is now an integer #569
+* expires is no longer overriding expires_in #506
+* parse_request_uri_response is now required #499
+* Unknown error=xxx raised by OAuth2 providers was not understood #431
+* OAuth2's `prepare_token_request` supports sending an empty string for `client_id` (#585)
+* OAuth2's `WebApplicationClient.prepare_request_body` was refactored to better
+  support sending or omitting the `client_id` via a new `include_client_id` kwarg.
+  By default this is included. The method will also emit a DeprecationWarning if
+  a `client_id` parameter is submitted; the already configured `self.client_id`
+  is the preferred option. (#585)
+
+OAuth1.0 Client:
+
+* Support for HMAC-SHA256 #498
+
+General fixes:
+
+* $ and ' are allowed to be unencoded in query strings #564
+* Request attributes are no longer overriden by HTTP Headers #409
+* Removed unnecessary code for handling python2.6
+* Add support of python3.7 #621
+* Several minors updates to setup.py and tox
+* Set pytest as the default unittest framework
+
+
+2.1.0 (2018-05-21)
+------------------
+
+* Fixed some copy and paste typos (#535)
+* Use secrets module in Python 3.6 and later (#533)
+* Add request argument to confirm_redirect_uri (#504)
+* Avoid populating spurious token credentials (#542)
+* Make populate attributes API public (#546)
+
+2.0.7 (2018-03-19)
+------------------
+
+* Moved oauthlib into new organization on GitHub.
+* Include license file in the generated wheel package. (#494)
+* When deploying a release to PyPI, include the wheel distribution. (#496)
+* Check access token in self.token dict. (#500)
+* Added bottle-oauthlib to docs. (#509)
+* Update repository location in Travis. (#514)
+* Updated docs for organization change. (#515)
+* Replace G+ with Gitter. (#517)
+* Update requirements. (#518)
+* Add shields for Python versions, license and RTD. (#520)
+* Fix ReadTheDocs build (#521).
+* Fixed "make" command to test upstream with local oauthlib. (#522)
+* Replace IRC notification with Gitter Hook. (#523)
+* Added Github Releases deploy provider. (#523)
+
+2.0.6 (2017-10-20)
+------------------
+
+* 2.0.5 contains breaking changes.
+
 2.0.5 (2017-10-19)
 ------------------
 

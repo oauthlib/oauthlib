@@ -2,9 +2,10 @@
 from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import Request
-from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_RSA,
+from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_HMAC_SHA1,
+                             SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
                              SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY)
-from oauthlib.oauth1.rfc5849 import Client, bytes_type
+from oauthlib.oauth1.rfc5849 import Client
 
 from ...unittest import TestCase
 
@@ -38,7 +39,7 @@ class ClientConstructorTests(TestCase):
     def test_convert_to_unicode_resource_owner(self):
         client = Client('client-key',
                         resource_owner_key=b'owner key')
-        self.assertFalse(isinstance(client.resource_owner_key, bytes_type))
+        self.assertNotIsInstance(client.resource_owner_key, bytes)
         self.assertEqual(client.resource_owner_key, 'owner key')
 
     def test_give_explicit_timestamp(self):
@@ -56,18 +57,53 @@ class ClientConstructorTests(TestCase):
         uri, headers, body = client.sign('http://a.b/path?query',
                 http_method='POST', body='a=b',
                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertIsInstance(uri, bytes_type)
-        self.assertIsInstance(body, bytes_type)
+        self.assertIsInstance(uri, bytes)
+        self.assertIsInstance(body, bytes)
         for k, v in headers.items():
-            self.assertIsInstance(k, bytes_type)
-            self.assertIsInstance(v, bytes_type)
+            self.assertIsInstance(k, bytes)
+            self.assertIsInstance(v, bytes)
+
+    def test_hmac_sha1(self):
+        client = Client('client_key')
+        # instance is using the correct signer method
+        self.assertEqual(Client.SIGNATURE_METHODS[SIGNATURE_HMAC_SHA1],
+                         client.SIGNATURE_METHODS[client.signature_method])
+
+    def test_hmac_sha256(self):
+        client = Client('client_key', signature_method=SIGNATURE_HMAC_SHA256)
+        # instance is using the correct signer method
+        self.assertEqual(Client.SIGNATURE_METHODS[SIGNATURE_HMAC_SHA256],
+                         client.SIGNATURE_METHODS[client.signature_method])
 
     def test_rsa(self):
         client = Client('client_key', signature_method=SIGNATURE_RSA)
-        self.assertIsNone(client.rsa_key)  # don't need an RSA key to instantiate
+        # instance is using the correct signer method
+        self.assertEqual(Client.SIGNATURE_METHODS[SIGNATURE_RSA],
+                         client.SIGNATURE_METHODS[client.signature_method])
+        # don't need an RSA key to instantiate
+        self.assertIsNone(client.rsa_key)
 
 
 class SignatureMethodTest(TestCase):
+
+    def test_hmac_sha1_method(self):
+        client = Client('client_key', timestamp='1234567890', nonce='abc')
+        u, h, b = client.sign('http://example.com')
+        correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
+                   'oauth_version="1.0", oauth_signature_method="HMAC-SHA1", '
+                   'oauth_consumer_key="client_key", '
+                   'oauth_signature="hH5BWYVqo7QI4EmPBUUe9owRUUQ%3D"')
+        self.assertEqual(h['Authorization'], correct)
+
+    def test_hmac_sha256_method(self):
+        client = Client('client_key', signature_method=SIGNATURE_HMAC_SHA256,
+                        timestamp='1234567890', nonce='abc')
+        u, h, b = client.sign('http://example.com')
+        correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
+                   'oauth_version="1.0", oauth_signature_method="HMAC-SHA256", '
+                   'oauth_consumer_key="client_key", '
+                   'oauth_signature="JzgJWBxX664OiMW3WE4MEjtYwOjI%2FpaUWHqtdHe68Es%3D"')
+        self.assertEqual(h['Authorization'], correct)
 
     def test_rsa_method(self):
         private_key = (

@@ -1,4 +1,5 @@
 *.pyc
+.idea
 *.sublime-project
 *.sublime-workspace
 *.swp
@@ -22,9 +23,11 @@ develop-eggs
 pip-log.txt
 
 # Unit test / coverage reports
+.cache
 .coverage
 .tox
 coverage
+htmlcov*
 
 #Translations
 *.mo
@@ -32,6 +35,8 @@ coverage
 # Local file cruft/auto-backups
 .DS_Store
 *~
+**/#*#
+**/.#*
 
 # Sphinx
 docs/_build

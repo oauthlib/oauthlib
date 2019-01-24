@@ -6,8 +6,10 @@ OAuthLib is a dependency free library that may be used with any web
 framework. That said, there are framework specific helper libraries
 to make your life easier.
 
-- For Django there is `django-oauth-toolkit`_.
-- For Flask there is `flask-oauthlib`_.
+- Django `django-oauth-toolkit`_
+- Flask `flask-oauthlib`_
+- Pyramid `pyramid-oauthlib`_
+- Bottle `bottle-oauthlib`_
 
 If there is no support for your favourite framework and you are interested
 in providing it then you have come to the right place. OAuthLib can handle
@@ -17,11 +19,23 @@ as well as provide an interface for a backend to store tokens, clients, etc.
 
 .. _`django-oauth-toolkit`: https://github.com/evonove/django-oauth-toolkit
 .. _`flask-oauthlib`: https://github.com/lepture/flask-oauthlib
+.. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
+.. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
 
 .. contents:: Tutorial Contents
     :depth: 3
 
-1. Create your datastore models
+1. OAuth2.0 Provider flows
+-------------------------------
+
+OAuthLib interface between web framework and provider implementation are not always easy to follow, it's why a graph below has been done to better understand the implication of OAuthLib in the request's  lifecycle.
+
+
+.. graphviz:: oauth2provider-legend.dot
+.. graphviz:: oauth2provider-server.dot
+
+
+2. Create your datastore models
 -------------------------------
 
 These models will represent various OAuth specific concepts. There are a few
@@ -242,7 +256,18 @@ the token.
 
         expires_at = django.db.models.DateTimeField()
 
-2. Implement a validator
+**PKCE Challenge (optional)**
+
+    If you want to support PKCE, you have to associate a `code_challenge`
+    and a `code_challenge_method` to the actual Authorization Code.
+
+    .. code-block:: python
+
+        challenge = django.db.models.CharField(max_length=128)
+        challenge_method = django.db.models.CharField(max_length=6)
+
+
+3. Implement a validator
 ------------------------
 
 The majority of the work involved in implementing an OAuth 2 provider
@@ -275,7 +300,7 @@ all methods depending on which grant types you wish to support. A skeleton
 validator listing the methods required for the WebApplicationServer is
 available in the `examples`_ folder on GitHub.
 
-..  _`examples`: https://github.com/idan/oauthlib/blob/master/examples/skeleton_oauth2_web_application_server.py
+..  _`examples`: https://github.com/oauthlib/oauthlib/blob/master/examples/skeleton_oauth2_web_application_server.py
 
 Relevant sections include:
 
@@ -286,7 +311,7 @@ Relevant sections include:
     security
 
 
-3. Create your composite endpoint
+4. Create your composite endpoint
 ---------------------------------
 
 Each of the endpoints can function independently from each other, however
@@ -311,7 +336,7 @@ Relevant sections include:
     preconfigured_servers
 
 
-4. Create your endpoint views
+5. Create your endpoint views
 -----------------------------
 
 We are implementing support for the Authorization Code Grant and will
@@ -415,7 +440,7 @@ The example using Django but should be transferable to any framework.
         return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
 
 
-5. Protect your APIs using scopes
+6. Protect your APIs using scopes
 ---------------------------------
 
 Let's define a decorator we can use to protect the views.
@@ -486,13 +511,13 @@ at runtime by a function, rather then by a list.
         # A view that has its views functionally set.
         return HttpResponse('pictures of cats')
 
-6. Let us know how it went!
+7. Let us know how it went!
 ---------------------------
 
-Drop a line in our `G+ community`_ or open a `GitHub issue`_ =)
+Drop a line in our `Gitter OAuthLib community`_ or open a `GitHub issue`_ =)
 
-.. _`G+ community`: https://plus.google.com/communities/101889017375384052571
-.. _`GitHub issue`: https://github.com/idan/oauthlib/issues/new
+.. _`Gitter OAuthLib community`: https://gitter.im/oauthlib/Lobby
+.. _`GitHub issue`: https://github.com/oauthlib/oauthlib/issues/new
 
 If you run into issues it can be helpful to enable debug logging.
 

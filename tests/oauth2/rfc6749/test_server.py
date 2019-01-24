@@ -3,21 +3,17 @@ from __future__ import absolute_import, unicode_literals
 
 import json
 
-import jwt
 import mock
 
 from oauthlib import common
 from oauthlib.oauth2.rfc6749 import errors, tokens
 from oauthlib.oauth2.rfc6749.endpoints import Server
-from oauthlib.oauth2.rfc6749.endpoints.authorization import \
-    AuthorizationEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.resource import ResourceEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
 from oauthlib.oauth2.rfc6749.grant_types import (AuthorizationCodeGrant,
                                                  ClientCredentialsGrant,
                                                  ImplicitGrant,
-                                                 OpenIDConnectAuthCode,
-                                                 OpenIDConnectImplicit,
                                                  ResourceOwnerPasswordCredentialsGrant)
 
 from ...unittest import TestCase
@@ -27,42 +23,37 @@ class AuthorizationEndpointTest(TestCase):
 
     def setUp(self):
         self.mock_validator = mock.MagicMock()
+        self.mock_validator.get_code_challenge.return_value = None
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
         auth_code = AuthorizationCodeGrant(
-                request_validator=self.mock_validator)
+            request_validator=self.mock_validator)
         auth_code.save_authorization_code = mock.MagicMock()
         implicit = ImplicitGrant(
-                request_validator=self.mock_validator)
+            request_validator=self.mock_validator)
         implicit.save_token = mock.MagicMock()
 
-        openid_connect_auth = OpenIDConnectAuthCode(self.mock_validator)
-        openid_connect_implicit = OpenIDConnectImplicit(self.mock_validator)
-
         response_types = {
-                'code': auth_code,
-                'token': implicit,
-
-                'id_token': openid_connect_implicit,
-                'id_token token': openid_connect_implicit,
-                'code token': openid_connect_auth,
-                'code id_token': openid_connect_auth,
-                'code token id_token': openid_connect_auth,
-                'none': auth_code
+            'code': auth_code,
+            'token': implicit,
+            'none': auth_code
         }
         self.expires_in = 1800
-        token = tokens.BearerToken(self.mock_validator,
-                expires_in=self.expires_in)
+        token = tokens.BearerToken(
+            self.mock_validator,
+            expires_in=self.expires_in
+        )
         self.endpoint = AuthorizationEndpoint(
-                default_response_type='code',
-                default_token_type=token,
-                response_types=response_types)
+            default_response_type='code',
+            default_token_type=token,
+            response_types=response_types
+        )
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
         uri = 'http://i.b/l?response_type=code&client_id=me&scope=all+of+them&state=xyz'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         headers, body, status_code = self.endpoint.create_authorization_response(
-                uri, scopes=['all', 'of', 'them'])
+            uri, scopes=['all', 'of', 'them'])
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me?code=abc&state=xyz')
 
@@ -71,7 +62,7 @@ class AuthorizationEndpointTest(TestCase):
         uri = 'http://i.b/l?response_type=token&client_id=me&scope=all+of+them&state=xyz'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         headers, body, status_code = self.endpoint.create_authorization_response(
-                uri, scopes=['all', 'of', 'them'])
+            uri, scopes=['all', 'of', 'them'])
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me#access_token=abc&expires_in=' + str(self.expires_in) + '&token_type=Bearer&state=xyz&scope=all+of+them', parse_fragment=True)
 
@@ -79,7 +70,7 @@ class AuthorizationEndpointTest(TestCase):
         uri = 'http://i.b/l?response_type=none&client_id=me&scope=all+of+them&state=xyz'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         headers, body, status_code = self.endpoint.create_authorization_response(
-                uri, scopes=['all', 'of', 'them'])
+            uri, scopes=['all', 'of', 'them'])
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me?state=xyz', parse_fragment=True)
         self.assertEqual(body, None)
@@ -99,9 +90,9 @@ class AuthorizationEndpointTest(TestCase):
         uri = 'http://i.b/l?client_id=me&scope=all+of+them'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         self.mock_validator.validate_request = mock.MagicMock(
-                side_effect=errors.InvalidRequestError())
+            side_effect=errors.InvalidRequestError())
         headers, body, status_code = self.endpoint.create_authorization_response(
-                uri, scopes=['all', 'of', 'them'])
+            uri, scopes=['all', 'of', 'them'])
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me?error=invalid_request&error_description=Missing+response_type+parameter.')
 
@@ -109,9 +100,9 @@ class AuthorizationEndpointTest(TestCase):
         uri = 'http://i.b/l?response_type=invalid&client_id=me&scope=all+of+them'
         uri += '&redirect_uri=http%3A%2F%2Fback.to%2Fme'
         self.mock_validator.validate_request = mock.MagicMock(
-                side_effect=errors.UnsupportedResponseTypeError())
+            side_effect=errors.UnsupportedResponseTypeError())
         headers, body, status_code = self.endpoint.create_authorization_response(
-                uri, scopes=['all', 'of', 'them'])
+            uri, scopes=['all', 'of', 'them'])
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me?error=unsupported_response_type')
 
@@ -127,29 +118,35 @@ class TokenEndpointTest(TestCase):
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = set_user
+        self.mock_validator.get_code_challenge.return_value = None
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
         auth_code = AuthorizationCodeGrant(
-                request_validator=self.mock_validator)
+            request_validator=self.mock_validator)
         password = ResourceOwnerPasswordCredentialsGrant(
-                request_validator=self.mock_validator)
+            request_validator=self.mock_validator)
         client = ClientCredentialsGrant(
-                request_validator=self.mock_validator)
+            request_validator=self.mock_validator)
         supported_types = {
-                'authorization_code': auth_code,
-                'password': password,
-                'client_credentials': client,
+            'authorization_code': auth_code,
+            'password': password,
+            'client_credentials': client,
         }
         self.expires_in = 1800
-        token = tokens.BearerToken(self.mock_validator,
-                expires_in=self.expires_in)
-        self.endpoint = TokenEndpoint('authorization_code',
-                default_token_type=token, grant_types=supported_types)
+        token = tokens.BearerToken(
+            self.mock_validator,
+            expires_in=self.expires_in
+        )
+        self.endpoint = TokenEndpoint(
+            'authorization_code',
+            default_token_type=token,
+            grant_types=supported_types
+        )
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
         body = 'grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz'
         headers, body, status_code = self.endpoint.create_token_response(
-                '', body=body)
+            '', body=body)
         token = {
             'token_type': 'Bearer',
             'expires_in': self.expires_in,
@@ -176,7 +173,7 @@ class TokenEndpointTest(TestCase):
     def test_password_grant(self):
         body = 'grant_type=password&username=a&password=hello&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
-                '', body=body)
+            '', body=body)
         token = {
             'token_type': 'Bearer',
             'expires_in': self.expires_in,
@@ -190,7 +187,7 @@ class TokenEndpointTest(TestCase):
     def test_client_grant(self):
         body = 'grant_type=client_credentials&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
-                '', body=body)
+            '', body=body)
         token = {
             'token_type': 'Bearer',
             'expires_in': self.expires_in,
@@ -223,6 +220,7 @@ class SignedTokenEndpointTest(TestCase):
             return True
 
         self.mock_validator = mock.MagicMock()
+        self.mock_validator.get_code_challenge.return_value = None
         self.mock_validator.authenticate_client.side_effect = set_user
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
 
@@ -281,7 +279,7 @@ twIDAQAB
     def test_authorization_grant(self):
         body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz'
         headers, body, status_code = self.endpoint.create_token_response(
-                '', body=body)
+            '', body=body)
         body = json.loads(body)
         token = {
             'token_type': 'Bearer',
@@ -295,7 +293,7 @@ twIDAQAB
 
         body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&state=xyz'
         headers, body, status_code = self.endpoint.create_token_response(
-                '', body=body)
+            '', body=body)
         body = json.loads(body)
         token = {
             'token_type': 'Bearer',
@@ -310,7 +308,7 @@ twIDAQAB
     def test_password_grant(self):
         body = 'grant_type=password&username=a&password=hello&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
-                '', body=body)
+            '', body=body)
         body = json.loads(body)
         token = {
             'token_type': 'Bearer',
@@ -325,7 +323,7 @@ twIDAQAB
     def test_scopes_and_user_id_stored_in_access_token(self):
         body = 'grant_type=password&username=a&password=hello&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
-                '', body=body)
+            '', body=body)
 
         access_token = json.loads(body)['access_token']
 
@@ -338,7 +336,7 @@ twIDAQAB
     def test_client_grant(self):
         body = 'grant_type=client_credentials&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
-                '', body=body)
+            '', body=body)
         body = json.loads(body)
         token = {
             'token_type': 'Bearer',
@@ -366,8 +364,10 @@ class ResourceEndpointTest(TestCase):
         self.mock_validator = mock.MagicMock()
         self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
         token = tokens.BearerToken(request_validator=self.mock_validator)
-        self.endpoint = ResourceEndpoint(default_token='Bearer',
-                token_types={'Bearer': token})
+        self.endpoint = ResourceEndpoint(
+            default_token='Bearer',
+            token_types={'Bearer': token}
+        )
 
     def test_defaults(self):
         uri = 'http://a.b/path?some=query'

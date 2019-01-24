@@ -1,6 +1,11 @@
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.oauth2.rfc6749.tokens import *
+from oauthlib.oauth2.rfc6749.tokens import (
+    prepare_mac_header,
+    prepare_bearer_headers,
+    prepare_bearer_body,
+    prepare_bearer_uri,
+)
 
 from ...unittest import TestCase
 
@@ -59,8 +64,21 @@ class TokenTest(TestCase):
     bearer_headers = {
         'Authorization': 'Bearer vF9dft4qmT'
     }
+    fake_bearer_headers = [
+        {'Authorization': 'Beaver vF9dft4qmT'},
+        {'Authorization': 'BeavervF9dft4qmT'},
+        {'Authorization': 'Beaver  vF9dft4qmT'},
+        {'Authorization': 'BearerF9dft4qmT'},
+        {'Authorization': 'Bearer vF9d ft4qmT'},
+    ]
+    valid_header_with_multiple_spaces = {'Authorization': 'Bearer  vF9dft4qmT'}
     bearer_body = 'access_token=vF9dft4qmT'
     bearer_uri = 'http://server.example.com/resource?access_token=vF9dft4qmT'
+
+    def _mocked_validate_bearer_token(self, token, scopes, request):
+        if not token:
+            return False
+        return True
 
     def test_prepare_mac_header(self):
         """Verify mac signatures correctness

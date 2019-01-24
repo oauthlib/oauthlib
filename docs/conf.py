@@ -14,8 +14,6 @@
 import os
 import sys
 
-from oauthlib import __version__ as v
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -23,11 +21,16 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.1'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.viewcode']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.graphviz'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -43,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'OAuthLib'
-copyright = u'2012, Idan Gazit and the Python Community'
+copyright = u'2019, The OAuthlib Community'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -51,6 +54,7 @@ copyright = u'2012, Idan Gazit and the Python Community'
 #
 # The short X.Y version.
 
+from oauthlib import __version__ as v
 version = v[:3]
 # The full version, including alpha/beta/rc tags.
 release = v
@@ -187,7 +191,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'OAuthLib.tex', u'OAuthLib Documentation',
-   u'Idan Gazit and the Python Community', 'manual'),
+   u'The OAuhthlib Community', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -217,7 +221,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'oauthlib', u'OAuthLib Documentation',
-     [u'Idan Gazit and the Python Community'], 1)
+     [u'The OAuthlib Community'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -231,7 +235,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'OAuthLib', u'OAuthLib Documentation',
-   u'Idan Gazit and the Python Community', 'OAuthLib', 'One line description of project.',
+   u'The OAuthlib Community', 'OAuthLib', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -243,3 +247,5 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+linkcheck_ignore = ["https://github.com/oauthlib/oauthlib/issues/new"]

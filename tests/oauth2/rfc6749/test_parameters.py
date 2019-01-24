@@ -86,7 +86,7 @@ class ParameterTests(TestCase):
         'access_token': '2YotnFZFEjr1zCsicMWpAA',
         'state': state,
         'token_type': 'example',
-        'expires_in': '3600',
+        'expires_in': 3600,
         'expires_at': 4600,
         'scope': ['abc']
     }
@@ -103,6 +103,7 @@ class ParameterTests(TestCase):
                      '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                      '  "example_parameter": "example_value" }')
 
+    json_custom_error = '{ "error": "incorrect_client_credentials" }'
     json_error = '{ "error": "access_denied" }'
 
     json_notoken = ('{ "token_type": "example",'
@@ -114,13 +115,6 @@ class ParameterTests(TestCase):
                    '   "expires_in": 3600,'
                    '   "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                    '   "example_parameter": "example_value" }')
-
-    json_expires = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
-                    '  "token_type": "example",'
-                    '  "expires": 3600,'
-                    '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
-                    '  "example_parameter": "example_value",'
-                    '  "scope":"abc def"}')
 
     json_dict = {
        'access_token': '2YotnFZFEjr1zCsicMWpAA',
@@ -204,6 +198,9 @@ class ParameterTests(TestCase):
         self.assertRaises(ValueError, parse_implicit_response,
                 self.implicit_wrongstate, state=self.state)
 
+    def test_custom_json_error(self):
+        self.assertRaises(CustomOAuth2Error, parse_token_response, self.json_custom_error)
+
     def test_json_token_response(self):
         """Verify correct parameter parsing and validation for token responses. """
         self.assertEqual(parse_token_response(self.json_response), self.json_dict)
@@ -264,7 +261,3 @@ class ParameterTests(TestCase):
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
-
-    def test_token_response_with_expires(self):
-        """Verify fallback for alternate spelling of expires_in. """
-        self.assertEqual(parse_token_response(self.json_expires), self.json_dict)

@@ -34,11 +34,14 @@ class LegacyApplicationClient(Client):
     credentials is beyond the scope of this specification.  The client
     MUST discard the credentials once an access token has been obtained.
     """
+    
+    grant_type = 'password'
 
     def __init__(self, client_id, **kwargs):
         super(LegacyApplicationClient, self).__init__(client_id, **kwargs)
 
-    def prepare_request_body(self, username, password, body='', scope=None, **kwargs):
+    def prepare_request_body(self, username, password, body='', scope=None,
+                             include_client_id=None, **kwargs):
         """Add the resource owner password and username to the request body.
 
         The client makes a request to the token endpoint by adding the
@@ -47,8 +50,16 @@ class LegacyApplicationClient(Client):
 
         :param username:    The resource owner username.
         :param password:    The resource owner password.
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
         :param scope:   The scope of the access request as described by
                         `Section 3.3`_.
+        :param include_client_id: `True` to send the `client_id` in the body of
+                                  the upstream request. Default `None`. This is
+                                  required if the client is not authenticating
+                                  with the authorization server as described
+                                  in `Section 3.2.1`_.
+        :type include_client_id: Boolean
         :param kwargs:  Extra credentials to include in the token request.
 
         If the client type is confidential or the client was issued client
@@ -64,9 +75,11 @@ class LegacyApplicationClient(Client):
             >>> client.prepare_request_body(username='foo', password='bar', scope=['hello', 'world'])
             'grant_type=password&username=foo&scope=hello+world&password=bar'
 
-        .. _`Appendix B`: http://tools.ietf.org/html/rfc6749#appendix-B
-        .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-        .. _`Section 3.2.1`: http://tools.ietf.org/html/rfc6749#section-3.2.1
+        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
+        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
-        return prepare_token_request('password', body=body, username=username,
+        kwargs['client_id'] = self.client_id
+        kwargs['include_client_id'] = include_client_id
+        return prepare_token_request(self.grant_type, body=body, username=username,
                                      password=password, scope=scope, **kwargs)

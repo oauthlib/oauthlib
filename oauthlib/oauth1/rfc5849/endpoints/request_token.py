@@ -34,7 +34,8 @@ class RequestTokenEndpoint(BaseEndpoint):
     def create_request_token(self, request, credentials):
         """Create and save a new request token.
 
-        :param request: An oauthlib.common.Request object.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :param credentials: A dict of extra token credentials.
         :returns: The token as an urlencoded string.
         """
@@ -111,7 +112,8 @@ class RequestTokenEndpoint(BaseEndpoint):
     def validate_request_token_request(self, request):
         """Validate a request token request.
 
-        :param request: An oauthlib.common.Request object.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         :raises: OAuth1Error if the request is invalid.
         :returns: A tuple of 2 elements.
                   1. The validation result (True or False).
@@ -156,7 +158,7 @@ class RequestTokenEndpoint(BaseEndpoint):
         # However they could be seen as a scope or realm to which the
         # client has access and as such every client should be checked
         # to ensure it is authorized access to that scope or realm.
-        # .. _`realm`: http://tools.ietf.org/html/rfc2617#section-1.2
+        # .. _`realm`: https://tools.ietf.org/html/rfc2617#section-1.2
         #
         # Note that early exit would enable client realm access enumeration.
         #
@@ -178,7 +180,7 @@ class RequestTokenEndpoint(BaseEndpoint):
 
         # Callback is normally never required, except for requests for
         # a Temporary Credential as described in `Section 2.1`_
-        # .._`Section 2.1`: http://tools.ietf.org/html/rfc5849#section-2.1
+        # .._`Section 2.1`: https://tools.ietf.org/html/rfc5849#section-2.1
         valid_redirect = self.request_validator.validate_redirect_uri(
             request.client_key, request.redirect_uri, request)
         if not request.redirect_uri:

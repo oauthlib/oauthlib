@@ -10,10 +10,11 @@ from __future__ import absolute_import, unicode_literals
 
 import mock
 
-from oauthlib.oauth2 import InvalidRequestError, RequestValidator, Server
+from oauthlib.oauth2 import RequestValidator
+from oauthlib.openid.connect.core.endpoints.pre_configured import Server
 
-from ....unittest import TestCase
-from .test_utils import get_fragment_credentials, get_query_credentials
+from tests.unittest import TestCase
+from tests.oauth2.rfc6749.endpoints.test_utils import get_query_credentials
 
 
 class TestClaimsHandling(TestCase):
@@ -55,6 +56,7 @@ class TestClaimsHandling(TestCase):
 
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator.get_code_challenge.return_value = None
         self.validator.get_default_redirect_uri.return_value = TestClaimsHandling.DEFAULT_REDIRECT_URI
         self.validator.authenticate_client.side_effect = self.set_client
 
@@ -81,7 +83,7 @@ class TestClaimsHandling(TestCase):
             }
         }
 
-        claims_urlquoted='%7B%22id_token%22%3A%20%7B%22claim_2%22%3A%20%7B%22essential%22%3A%20true%7D%2C%20%22claim_1%22%3A%20null%7D%2C%20%22userinfo%22%3A%20%7B%22claim_4%22%3A%20null%2C%20%22claim_3%22%3A%20%7B%22essential%22%3A%20true%7D%7D%7D'
+        claims_urlquoted = '%7B%22id_token%22%3A%20%7B%22claim_2%22%3A%20%7B%22essential%22%3A%20true%7D%2C%20%22claim_1%22%3A%20null%7D%2C%20%22userinfo%22%3A%20%7B%22claim_4%22%3A%20null%2C%20%22claim_3%22%3A%20%7B%22essential%22%3A%20true%7D%7D%7D'
         uri = 'http://example.com/path?client_id=abc&scope=openid+test_scope&response_type=code&claims=%s'
 
         h, b, s = self.server.create_authorization_response(uri % claims_urlquoted, scopes='openid test_scope')
@@ -90,8 +92,10 @@ class TestClaimsHandling(TestCase):
 
         code = get_query_credentials(h['Location'])['code'][0]
         token_uri = 'http://example.com/path'
-        _, body, _ = self.server.create_token_response(token_uri,
-                body='client_id=me&redirect_uri=http://back.to/me&grant_type=authorization_code&code=%s' % code)
+        _, body, _ = self.server.create_token_response(
+            token_uri,
+            body='client_id=me&redirect_uri=http://back.to/me&grant_type=authorization_code&code=%s' % code
+        )
 
         self.assertDictEqual(self.claims_saved_with_bearer_token, claims)
 

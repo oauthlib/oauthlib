@@ -10,11 +10,6 @@ from oauthlib.common import (CaseInsensitiveDict, Request, add_params_to_uri,
 
 from .unittest import TestCase
 
-if sys.version_info[0] == 3:
-    bytes_type = bytes
-else:
-    bytes_type = lambda s, e: str(s)
-
 PARAMS_DICT = {'foo': 'bar', 'baz': '123', }
 PARAMS_TWOTUPLE = [('foo', 'bar'), ('baz', '123')]
 PARAMS_FORMENCODED = 'foo=bar&baz=123'
@@ -39,6 +34,8 @@ class EncodingTest(TestCase):
         self.assertItemsEqual(urldecode('foo=bar@spam'), [('foo', 'bar@spam')])
         self.assertItemsEqual(urldecode('foo=bar/baz'), [('foo', 'bar/baz')])
         self.assertItemsEqual(urldecode('foo=bar?baz'), [('foo', 'bar?baz')])
+        self.assertItemsEqual(urldecode('foo=bar\'s'), [('foo', 'bar\'s')])
+        self.assertItemsEqual(urldecode('foo=$'), [('foo', '$')])
         self.assertRaises(ValueError, urldecode, 'foo bar')
         self.assertRaises(ValueError, urldecode, '%R')
         self.assertRaises(ValueError, urldecode, '%RA')
@@ -120,11 +117,11 @@ class RequestTest(TestCase):
 
     def test_non_unicode_params(self):
         r = Request(
-            bytes_type('http://a.b/path?query', 'utf-8'),
-            http_method=bytes_type('GET', 'utf-8'),
-            body=bytes_type('you=shall+pass', 'utf-8'),
+            b'http://a.b/path?query',
+            http_method=b'GET',
+            body=b'you=shall+pass',
             headers={
-                bytes_type('a', 'utf-8'): bytes_type('b', 'utf-8')
+                b'a': b'b',
             }
         )
         self.assertEqual(r.uri, 'http://a.b/path?query')
@@ -211,6 +208,11 @@ class RequestTest(TestCase):
         r = Request(URI, body=payload)
         self.assertNotIn('bar', repr(r))
         self.assertIn('<SANITIZED>', repr(r))
+
+    def test_headers_params(self):
+        r = Request(URI, headers={'token': 'foobar'}, body='token=banana')
+        self.assertEqual(r.headers['token'], 'foobar')
+        self.assertEqual(r.token, 'banana')
 
 
 class CaseInsensitiveDictTest(TestCase):
