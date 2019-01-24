@@ -12,6 +12,6 @@ import logging
 from logging import NullHandler
 
 __author__ = 'The OAuthlib Community'
-__version__ = '3.0.0'
+__version__ = '3.0.1'
 
 logging.getLogger('oauthlib').addHandler(NullHandler())
