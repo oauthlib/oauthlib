@@ -1,6 +1,11 @@
 Changelog
 =========
 
+TBD
+---
+
+* Fixed space encoding in base string URI used in the signature base string.
+
 3.0.0 (2019-01-01)
 ------------------
 OAuth2.0 Provider - outstanding Features

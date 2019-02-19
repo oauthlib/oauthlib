@@ -4,7 +4,7 @@ from __future__ import absolute_import, unicode_literals
 from oauthlib.common import unicode_type
 from oauthlib.oauth1.rfc5849.signature import (collect_parameters,
                                                construct_base_string,
-                                               normalize_base_string_uri,
+                                               base_string_uri,
                                                normalize_parameters,
                                                sign_hmac_sha1,
                                                sign_hmac_sha1_with_client,
@@ -125,7 +125,7 @@ class SignatureTests(TestCase):
 
         self.assertEqual(self.control_base_string, base_string)
 
-    def test_normalize_base_string_uri(self):
+    def test_base_string_uri(self):
         """
         Example text to be turned into a normalized base string uri::
 
@@ -137,33 +137,44 @@ class SignatureTests(TestCase):
             https://www.example.net:8080/
         """
 
+        # test first example from RFC 5849 section 3.4.1.2.
+        # Note: there is a space between "r" and "v"
+        uri = 'http://EXAMPLE.COM:80/r v/X?id=123'
+        self.assertEqual(base_string_uri(uri),
+                         'http://example.com/r%20v/X')
+
+        # test second example from RFC 5849 section 3.4.1.2.
+        uri = 'https://www.example.net:8080/?q=1'
+        self.assertEqual(base_string_uri(uri),
+                         'https://www.example.net:8080/')
+
         # test for unicode failure
         uri = b"www.example.com:8080"
-        self.assertRaises(ValueError, normalize_base_string_uri, uri)
+        self.assertRaises(ValueError, base_string_uri, uri)
 
         # test for missing scheme
         uri = "www.example.com:8080"
-        self.assertRaises(ValueError, normalize_base_string_uri, uri)
+        self.assertRaises(ValueError, base_string_uri, uri)
 
         # test a URI with the default port
         uri = "http://www.example.com:80/"
-        self.assertEqual(normalize_base_string_uri(uri),
+        self.assertEqual(base_string_uri(uri),
                          "http://www.example.com/")
 
         # test a URI missing a path
         uri = "http://www.example.com"
-        self.assertEqual(normalize_base_string_uri(uri),
+        self.assertEqual(base_string_uri(uri),
                          "http://www.example.com/")
 
         # test a relative URI
         uri = "/a-host-relative-uri"
         host = "www.example.com"
-        self.assertRaises(ValueError, normalize_base_string_uri, (uri, host))
+        self.assertRaises(ValueError, base_string_uri, (uri, host))
 
         # test overriding the URI's netloc with a host argument
         uri = "http://www.example.com/a-path"
         host = "alternatehost.example.com"
-        self.assertEqual(normalize_base_string_uri(uri, host),
+        self.assertEqual(base_string_uri(uri, host),
                          "http://alternatehost.example.com/a-path")
 
     def test_collect_parameters(self):
