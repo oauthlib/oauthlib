@@ -26,3 +26,8 @@ class ImplicitGrant(GrantTypeBase):
         self.custom_validators.post_auth.append(
             self.openid_implicit_authorization_validator)
         self.register_token_modifier(self.add_id_token)
+
+    def add_id_token(self, token, token_handler, request):
+        if 'state' not in token:
+            token['state'] = request.state
+        return super(ImplicitGrant, self).add_id_token(token, token_handler, request)
