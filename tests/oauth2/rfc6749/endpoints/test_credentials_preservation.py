@@ -42,18 +42,6 @@ class PreservationTest(TestCase):
 
     def test_state_preservation(self):
         auth_uri = 'http://example.com/path?state=xyz&client_id=abc&response_type='
-        token_uri = 'http://example.com/path'
-
-        # authorization grant
-        h, _, s = self.web.create_authorization_response(
-                auth_uri + 'code', scopes=['random'])
-        self.assertEqual(s, 302)
-        self.assertIn('Location', h)
-        code = get_query_credentials(h['Location'])['code'][0]
-        self.validator.validate_code.side_effect = self.set_state('xyz')
-        _, body, _ = self.web.create_token_response(token_uri,
-                body='grant_type=authorization_code&code=%s' % code)
-        self.assertEqual(json.loads(body)['state'], 'xyz')
 
         # implicit grant
         h, _, s = self.mobile.create_authorization_response(

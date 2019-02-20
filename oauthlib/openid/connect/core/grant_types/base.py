@@ -58,9 +58,6 @@ class GrantTypeBase(object):
         if request.response_type and 'id_token' not in request.response_type:
             return token
 
-        if 'state' not in token:
-            token['state'] = request.state
-
         if request.max_age:
             d = datetime.datetime.utcnow()
             token['auth_time'] = d.isoformat("T") + "Z"

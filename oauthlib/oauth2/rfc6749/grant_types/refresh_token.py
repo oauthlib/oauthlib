@@ -64,10 +64,11 @@ class RefreshTokenGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request,
-                                           refresh_token=self.issue_new_refresh_tokens, save_token=False)
+                                           refresh_token=self.issue_new_refresh_tokens)
 
         for modifier in self._token_modifiers:
             token = modifier(token)
+
         self.request_validator.save_token(token, request)
 
         log.debug('Issuing new token to client id %r (%r), %r.',
