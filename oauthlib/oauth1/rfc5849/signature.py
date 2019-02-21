@@ -40,9 +40,10 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-def construct_base_string(http_method, base_string_uri,
+
+def signature_base_string(http_method, base_str_uri,
                           normalized_encoded_request_parameters):
-    """**String Construction**
+    """**Construct the signature base string.**
     Per `section 3.4.1.1`_ of the spec.
 
     For example, the HTTP request::
@@ -90,7 +91,7 @@ def construct_base_string(http_method, base_string_uri,
     #
     # .. _`Section 3.4.1.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.2
     # .. _`Section 3.4.6`: https://tools.ietf.org/html/rfc5849#section-3.4.6
-    base_string += utils.escape(base_string_uri)
+    base_string += utils.escape(base_str_uri)
 
     # 4.  An "&" character (ASCII code 38).
     base_string += '&'
@@ -649,12 +650,14 @@ def verify_hmac_sha1(request, client_secret=None,
     """
     norm_params = normalize_parameters(request.params)
     bs_uri = base_string_uri(request.uri)
-    base_string = construct_base_string(request.http_method, bs_uri, norm_params)
-    signature = sign_hmac_sha1(base_string, client_secret,
+    sig_base_str = signature_base_string(request.http_method, bs_uri,
+                                         norm_params)
+    signature = sign_hmac_sha1(sig_base_str, client_secret,
                                resource_owner_secret)
     match = safe_string_equals(signature, request.signature)
     if not match:
-        log.debug('Verify HMAC-SHA1 failed: sig base string: %s', base_string)
+        log.debug('Verify HMAC-SHA1 failed: signature base string: %s',
+                  sig_base_str)
     return match
 
 
@@ -682,15 +685,17 @@ def verify_rsa_sha1(request, rsa_public_key):
     """
     norm_params = normalize_parameters(request.params)
     bs_uri = base_string_uri(request.uri)
-    message = construct_base_string(request.http_method, bs_uri, norm_params).encode('utf-8')
+    sig_base_str = signature_base_string(request.http_method, bs_uri,
+                                         norm_params).encode('utf-8')
     sig = binascii.a2b_base64(request.signature.encode('utf-8'))
 
     alg = _jwt_rs1_signing_algorithm()
     key = _prepare_key_plus(alg, rsa_public_key)
 
-    verify_ok = alg.verify(message, key, sig)
+    verify_ok = alg.verify(sig_base_str, key, sig)
     if not verify_ok:
-        log.debug('Verify RSA-SHA1 failed: sig base string: %s', message)
+        log.debug('Verify RSA-SHA1 failed: signature base string: %s',
+                  sig_base_str)
     return verify_ok
 
 

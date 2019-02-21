@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import unicode_type
 from oauthlib.oauth1.rfc5849.signature import (collect_parameters,
-                                               construct_base_string,
+                                               signature_base_string,
                                                base_string_uri,
                                                normalize_parameters,
                                                sign_hmac_sha1,
@@ -79,7 +79,7 @@ class SignatureTests(TestCase):
             resource_owner_secret = self.resource_owner_secret
         )
 
-    def test_construct_base_string(self):
+    def test_signature_base_string(self):
         """
         Example text to be turned into a base string::
 
@@ -104,20 +104,20 @@ class SignatureTests(TestCase):
             D%2522137131201%2522%252Coauth_nonce%253D%25227d8f3e4a%2522%252Coau
             th_signature%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522
         """
-        self.assertRaises(ValueError, construct_base_string,
+        self.assertRaises(ValueError, signature_base_string,
                           self.http_method,
                           self.base_string_url,
                           self.normalized_encoded_request_parameters)
-        self.assertRaises(ValueError, construct_base_string,
+        self.assertRaises(ValueError, signature_base_string,
                           self.http_method.decode('utf-8'),
                           self.base_string_url,
                           self.normalized_encoded_request_parameters)
-        self.assertRaises(ValueError, construct_base_string,
+        self.assertRaises(ValueError, signature_base_string,
                           self.http_method.decode('utf-8'),
                           self.base_string_url.decode('utf-8'),
                           self.normalized_encoded_request_parameters)
 
-        base_string = construct_base_string(
+        base_string = signature_base_string(
             self.http_method.decode('utf-8'),
             self.base_string_url.decode('utf-8'),
             self.normalized_encoded_request_parameters.decode('utf-8')
