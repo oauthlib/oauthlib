@@ -1,6 +1,10 @@
 Changelog
 =========
 
+TBD
+------------------
+* #652: Fixed OIDC /token response which wrongly returned "&state=None"
+
 3.0.1 (2019-01-24)
 ------------------
 * Fixed OAuth2.0 regression introduced in 3.0.0: Revocation with Basic auth no longer possible #644

@@ -143,7 +143,7 @@ class TokenEndpointTest(TestCase):
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
-        body = 'grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz'
+        body = 'grant_type=authorization_code&code=abc&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
             '', body=body)
         token = {
@@ -151,21 +151,25 @@ class TokenEndpointTest(TestCase):
             'expires_in': self.expires_in,
             'access_token': 'abc',
             'refresh_token': 'abc',
-            'scope': 'all of them',
-            'state': 'xyz'
+            'scope': 'all of them'
         }
         self.assertEqual(json.loads(body), token)
 
-        body = 'grant_type=authorization_code&code=abc&state=xyz'
+        body = 'grant_type=authorization_code&code=abc'
         headers, body, status_code = self.endpoint.create_token_response(
             '', body=body)
         token = {
             'token_type': 'Bearer',
             'expires_in': self.expires_in,
             'access_token': 'abc',
-            'refresh_token': 'abc',
-            'state': 'xyz'
+            'refresh_token': 'abc'
         }
+        self.assertEqual(json.loads(body), token)
+
+        # ignore useless fields
+        body = 'grant_type=authorization_code&code=abc&state=foobar'
+        headers, body, status_code = self.endpoint.create_token_response(
+            '', body=body)
         self.assertEqual(json.loads(body), token)
 
     def test_missing_type(self):

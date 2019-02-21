@@ -29,12 +29,6 @@ class PreservationTest(TestCase):
         self.web = WebApplicationServer(self.validator)
         self.mobile = MobileApplicationServer(self.validator)
 
-    def set_state(self, state):
-        def set_request_state(client_id, code, client, request):
-            request.state = state
-            return True
-        return set_request_state
-
     def set_client(self, request):
         request.client = mock.MagicMock()
         request.client.client_id = 'mocked'
@@ -42,18 +36,13 @@ class PreservationTest(TestCase):
 
     def test_state_preservation(self):
         auth_uri = 'http://example.com/path?state=xyz&client_id=abc&response_type='
-        token_uri = 'http://example.com/path'
 
         # authorization grant
         h, _, s = self.web.create_authorization_response(
                 auth_uri + 'code', scopes=['random'])
         self.assertEqual(s, 302)
         self.assertIn('Location', h)
-        code = get_query_credentials(h['Location'])['code'][0]
-        self.validator.validate_code.side_effect = self.set_state('xyz')
-        _, body, _ = self.web.create_token_response(token_uri,
-                body='grant_type=authorization_code&code=%s' % code)
-        self.assertEqual(json.loads(body)['state'], 'xyz')
+        self.assertEqual(get_query_credentials(h['Location'])['state'][0], 'xyz')
 
         # implicit grant
         h, _, s = self.mobile.create_authorization_response(
@@ -133,7 +122,7 @@ class PreservationTest(TestCase):
         # was not given in the authorization AND not in the token request.
         self.validator.confirm_redirect_uri.return_value = True
         code = get_query_credentials(h['Location'])['code'][0]
-        self.validator.validate_code.side_effect = self.set_state('xyz')
+        self.validator.validate_code.return_value = True
         _, body, s = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
         self.assertEqual(s, 200)
