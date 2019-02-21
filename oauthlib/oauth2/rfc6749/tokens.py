@@ -306,8 +306,8 @@ class BearerToken(TokenBase):
         :param refresh_token:
         """
         if "save_token" in kwargs:
-            warnings.warn("`save_token` has been deprecated, it was not used internally."
-                          "If you do, use `request_validator.save_token()` instead.",
+            warnings.warn("`save_token` has been deprecated, it was not called internally."
+                          "If you do, call `request_validator.save_token()` instead.",
                           DeprecationWarning)
 
         if callable(self.expires_in):
