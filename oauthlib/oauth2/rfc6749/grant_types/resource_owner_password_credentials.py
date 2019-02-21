@@ -104,10 +104,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, self.refresh_token, save_token=False)
+        token = token_handler.create_token(request, self.refresh_token)
 
         for modifier in self._token_modifiers:
             token = modifier(token)
+
         self.request_validator.save_token(token, request)
 
         log.debug('Issuing token %r to client id %r (%r) and username %s.',

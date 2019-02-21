@@ -144,7 +144,7 @@ class TokenEndpointTest(TestCase):
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
-        body = 'grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz'
+        body = 'grant_type=authorization_code&code=abc&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
             '', body=body)
         token = {
@@ -152,21 +152,25 @@ class TokenEndpointTest(TestCase):
             'expires_in': self.expires_in,
             'access_token': 'abc',
             'refresh_token': 'abc',
-            'scope': 'all of them',
-            'state': 'xyz'
+            'scope': 'all of them'
         }
         self.assertEqual(json.loads(body), token)
 
-        body = 'grant_type=authorization_code&code=abc&state=xyz'
+        body = 'grant_type=authorization_code&code=abc'
         headers, body, status_code = self.endpoint.create_token_response(
             '', body=body)
         token = {
             'token_type': 'Bearer',
             'expires_in': self.expires_in,
             'access_token': 'abc',
-            'refresh_token': 'abc',
-            'state': 'xyz'
+            'refresh_token': 'abc'
         }
+        self.assertEqual(json.loads(body), token)
+
+        # try with additional custom variables
+        body = 'grant_type=authorization_code&code=abc&state=foobar'
+        headers, body, status_code = self.endpoint.create_token_response(
+            '', body=body)
         self.assertEqual(json.loads(body), token)
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
@@ -277,7 +281,7 @@ twIDAQAB
 
     @mock.patch('oauthlib.common.generate_token', new=lambda: 'abc')
     def test_authorization_grant(self):
-        body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz'
+        body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&scope=all+of+them'
         headers, body, status_code = self.endpoint.create_token_response(
             '', body=body)
         body = json.loads(body)
@@ -286,12 +290,11 @@ twIDAQAB
             'expires_in': self.expires_in,
             'access_token': body['access_token'],
             'refresh_token': 'abc',
-            'scope': 'all of them',
-            'state': 'xyz'
+            'scope': 'all of them'
         }
         self.assertEqual(body, token)
 
-        body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&state=xyz'
+        body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc'
         headers, body, status_code = self.endpoint.create_token_response(
             '', body=body)
         body = json.loads(body)
@@ -299,8 +302,20 @@ twIDAQAB
             'token_type': 'Bearer',
             'expires_in': self.expires_in,
             'access_token': body['access_token'],
-            'refresh_token': 'abc',
-            'state': 'xyz'
+            'refresh_token': 'abc'
+        }
+        self.assertEqual(body, token)
+
+        # try with additional custom variables
+        body = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&state=foobar'
+        headers, body, status_code = self.endpoint.create_token_response(
+            '', body=body)
+        body = json.loads(body)
+        token = {
+            'token_type': 'Bearer',
+            'expires_in': self.expires_in,
+            'access_token': body['access_token'],
+            'refresh_token': 'abc'
         }
         self.assertEqual(body, token)
 
