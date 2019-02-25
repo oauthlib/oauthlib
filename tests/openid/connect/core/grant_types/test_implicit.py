@@ -113,6 +113,27 @@ class OpenIDImplicitTest(TestCase):
         self.assertEqual(s, 302)
 
 
+class OpenIDImplicitNoAccessTokenTest(OpenIDImplicitTest):
+    def setUp(self):
+        super(OpenIDImplicitNoAccessTokenTest, self).setUp()
+        self.request.response_type = 'id_token'
+        token = 'MOCKED_TOKEN'
+        self.url_query = 'https://a.b/cb?state=abc&id_token=%s' % token
+        self.url_fragment = 'https://a.b/cb#state=abc&id_token=%s' % token
+
+    @mock.patch('oauthlib.common.generate_token')
+    def test_required_nonce(self, generate_token):
+        generate_token.return_value = 'abc'
+        self.request.nonce = None
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_authorization_request, self.request)
+
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertIn('error=invalid_request', h['Location'])
+        self.assertEqual(b, None)
+        self.assertEqual(s, 302)
+
+
 class OpenIDHybridCodeTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
