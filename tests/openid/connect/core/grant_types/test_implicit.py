@@ -4,6 +4,7 @@ from __future__ import absolute_import, unicode_literals
 import mock
 
 from oauthlib.common import Request
+from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types.exceptions import OIDCNoPrompt
 from oauthlib.openid.connect.core.grant_types.hybrid import HybridGrant
@@ -30,8 +31,8 @@ class OpenIDImplicitTest(TestCase):
         self.request.client_id = 'abcdef'
         self.request.response_type = 'id_token token'
         self.request.redirect_uri = 'https://a.b/cb'
-        self.request.nonce = 'zxc'
         self.request.state = 'abc'
+        self.request.nonce = 'xyz'
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.get_id_token.side_effect = get_id_token_mock
@@ -58,12 +59,6 @@ class OpenIDImplicitTest(TestCase):
         url = 'https://a.b/cb#state=abc&id_token=%s' % token
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], url, parse_fragment=True)
-        self.assertEqual(b, None)
-        self.assertEqual(s, 302)
-
-        self.request.nonce = None
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
-        self.assertIn('error=invalid_request', h['Location'])
         self.assertEqual(b, None)
         self.assertEqual(s, 302)
 
@@ -105,15 +100,40 @@ class OpenIDImplicitTest(TestCase):
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=login_required', h['Location'])
 
+    @mock.patch('oauthlib.common.generate_token')
+    def test_required_nonce(self, generate_token):
+        generate_token.return_value = 'abc'
+        self.request.nonce = None
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_authorization_request, self.request)
+
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertIn('error=invalid_request', h['Location'])
+        self.assertEqual(b, None)
+        self.assertEqual(s, 302)
+
 
 class OpenIDHybridCodeTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
         super(OpenIDHybridCodeTokenTest, self).setUp()
         self.request.response_type = 'code token'
+        self.request.nonce = None
         self.auth = HybridGrant(request_validator=self.mock_validator)
         self.url_query = 'https://a.b/cb?code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc'
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc'
+
+    @mock.patch('oauthlib.common.generate_token')
+    def test_optional_nonce(self, generate_token):
+        generate_token.return_value = 'abc'
+        self.request.nonce = 'xyz'
+        scope, info = self.auth.validate_authorization_request(self.request)
+
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], self.url_fragment, parse_fragment=True)
+        self.assertEqual(b, None)
+        self.assertEqual(s, 302)
 
 
 class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
@@ -122,10 +142,23 @@ class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
         super(OpenIDHybridCodeIdTokenTest, self).setUp()
         self.mock_validator.get_code_challenge.return_value = None
         self.request.response_type = 'code id_token'
+        self.request.nonce = 'zxc'
         self.auth = HybridGrant(request_validator=self.mock_validator)
         token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?code=abc&state=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&id_token=%s' % token
+
+    @mock.patch('oauthlib.common.generate_token')
+    def test_required_nonce(self, generate_token):
+        generate_token.return_value = 'abc'
+        self.request.nonce = None
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_authorization_request, self.request)
+
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertIn('error=invalid_request', h['Location'])
+        self.assertEqual(b, None)
+        self.assertEqual(s, 302)
 
 
 class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
@@ -134,7 +167,20 @@ class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
         super(OpenIDHybridCodeIdTokenTokenTest, self).setUp()
         self.mock_validator.get_code_challenge.return_value = None
         self.request.response_type = 'code id_token token'
+        self.request.nonce = 'xyz'
         self.auth = HybridGrant(request_validator=self.mock_validator)
         token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
         self.url_fragment = 'https://a.b/cb#code=abc&state=abc&token_type=Bearer&expires_in=3600&scope=hello+openid&access_token=abc&id_token=%s' % token
+
+    @mock.patch('oauthlib.common.generate_token')
+    def test_required_nonce(self, generate_token):
+        generate_token.return_value = 'abc'
+        self.request.nonce = None
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_authorization_request, self.request)
+
+        bearer = BearerToken(self.mock_validator)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertIn('error=invalid_request', h['Location'])
+        self.assertEqual(b, None)
+        self.assertEqual(s, 302)
