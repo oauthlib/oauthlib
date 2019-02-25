@@ -40,6 +40,7 @@ class OpenIDAuthCodeTest(TestCase):
         self.request.grant_type = 'authorization_code'
         self.request.redirect_uri = 'https://a.b/cb'
         self.request.state = 'abc'
+        self.request.nonce = None
 
         self.mock_validator = mock.MagicMock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
@@ -148,3 +149,16 @@ class OpenIDAuthCodeTest(TestCase):
         self.assertIn('scope', token)
         self.assertNotIn('id_token', token)
         self.assertNotIn('openid', token['scope'])
+
+    @mock.patch('oauthlib.common.generate_token')
+    def test_optional_nonce(self, generate_token):
+        generate_token.return_value = 'abc'
+        self.request.nonce = 'xyz'
+        scope, info = self.auth.validate_authorization_request(self.request)
+
+        bearer = BearerToken(self.mock_validator)
+        self.request.response_mode = 'query'
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertURLEqual(h['Location'], self.url_query)
+        self.assertEqual(b, None)
+        self.assertEqual(s, 302)
