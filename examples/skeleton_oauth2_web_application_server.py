@@ -48,7 +48,7 @@ class SkeletonValidator(RequestValidator):
 
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         # Remember to associate it with request.scopes, request.redirect_uri
-        # request.client, request.state and request.user (the last is passed in
+        # request.client and request.user (the last is passed in
         # post_authorization credentials, i.e. { 'user': request.user}.
         pass
 
@@ -63,8 +63,8 @@ class SkeletonValidator(RequestValidator):
         return False
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
-        # Validate the code belongs to the client. Add associated scopes,
-        # state and user to request.scopes and request.user.
+        # Validate the code belongs to the client. Add associated scopes
+        # and user to request.scopes and request.user.
         pass
 
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client, request, *args, **kwargs):
