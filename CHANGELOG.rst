@@ -1,7 +1,7 @@
 Changelog
 =========
 
-TBD
+3.0.2 (TBD)
 ------------------
 * #652: Fixed OIDC /token response which wrongly returned "&state=None"
 
