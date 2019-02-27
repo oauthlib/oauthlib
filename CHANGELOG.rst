@@ -1,7 +1,7 @@
 Changelog
 =========
 
-TBD
+3.0.2 (TBD)
 ------------------
 * #650 Fixed space encoding in base string URI used in the signature base string.
 * #652: Fixed OIDC /token response which wrongly returned "&state=None"
