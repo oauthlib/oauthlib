@@ -10,7 +10,7 @@ from __future__ import absolute_import, unicode_literals
 
 import mock
 
-from oauthlib.oauth2 import RequestValidator
+from oauthlib.openid import RequestValidator
 from oauthlib.openid.connect.core.endpoints.pre_configured import Server
 
 from tests.unittest import TestCase
