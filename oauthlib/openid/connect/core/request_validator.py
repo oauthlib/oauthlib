@@ -38,6 +38,31 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
+    def get_authorization_code_nonce(self, client_id, code, redirect_uri, request):
+        """ Extracts nonce from saved authorization code.
+
+        If present in the Authentication Request, Authorization
+        Servers MUST include a nonce Claim in the ID Token with the
+        Claim Value being the nonce value sent in the Authentication
+        Request. Authorization Servers SHOULD perform no other
+        processing on nonce values used. The nonce value is a
+        case-sensitive string.
+
+        Only code param should be sufficient to retrieve grant code from
+        any storage you are using, `client_id` and `redirect_uri` can gave a
+        blank value `""` don't forget to check it before using those values
+        in a select query if a database is used.
+
+        :param client_id: Unicode client identifier
+        :param code: Unicode authorization code grant
+        :param redirect_uri: Unicode absolute URI
+        :return: A list of scope
+
+        Method is used by:
+            - Authorization Token Grant Dispatcher
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
     def get_jwt_bearer_token(self, token, token_handler, request):
         """Get JWT Bearer token or OpenID Connect ID token
 
@@ -56,6 +81,12 @@ class RequestValidator(OAuth2RequestValidator):
 
     def get_id_token(self, token, token_handler, request):
         """Get OpenID Connect ID token
+
+        This method is OPTIONAL and is NOT RECOMMENDED.
+        `fill_id_token` SHOULD be implemented instead. However, if you
+        want a full control over the minting of the `id_token`, you
+        MAY want to override `get_id_token` instead of using
+        `fill_id_token`.
 
         In the OpenID Connect workflows when an ID Token is requested this method is called.
         Subclasses should implement the construction, signing and optional encryption of the
@@ -85,7 +116,49 @@ class RequestValidator(OAuth2RequestValidator):
         :type request: oauthlib.common.Request
         :return: The ID Token (a JWS signed JWT)
         """
-        # the request.scope should be used by the get_id_token() method to determine which claims to include in the resulting id_token
+        return None
+
+    def fill_id_token(self, id_token, token, token_handler, request):
+        """Fill OpenID Connect ID token & Sign or Encrypt.
+
+        In the OpenID Connect workflows when an ID Token is requested
+        this method is called.  Subclasses should implement the
+        construction, signing and optional encryption of the ID Token
+        as described in the OpenID Connect spec.
+
+        The `id_token` parameter is a dict containing a couple of OIDC
+        technical fields related to the specification. Prepopulated
+        attributes are:
+
+        - `aud`, equals to `request.client_id`.
+        - `iat`, equals to current time.
+        - `nonce`, if present, is equals to the `nonce` from the
+          authorization request.
+        - `at_hash`, hash of `access_token`, if relevant.
+        - `c_hash`, hash of `code`, if relevant.
+
+        This method MUST provide required fields as below:
+
+        - `iss`, REQUIRED. Issuer Identifier for the Issuer of the response.
+        - `sub`, REQUIRED. Subject Identifier
+        - `exp`, REQUIRED. Expiration time on or after which the ID
+          Token MUST NOT be accepted by the RP when performing
+          authentication with the OP.
+
+        Additionals claims must be added, note that `request.scope`
+        should be used to determine the list of claims.
+
+        More information can be found at `OpenID Connect Core#Claims`_
+
+        .. _`OpenID Connect Core#Claims`: https://openid.net/specs/openid-connect-core-1_0.html#Claims
+
+        :param id_token: A dict containing technical fields of id_token
+        :param token: A Bearer token dict
+        :param token_handler: the token handler (BearerToken class)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :return: The ID Token (a JWS signed JWT or JWE encrypted JWT)
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_jwt_bearer_token(self, token, scopes, request):

@@ -271,6 +271,9 @@ class RequestValidator(object):
             - Code Challenge (``request.code_challenge``) and
             - Code Challenge Method (``request.code_challenge_method``)
 
+        To support OIDC, you MUST associate the code with:
+            - nonce, if present (``code["nonce"]``)
+
         The ``code`` argument is actually a dictionary, containing at least a
         ``code`` key with the actual authorization code:
 
