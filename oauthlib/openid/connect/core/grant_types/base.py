@@ -109,11 +109,40 @@ class GrantTypeBase(object):
         id_token = {}
         id_token['aud'] = request.client_id
         id_token['iat'] = int(datetime.datetime.now().timestamp())
+
+        # nonce is REQUIRED when response_type value is:
+        # - id_token token (Implicit)
+        # - id_token (Implicit)
+        # - code id_token (Hybrid)
+        # - code id_token token (Hybrid)
+        #
+        # nonce is OPTIONAL when response_type value is:
+        # - code (Authorization Code)
+        # - code token (Hybrid)
         if nonce is not None:
             id_token["nonce"] = nonce
 
+        # at_hash is REQUIRED when response_type value is:
+        # - id_token token (Implicit)
+        # - code id_token token (Hybrid)
+        #
+        # at_hash is OPTIONAL when:
+        # - code (Authorization code)
+        # - code id_token (Hybrid)
+        # - code token (Hybrid)
+        #
+        # at_hash MAY NOT be used when:
+        # - id_token (Implicit)
         if "access_token" in token:
             id_token["at_hash"] = self.hash_id_token(token["access_token"])
+
+        # c_hash is REQUIRED when response_type value is:
+        # - code id_token (Hybrid)
+        # - code id_token token (Hybrid)
+        #
+        # c_hash is OPTIONAL for others.
+        if "code" in token:
+            id_token["c_hash"] = self.hash_id_token(token["code"])
 
         # Call request_validator to complete/sign/encrypt id_token
         token['id_token'] = self.request_validator.fill_id_token(id_token, token, token_handler, request)
