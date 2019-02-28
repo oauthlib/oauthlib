@@ -10,12 +10,14 @@ upgrade it by replacing one line of code:
 .. code-block:: python
 
     from oauthlib.oauth2 import Server
+    from oauthlib.oauth2 import RequestValidator
 
 Into
 
 .. code-block:: python
 
     from oauthlib.openid import Server
+    from oauthlib.openid import RequestValidator
 
 Then, you have to implement the new RequestValidator methods as shown below.
 
@@ -24,5 +26,5 @@ RequestValidator Extension
 
 A couple of methods must be implemented in your validator subclass if you wish to support OpenID Connect:
 
-.. autoclass:: oauthlib.oauth2.RequestValidator
-   :members: validate_silent_authorization, validate_silent_login, validate_user_match, get_id_token, get_authorization_code_scopes, validate_jwt_bearer_token
+.. autoclass:: oauthlib.openid.RequestValidator
+   :members:
