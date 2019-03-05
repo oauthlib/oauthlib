@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.openid.connect.core.request_validator import RequestValidator
+from oauthlib.openid import RequestValidator
 
 from tests.unittest import TestCase
 
