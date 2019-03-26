@@ -1,9 +1,9 @@
 from .exceptions import OIDCNoPrompt
 
 import base64
-import datetime
 import hashlib
 import logging
+import time
 from json import loads
 
 from oauthlib.oauth2.rfc6749.errors import ConsentRequired, InvalidRequestError, LoginRequired
@@ -108,7 +108,7 @@ class GrantTypeBase(object):
         # Start with technicals fields bound to the specification.
         id_token = {}
         id_token['aud'] = request.client_id
-        id_token['iat'] = int(datetime.datetime.now().timestamp())
+        id_token['iat'] = int(time.time())
 
         # nonce is REQUIRED when response_type value is:
         # - id_token token (Implicit)

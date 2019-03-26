@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import datetime
 import mock
+import time
 
 from oauthlib.common import Request
 from oauthlib.openid.connect.core.grant_types.base import GrantTypeBase
@@ -68,7 +68,7 @@ class IDTokenTest(TestCase):
         self.assertEqual(token["id_token"], "eyJ.body.signature")
         id_token = self.mock_validator.finalize_id_token.call_args[0][0]
         self.assertEqual(id_token['aud'], 'abcdef')
-        self.assertGreaterEqual(id_token['iat'], int(datetime.datetime.now().timestamp()))
+        self.assertGreaterEqual(id_token['iat'], int(time.time()))
 
     def test_finalize_id_token_with_nonce(self):
         token = self.grant.add_id_token(self.token, "token_handler_mock", self.request, "my_nonce")
