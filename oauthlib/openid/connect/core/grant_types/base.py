@@ -74,7 +74,7 @@ class GrantTypeBase(object):
         LDktKdoQak3Pk0cnXxCltA
         """
         digest = hashfunc(value.encode()).digest()
-        left_most = int(len(digest) / 2)
+        left_most = len(digest) // 2
         return base64.urlsafe_b64encode(digest[:left_most]).decode().rstrip("=")
 
     def add_id_token(self, token, token_handler, request, nonce=None):
