@@ -83,10 +83,10 @@ class RequestValidator(OAuth2RequestValidator):
         """Get OpenID Connect ID token
 
         This method is OPTIONAL and is NOT RECOMMENDED.
-        `fill_id_token` SHOULD be implemented instead. However, if you
+        `finalize_id_token` SHOULD be implemented instead. However, if you
         want a full control over the minting of the `id_token`, you
         MAY want to override `get_id_token` instead of using
-        `fill_id_token`.
+        `finalize_id_token`.
 
         In the OpenID Connect workflows when an ID Token is requested this method is called.
         Subclasses should implement the construction, signing and optional encryption of the
@@ -118,8 +118,8 @@ class RequestValidator(OAuth2RequestValidator):
         """
         return None
 
-    def fill_id_token(self, id_token, token, token_handler, request):
-        """Fill OpenID Connect ID token & Sign or Encrypt.
+    def finalize_id_token(self, id_token, token, token_handler, request):
+        """Finalize OpenID Connect ID token & Sign or Encrypt.
 
         In the OpenID Connect workflows when an ID Token is requested
         this method is called.  Subclasses should implement the

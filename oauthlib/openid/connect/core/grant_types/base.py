@@ -145,7 +145,7 @@ class GrantTypeBase(object):
             id_token["c_hash"] = self.hash_id_token(token["code"])
 
         # Call request_validator to complete/sign/encrypt id_token
-        token['id_token'] = self.request_validator.fill_id_token(id_token, token, token_handler, request)
+        token['id_token'] = self.request_validator.finalize_id_token(id_token, token, token_handler, request)
 
         return token
 
