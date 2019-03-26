@@ -51,7 +51,7 @@ class GrantTypeBase(object):
                 raise InvalidRequestError(description="Malformed claims parameter",
                                           uri="http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter")
 
-    def hash_id_token(self, value, hashfunc=hashlib.sha256):
+    def id_token_hash(self, value, hashfunc=hashlib.sha256):
         """
         Its value is the base64url encoding of the left-most half of the
         hash of the octets of the ASCII representation of the access_token
@@ -134,7 +134,7 @@ class GrantTypeBase(object):
         # at_hash MAY NOT be used when:
         # - id_token (Implicit)
         if "access_token" in token:
-            id_token["at_hash"] = self.hash_id_token(token["access_token"])
+            id_token["at_hash"] = self.id_token_hash(token["access_token"])
 
         # c_hash is REQUIRED when response_type value is:
         # - code id_token (Hybrid)
@@ -142,7 +142,7 @@ class GrantTypeBase(object):
         #
         # c_hash is OPTIONAL for others.
         if "code" in token:
-            id_token["c_hash"] = self.hash_id_token(token["code"])
+            id_token["c_hash"] = self.id_token_hash(token["code"])
 
         # Call request_validator to complete/sign/encrypt id_token
         token['id_token'] = self.request_validator.finalize_id_token(id_token, token, token_handler, request)
