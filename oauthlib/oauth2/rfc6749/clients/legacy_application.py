@@ -34,14 +34,14 @@ class LegacyApplicationClient(Client):
     credentials is beyond the scope of this specification.  The client
     MUST discard the credentials once an access token has been obtained.
     """
-    
+
     grant_type = 'password'
 
     def __init__(self, client_id, **kwargs):
         super(LegacyApplicationClient, self).__init__(client_id, **kwargs)
 
     def prepare_request_body(self, username, password, body='', scope=None,
-                             include_client_id=None, **kwargs):
+                             include_client_id=False, **kwargs):
         """Add the resource owner password and username to the request body.
 
         The client makes a request to the token endpoint by adding the
@@ -54,11 +54,11 @@ class LegacyApplicationClient(Client):
                      into. This may contain extra paramters. Default ''.
         :param scope:   The scope of the access request as described by
                         `Section 3.3`_.
-        :param include_client_id: `True` to send the `client_id` in the body of
-                                  the upstream request. Default `None`. This is
-                                  required if the client is not authenticating
-                                  with the authorization server as described
-                                  in `Section 3.2.1`_.
+        :param include_client_id: `True` to send the `client_id` in the
+                                  body of the upstream request. This is required
+                                  if the client is not authenticating with the
+                                  authorization server as described in
+                                  `Section 3.2.1`_. False otherwise (default).
         :type include_client_id: Boolean
         :param kwargs:  Extra credentials to include in the token request.
 

@@ -41,20 +41,20 @@ class ServiceApplicationClient(Client):
         :param private_key: Private key used for signing and encrypting.
                             Must be given as a string.
 
-        :param subject: The principal that is the subject of the JWT, i.e. 
+        :param subject: The principal that is the subject of the JWT, i.e.
                         which user is the token requested on behalf of.
                         For example, ``foo@example.com.
 
         :param issuer: The JWT MUST contain an "iss" (issuer) claim that
                        contains a unique identifier for the entity that issued
-                       the JWT. For example, ``your-client@provider.com``. 
+                       the JWT. For example, ``your-client@provider.com``.
 
         :param audience: A value identifying the authorization server as an
                          intended audience, e.g.
                          ``https://provider.com/oauth2/token``.
 
         :param kwargs: Additional arguments to pass to base client, such as
-                       state and token. See ``Client.__init__.__doc__`` for 
+                       state and token. See ``Client.__init__.__doc__`` for
                        details.
         """
         super(ServiceApplicationClient, self).__init__(client_id, **kwargs)
@@ -63,17 +63,17 @@ class ServiceApplicationClient(Client):
         self.issuer = issuer
         self.audience = audience
 
-    def prepare_request_body(self, 
+    def prepare_request_body(self,
                              private_key=None,
-                             subject=None, 
-                             issuer=None, 
-                             audience=None, 
-                             expires_at=None, 
+                             subject=None,
+                             issuer=None,
+                             audience=None,
+                             expires_at=None,
                              issued_at=None,
                              extra_claims=None,
-                             body='', 
+                             body='',
                              scope=None,
-                             include_client_id=None,
+                             include_client_id=False,
                              **kwargs):
         """Create and add a JWT assertion to the request body.
 
@@ -86,7 +86,7 @@ class ServiceApplicationClient(Client):
 
         :param issuer: (iss) The JWT MUST contain an "iss" (issuer) claim that
                        contains a unique identifier for the entity that issued
-                       the JWT. For example, ``your-client@provider.com``. 
+                       the JWT. For example, ``your-client@provider.com``.
 
         :param audience: (aud) A value identifying the authorization server as an
                          intended audience, e.g.
@@ -105,11 +105,11 @@ class ServiceApplicationClient(Client):
 
         :param scope: The scope of the access request.
 
-        :param include_client_id: `True` to send the `client_id` in the body of
-                                  the upstream request. Default `None`. This is
-                                  required if the client is not authenticating
-                                  with the authorization server as described
-                                  in `Section 3.2.1`_.
+        :param include_client_id: `True` to send the `client_id` in the
+                                  body of the upstream request. This is required
+                                  if the client is not authenticating with the
+                                  authorization server as described in
+                                  `Section 3.2.1`_. False otherwise (default).
         :type include_client_id: Boolean
 
         :param not_before: A unix timestamp after which the JWT may be used.
@@ -129,7 +129,7 @@ class ServiceApplicationClient(Client):
         [I-D.ietf-oauth-assertions] specification, to indicate the requested
         scope.
 
-        Authentication of the client is optional, as described in 
+        Authentication of the client is optional, as described in
         `Section 3.2.1`_ of OAuth 2.0 [RFC6749] and consequently, the
         "client_id" is only needed when a form of client authentication that
         relies on the parameter is used.
@@ -186,5 +186,5 @@ class ServiceApplicationClient(Client):
         return prepare_token_request(self.grant_type,
                                      body=body,
                                      assertion=assertion,
-                                     scope=scope, 
+                                     scope=scope,
                                      **kwargs)
