@@ -14,6 +14,7 @@ import logging
 import re
 import sys
 import time
+from . import get_debug_flag
 
 try:
     from secrets import randbits
@@ -435,6 +436,8 @@ class Request(object):
             raise AttributeError(name)
 
     def __repr__(self):
+        if not get_debug_flag():
+            return "<oauthlib.Request SANITIZED>"
         body = self.body
         headers = self.headers.copy()
         if body:

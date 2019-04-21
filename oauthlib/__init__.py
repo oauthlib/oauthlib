@@ -15,3 +15,12 @@ __author__ = 'The OAuthlib Community'
 __version__ = '3.0.2-dev'
 
 logging.getLogger('oauthlib').addHandler(NullHandler())
+
+_DEBUG = False
+
+def set_debug(debug_val):
+	global _DEBUG
+	_DEBUG = debug_val
+
+def get_debug_flag():
+	return _DEBUG	
