@@ -98,7 +98,7 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
                        "authorization_code" or "client_credentials".
 
     :param body: Existing request body (URL encoded string) to embed parameters
-                 into. This may contain extra paramters. Default ''.
+                 into. This may contain extra parameters. Default ''.
 
     :param include_client_id: `True` (default) to send the `client_id` in the
                               body of the upstream request. This is required
@@ -142,7 +142,7 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
     if 'scope' in kwargs:
         kwargs['scope'] = list_to_scope(kwargs['scope'])
 
-    # pull the `client_id` out of the kwargs. 
+    # pull the `client_id` out of the kwargs.
     client_id = kwargs.pop('client_id', None)
     if include_client_id:
         if client_id is not None:
