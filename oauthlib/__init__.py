@@ -26,7 +26,7 @@ def set_debug(debug_val):
 	global _DEBUG
 	_DEBUG = debug_val
 
-def get_debug_flag():
+def get_debug():
 	"""Get debug mode value. 
 	
 	:return: `True` if debug mode is on, `False` otherwise
