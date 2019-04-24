@@ -441,7 +441,9 @@ Drop a line in our `Gitter OAuthLib community`_ or open a `GitHub issue`_ =)
 If you run into issues it can be helpful to enable debug logging::
 
     import logging
+    import oauthlib
     import sys
+    oauthlib.set_debug(True)
     log = logging.getLogger('oauthlib')
     log.addHandler(logging.StreamHandler(sys.stdout))
     log.setLevel(logging.DEBUG)
