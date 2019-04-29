@@ -49,9 +49,8 @@ class RequestValidator(OAuth2RequestValidator):
         case-sensitive string.
 
         Only code param should be sufficient to retrieve grant code from
-        any storage you are using, `client_id` and `redirect_uri` can have a
-        blank value `""` don't forget to check it before using those values
-        in a select query if a database is used.
+        any storage you are using. However, `client_id` and `redirect_uri`
+        have been validated and can be used also.
 
         :param client_id: Unicode client identifier
         :param code: Unicode authorization code grant
