@@ -56,7 +56,7 @@ class RequestValidator(OAuth2RequestValidator):
         :param client_id: Unicode client identifier
         :param code: Unicode authorization code grant
         :param redirect_uri: Unicode absolute URI
-        :return: A list of scope
+        :return: Unicode nonce
 
         Method is used by:
             - Authorization Token Grant Dispatcher
