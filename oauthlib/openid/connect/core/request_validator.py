@@ -24,7 +24,7 @@ class RequestValidator(OAuth2RequestValidator):
         id_token in token response only based on authorization code scopes.
 
         Only code param should be sufficient to retrieve grant code from
-        any storage you are using, `client_id` and `redirect_uri` can gave a
+        any storage you are using, `client_id` and `redirect_uri` can have a
         blank value `""` don't forget to check it before using those values
         in a select query if a database is used.
 
@@ -49,7 +49,7 @@ class RequestValidator(OAuth2RequestValidator):
         case-sensitive string.
 
         Only code param should be sufficient to retrieve grant code from
-        any storage you are using, `client_id` and `redirect_uri` can gave a
+        any storage you are using, `client_id` and `redirect_uri` can have a
         blank value `""` don't forget to check it before using those values
         in a select query if a database is used.
 
