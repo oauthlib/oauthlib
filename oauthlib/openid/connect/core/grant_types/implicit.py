@@ -27,9 +27,9 @@ class ImplicitGrant(GrantTypeBase):
         self.register_token_modifier(self.add_id_token)
 
     def add_id_token(self, token, token_handler, request):
-        if 'state' not in token:
+        if 'state' not in token and request.state:
             token['state'] = request.state
-        return super(ImplicitGrant, self).add_id_token(token, token_handler, request)
+        return super(ImplicitGrant, self).add_id_token(token, token_handler, request, nonce=request.nonce)
 
     def openid_authorization_validator(self, request):
         """Additional validation when following the implicit flow.
