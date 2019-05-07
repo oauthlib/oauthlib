@@ -91,7 +91,7 @@ class TokenEndpoint(BaseEndpoint):
         """Extract grant_type and route to the designated handler."""
         request = Request(
             uri, http_method=http_method, body=body, headers=headers)
-
+        self.validate_token_request(request)
         # 'scope' is an allowed Token Request param in both the "Resource Owner Password Credentials Grant"
         # and "Client Credentials Grant" flows
         # https://tools.ietf.org/html/rfc6749#section-4.3.2
@@ -115,3 +115,6 @@ class TokenEndpoint(BaseEndpoint):
                   request.grant_type, grant_type_handler)
         return grant_type_handler.create_token_response(
             request, self.default_token_type)
+
+    def validate_token_request(self, request):
+        self._raise_on_bad_post_request(request)
