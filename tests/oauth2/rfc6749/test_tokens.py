@@ -68,6 +68,7 @@ class TokenTest(TestCase):
     bearer_headers = {
         'Authorization': 'Bearer vF9dft4qmT'
     }
+    valid_bearer_header_lowercase = {"Authorization": "bearer vF9dft4qmT"}
     fake_bearer_headers = [
         {'Authorization': 'Beaver vF9dft4qmT'},
         {'Authorization': 'BeavervF9dft4qmT'},
@@ -103,6 +104,26 @@ class TokenTest(TestCase):
         self.assertEqual(prepare_bearer_body(self.token), self.bearer_body)
         self.assertEqual(prepare_bearer_uri(self.token, uri=self.uri), self.bearer_uri)
 
+    def test_valid_bearer_is_validated(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+
+        request = Request("/", headers=self.bearer_headers)
+        result = BearerToken(request_validator=request_validator).validate_request(
+            request
+        )
+        self.assertTrue(result)
+
+    def test_lowercase_bearer_is_validated(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+
+        request = Request("/", headers=self.valid_bearer_header_lowercase)
+        result = BearerToken(request_validator=request_validator).validate_request(
+            request
+        )
+        self.assertTrue(result)
+
     def test_fake_bearer_is_not_validated(self):
         request_validator = mock.MagicMock()
         request_validator.validate_bearer_token = self._mocked_validate_bearer_token
@@ -125,6 +146,13 @@ class TokenTest(TestCase):
         )
 
         self.assertTrue(result)
+
+    def test_estimate_type(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+        request = Request("/", headers=self.bearer_headers)
+        result = BearerToken(request_validator=request_validator).estimate_type(request)
+        self.assertEqual(result, 9)
 
     def test_estimate_type_with_fake_header_returns_type_0(self):
         request_validator = mock.MagicMock()
