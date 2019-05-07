@@ -1,10 +1,14 @@
 from __future__ import absolute_import, unicode_literals
 
+import mock
+
+from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.tokens import (
-    prepare_mac_header,
-    prepare_bearer_headers,
+    BearerToken,
     prepare_bearer_body,
+    prepare_bearer_headers,
     prepare_bearer_uri,
+    prepare_mac_header,
 )
 
 from ...unittest import TestCase
@@ -98,3 +102,46 @@ class TokenTest(TestCase):
         self.assertEqual(prepare_bearer_headers(self.token), self.bearer_headers)
         self.assertEqual(prepare_bearer_body(self.token), self.bearer_body)
         self.assertEqual(prepare_bearer_uri(self.token, uri=self.uri), self.bearer_uri)
+
+    def test_fake_bearer_is_not_validated(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+
+        for fake_header in self.fake_bearer_headers:
+            request = Request("/", headers=fake_header)
+            result = BearerToken(request_validator=request_validator).validate_request(
+                request
+            )
+
+            self.assertFalse(result)
+
+    def test_header_with_multispaces_is_validated(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+
+        request = Request("/", headers=self.valid_header_with_multiple_spaces)
+        result = BearerToken(request_validator=request_validator).validate_request(
+            request
+        )
+
+        self.assertTrue(result)
+
+    def test_estimate_type_with_fake_header_returns_type_0(self):
+        request_validator = mock.MagicMock()
+        request_validator.validate_bearer_token = self._mocked_validate_bearer_token
+
+        for fake_header in self.fake_bearer_headers:
+            request = Request("/", headers=fake_header)
+            result = BearerToken(request_validator=request_validator).estimate_type(
+                request
+            )
+
+            if (
+                fake_header["Authorization"].count(" ") == 2
+                and fake_header["Authorization"].split()[0] == "Bearer"
+            ):
+                # If we're dealing with the header containing 2 spaces, it will be recognized
+                # as a Bearer valid header, the token itself will be invalid by the way.
+                self.assertEqual(result, 9)
+            else:
+                self.assertEqual(result, 0)
