@@ -15,17 +15,18 @@ from ..errors import (FatalClientError, OAuth2Error, ServerError,
                       TemporarilyUnavailableError, InvalidRequestError,
                       InvalidClientError, UnsupportedTokenTypeError)
 
-from oauthlib.common import CaseInsensitiveDict
+from oauthlib.common import CaseInsensitiveDict, urldecode
 
 log = logging.getLogger(__name__)
 
+BLACKLIST_QUERY_PARAMS = {'client_secret', 'code_verifier'}
 
 class BaseEndpoint(object):
 
     def __init__(self):
         self._available = True
         self._catch_errors = False
-        self._blacklist_query_params = {'client_secret', 'code_verifier'}
+        self._blacklist_query_params = BLACKLIST_QUERY_PARAMS
 
     @property
     def available(self):
@@ -33,7 +34,7 @@ class BaseEndpoint(object):
 
     @available.setter
     def available(self, available):
-        self._available = available
+        self._available = available       
 
     @property
     def catch_errors(self):
@@ -69,11 +70,12 @@ class BaseEndpoint(object):
         """Raise if invalid POST request received
         """
         if request.http_method.lower() == 'post':
-            query_params = CaseInsensitiveDict(urldecode(request.uri_query))
-            for k in self._blacklist_query_params:
-                if k in query_params:
+            query_params = CaseInsensitiveDict(dict(urldecode(request.uri_query)))
+            for param in self._blacklist_query_params:
+                if param in query_params:
                     raise InvalidRequestError(request=request,
-                                              description='Query parameters not allowed')
+                                              description=('"%s" is not allowed as a url query' +\
+                                                           ' parameter') % (param))
 
 def catch_errors_and_unavailability(f):
     @functools.wraps(f)

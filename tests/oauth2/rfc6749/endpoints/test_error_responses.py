@@ -6,10 +6,12 @@ import json
 
 import mock
 
+from oauthlib.common import urlencode
 from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
                              MobileApplicationServer, RequestValidator,
                              WebApplicationServer)
 from oauthlib.oauth2.rfc6749 import errors
+from oauthlib.oauth2.rfc6749.endpoints.base import BLACKLIST_QUERY_PARAMS
 
 from ....unittest import TestCase
 
@@ -437,3 +439,28 @@ class ErrorResponseTest(TestCase):
         _, body, _ = self.backend.create_token_response('https://i.b/token',
                 body='grant_type=bar')
         self.assertEqual('unsupported_grant_type', json.loads(body)['error'])
+
+    def test_invalid_post_request(self):
+        self.validator.authenticate_client.side_effect = self.set_client
+        for param in BLACKLIST_QUERY_PARAMS:
+            uri = 'https://i/b/token?' + urlencode([(param, 'secret')])
+            _, body, s = self.web.create_introspect_response(uri,
+                    body='grant_type=access_token&code=123')
+            self.assertEqual(json.loads(body)['error'], 'invalid_request')
+            self.assertIn(param, json.loads(body)['error_description'])
+            self.assertIn('not allowed', json.loads(body)['error_description'])
+            self.assertEqual(s, 400)
+
+            _, body, s = self.legacy.create_introspect_response(uri,
+                    body='grant_type=access_token&code=123')
+            self.assertEqual(json.loads(body)['error'], 'invalid_request')
+            self.assertIn(param, json.loads(body)['error_description'])
+            self.assertIn('not allowed', json.loads(body)['error_description'])
+            self.assertEqual(s, 400)
+
+            _, body, s = self.backend.create_introspect_response(uri,
+                    body='grant_type=access_token&code=123')
+            self.assertEqual(json.loads(body)['error'], 'invalid_request')
+            self.assertIn(param, json.loads(body)['error_description'])
+            self.assertIn('not allowed', json.loads(body)['error_description'])
+            self.assertEqual(s, 400)

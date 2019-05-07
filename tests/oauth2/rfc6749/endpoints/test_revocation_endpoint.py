@@ -7,6 +7,7 @@ from mock import MagicMock
 
 from oauthlib.common import urlencode
 from oauthlib.oauth2 import RequestValidator, RevocationEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.base import BLACKLIST_QUERY_PARAMS
 
 from ....unittest import TestCase
 
@@ -120,3 +121,18 @@ class RevocationEndpointTest(TestCase):
         self.assertEqual(h, self.resp_h)
         self.assertEqual(loads(b)['error'], 'invalid_request')
         self.assertEqual(s, 400)
+
+    def test_revoke_bad_post_request(self):
+        endpoint = RevocationEndpoint(self.validator,
+                                      supported_token_types=['access_token'])
+        for param in BLACKLIST_QUERY_PARAMS:
+            uri = 'http://some.endpoint?' + urlencode([(param, 'secret')])
+            body = urlencode([('token', 'foo'),
+                              ('token_type_hint', 'access_token')])
+            h, b, s = endpoint.create_revocation_response(uri,
+                    headers=self.headers, body=body)
+            self.assertEqual(h, self.resp_h)
+            self.assertEqual(loads(b)['error'], 'invalid_request')
+            self.assertIn(param, loads(b)['error_description'])
+            self.assertIn('not allowed', loads(b)['error_description'])
+            self.assertEqual(s, 400)
