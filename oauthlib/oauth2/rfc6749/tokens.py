@@ -254,7 +254,7 @@ def get_token_from_header(request):
 
     if 'Authorization' in request.headers:
         split_header = request.headers.get('Authorization').split()
-        if len(split_header) == 2 and split_header[0] == 'Bearer':
+        if len(split_header) == 2 and split_header[0].lower() == 'bearer':
             token = split_header[1]
     else:
         token = request.access_token
@@ -353,7 +353,7 @@ class BearerToken(TokenBase):
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
-        if request.headers.get('Authorization', '').split(' ')[0] == 'Bearer':
+        if request.headers.get('Authorization', '').split(' ')[0].lower() == 'bearer':
             return 9
         elif request.access_token is not None:
             return 5
