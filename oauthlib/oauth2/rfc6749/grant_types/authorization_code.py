@@ -405,12 +405,15 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 raise errors.MissingCodeChallengeError(request=request)
 
         if request.code_challenge is not None:
+            request_info["code_challenge"] = request.code_challenge
+
             # OPTIONAL, defaults to "plain" if not present in the request.
             if request.code_challenge_method is None:
                 request.code_challenge_method = "plain"
 
             if request.code_challenge_method not in self._code_challenge_methods:
                 raise errors.UnsupportedCodeChallengeMethodError(request=request)
+            request_info["code_challenge_method"] = request.code_challenge_method
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # https://tools.ietf.org/html/rfc6749#section-3.3
