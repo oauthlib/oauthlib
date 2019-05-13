@@ -11,7 +11,6 @@ from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
                              MobileApplicationServer, RequestValidator,
                              WebApplicationServer)
 from oauthlib.oauth2.rfc6749 import errors
-from oauthlib.oauth2.rfc6749.endpoints.base import BLACKLIST_QUERY_PARAMS
 
 from ....unittest import TestCase
 
@@ -442,25 +441,22 @@ class ErrorResponseTest(TestCase):
 
     def test_invalid_post_request(self):
         self.validator.authenticate_client.side_effect = self.set_client
-        for param in BLACKLIST_QUERY_PARAMS:
+        for param in ['token', 'secret', 'code', 'foo']:
             uri = 'https://i/b/token?' + urlencode([(param, 'secret')])
             _, body, s = self.web.create_introspect_response(uri,
                     body='grant_type=access_token&code=123')
             self.assertEqual(json.loads(body)['error'], 'invalid_request')
-            self.assertIn(param, json.loads(body)['error_description'])
-            self.assertIn('not allowed', json.loads(body)['error_description'])
+            self.assertIn('query parameters are not allowed', json.loads(body)['error_description'])
             self.assertEqual(s, 400)
 
             _, body, s = self.legacy.create_introspect_response(uri,
                     body='grant_type=access_token&code=123')
             self.assertEqual(json.loads(body)['error'], 'invalid_request')
-            self.assertIn(param, json.loads(body)['error_description'])
-            self.assertIn('not allowed', json.loads(body)['error_description'])
+            self.assertIn('query parameters are not allowed', json.loads(body)['error_description'])
             self.assertEqual(s, 400)
 
             _, body, s = self.backend.create_introspect_response(uri,
                     body='grant_type=access_token&code=123')
             self.assertEqual(json.loads(body)['error'], 'invalid_request')
-            self.assertIn(param, json.loads(body)['error_description'])
-            self.assertIn('not allowed', json.loads(body)['error_description'])
+            self.assertIn('query parameters are not allowed', json.loads(body)['error_description'])
             self.assertEqual(s, 400)
