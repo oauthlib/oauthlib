@@ -62,6 +62,8 @@ class TokenEndpoint(BaseEndpoint):
     .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
     """
 
+    valid_request_methods = ('POST',)
+
     def __init__(self, default_grant_type, default_token_type, grant_types):
         BaseEndpoint.__init__(self)
         self._grant_types = grant_types
@@ -85,7 +87,7 @@ class TokenEndpoint(BaseEndpoint):
         return self._default_token_type
 
     @catch_errors_and_unavailability
-    def create_token_response(self, uri, http_method='GET', body=None,
+    def create_token_response(self, uri, http_method='POST', body=None,
                               headers=None, credentials=None, grant_type_for_scope=None,
                               claims=None):
         """Extract grant_type and route to the designated handler."""
@@ -117,4 +119,5 @@ class TokenEndpoint(BaseEndpoint):
             request, self.default_token_type)
 
     def validate_token_request(self, request):
+        self._raise_on_bad_method(request)
         self._raise_on_bad_post_request(request)

@@ -121,6 +121,21 @@ class RevocationEndpointTest(TestCase):
         self.assertEqual(loads(b)['error'], 'invalid_request')
         self.assertEqual(s, 400)
 
+    def test_revoke_invalid_request_method(self):
+        endpoint = RevocationEndpoint(self.validator,
+                                      supported_token_types=['access_token'])
+        test_methods = ['GET', 'pUt', 'dEleTe', 'paTcH']
+        test_methods = test_methods + [x.lower() for x in test_methods] + [x.upper() for x in test_methods]
+        for method in test_methods:
+            body = urlencode([('token', 'foo'),
+                              ('token_type_hint', 'refresh_token')])
+            h, b, s = endpoint.create_revocation_response(self.uri,
+                    http_method = method, headers=self.headers, body=body)
+            self.assertEqual(h, self.resp_h)
+            self.assertEqual(loads(b)['error'], 'invalid_request')
+            self.assertIn('Unsupported request method', loads(b)['error_description'])
+            self.assertEqual(s, 400)
+
     def test_revoke_bad_post_request(self):
         endpoint = RevocationEndpoint(self.validator,
                                       supported_token_types=['access_token'])
