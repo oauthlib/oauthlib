@@ -10,7 +10,7 @@ from __future__ import absolute_import, unicode_literals
 
 import time
 
-from oauthlib.common import Request, generate_token
+from oauthlib.common import CaseInsensitiveDict, Request, generate_token
 
 from .. import (CONTENT_TYPE_FORM_URLENCODED, SIGNATURE_HMAC, SIGNATURE_RSA,
                 SIGNATURE_TYPE_AUTH_HEADER, SIGNATURE_TYPE_BODY,
@@ -67,7 +67,7 @@ class BaseEndpoint(object):
 
     def _create_request(self, uri, http_method, body, headers):
         # Only include body data from x-www-form-urlencoded requests
-        headers = headers or {}
+        headers = CaseInsensitiveDict(headers or {})
         if ("Content-Type" in headers and
                 CONTENT_TYPE_FORM_URLENCODED in headers["Content-Type"]):
             request = Request(uri, http_method, body, headers)

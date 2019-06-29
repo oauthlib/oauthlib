@@ -4,7 +4,7 @@ from re import sub
 
 from mock import MagicMock
 
-from oauthlib.common import safe_string_equals
+from oauthlib.common import CaseInsensitiveDict, safe_string_equals
 from oauthlib.oauth1 import Client, RequestValidator
 from oauthlib.oauth1.rfc5849 import (SIGNATURE_HMAC, SIGNATURE_PLAINTEXT,
                                      SIGNATURE_RSA, errors)
@@ -178,6 +178,17 @@ class BaseEndpointTest(TestCase):
                 URLENCODED)
         self.assertRaises(errors.InvalidRequestError,
                 e._check_mandatory_parameters, r)
+
+    def test_case_insensitive_headers(self):
+        """Ensure headers are case-insensitive"""
+        v = RequestValidator()
+        e = BaseEndpoint(v)
+        r = e._create_request('https://a.b', 'POST',
+                ('oauth_signature=a&oauth_consumer_key=b&oauth_nonce=c&'
+                 'oauth_version=1.0&oauth_signature_method=RSA-SHA1&'
+                 'oauth_timestamp=123456789a'),
+                URLENCODED)
+        self.assertIsInstance(r.headers, CaseInsensitiveDict)
 
     def test_signature_method_validation(self):
         """Ensure valid signature method is used."""

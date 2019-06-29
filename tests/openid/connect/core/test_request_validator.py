@@ -22,8 +22,8 @@ class RequestValidatorTest(TestCase):
         )
         self.assertRaises(
             NotImplementedError,
-            v.get_id_token,
-            'token', 'token_handler', 'request'
+            v.finalize_id_token,
+            'id_token', 'token', 'token_handler', 'request'
         )
         self.assertRaises(
             NotImplementedError,

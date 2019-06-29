@@ -264,11 +264,14 @@ def parse_authorization_code_response(uri, state=None):
     query = urlparse.urlparse(uri).query
     params = dict(urlparse.parse_qsl(query))
 
-    if not 'code' in params:
-        raise MissingCodeError("Missing code parameter in response.")
-
     if state and params.get('state', None) != state:
         raise MismatchingStateError()
+
+    if 'error' in params:
+        raise_from_error(params.get('error'), params)
+
+    if not 'code' in params:
+        raise MissingCodeError("Missing code parameter in response.")
 
     return params
 
