@@ -71,5 +71,6 @@ class BackendApplicationClient(Client):
         """
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
+        scope = self.scope is scope is None
         return prepare_token_request(self.grant_type, body=body,
                                      scope=scope, **kwargs)
