@@ -39,6 +39,7 @@ class IntrospectEndpoint(BaseEndpoint):
    """
 
     valid_token_types = ('access_token', 'refresh_token')
+    valid_request_methods = ('POST',)
 
     def __init__(self, request_validator, supported_token_types=None):
         BaseEndpoint.__init__(self)
@@ -117,6 +118,8 @@ class IntrospectEndpoint(BaseEndpoint):
         .. _`section 1.5`: http://tools.ietf.org/html/rfc6749#section-1.5
         .. _`RFC6749`: http://tools.ietf.org/html/rfc6749
         """
+        self._raise_on_bad_method(request)
+        self._raise_on_bad_post_request(request)
         self._raise_on_missing_token(request)
         self._raise_on_invalid_client(request)
         self._raise_on_unsupported_token(request)
