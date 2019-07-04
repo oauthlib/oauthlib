@@ -103,6 +103,15 @@ class ParameterTests(TestCase):
                      '  "expires_in": 3600,'
                      '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                      '  "example_parameter": "example_value" }')
+    json_response_noexpire = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
+                     '  "token_type": "example",'
+                     '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
+                     '  "example_parameter": "example_value"}')
+    json_response_expirenull = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
+                     '  "token_type": "example",'
+                     '  "expires_in": null,'
+                     '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
+                     '  "example_parameter": "example_value"}')
 
     json_custom_error = '{ "error": "incorrect_client_credentials" }'
     json_error = '{ "error": "access_denied" }'
@@ -134,6 +143,13 @@ class ParameterTests(TestCase):
        'expires_at': 4600,
        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
        'example_parameter': 'example_value'
+    }
+
+    json_noexpire_dict = {
+        'access_token': '2YotnFZFEjr1zCsicMWpAA',
+        'token_type': 'example',
+        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
+        'example_parameter': 'example_value'
     }
 
     json_notype_dict = {
@@ -212,6 +228,8 @@ class ParameterTests(TestCase):
 
         self.assertEqual(parse_token_response(self.json_response_noscope,
             scope=['all', 'the', 'scopes']), self.json_noscope_dict)
+        self.assertEqual(parse_token_response(self.json_response_noexpire), self.json_noexpire_dict)
+        self.assertEqual(parse_token_response(self.json_response_expirenull), self.json_noexpire_dict)
 
         scope_changes_recorded = []
         def record_scope_change(sender, message, old, new):
