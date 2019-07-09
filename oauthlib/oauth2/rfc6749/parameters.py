@@ -264,11 +264,14 @@ def parse_authorization_code_response(uri, state=None):
     query = urlparse.urlparse(uri).query
     params = dict(urlparse.parse_qsl(query))
 
-    if not 'code' in params:
-        raise MissingCodeError("Missing code parameter in response.")
-
     if state and params.get('state', None) != state:
         raise MismatchingStateError()
+
+    if 'error' in params:
+        raise_from_error(params.get('error'), params)
+
+    if not 'code' in params:
+        raise MissingCodeError("Missing code parameter in response.")
 
     return params
 
@@ -419,7 +422,10 @@ def parse_token_response(body, scope=None):
         params['scope'] = scope_to_list(params['scope'])
 
     if 'expires_in' in params:
-        params['expires_at'] = time.time() + int(params['expires_in'])
+        if params['expires_in'] is None:
+            params.pop('expires_in')
+        else:
+            params['expires_at'] = time.time() + int(params['expires_in'])
 
     params = OAuth2Token(params, old_scope=scope)
     validate_token_parameters(params)
