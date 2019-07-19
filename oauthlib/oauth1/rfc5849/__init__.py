@@ -133,12 +133,11 @@ class Client(object):
         log.debug("Collected params: {0}".format(collected_params))
 
         normalized_params = signature.normalize_parameters(collected_params)
-        normalized_uri = signature.normalize_base_string_uri(uri,
-                                                             headers.get('Host', None))
+        normalized_uri = signature.base_string_uri(uri, headers.get('Host', None))
         log.debug("Normalized params: {0}".format(normalized_params))
         log.debug("Normalized URI: {0}".format(normalized_uri))
 
-        base_string = signature.construct_base_string(request.http_method,
+        base_string = signature.signature_base_string(request.http_method,
                                                       normalized_uri, normalized_params)
 
         log.debug("Signing: signature base string: {0}".format(base_string))

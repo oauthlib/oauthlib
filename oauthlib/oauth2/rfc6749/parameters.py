@@ -98,7 +98,7 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
                        "authorization_code" or "client_credentials".
 
     :param body: Existing request body (URL encoded string) to embed parameters
-                 into. This may contain extra paramters. Default ''.
+                 into. This may contain extra parameters. Default ''.
 
     :param include_client_id: `True` (default) to send the `client_id` in the
                               body of the upstream request. This is required
@@ -142,7 +142,7 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
     if 'scope' in kwargs:
         kwargs['scope'] = list_to_scope(kwargs['scope'])
 
-    # pull the `client_id` out of the kwargs. 
+    # pull the `client_id` out of the kwargs.
     client_id = kwargs.pop('client_id', None)
     if include_client_id:
         if client_id is not None:
@@ -264,11 +264,14 @@ def parse_authorization_code_response(uri, state=None):
     query = urlparse.urlparse(uri).query
     params = dict(urlparse.parse_qsl(query))
 
-    if not 'code' in params:
-        raise MissingCodeError("Missing code parameter in response.")
-
     if state and params.get('state', None) != state:
         raise MismatchingStateError()
+
+    if 'error' in params:
+        raise_from_error(params.get('error'), params)
+
+    if not 'code' in params:
+        raise MissingCodeError("Missing code parameter in response.")
 
     return params
 
@@ -419,7 +422,10 @@ def parse_token_response(body, scope=None):
         params['scope'] = scope_to_list(params['scope'])
 
     if 'expires_in' in params:
-        params['expires_at'] = time.time() + int(params['expires_in'])
+        if params['expires_in'] is None:
+            params.pop('expires_in')
+        else:
+            params['expires_at'] = time.time() + int(params['expires_in'])
 
     params = OAuth2Token(params, old_scope=scope)
     validate_token_parameters(params)

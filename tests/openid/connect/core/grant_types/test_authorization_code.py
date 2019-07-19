@@ -117,7 +117,6 @@ class OpenIDAuthCodeTest(TestCase):
 
     def set_scopes(self, client_id, code, client, request):
         request.scopes = self.request.scopes
-        request.state = self.request.state
         request.user = 'bob'
         return True
 

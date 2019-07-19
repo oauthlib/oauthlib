@@ -14,6 +14,7 @@ import logging
 import re
 import sys
 import time
+from . import get_debug
 
 try:
     from secrets import randbits
@@ -172,7 +173,7 @@ def extract_params(raw):
     empty list of parameters. Any other input will result in a return
     value of None.
     """
-    if isinstance(raw, bytes) or isinstance(raw, unicode_type):
+    if isinstance(raw, (bytes, unicode_type)):
         try:
             params = urldecode(raw)
         except ValueError:
@@ -435,6 +436,8 @@ class Request(object):
             raise AttributeError(name)
 
     def __repr__(self):
+        if not get_debug():
+            return "<oauthlib.Request SANITIZED>"
         body = self.body
         headers = self.headers.copy()
         if body:

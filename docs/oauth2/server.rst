@@ -524,7 +524,10 @@ If you run into issues it can be helpful to enable debug logging.
 .. code-block:: python
 
     import logging
+    import oauthlib
     import sys
+
+    oauthlib.set_debug(True)    
     log = logging.getLogger('oauthlib')
     log.addHandler(logging.StreamHandler(sys.stdout))
     log.setLevel(logging.DEBUG)

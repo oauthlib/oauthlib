@@ -10,15 +10,19 @@ case where that is not true please let us know!
 
 When reporting bugs, especially when they are hard or impossible to reproduce,
 it is useful to include logging output. You can enable logging for all
-oauthlib modules by adding a logger to the `oauthlib` namespace. 
+oauthlib modules by adding a logger to the `oauthlib` namespace. You might also
+want to enable debugging mode to include request data in output.
 
 .. code-block:: python
 
     import logging
+    import oauthlib
     import sys
+    oauthlib.set_debug(True)
     log = logging.getLogger('oauthlib')
     log.addHandler(logging.StreamHandler(sys.stdout))
     log.setLevel(logging.DEBUG)
+
 
 If you are using a library that builds upon OAuthLib please also enable the
 logging for their modules, e.g. for `requests-oauthlib`
