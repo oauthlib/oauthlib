@@ -1,10 +1,12 @@
 Changelog
 =========
 
-3.0.2 (TBD)
+3.0.2 (2019-07-04)
 ------------------
-* #650 Fixed space encoding in base string URI used in the signature base string.
+* #650: Fixed space encoding in base string URI used in the signature base string.
 * #652: Fixed OIDC /token response which wrongly returned "&state=None"
+* #654: Doc: The value `state` must not be stored by the AS, only returned in /authorize response.
+* #656: Fixed OIDC "nonce" checks: raise errors when it's mandatory
 
 3.0.1 (2019-01-24)
 ------------------
