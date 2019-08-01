@@ -12,7 +12,7 @@ import time
 
 from oauthlib.common import CaseInsensitiveDict, Request, generate_token
 
-from .. import (CONTENT_TYPE_FORM_URLENCODED, SIGNATURE_HMAC, SIGNATURE_RSA,
+from .. import (CONTENT_TYPE_FORM_URLENCODED, SIGNATURE_HMAC_SHA1, SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
                 SIGNATURE_TYPE_AUTH_HEADER, SIGNATURE_TYPE_BODY,
                 SIGNATURE_TYPE_QUERY, errors, signature, utils)
 
@@ -204,8 +204,11 @@ class BaseEndpoint(object):
                     resource_owner_secret = self.request_validator.get_access_token_secret(
                         request.client_key, request.resource_owner_key, request)
 
-            if request.signature_method == SIGNATURE_HMAC:
+            if request.signature_method == SIGNATURE_HMAC_SHA1:
                 valid_signature = signature.verify_hmac_sha1(request,
+                                                             client_secret, resource_owner_secret)
+            elif request.signature_method == SIGNATURE_HMAC_SHA256:
+                valid_signature = signature.verify_hmac_sha256(request,
                                                              client_secret, resource_owner_secret)
             else:
                 valid_signature = signature.verify_plaintext(request,
