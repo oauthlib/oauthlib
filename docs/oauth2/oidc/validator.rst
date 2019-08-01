@@ -20,6 +20,7 @@ Into
     from oauthlib.openid import RequestValidator
 
 Then, you have to implement the new RequestValidator methods as shown below.
+Note that a new UserInfo endpoint is defined and need a new controller into your webserver.
 
 RequestValidator Extension
 ----------------------------------------------------
