@@ -26,6 +26,12 @@ logic for Python 2.7 and 3.4+.*
   :target: https://gitter.im/oauthlib/Lobby
   :alt: Chat on Gitter
 
+
+.. image:: https://raw.githubusercontent.com/oauthlib/oauthlib/8d71b161fd145d11c40d55c9ab66ac134a303253/docs/logo/oauthlib-banner-700x192.png
+  :target: https://github.com/oauthlib/oauthlib/
+  :alt: OAuth + Python = OAuthlib Python Framework
+
+
 OAuth often seems complicated and difficult-to-implement. There are several
 prominent libraries for handling OAuth requests, but they all suffer from one or
 both of the following:
