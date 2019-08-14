@@ -90,7 +90,7 @@ def signature_base_string(http_method, base_str_uri,
     #     (`Section 3.6`_).
     #
     # .. _`Section 3.4.1.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.2
-    # .. _`Section 3.4.6`: https://tools.ietf.org/html/rfc5849#section-3.4.6
+    # .. _`Section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
     base_string += utils.escape(base_str_uri)
 
     # 4.  An "&" character (ASCII code 38).
@@ -100,7 +100,7 @@ def signature_base_string(http_method, base_str_uri,
     #     being encoded (`Section 3.6`).
     #
     # .. _`Section 3.4.1.3.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
-    # .. _`Section 3.4.6`: https://tools.ietf.org/html/rfc5849#section-3.4.6
+    # .. _`Section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
     base_string += utils.escape(normalized_encoded_request_parameters)
 
     return base_string
