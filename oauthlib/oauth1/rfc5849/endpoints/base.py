@@ -17,7 +17,7 @@ from .. import (CONTENT_TYPE_FORM_URLENCODED, SIGNATURE_HMAC_SHA1, SIGNATURE_HMA
                 SIGNATURE_TYPE_QUERY, errors, signature, utils)
 
 
-class BaseEndpoint(object):
+class BaseEndpoint:
 
     def __init__(self, request_validator, token_generator=None):
         self.request_validator = request_validator
@@ -131,7 +131,7 @@ class BaseEndpoint(object):
         if (not request.signature_method in
                 self.request_validator.allowed_signature_methods):
             raise errors.InvalidSignatureMethodError(
-                description="Invalid signature, %s not in %r." % (
+                description="Invalid signature, {} not in {!r}.".format(
                     request.signature_method,
                     self.request_validator.allowed_signature_methods))
 

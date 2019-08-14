@@ -73,7 +73,7 @@ class RevocationEndpoint(BaseEndpoint):
             log.debug('Client error during validation of %r. %r.', request, e)
             response_body = e.json
             if self.enable_jsonp and request.callback:
-                response_body = '%s(%s);' % (request.callback, response_body)
+                response_body = '{}({});'.format(request.callback, response_body)
             resp_headers.update(e.headers)
             return resp_headers, response_body, e.status_code
 

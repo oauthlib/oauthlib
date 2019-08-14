@@ -129,7 +129,7 @@ class RequestTokenEndpoint(BaseEndpoint):
                 request.client_key, request)
         if not self.request_validator.check_realms(request.realms):
             raise errors.InvalidRequestError(
-                description='Invalid realm %s. Allowed are %r.' % (
+                description='Invalid realm {}. Allowed are {!r}.'.format(
                     request.realms, self.request_validator.realms))
 
         if not request.redirect_uri:

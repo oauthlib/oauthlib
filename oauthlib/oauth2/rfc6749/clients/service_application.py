@@ -57,7 +57,7 @@ class ServiceApplicationClient(Client):
                        state and token. See ``Client.__init__.__doc__`` for
                        details.
         """
-        super(ServiceApplicationClient, self).__init__(client_id, **kwargs)
+        super().__init__(client_id, **kwargs)
         self.private_key = private_key
         self.subject = subject
         self.issuer = issuer

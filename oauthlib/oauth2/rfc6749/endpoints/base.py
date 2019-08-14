@@ -20,7 +20,7 @@ from oauthlib.common import CaseInsensitiveDict, urldecode
 log = logging.getLogger(__name__)
 
 
-class BaseEndpoint(object):
+class BaseEndpoint:
 
     def __init__(self):
         self._available = True

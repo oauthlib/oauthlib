@@ -37,10 +37,10 @@ class OAuth1Error(Exception):
         request:  Oauthlib Request object
         """
         self.description = description or self.description
-        message = '(%s) %s' % (self.error, self.description)
+        message = '({}) {}'.format(self.error, self.description)
         if request:
             message += ' ' + repr(request)
-        super(OAuth1Error, self).__init__(message)
+        super().__init__(message)
 
         self.uri = uri
         self.status_code = status_code

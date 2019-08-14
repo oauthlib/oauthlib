@@ -10,7 +10,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class RequestValidator(object):
+class RequestValidator:
 
     def client_authentication_required(self, request, *args, **kwargs):
         """Determine if client authentication is required for current request.

@@ -11,7 +11,7 @@ from oauthlib.oauth2.rfc6749.errors import ConsentRequired, InvalidRequestError,
 log = logging.getLogger(__name__)
 
 
-class GrantTypeBase(object):
+class GrantTypeBase:
 
     # Just proxy the majority of method calls through to the
     # proxy_target grant type handler, which will usually be either
@@ -20,7 +20,7 @@ class GrantTypeBase(object):
         return getattr(self.proxy_target, attr)
 
     def __setattr__(self, attr, value):
-        proxied_attrs = set(('refresh_token', 'response_types'))
+        proxied_attrs = {'refresh_token', 'response_types'}
         if attr in proxied_attrs:
             setattr(self.proxy_target, attr, value)
         else:

@@ -72,7 +72,7 @@ class DispatcherTest(TestCase):
 class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
 
     def setUp(self):
-        super(AuthTokenGrantDispatcherOpenIdTest, self).setUp()
+        super().setUp()
         self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'openid')
         self.dispatcher = AuthorizationTokenGrantDispatcher(
             self.request_validator,
@@ -89,7 +89,7 @@ class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
 class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
 
     def setUp(self):
-        super(AuthTokenGrantDispatcherOpenIdWithoutCodeTest, self).setUp()
+        super().setUp()
         self.request.decoded_body = (
             ("client_id", "me"),
             ("code", ""),
@@ -111,7 +111,7 @@ class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
 class AuthTokenGrantDispatcherOAuthTest(DispatcherTest):
 
     def setUp(self):
-        super(AuthTokenGrantDispatcherOAuthTest, self).setUp()
+        super().setUp()
         self.request_validator.get_authorization_code_scopes.return_value = ('hello', 'world')
         self.dispatcher = AuthorizationTokenGrantDispatcher(
             self.request_validator,

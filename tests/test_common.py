@@ -71,7 +71,7 @@ class ParameterTest(TestCase):
         self.assertEqual(extract_params([('')]), None)
 
     def test_add_params_to_uri(self):
-        correct = '%s?%s' % (URI, PARAMS_FORMENCODED)
+        correct = '{}?{}'.format(URI, PARAMS_FORMENCODED)
         self.assertURLEqual(add_params_to_uri(URI, PARAMS_DICT), correct)
         self.assertURLEqual(add_params_to_uri(URI, PARAMS_TWOTUPLE), correct)
 

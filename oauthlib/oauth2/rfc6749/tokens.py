@@ -28,7 +28,7 @@ except ImportError:
 class OAuth2Token(dict):
 
     def __init__(self, params, old_scope=None):
-        super(OAuth2Token, self).__init__(params)
+        super().__init__(params)
         self._new_scope = None
         if 'scope' in params and params['scope']:
             self._new_scope = set(utils.scope_to_list(params['scope']))
@@ -121,7 +121,7 @@ def prepare_mac_header(token, uri, key, http_method,
         raise ValueError('unknown hash algorithm')
 
     if draft == 0:
-        nonce = nonce or '{0}:{1}'.format(utils.generate_age(issue_time),
+        nonce = nonce or '{}:{}'.format(utils.generate_age(issue_time),
                                           common.generate_nonce())
     else:
         ts = common.generate_timestamp()
@@ -262,7 +262,7 @@ def get_token_from_header(request):
     return token
 
 
-class TokenBase(object):
+class TokenBase:
 
     def __call__(self, request, refresh_token=False):
         raise NotImplementedError('Subclasses must implement this method.')

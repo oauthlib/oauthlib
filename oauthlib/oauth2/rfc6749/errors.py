@@ -45,10 +45,10 @@ class OAuth2Error(Exception):
         if description is not None:
             self.description = description
 
-        message = '(%s) %s' % (self.error, self.description)
+        message = '({}) {}'.format(self.error, self.description)
         if request:
             message += ' ' + repr(request)
-        super(OAuth2Error, self).__init__(message)
+        super().__init__(message)
 
         self.uri = uri
         self.state = state
@@ -389,7 +389,7 @@ class CustomOAuth2Error(OAuth2Error):
     """
     def __init__(self, error, *args, **kwargs):
         self.error = error
-        super(CustomOAuth2Error, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 def raise_from_error(error, params=None):

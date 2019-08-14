@@ -300,7 +300,7 @@ def collect_parameters(uri_query='', body=[], headers=None,
     #
     # .. _`Section 3.5.1`: https://tools.ietf.org/html/rfc5849#section-3.5.1
     if headers:
-        headers_lower = dict((k.lower(), v) for k, v in headers.items())
+        headers_lower = {k.lower(): v for k, v in headers.items()}
         authorization_header = headers_lower.get('authorization')
         if authorization_header is not None:
             params.extend([i for i in utils.parse_authorization_header(
@@ -429,7 +429,7 @@ def normalize_parameters(params):
     # 3.  The name of each parameter is concatenated to its corresponding
     #     value using an "=" character (ASCII code 61) as a separator, even
     #     if the value is empty.
-    parameter_parts = ['{0}={1}'.format(k, v) for k, v in key_values]
+    parameter_parts = ['{}={}'.format(k, v) for k, v in key_values]
 
     # 4.  The sorted name/value pairs are concatenated together into a
     #     single string by using an "&" character (ASCII code 38) as

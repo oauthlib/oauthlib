@@ -61,7 +61,7 @@ def prepare_headers(oauth_params, headers=None, realm=None):
         # 2.  Each parameter's name is immediately followed by an "=" character
         #     (ASCII code 61), a """ character (ASCII code 34), the parameter
         #     value (MAY be empty), and another """ character (ASCII code 34).
-        part = '{0}="{1}"'.format(escaped_name, escaped_value)
+        part = '{}="{}"'.format(escaped_name, escaped_value)
 
         authorization_header_parameters_parts.append(part)
 

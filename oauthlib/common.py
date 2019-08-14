@@ -300,7 +300,7 @@ def to_unicode(data, encoding='UTF-8'):
             # We support 2.6 which lacks dict comprehensions
             if hasattr(data, 'items'):
                 data = data.items()
-            return dict(((to_unicode(k, encoding), to_unicode(v, encoding)) for k, v in data))
+            return {to_unicode(k, encoding): to_unicode(v, encoding) for k, v in data}
 
     return data
 
@@ -312,7 +312,7 @@ class CaseInsensitiveDict(dict):
     proxy = {}
 
     def __init__(self, data):
-        self.proxy = dict((k.lower(), k) for k in data)
+        self.proxy = {k.lower(): k for k in data}
         for k in data:
             self[k] = data[k]
 
@@ -321,27 +321,27 @@ class CaseInsensitiveDict(dict):
 
     def __delitem__(self, k):
         key = self.proxy[k.lower()]
-        super(CaseInsensitiveDict, self).__delitem__(key)
+        super().__delitem__(key)
         del self.proxy[k.lower()]
 
     def __getitem__(self, k):
         key = self.proxy[k.lower()]
-        return super(CaseInsensitiveDict, self).__getitem__(key)
+        return super().__getitem__(key)
 
     def get(self, k, default=None):
         return self[k] if k in self else default
 
     def __setitem__(self, k, v):
-        super(CaseInsensitiveDict, self).__setitem__(k, v)
+        super().__setitem__(k, v)
         self.proxy[k.lower()] = k
 
     def update(self, *args, **kwargs):
-        super(CaseInsensitiveDict, self).update(*args, **kwargs)
+        super().update(*args, **kwargs)
         for k in dict(*args, **kwargs):
             self.proxy[k.lower()] = k
 
 
-class Request(object):
+class Request:
 
     """A malleable representation of a signable HTTP request.
 
@@ -421,7 +421,7 @@ class Request(object):
             body = SANITIZE_PATTERN.sub('\1<SANITIZED>', str(body))
         if 'Authorization' in headers:
             headers['Authorization'] = '<SANITIZED>'
-        return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
+        return '<oauthlib.Request url="{}", http_method="{}", headers="{}", body="{}">'.format(
             self.uri, self.http_method, headers, body)
 
     @property

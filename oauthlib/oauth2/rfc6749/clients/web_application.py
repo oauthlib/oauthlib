@@ -38,7 +38,7 @@ class WebApplicationClient(Client):
     grant_type = 'authorization_code'
 
     def __init__(self, client_id, code=None, **kwargs):
-        super(WebApplicationClient, self).__init__(client_id, **kwargs)
+        super().__init__(client_id, **kwargs)
         self.code = code
 
     def prepare_request_uri(self, uri, redirect_uri=None, scope=None,

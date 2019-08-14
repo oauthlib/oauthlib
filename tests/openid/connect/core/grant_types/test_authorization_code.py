@@ -24,7 +24,7 @@ class OpenIDAuthCodeInterferenceTest(AuthorizationCodeGrantTest):
     """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
-        super(OpenIDAuthCodeInterferenceTest, self).setUp()
+        super().setUp()
         self.auth = AuthorizationCodeGrant(request_validator=self.mock_validator)
 
 

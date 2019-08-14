@@ -29,7 +29,7 @@ FORM_ENC_HEADERS = {
 }
 
 
-class Client(object):
+class Client:
     """Base OAuth2 client responsible for access token management.
 
     This class also acts as a generic interface providing methods common to all
@@ -186,8 +186,8 @@ class Client(object):
 
         token_placement = token_placement or self.default_token_placement
 
-        case_insensitive_token_types = dict(
-            (k.lower(), v) for k, v in self.token_types.items())
+        case_insensitive_token_types = {
+            k.lower(): v for k, v in self.token_types.items()}
         if not self.token_type.lower() in case_insensitive_token_types:
             raise ValueError("Unsupported token type: %s" % self.token_type)
 

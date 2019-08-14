@@ -41,4 +41,4 @@ class AuthorizationCodeGrant(GrantTypeBase):
             request.redirect_uri,
             request
         )
-        return super(AuthorizationCodeGrant, self).add_id_token(token, token_handler, request, nonce=nonce)
+        return super().add_id_token(token, token_handler, request, nonce=nonce)

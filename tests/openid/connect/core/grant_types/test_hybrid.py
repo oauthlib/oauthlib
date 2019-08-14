@@ -15,14 +15,14 @@ class OpenIDHybridInterferenceTest(AuthorizationCodeGrantTest):
     """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
-        super(OpenIDHybridInterferenceTest, self).setUp()
+        super().setUp()
         self.auth = HybridGrant(request_validator=self.mock_validator)
 
 
 class OpenIDHybridCodeTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
-        super(OpenIDHybridCodeTokenTest, self).setUp()
+        super().setUp()
         self.request.response_type = 'code token'
         self.request.nonce = None
         self.auth = HybridGrant(request_validator=self.mock_validator)
@@ -45,7 +45,7 @@ class OpenIDHybridCodeTokenTest(OpenIDAuthCodeTest):
 class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
-        super(OpenIDHybridCodeIdTokenTest, self).setUp()
+        super().setUp()
         self.mock_validator.get_code_challenge.return_value = None
         self.request.response_type = 'code id_token'
         self.request.nonce = 'zxc'
@@ -70,7 +70,7 @@ class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
 class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
 
     def setUp(self):
-        super(OpenIDHybridCodeIdTokenTokenTest, self).setUp()
+        super().setUp()
         self.mock_validator.get_code_challenge.return_value = None
         self.request.response_type = 'code id_token token'
         self.request.nonce = 'xyz'

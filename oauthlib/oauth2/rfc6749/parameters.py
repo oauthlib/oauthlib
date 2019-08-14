@@ -146,13 +146,13 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
     client_id = kwargs.pop('client_id', None)
     if include_client_id:
         if client_id is not None:
-            params.append((str('client_id'), client_id))
+            params.append(('client_id', client_id))
 
     # the kwargs iteration below only supports including boolean truth (truthy)
     # values, but some servers may require an empty string for `client_secret`
     client_secret = kwargs.pop('client_secret', None)
     if client_secret is not None:
-        params.append((str('client_secret'), client_secret))
+        params.append(('client_secret', client_secret))
 
     # this handles: `code`, `redirect_uri`, and other undocumented params
     for k in kwargs:

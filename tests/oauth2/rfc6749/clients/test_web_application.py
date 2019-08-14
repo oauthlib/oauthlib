@@ -46,7 +46,7 @@ class WebApplicationClientTest(TestCase):
     code = "zzzzaaaa"
     body = "not=empty"
 
-    body_code = "not=empty&grant_type=authorization_code&code=%s&client_id=%s" % (code, client_id)
+    body_code = "not=empty&grant_type=authorization_code&code={}&client_id={}".format(code, client_id)
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 

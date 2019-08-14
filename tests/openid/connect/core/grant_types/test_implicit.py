@@ -17,7 +17,7 @@ class OpenIDImplicitInterferenceTest(ImplicitGrantTest):
     """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
-        super(OpenIDImplicitInterferenceTest, self).setUp()
+        super().setUp()
         self.auth = ImplicitGrant(request_validator=self.mock_validator)
 
 
@@ -114,7 +114,7 @@ class OpenIDImplicitTest(TestCase):
 
 class OpenIDImplicitNoAccessTokenTest(OpenIDImplicitTest):
     def setUp(self):
-        super(OpenIDImplicitNoAccessTokenTest, self).setUp()
+        super().setUp()
         self.request.response_type = 'id_token'
         token = 'MOCKED_TOKEN'
         self.url_query = 'https://a.b/cb?state=abc&id_token=%s' % token

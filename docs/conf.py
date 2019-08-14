@@ -45,8 +45,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'OAuthLib'
-copyright = u'2019, The OAuthlib Community'
+project = 'OAuthLib'
+copyright = '2019, The OAuthlib Community'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -190,8 +190,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'OAuthLib.tex', u'OAuthLib Documentation',
-   u'The OAuhthlib Community', 'manual'),
+  ('index', 'OAuthLib.tex', 'OAuthLib Documentation',
+   'The OAuhthlib Community', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -220,8 +220,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'oauthlib', u'OAuthLib Documentation',
-     [u'The OAuthlib Community'], 1)
+    ('index', 'oauthlib', 'OAuthLib Documentation',
+     ['The OAuthlib Community'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -234,8 +234,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'OAuthLib', u'OAuthLib Documentation',
-   u'The OAuthlib Community', 'OAuthLib', 'One line description of project.',
+  ('index', 'OAuthLib', 'OAuthLib Documentation',
+   'The OAuthlib Community', 'OAuthLib', 'One line description of project.',
    'Miscellaneous'),
 ]
 

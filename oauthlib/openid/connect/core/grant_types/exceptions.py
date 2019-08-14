@@ -29,4 +29,4 @@ class OIDCNoPrompt(Exception):
                "for authorization, it should been done using silent "
                "authentication through create_authorization_response. "
                "See OIDCNoPrompt.__doc__ for more details.")
-        super(OIDCNoPrompt, self).__init__(msg)
+        super().__init__(msg)

@@ -17,7 +17,7 @@ from ..request_validator import RequestValidator
 log = logging.getLogger(__name__)
 
 
-class ValidatorsContainer(object):
+class ValidatorsContainer:
     """
     Container object for holding custom validator callables to be invoked
     as part of the grant type `validate_authorization_request()` or
@@ -74,7 +74,7 @@ class ValidatorsContainer(object):
         return chain(self.post_auth, self.post_token)
 
 
-class GrantTypeBase(object):
+class GrantTypeBase:
     error_uri = None
     request_validator = None
     default_response_mode = 'fragment'

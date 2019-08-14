@@ -13,7 +13,7 @@ import sys
 from . import SIGNATURE_METHODS, utils
 
 
-class RequestValidator(object):
+class RequestValidator:
 
     """A validator/datastore interaction base class for OAuth 1 providers.
 
@@ -197,7 +197,7 @@ class RequestValidator(object):
 
     def check_realms(self, realms):
         """Check that the realm is one of a set allowed realms."""
-        return all((r in self.realms for r in realms))
+        return all(r in self.realms for r in realms)
 
     def _subclass_must_implement(self, fn):
         """
