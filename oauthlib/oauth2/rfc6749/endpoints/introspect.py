@@ -39,6 +39,7 @@ class IntrospectEndpoint(BaseEndpoint):
    """
 
     valid_token_types = ('access_token', 'refresh_token')
+    valid_request_methods = ('POST',)
 
     def __init__(self, request_validator, supported_token_types=None):
         BaseEndpoint.__init__(self)
@@ -56,7 +57,7 @@ class IntrospectEndpoint(BaseEndpoint):
         an introspection response indicating the token is not active
         as described in Section 2.2.
         """
-        headers = {
+        resp_headers = {
             'Content-Type': 'application/json',
             'Cache-Control': 'no-store',
             'Pragma': 'no-cache',
@@ -67,8 +68,8 @@ class IntrospectEndpoint(BaseEndpoint):
             log.debug('Token introspect valid for %r.', request)
         except OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
-            headers.update(e.headers)
-            return headers, e.json, e.status_code
+            resp_headers.update(e.headers)
+            return resp_headers, e.json, e.status_code
 
         claims = self.request_validator.introspect_token(
             request.token,
@@ -76,10 +77,10 @@ class IntrospectEndpoint(BaseEndpoint):
             request
         )
         if claims is None:
-            return headers, json.dumps(dict(active=False)), 200
+            return resp_headers, json.dumps(dict(active=False)), 200
         if "active" in claims:
             claims.pop("active")
-        return headers, json.dumps(dict(active=True, **claims)), 200
+        return resp_headers, json.dumps(dict(active=True, **claims)), 200
 
     def validate_introspect_request(self, request):
         """Ensure the request is valid.
@@ -117,6 +118,8 @@ class IntrospectEndpoint(BaseEndpoint):
         .. _`section 1.5`: http://tools.ietf.org/html/rfc6749#section-1.5
         .. _`RFC6749`: http://tools.ietf.org/html/rfc6749
         """
+        self._raise_on_bad_method(request)
+        self._raise_on_bad_post_request(request)
         self._raise_on_missing_token(request)
         self._raise_on_invalid_client(request)
         self._raise_on_unsupported_token(request)

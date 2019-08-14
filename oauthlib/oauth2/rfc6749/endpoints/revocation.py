@@ -28,6 +28,7 @@ class RevocationEndpoint(BaseEndpoint):
     """
 
     valid_token_types = ('access_token', 'refresh_token')
+    valid_request_methods = ('POST',)
 
     def __init__(self, request_validator, supported_token_types=None,
             enable_jsonp=False):
@@ -58,7 +59,7 @@ class RevocationEndpoint(BaseEndpoint):
         An invalid token type hint value is ignored by the authorization server
         and does not influence the revocation response.
         """
-        headers = {
+        resp_headers = {
             'Content-Type': 'application/json',
             'Cache-Control': 'no-store',
             'Pragma': 'no-cache',
@@ -73,8 +74,8 @@ class RevocationEndpoint(BaseEndpoint):
             response_body = e.json
             if self.enable_jsonp and request.callback:
                 response_body = '%s(%s);' % (request.callback, response_body)
-            headers.update(e.headers)
-            return headers, response_body, e.status_code
+            resp_headers.update(e.headers)
+            return resp_headers, response_body, e.status_code
 
         self.request_validator.revoke_token(request.token,
                                             request.token_type_hint, request)
@@ -121,6 +122,8 @@ class RevocationEndpoint(BaseEndpoint):
         .. _`Section 4.1.2`: https://tools.ietf.org/html/draft-ietf-oauth-revocation-11#section-4.1.2
         .. _`RFC6749`: https://tools.ietf.org/html/rfc6749
         """
+        self._raise_on_bad_method(request)
+        self._raise_on_bad_post_request(request)
         self._raise_on_missing_token(request)
         self._raise_on_invalid_client(request)
         self._raise_on_unsupported_token(request)

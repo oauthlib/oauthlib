@@ -1,0 +1,319 @@
+digraph oauthlib {
+    /* Naming conventions:
+    f_ : functions in shape=record
+    endpoint_ : endpoints in shape=record
+    webapi_ : oauthlib entry/exit points in shape=hexagon
+    if_ : internal conditions
+    r_ : used when returning from two functions into one for improving clarity
+    h_ : callbacks/hooks available but not required
+    */
+    center="1"
+    edge [ style=bold ];
+
+    /* Web Framework Entry and Exit points */
+    {
+        node [ shape=hexagon ];
+        edge [ style=normal ];
+        
+        webapi_request [ label="WebFramework\nHTTP request" ];
+        webapi_request:s ->
+                endpoint_authorize:top:n,
+                endpoint_token:top:n,
+                endpoint_introspect:top:n,
+                endpoint_revoke:top:n,
+                endpoint_resource:top:n;
+        webapi_response [ label="WebFramework\nHTTP response" ];
+    }
+
+    /* OAuthlib Endpoints */
+    {
+        rank=same;
+
+        endpoint_authorize [ shape=record; label="{<top>Authorize Endpoint|{create_authorize_response|{uri|method|body|headers|credentials}}|{<token>token|<code>code}}" ];
+        endpoint_token [ shape=record; label="{<top>Token Endpoint|{create_token_response|{uri|method|body|headers|credentials}}|{<authorization_code>authorization_code|<password>password|<client_credentials>client_credentials|<refresh_token>refresh_token}}" ];
+        endpoint_revoke [ shape=record; label="{<top>Revocation Endpoint|{create_revocation_response|{uri|method|body|headers}}}" ];
+        endpoint_introspect [ shape=record; label="{<top>Introspect Endpoint|{create_introspect_response|{uri|method|body|headers}}}" ];
+        endpoint_resource [ shape=record; label="{<top>Resource Endpoint|{verify_request|{uri|method|body|headers|scopes_list}}}" ];
+    }
+
+    /* OAuthlib RequestValidator Methods */
+    {
+        node [ shape=record ];
+
+        f_client_authentication_required [ label="{{<top>client_authentication_required|request}|{<true>True|<false>False}}"; ];
+        f_authenticate_client [ label="{{<top>authenticate_client|request}|{<true>True|<false>False}}";];
+        f_authenticate_client_id [ label="{{<top>authenticate_client_id|{client_id|request}}|{<true>True|<false>False}}"; ];
+        f_validate_grant_type [ label="{{<top>validate_grant_type|{client_id|grant_type|client|request}}|{<true>True|<false>False}}"; ];
+        f_validate_code [ label="{{<top>validate_code|{client_id|code|request}}|{<true>True|<false>False}}"; ];
+        f_confirm_redirect_uri [ label="{{<top>confirm_redirect_uri|{client_id|code|redirect_uri|client|request}}|{<true>True|<false>False}}"; ];
+        f_get_default_redirect_uri [ label="{{<top>get_default_redirect_uri|{client_id|request}}|{<redirect_uri>redirect_uri|<none>None}}"; ];
+        f_invalidate_authorization_code [ label="{{<top>invalidate_authorization_code|{client_id|code|request}}|None}"; ];
+        f_validate_scopes [ label="{{<top>validate_scopes|{client_id|scopes|client|request}}|{<true>True|<false>False}}"; ];
+        f_save_bearer_token [ label="{{<top>save_bearer_token|{token|request}}|None}"; ];
+        f_revoke_token [ label="{{<top>revoke_token|{token|token_type_hint|request}}|None}"; ];
+        f_validate_client_id [ label="{{<top>validate_client_id|{client_id|request}}|{<true>True|<false>False}}"; ];
+        f_validate_redirect_uri [ label="{{<top>validate_redirect_uri|{client_id|redirect_uri|request}}|{<true>True|<false>False}}"; ];
+        f_is_pkce_required [ label="{{<top>is_pkce_required|{client_id|request}}|{<true>True|<false>False}}"; ];
+        f_validate_response_type [ label="{{<top>validate_response_type|{client_id|response_type|client|request}}|{<true>True|<false>False}}"; ];
+        f_save_authorization_code [ label="{{<top>save_authorization_code|{client_id|code|request}}|None}"; ];
+        f_validate_bearer_token [ label="{{<top>validate_bearer_token|{token|scopes|request}}|{<true>True|<false>False}}"; ];
+        f_validate_refresh_token [ label="{{<top>validate_refresh_token|{refresh_token|client|request}}|{<true>True|<false>False}}"; ];
+        f_get_default_scopes [ label="{{<top>get_default_scopes|{client_id|request}}|{<scopes>[scopes]}}"; ];
+        f_get_original_scopes [ label="{{<top>get_original_scopes|{refresh_token|request}}|{<scopes>[scopes]}}"; ];
+        f_is_within_original_scope [ label="{{<top>is_within_original_scope|{refresh_scopes|refresh_token|request}}|{<true>True|<false>False}}"; ];
+        f_validate_user [ label="{{<top>validate_user|{username|password|client|request}}|{<true>True|<false>False}}"; ];
+        f_introspect_token [ label="{{<top>introspect_token|{token|token_type_hint|request}}|{<claims>\{claims\}|<none>None}}"; ];
+        f_rotate_refresh_token [ label="{{<top>rotate_refresh_token|{request}}|{<true>True|<false>False}}"; ];
+    }
+
+    /* OAuthlib Conditions */
+
+    if_code_challenge [ label="if code_challenge"; ];
+    if_redirect_uri [ label="if redirect_uri"; ];
+    if_redirect_uri_present [ shape=none;label="present"; ];
+    if_redirect_uri_missing [ shape=none;label="missing"; ];
+    if_scopes [ label="if scopes"; ];
+    if_all [ label="all(request_scopes not in scopes)"; ];
+
+    /* OAuthlib functions returns helpers */
+    r_client_authenticated [ shape=none,label="client authenticated"; ];
+
+    /* OAuthlib errors */
+    e_normal [ shape=none,label="ERROR" ];
+
+    /* Ranking by functional roles */
+    {
+        rank = same;
+        f_validate_client_id;
+        f_validate_code;
+        /* f_validate_user; */
+        f_validate_bearer_token;
+        f_validate_refresh_token;
+        f_introspect_token;
+        f_revoke_token;
+    }
+    {
+        rank = same;
+        f_validate_redirect_uri;
+        f_confirm_redirect_uri;
+    }
+    {
+        rank = same;
+        f_save_bearer_token;
+        f_save_authorization_code;
+    }
+    {
+        rank = same;
+        f_invalidate_authorization_code;
+    }
+    {
+        rank = same;
+        f_validate_scopes;
+        f_get_original_scopes;
+        f_get_default_scopes;
+    }
+    {
+        rank = same;
+        f_is_within_original_scope;
+    }
+
+    {
+        node [ shape=record,color=grey ];
+        edge [ color=grey ];
+
+        h_pre_auth [ label="{{<top>pre_auth|<arg>request}|<resp>\{credentials\}}}"; ];
+        h_post_auth [ label="{{<top>post_auth|<arg>request}|<resp>\{credentials\}}}"; ];
+        h_pre_token [ label="{{<top>pre_token|<arg>request}|<resp>}}"; ];
+        h_pre_token_password [ label="{{<top>pre_token|<arg>request}|<resp>}}"; ];
+        h_pre_token_implicit [ label="{{<top>pre_token|<arg>request}|<resp>}}"; ];
+        h_post_token [ label="{{<top>post_token|<arg>request}|<resp>}}"; ];
+        h_token_modifiers [ label="{{<top>token_modifiers|{token|token_handler|<arg>request}}|<resp>\{token\}}}"; ];
+        h_code_modifiers [ label="{{<top>code_modifiers|{grant|token_handler|<arg>request}}|<resp>\{grant\}}}"; ];
+        h_generate_access_token [ label="{{<top>generate_access_token|<arg>request}|<resp>\{access token\}}}"; ];
+        h_generate_refresh_token [ label="{{<top>generate_refresh_token|<arg>request}|<resp>\{refresh token\}}}"; ];
+
+        h_pre_auth:resp:se -> h_pre_auth:arg:ne;
+        h_post_auth:resp:se -> h_post_auth:arg:ne;
+        h_pre_token:resp:se -> h_pre_token:arg:ne;
+        h_pre_token_password:resp:se -> h_pre_token_password:arg:ne;
+        h_pre_token_implicit:resp:se -> h_pre_token_implicit:arg:ne;
+        h_post_token:resp:se -> h_post_token:arg:ne;
+        h_token_modifiers:resp:se -> h_token_modifiers:arg:ne;
+        h_code_modifiers:resp:se -> h_code_modifiers:arg:ne;
+    }
+    {
+            rank = same;
+            h_token_modifiers;
+            h_code_modifiers;
+    }
+
+    /* Authorization Code - Access Token Request */
+    {
+        edge [ color=darkgreen ];
+
+        endpoint_token:authorization_code:s -> h_pre_token -> f_client_authentication_required;
+        f_client_authentication_required:true:s -> f_authenticate_client;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_validate_grant_type;
+        f_validate_grant_type:true:s -> f_validate_code;
+
+        f_validate_code:true:s -> if_redirect_uri;
+        if_redirect_uri -> if_redirect_uri_present [ arrowhead=none ];
+        if_redirect_uri -> if_redirect_uri_missing [ arrowhead=none ];
+        if_redirect_uri_present -> f_confirm_redirect_uri;
+        if_redirect_uri_missing -> f_get_default_redirect_uri;
+        f_get_default_redirect_uri:redirect_uri:s -> f_confirm_redirect_uri;
+
+        f_confirm_redirect_uri:true:s -> h_post_token;
+
+        h_post_token -> h_generate_access_token -> f_rotate_refresh_token;
+        f_rotate_refresh_token:true:s -> h_generate_refresh_token -> h_token_modifiers;
+        f_rotate_refresh_token:false:s -> h_token_modifiers;
+        h_token_modifiers -> f_save_bearer_token ->
+        f_invalidate_authorization_code -> webapi_response;
+    }
+    /* Authorization Code - Authorization Request */
+    {
+        edge [ color=green ];
+
+        endpoint_authorize:code:s -> f_validate_client_id;
+        f_validate_client_id:true:s -> if_redirect_uri;
+        if_redirect_uri -> if_redirect_uri_present [ arrowhead=none ];
+        if_redirect_uri -> if_redirect_uri_missing [ arrowhead=none ];
+        if_redirect_uri_present -> f_validate_redirect_uri;
+        if_redirect_uri_missing -> f_get_default_redirect_uri;
+
+        f_validate_redirect_uri:true:s -> h_pre_auth;
+        f_get_default_redirect_uri:redirect_uri:s -> h_pre_auth;
+        h_pre_auth -> f_validate_response_type;
+        f_validate_response_type:true:s -> f_is_pkce_required;
+        f_is_pkce_required:true:s -> if_code_challenge;
+        f_is_pkce_required:false:s -> f_validate_scopes;
+
+        if_code_challenge -> f_validate_scopes [ label="present" ];
+        if_code_challenge -> e_normal [ label="missing",style=dashed ];
+
+        f_validate_scopes:true:s -> h_post_auth;
+        h_post_auth -> h_code_modifiers -> f_save_authorization_code;
+        f_save_authorization_code -> webapi_response;
+    }
+
+    /* Implicit */ 
+    {
+        edge [ color=orange ];
+
+        endpoint_authorize:token:s -> f_validate_client_id;
+        f_validate_client_id:true:s -> if_redirect_uri;
+        if_redirect_uri -> if_redirect_uri_present [ arrowhead=none ];
+        if_redirect_uri -> if_redirect_uri_missing [ arrowhead=none ];
+        if_redirect_uri_present -> f_validate_redirect_uri;
+        if_redirect_uri_missing -> f_get_default_redirect_uri;
+
+        f_validate_redirect_uri:true:s -> h_pre_auth;
+        f_get_default_redirect_uri:redirect_uri:s -> h_pre_auth;
+        h_pre_auth -> h_pre_token_implicit -> f_validate_response_type;
+
+        f_validate_response_type:true:s -> f_validate_scopes;
+        f_validate_scopes:true:s -> h_post_auth -> h_post_token ->
+        h_generate_access_token -> h_token_modifiers ->
+        f_save_bearer_token -> webapi_response;
+    }
+
+    /* Resource Owner Password Grant */
+    {
+        edge [ color=red ];
+
+        endpoint_token:password:s -> f_client_authentication_required;
+        f_client_authentication_required:true:s -> f_authenticate_client;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> h_pre_token_password -> f_validate_user;
+        f_validate_user:true:s -> f_validate_grant_type;
+
+        f_validate_grant_type:true:s -> if_scopes;
+        if_scopes -> f_validate_scopes [ label="present" ];
+        if_scopes -> f_get_default_scopes [ label="missing" ];
+
+        f_validate_scopes:true:s -> h_post_token;
+        f_get_default_scopes -> h_post_token;
+
+        h_post_token -> h_generate_access_token -> f_rotate_refresh_token;
+        f_rotate_refresh_token:true:s -> h_generate_refresh_token -> h_token_modifiers;
+        f_rotate_refresh_token:false:s -> h_token_modifiers ->
+        f_save_bearer_token -> webapi_response;
+    }
+
+    /* Client Credentials Grant */
+    {
+        edge [ color=blue ];
+
+        endpoint_token:client_credentials:s -> h_pre_token -> f_authenticate_client;
+
+        f_authenticate_client:true:s -> f_validate_grant_type;
+        f_validate_grant_type:true:s -> f_validate_scopes;
+        f_validate_scopes:true:s -> h_post_token;
+
+        h_post_token -> h_generate_access_token -> h_token_modifiers ->
+        f_save_bearer_token -> webapi_response;
+    }
+
+    /* Refresh Grant */
+    {
+        edge [ color=brown ];
+
+        endpoint_token:refresh_token:s -> h_pre_token -> f_client_authentication_required;
+        f_client_authentication_required:true:s -> f_authenticate_client;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_validate_grant_type;
+
+        f_validate_grant_type:true:s -> f_validate_refresh_token;
+        f_validate_refresh_token:true:s -> f_get_original_scopes;
+        f_get_original_scopes -> if_all;
+        if_all -> f_is_within_original_scope [ label="True" ];
+        if_all -> h_post_token [ label="False" ];
+        f_is_within_original_scope:true:s -> h_post_token;
+        h_post_token -> h_generate_access_token -> f_rotate_refresh_token;
+        f_rotate_refresh_token:true:s -> h_generate_refresh_token -> h_token_modifiers;
+        f_rotate_refresh_token:false:s -> h_token_modifiers;
+        h_token_modifiers -> f_save_bearer_token -> webapi_response;
+    }
+
+    /* Introspect Endpoint  */
+    {
+        edge [ color=yellow ];
+
+        endpoint_introspect:s -> f_client_authentication_required;
+        f_client_authentication_required:true:s -> f_authenticate_client;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_introspect_token;
+        f_introspect_token:claims -> webapi_response;
+    }
+
+    /* Revocation Endpoint */
+    {
+        edge [ color=purple ];
+
+        endpoint_revoke:s -> f_client_authentication_required;
+        f_client_authentication_required:true:s -> f_authenticate_client;
+        f_client_authentication_required:false:s -> f_authenticate_client_id;
+        f_authenticate_client:true:s -> r_client_authenticated [ arrowhead=none ];
+        f_authenticate_client_id:true:s -> r_client_authenticated [ arrowhead=none ];
+        r_client_authenticated -> f_revoke_token;
+        f_revoke_token:s -> webapi_response;
+    }
+
+    /* Resource Access - Verify Request */
+    {
+        edge [ color=pink ];
+
+        endpoint_resource:s -> f_validate_bearer_token;
+        f_validate_bearer_token:true -> webapi_response;
+    }
+}

@@ -12,6 +12,7 @@ from __future__ import absolute_import, unicode_literals
 import hashlib
 import hmac
 from binascii import b2a_base64
+import warnings
 
 from oauthlib import common
 from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
@@ -253,7 +254,7 @@ def get_token_from_header(request):
 
     if 'Authorization' in request.headers:
         split_header = request.headers.get('Authorization').split()
-        if len(split_header) == 2 and split_header[0] == 'Bearer':
+        if len(split_header) == 2 and split_header[0].lower() == 'bearer':
             token = split_header[1]
     else:
         token = request.access_token
@@ -296,15 +297,18 @@ class BearerToken(TokenBase):
         )
         self.expires_in = expires_in or 3600
 
-    def create_token(self, request, refresh_token=False, save_token=True):
+    def create_token(self, request, refresh_token=False, **kwargs):
         """
         Create a BearerToken, by default without refresh token.
-        
+
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :param refresh_token:
-        :param save_token:
         """
+        if "save_token" in kwargs:
+            warnings.warn("`save_token` has been deprecated, it was not called internally."
+                          "If you do, call `request_validator.save_token()` instead.",
+                          DeprecationWarning)
 
         if callable(self.expires_in):
             expires_in = self.expires_in(request)
@@ -325,9 +329,6 @@ class BearerToken(TokenBase):
         if request.scopes is not None:
             token['scope'] = ' '.join(request.scopes)
 
-        if request.state is not None:
-            token['state'] = request.state
-
         if refresh_token:
             if (request.refresh_token and
                     not self.request_validator.rotate_refresh_token(request)):
@@ -336,10 +337,7 @@ class BearerToken(TokenBase):
                 token['refresh_token'] = self.refresh_token_generator(request)
 
         token.update(request.extra_credentials or {})
-        token = OAuth2Token(token)
-        if save_token:
-            self.request_validator.save_bearer_token(token, request)
-        return token
+        return OAuth2Token(token)
 
     def validate_request(self, request):
         """
@@ -355,7 +353,7 @@ class BearerToken(TokenBase):
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
-        if request.headers.get('Authorization', '').split(' ')[0] == 'Bearer':
+        if request.headers.get('Authorization', '').split(' ')[0].lower() == 'bearer':
             return 9
         elif request.access_token is not None:
             return 5

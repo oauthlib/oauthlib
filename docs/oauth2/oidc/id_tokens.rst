@@ -1,9 +1,9 @@
 ID Tokens
 =========
 
-The creation of `ID Tokens`_ is ultimately done not by OAuthLib but by your ``RequestValidator`` subclass.  This is because their
+The creation of `ID Tokens`_ is ultimately not done by OAuthLib but by your ``RequestValidator`` subclass.  This is because their
 content is dependent on your implementation of users, their attributes, any claims you may wish to support, as well as the
-details of how you model the notion of a Client Application.  As such OAuthLib simply calls your validator's ``get_id_token``
+details of how you model the notion of a Client Application. As such OAuthLib simply calls your validator's ``finalize_id_token``
 method at the appropriate times during the authorization flow, depending on the grant type requested (Authorization Code, Implicit,
 Hybrid, etc.).
 
@@ -12,7 +12,7 @@ See examples below.
 .. _`ID Tokens`: http://openid.net/specs/openid-connect-core-1_0.html#IDToken
 
 .. autoclass:: oauthlib.oauth2.RequestValidator
-   :members: get_id_token
+   :members: finalize_id_token
 
 
 JWT/JWS example with pyjwt library
@@ -38,12 +38,13 @@ You can switch to jwcrypto library if you want to return JWE instead.
 
         super().__init__(self, **kwargs)
 
-    def get_id_token(self, token, token_handler, request):
+    def finalize_id_token(self, id_token, token, token_handler, request):
         import jwt
 
-        data = {"nonce": request.nonce} if request.nonce is not None else {}
-
+        id_token["iss"] = "https://my.cool.app.com"
+        id_token["sub"] = request.user.id
+        id_token["exp"] = id_token["iat"] + 3600 * 24  # keep it valid for 24hours
         for claim_key in request.claims:
-            data[claim_key] = request.userattributes[claim_key]  # this must be set in another callback
+            id_token[claim_key] = request.userattributes[claim_key]  # this must be set in another callback
 
-        return jwt.encode(data, self.private_pem, 'RS256')
+        return jwt.encode(id_token, self.private_pem, 'RS256')

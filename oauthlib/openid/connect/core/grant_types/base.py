@@ -1,7 +1,9 @@
 from .exceptions import OIDCNoPrompt
 
-import datetime
+import base64
+import hashlib
 import logging
+import time
 from json import loads
 
 from oauthlib.oauth2.rfc6749.errors import ConsentRequired, InvalidRequestError, LoginRequired
@@ -49,7 +51,45 @@ class GrantTypeBase(object):
                 raise InvalidRequestError(description="Malformed claims parameter",
                                           uri="http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter")
 
-    def add_id_token(self, token, token_handler, request):
+    def id_token_hash(self, value, hashfunc=hashlib.sha256):
+        """
+        Its value is the base64url encoding of the left-most half of the
+        hash of the octets of the ASCII representation of the access_token
+        value, where the hash algorithm used is the hash algorithm used in
+        the alg Header Parameter of the ID Token's JOSE Header.
+
+        For instance, if the alg is RS256, hash the access_token value
+        with SHA-256, then take the left-most 128 bits and
+        base64url-encode them.
+        For instance, if the alg is HS512, hash the code value with
+        SHA-512, then take the left-most 256 bits and base64url-encode
+        them. The c_hash value is a case-sensitive string.
+
+        Example of hash from OIDC specification (bound to a JWS using RS256):
+
+        code:
+        Qcb0Orv1zh30vL1MPRsbm-diHiMwcLyZvn1arpZv-Jxf_11jnpEX3Tgfvk
+
+        c_hash:
+        LDktKdoQak3Pk0cnXxCltA
+        """
+        digest = hashfunc(value.encode()).digest()
+        left_most = len(digest) // 2
+        return base64.urlsafe_b64encode(digest[:left_most]).decode().rstrip("=")
+
+    def add_id_token(self, token, token_handler, request, nonce=None):
+        """
+        Construct an initial version of id_token, and let the
+        request_validator sign or encrypt it.
+
+        The initial version can contain the fields below, accordingly
+        to the spec:
+        - aud
+        - iat
+        - nonce
+        - at_hash
+        - c_hash
+        """
         # Treat it as normal OAuth 2 auth code request if openid is not present
         if not request.scopes or 'openid' not in request.scopes:
             return token
@@ -58,16 +98,54 @@ class GrantTypeBase(object):
         if request.response_type and 'id_token' not in request.response_type:
             return token
 
-        if 'state' not in token:
-            token['state'] = request.state
+        # Implementation mint its own id_token without help.
+        id_token = self.request_validator.get_id_token(token, token_handler, request)
+        if id_token:
+            token['id_token'] = id_token
+            return token
 
-        if request.max_age:
-            d = datetime.datetime.utcnow()
-            token['auth_time'] = d.isoformat("T") + "Z"
+        # Fallback for asking some help from oauthlib framework.
+        # Start with technicals fields bound to the specification.
+        id_token = {}
+        id_token['aud'] = request.client_id
+        id_token['iat'] = int(time.time())
 
-        # TODO: acr claims (probably better handled by server code using oauthlib in get_id_token)
+        # nonce is REQUIRED when response_type value is:
+        # - id_token token (Implicit)
+        # - id_token (Implicit)
+        # - code id_token (Hybrid)
+        # - code id_token token (Hybrid)
+        #
+        # nonce is OPTIONAL when response_type value is:
+        # - code (Authorization Code)
+        # - code token (Hybrid)
+        if nonce is not None:
+            id_token["nonce"] = nonce
 
-        token['id_token'] = self.request_validator.get_id_token(token, token_handler, request)
+        # at_hash is REQUIRED when response_type value is:
+        # - id_token token (Implicit)
+        # - code id_token token (Hybrid)
+        #
+        # at_hash is OPTIONAL when:
+        # - code (Authorization code)
+        # - code id_token (Hybrid)
+        # - code token (Hybrid)
+        #
+        # at_hash MAY NOT be used when:
+        # - id_token (Implicit)
+        if "access_token" in token:
+            id_token["at_hash"] = self.id_token_hash(token["access_token"])
+
+        # c_hash is REQUIRED when response_type value is:
+        # - code id_token (Hybrid)
+        # - code id_token token (Hybrid)
+        #
+        # c_hash is OPTIONAL for others.
+        if "code" in token:
+            id_token["c_hash"] = self.id_token_hash(token["code"])
+
+        # Call request_validator to complete/sign/encrypt id_token
+        token['id_token'] = self.request_validator.finalize_id_token(id_token, token, token_handler, request)
 
         return token
 
@@ -249,29 +327,6 @@ class GrantTypeBase(object):
         }
 
         return request_info
-
-    def openid_implicit_authorization_validator(self, request):
-        """Additional validation when following the implicit flow.
-        """
-        # Undefined in OpenID Connect, fall back to OAuth2 definition.
-        if request.response_type == 'token':
-            return {}
-
-        # Treat it as normal OAuth 2 auth code request if openid is not present
-        if not request.scopes or 'openid' not in request.scopes:
-            return {}
-
-        # REQUIRED. String value used to associate a Client session with an ID
-        # Token, and to mitigate replay attacks. The value is passed through
-        # unmodified from the Authentication Request to the ID Token.
-        # Sufficient entropy MUST be present in the nonce values used to
-        # prevent attackers from guessing values. For implementation notes, see
-        # Section 15.5.2.
-        if not request.nonce:
-            desc = 'Request is missing mandatory nonce parameter.'
-            raise InvalidRequestError(request=request, description=desc)
-
-        return {}
 
 
 OpenIDConnectBase = GrantTypeBase

@@ -40,9 +40,10 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-def construct_base_string(http_method, base_string_uri,
+
+def signature_base_string(http_method, base_str_uri,
                           normalized_encoded_request_parameters):
-    """**String Construction**
+    """**Construct the signature base string.**
     Per `section 3.4.1.1`_ of the spec.
 
     For example, the HTTP request::
@@ -90,7 +91,7 @@ def construct_base_string(http_method, base_string_uri,
     #
     # .. _`Section 3.4.1.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.2
     # .. _`Section 3.4.6`: https://tools.ietf.org/html/rfc5849#section-3.4.6
-    base_string += utils.escape(base_string_uri)
+    base_string += utils.escape(base_str_uri)
 
     # 4.  An "&" character (ASCII code 38).
     base_string += '&'
@@ -105,9 +106,9 @@ def construct_base_string(http_method, base_string_uri,
     return base_string
 
 
-def normalize_base_string_uri(uri, host=None):
+def base_string_uri(uri, host=None):
     """**Base String URI**
-    Per `section 3.4.1.2`_ of the spec.
+    Per `section 3.4.1.2`_ of RFC 5849.
 
     For example, the HTTP request::
 
@@ -177,7 +178,31 @@ def normalize_base_string_uri(uri, host=None):
         if (scheme, port) in default_ports:
             netloc = host
 
-    return urlparse.urlunparse((scheme, netloc, path, params, '', ''))
+    v = urlparse.urlunparse((scheme, netloc, path, params, '', ''))
+
+    # RFC 5849 does not specify which characters are encoded in the
+    # "base string URI", nor how they are encoded - which is very bad, since
+    # the signatures won't match if there are any differences. Fortunately,
+    # most URIs only use characters that are clearly not encoded (e.g. digits
+    # and A-Z, a-z), so have avoided any differences between implementations.
+    #
+    # The example from its section 3.4.1.2 illustrates that spaces in
+    # the path are percent encoded. But it provides no guidance as to what other
+    # characters (if any) must be encoded (nor how); nor if characters in the
+    # other components are to be encoded or not.
+    #
+    # This implementation **assumes** that **only** the space is percent-encoded
+    # and it is done to the entire value (not just to spaces in the path).
+    #
+    # This code may need to be changed if it is discovered that other characters
+    # are expected to be encoded.
+    #
+    # Note: the "base string URI" returned by this function will be encoded
+    # again before being concatenated into the "signature base string". So any
+    # spaces in the URI will actually appear in the "signature base string"
+    # as "%2520" (the "%20" further encoded according to section 3.6).
+
+    return v.replace(' ', '%20')
 
 
 # ** Request Parameters **
@@ -624,13 +649,45 @@ def verify_hmac_sha1(request, client_secret=None,
 
     """
     norm_params = normalize_parameters(request.params)
-    uri = normalize_base_string_uri(request.uri)
-    base_string = construct_base_string(request.http_method, uri, norm_params)
-    signature = sign_hmac_sha1(base_string, client_secret,
+    bs_uri = base_string_uri(request.uri)
+    sig_base_str = signature_base_string(request.http_method, bs_uri,
+                                         norm_params)
+    signature = sign_hmac_sha1(sig_base_str, client_secret,
                                resource_owner_secret)
     match = safe_string_equals(signature, request.signature)
     if not match:
-        log.debug('Verify HMAC-SHA1 failed: sig base string: %s', base_string)
+        log.debug('Verify HMAC-SHA1 failed: signature base string: %s',
+                  sig_base_str)
+    return match
+
+
+def verify_hmac_sha256(request, client_secret=None,
+                     resource_owner_secret=None):
+    """Verify a HMAC-SHA256 signature.
+
+    Per `section 3.4`_ of the spec.
+
+    .. _`section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
+
+    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
+    attribute MUST be an absolute URI whose netloc part identifies the
+    origin server or gateway on which the resource resides. Any Host
+    item of the request argument's headers dict attribute will be
+    ignored.
+
+    .. _`RFC2616 section 5.2`: https://tools.ietf.org/html/rfc2616#section-5.2
+
+    """
+    norm_params = normalize_parameters(request.params)
+    bs_uri = base_string_uri(request.uri)
+    sig_base_str = signature_base_string(request.http_method, bs_uri,
+                                         norm_params)
+    signature = sign_hmac_sha256(sig_base_str, client_secret,
+                               resource_owner_secret)
+    match = safe_string_equals(signature, request.signature)
+    if not match:
+        log.debug('Verify HMAC-SHA256 failed: signature base string: %s',
+                  sig_base_str)
     return match
 
 
@@ -657,16 +714,18 @@ def verify_rsa_sha1(request, rsa_public_key):
     .. _`RFC2616 section 5.2`: https://tools.ietf.org/html/rfc2616#section-5.2
     """
     norm_params = normalize_parameters(request.params)
-    uri = normalize_base_string_uri(request.uri)
-    message = construct_base_string(request.http_method, uri, norm_params).encode('utf-8')
+    bs_uri = base_string_uri(request.uri)
+    sig_base_str = signature_base_string(request.http_method, bs_uri,
+                                         norm_params).encode('utf-8')
     sig = binascii.a2b_base64(request.signature.encode('utf-8'))
 
     alg = _jwt_rs1_signing_algorithm()
     key = _prepare_key_plus(alg, rsa_public_key)
 
-    verify_ok = alg.verify(message, key, sig)
+    verify_ok = alg.verify(sig_base_str, key, sig)
     if not verify_ok:
-        log.debug('Verify RSA-SHA1 failed: sig base string: %s', message)
+        log.debug('Verify RSA-SHA1 failed: signature base string: %s',
+                  sig_base_str)
     return verify_ok
 
 

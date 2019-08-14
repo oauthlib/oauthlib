@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+import os
 import sys
 
+import oauthlib
 from oauthlib.common import (CaseInsensitiveDict, Request, add_params_to_uri,
                              extract_params, generate_client_id,
                              generate_nonce, generate_timestamp,
@@ -213,6 +215,20 @@ class RequestTest(TestCase):
         r = Request(URI, headers={'token': 'foobar'}, body='token=banana')
         self.assertEqual(r.headers['token'], 'foobar')
         self.assertEqual(r.token, 'banana')
+
+    def test_sanitized_request_non_debug_mode(self):
+        """make sure requests are sanitized when in non debug mode.
+        For the debug mode, the other tests checking sanitization should prove
+        that debug mode is working.
+        """
+        try:
+            oauthlib.set_debug(False)
+            r = Request(URI, headers={'token': 'foobar'}, body='token=banana')
+            self.assertNotIn('token', repr(r))
+            self.assertIn('SANITIZED', repr(r))
+        finally:
+            # set flag back for other tests
+            oauthlib.set_debug(True)
 
 
 class CaseInsensitiveDictTest(TestCase):

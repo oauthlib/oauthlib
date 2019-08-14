@@ -215,8 +215,10 @@ class AuthorizationCodeGrantTest(TestCase):
             self.mock_validator.is_pkce_required.return_value = required
             self.request.code_challenge = "present"
             _, ri = self.auth.validate_authorization_request(self.request)
-            self.assertIsNotNone(ri["request"].code_challenge_method)
-            self.assertEqual(ri["request"].code_challenge_method, "plain")
+            self.assertIn("code_challenge", ri)
+            self.assertIn("code_challenge_method", ri)
+            self.assertEqual(ri["code_challenge"], "present")
+            self.assertEqual(ri["code_challenge_method"], "plain")
 
     def test_pkce_wrong_method(self):
         for required in [True, False]:

@@ -237,9 +237,12 @@ class ImplicitGrant(GrantTypeBase):
         # "id_token token" - return the access token and the id token
         # "id_token" - don't return the access token
         if "token" in request.response_type.split():
-            token = token_handler.create_token(request, refresh_token=False, save_token=False)
+            token = token_handler.create_token(request, refresh_token=False)
         else:
             token = {}
+
+        if request.state is not None:
+            token['state'] = request.state
 
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)

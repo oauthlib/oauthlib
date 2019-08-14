@@ -18,20 +18,17 @@ def fread(fn):
     with open(join(dirname(__file__), fn), 'r') as f:
         return f.read()
 
-tests_require = ['cryptography', 'pyjwt>=1.0.0', 'blinker']
-if sys.version_info[0] == 2:
-    tests_require.append('mock>=2.0')
+
 rsa_require = ['cryptography']
 signedtoken_require = ['cryptography', 'pyjwt>=1.0.0']
 signals_require = ['blinker']
-
-requires = []
 
 setup(
     name='oauthlib',
     version=oauthlib.__version__,
     description='A generic, spec-compliant, thorough implementation of the OAuth request-signing logic',
     long_description=fread('README.rst'),
+    long_description_content_type='text/x-rst',
     author='The OAuthlib Community',
     author_email='idan@gazit.me',
     maintainer='Ib Lundgren',
@@ -40,14 +37,12 @@ setup(
     platforms='any',
     license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
-    tests_require=tests_require,
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     extras_require={
-        'test': tests_require,
         'rsa': rsa_require,
         'signedtoken': signedtoken_require,
         'signals': signals_require,
     },
-    install_requires=requires,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',

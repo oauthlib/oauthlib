@@ -27,7 +27,7 @@ notifications:
     urls:
     - https://coveralls.io/webhook
     - https://webhooks.gitter.im/e/6008c872bf0ecee344f4
-    on_success: change
+    on_success: always
     on_failure: always
     on_start: never
 deploy:

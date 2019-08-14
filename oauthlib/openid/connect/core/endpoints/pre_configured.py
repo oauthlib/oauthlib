@@ -34,10 +34,11 @@ from ..grant_types.dispatchers import (
     AuthorizationTokenGrantDispatcher
 )
 from ..tokens import JWTToken
+from .userinfo import UserInfoEndpoint
 
 
 class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
-             ResourceEndpoint, RevocationEndpoint):
+             ResourceEndpoint, RevocationEndpoint, UserInfoEndpoint):
 
     """An all-in-one endpoint featuring all four major grant types."""
 
@@ -105,3 +106,4 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
                                   token_types={'Bearer': bearer, 'JWT': jwt})
         RevocationEndpoint.__init__(self, request_validator)
         IntrospectEndpoint.__init__(self, request_validator)
+        UserInfoEndpoint.__init__(self, request_validator)

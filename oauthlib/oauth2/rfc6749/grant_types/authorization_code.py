@@ -305,9 +305,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=self.refresh_token, save_token=False)
+        token = token_handler.create_token(request, refresh_token=self.refresh_token)
+
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
+
         self.request_validator.save_token(token, request)
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
@@ -403,12 +405,15 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 raise errors.MissingCodeChallengeError(request=request)
 
         if request.code_challenge is not None:
+            request_info["code_challenge"] = request.code_challenge
+
             # OPTIONAL, defaults to "plain" if not present in the request.
             if request.code_challenge_method is None:
                 request.code_challenge_method = "plain"
 
             if request.code_challenge_method not in self._code_challenge_methods:
                 raise errors.UnsupportedCodeChallengeMethodError(request=request)
+            request_info["code_challenge_method"] = request.code_challenge_method
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # https://tools.ietf.org/html/rfc6749#section-3.3

@@ -123,7 +123,6 @@ class IntrospectEndpointTest(TestCase):
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
 
-
     def test_introspect_unsupported_token(self):
         endpoint = IntrospectEndpoint(self.validator,
                                       supported_token_types=['access_token'])
@@ -140,3 +139,33 @@ class IntrospectEndpointTest(TestCase):
         self.assertEqual(h, self.resp_h)
         self.assertEqual(loads(b)['error'], 'invalid_request')
         self.assertEqual(s, 400)
+
+    def test_introspect_invalid_request_method(self):
+        endpoint = IntrospectEndpoint(self.validator,
+                                      supported_token_types=['access_token'])
+        test_methods = ['GET', 'pUt', 'dEleTe', 'paTcH']
+        test_methods = test_methods + [x.lower() for x in test_methods] + [x.upper() for x in test_methods]
+        for method in test_methods:
+            body = urlencode([('token', 'foo'),
+                              ('token_type_hint', 'refresh_token')])
+            h, b, s = endpoint.create_introspect_response(self.uri,
+                    http_method = method, headers=self.headers, body=body)
+            self.assertEqual(h, self.resp_h)
+            self.assertEqual(loads(b)['error'], 'invalid_request')
+            self.assertIn('Unsupported request method', loads(b)['error_description'])
+            self.assertEqual(s, 400)
+
+    def test_introspect_bad_post_request(self):
+        endpoint = IntrospectEndpoint(self.validator,
+                                      supported_token_types=['access_token'])
+        for param in ['token', 'secret', 'code', 'foo']:
+            uri = 'http://some.endpoint?' + urlencode([(param, 'secret')])
+            body = urlencode([('token', 'foo'),
+                              ('token_type_hint', 'access_token')])
+            h, b, s = endpoint.create_introspect_response(
+                uri,
+                headers=self.headers, body=body)
+            self.assertEqual(h, self.resp_h)
+            self.assertEqual(loads(b)['error'], 'invalid_request')
+            self.assertIn('query parameters are not allowed', loads(b)['error_description'])
+            self.assertEqual(s, 400)

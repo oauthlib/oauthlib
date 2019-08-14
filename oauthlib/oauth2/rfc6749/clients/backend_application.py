@@ -29,11 +29,11 @@ class BackendApplicationClient(Client):
     Since the client authentication is used as the authorization grant,
     no additional authorization request is needed.
     """
-    
+
     grant_type = 'client_credentials'
-    
+
     def prepare_request_body(self, body='', scope=None,
-                             include_client_id=None, **kwargs):
+                             include_client_id=False, **kwargs):
         """Add the client credentials to the request body.
 
         The client makes a request to the token endpoint by adding the
@@ -45,11 +45,11 @@ class BackendApplicationClient(Client):
         :param scope:   The scope of the access request as described by
                         `Section 3.3`_.
 
-        :param include_client_id: `True` to send the `client_id` in the body of
-                                  the upstream request. Default `None`. This is
-                                  required if the client is not authenticating
-                                  with the authorization server as described
-                                  in `Section 3.2.1`_.
+        :param include_client_id: `True` to send the `client_id` in the
+                                  body of the upstream request. This is required
+                                  if the client is not authenticating with the
+                                  authorization server as described in
+                                  `Section 3.2.1`_. False otherwise (default).
         :type include_client_id: Boolean
 
         :param kwargs:  Extra credentials to include in the token request.
@@ -71,5 +71,6 @@ class BackendApplicationClient(Client):
         """
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
+        scope = self.scope if scope is None else scope
         return prepare_token_request(self.grant_type, body=body,
                                      scope=scope, **kwargs)

@@ -73,7 +73,8 @@ class ParameterTests(TestCase):
     error_nocode = 'https://client.example.com/cb?state=xyz'
     error_nostate = 'https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA'
     error_wrongstate = 'https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA&state=abc'
-    error_response = 'https://client.example.com/cb?error=access_denied&state=xyz'
+    error_denied = 'https://client.example.com/cb?error=access_denied&state=xyz'
+    error_invalid = 'https://client.example.com/cb?error=invalid_request&state=xyz'
 
     implicit_base = 'https://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA&scope=abc&'
     implicit_response = implicit_base + 'state={0}&token_type=example&expires_in=3600'.format(state)
@@ -102,6 +103,15 @@ class ParameterTests(TestCase):
                      '  "expires_in": 3600,'
                      '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                      '  "example_parameter": "example_value" }')
+    json_response_noexpire = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
+                     '  "token_type": "example",'
+                     '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
+                     '  "example_parameter": "example_value"}')
+    json_response_expirenull = ('{ "access_token": "2YotnFZFEjr1zCsicMWpAA",'
+                     '  "token_type": "example",'
+                     '  "expires_in": null,'
+                     '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
+                     '  "example_parameter": "example_value"}')
 
     json_custom_error = '{ "error": "incorrect_client_credentials" }'
     json_error = '{ "error": "access_denied" }'
@@ -133,6 +143,13 @@ class ParameterTests(TestCase):
        'expires_at': 4600,
        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
        'example_parameter': 'example_value'
+    }
+
+    json_noexpire_dict = {
+        'access_token': '2YotnFZFEjr1zCsicMWpAA',
+        'token_type': 'example',
+        'refresh_token': 'tGzv3JOkF0XG5Qx2TlKWIA',
+        'example_parameter': 'example_value'
     }
 
     json_notype_dict = {
@@ -180,8 +197,10 @@ class ParameterTests(TestCase):
 
         self.assertRaises(MissingCodeError, parse_authorization_code_response,
                 self.error_nocode)
-        self.assertRaises(MissingCodeError, parse_authorization_code_response,
-                self.error_response)
+        self.assertRaises(AccessDeniedError, parse_authorization_code_response,
+                self.error_denied)
+        self.assertRaises(InvalidRequestFatalError, parse_authorization_code_response,
+                self.error_invalid)
         self.assertRaises(MismatchingStateError, parse_authorization_code_response,
                 self.error_nostate, state=self.state)
         self.assertRaises(MismatchingStateError, parse_authorization_code_response,
@@ -209,6 +228,8 @@ class ParameterTests(TestCase):
 
         self.assertEqual(parse_token_response(self.json_response_noscope,
             scope=['all', 'the', 'scopes']), self.json_noscope_dict)
+        self.assertEqual(parse_token_response(self.json_response_noexpire), self.json_noexpire_dict)
+        self.assertEqual(parse_token_response(self.json_response_expirenull), self.json_noexpire_dict)
 
         scope_changes_recorded = []
         def record_scope_change(sender, message, old, new):

@@ -24,7 +24,7 @@ class RequestValidator(OAuth2RequestValidator):
         id_token in token response only based on authorization code scopes.
 
         Only code param should be sufficient to retrieve grant code from
-        any storage you are using, `client_id` and `redirect_uri` can gave a
+        any storage you are using, `client_id` and `redirect_uri` can have a
         blank value `""` don't forget to check it before using those values
         in a select query if a database is used.
 
@@ -32,6 +32,30 @@ class RequestValidator(OAuth2RequestValidator):
         :param code: Unicode authorization code grant
         :param redirect_uri: Unicode absolute URI
         :return: A list of scope
+
+        Method is used by:
+            - Authorization Token Grant Dispatcher
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_authorization_code_nonce(self, client_id, code, redirect_uri, request):
+        """ Extracts nonce from saved authorization code.
+
+        If present in the Authentication Request, Authorization
+        Servers MUST include a nonce Claim in the ID Token with the
+        Claim Value being the nonce value sent in the Authentication
+        Request. Authorization Servers SHOULD perform no other
+        processing on nonce values used. The nonce value is a
+        case-sensitive string.
+
+        Only code param should be sufficient to retrieve grant code from
+        any storage you are using. However, `client_id` and `redirect_uri`
+        have been validated and can be used also.
+
+        :param client_id: Unicode client identifier
+        :param code: Unicode authorization code grant
+        :param redirect_uri: Unicode absolute URI
+        :return: Unicode nonce
 
         Method is used by:
             - Authorization Token Grant Dispatcher
@@ -56,6 +80,12 @@ class RequestValidator(OAuth2RequestValidator):
 
     def get_id_token(self, token, token_handler, request):
         """Get OpenID Connect ID token
+
+        This method is OPTIONAL and is NOT RECOMMENDED.
+        `finalize_id_token` SHOULD be implemented instead. However, if you
+        want a full control over the minting of the `id_token`, you
+        MAY want to override `get_id_token` instead of using
+        `finalize_id_token`.
 
         In the OpenID Connect workflows when an ID Token is requested this method is called.
         Subclasses should implement the construction, signing and optional encryption of the
@@ -85,7 +115,49 @@ class RequestValidator(OAuth2RequestValidator):
         :type request: oauthlib.common.Request
         :return: The ID Token (a JWS signed JWT)
         """
-        # the request.scope should be used by the get_id_token() method to determine which claims to include in the resulting id_token
+        return None
+
+    def finalize_id_token(self, id_token, token, token_handler, request):
+        """Finalize OpenID Connect ID token & Sign or Encrypt.
+
+        In the OpenID Connect workflows when an ID Token is requested
+        this method is called.  Subclasses should implement the
+        construction, signing and optional encryption of the ID Token
+        as described in the OpenID Connect spec.
+
+        The `id_token` parameter is a dict containing a couple of OIDC
+        technical fields related to the specification. Prepopulated
+        attributes are:
+
+        - `aud`, equals to `request.client_id`.
+        - `iat`, equals to current time.
+        - `nonce`, if present, is equals to the `nonce` from the
+          authorization request.
+        - `at_hash`, hash of `access_token`, if relevant.
+        - `c_hash`, hash of `code`, if relevant.
+
+        This method MUST provide required fields as below:
+
+        - `iss`, REQUIRED. Issuer Identifier for the Issuer of the response.
+        - `sub`, REQUIRED. Subject Identifier
+        - `exp`, REQUIRED. Expiration time on or after which the ID
+          Token MUST NOT be accepted by the RP when performing
+          authentication with the OP.
+
+        Additionals claims must be added, note that `request.scope`
+        should be used to determine the list of claims.
+
+        More information can be found at `OpenID Connect Core#Claims`_
+
+        .. _`OpenID Connect Core#Claims`: https://openid.net/specs/openid-connect-core-1_0.html#Claims
+
+        :param id_token: A dict containing technical fields of id_token
+        :param token: A Bearer token dict
+        :param token_handler: the token handler (BearerToken class)
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :return: The ID Token (a JWS signed JWT or JWE encrypted JWT)
+        """
         raise NotImplementedError('Subclasses must implement this method.')
 
     def validate_jwt_bearer_token(self, token, scopes, request):
@@ -193,3 +265,45 @@ class RequestValidator(OAuth2RequestValidator):
             - OpenIDConnectHybrid
         """
         raise NotImplementedError('Subclasses must implement this method.')
+
+    def get_userinfo_claims(self, request):
+        """Return the UserInfo claims in JSON or Signed or Encrypted.
+
+        The UserInfo Claims MUST be returned as the members of a JSON object
+         unless a signed or encrypted response was requested during Client
+         Registration. The Claims defined in Section 5.1 can be returned, as can
+         additional Claims not specified there.
+
+        For privacy reasons, OpenID Providers MAY elect to not return values for
+        some requested Claims.
+
+        If a Claim is not returned, that Claim Name SHOULD be omitted from the
+        JSON object representing the Claims; it SHOULD NOT be present with a
+        null or empty string value.
+
+        The sub (subject) Claim MUST always be returned in the UserInfo
+        Response.
+
+        Upon receipt of the UserInfo Request, the UserInfo Endpoint MUST return
+        the JSON Serialization of the UserInfo Response as in Section 13.3 in
+        the HTTP response body unless a different format was specified during
+        Registration [OpenID.Registration].
+
+        If the UserInfo Response is signed and/or encrypted, then the Claims are
+        returned in a JWT and the content-type MUST be application/jwt. The
+        response MAY be encrypted without also being signed. If both signing and
+        encryption are requested, the response MUST be signed then encrypted,
+        with the result being a Nested JWT, as defined in [JWT].
+
+        If signed, the UserInfo Response SHOULD contain the Claims iss (issuer)
+        and aud (audience) as members. The iss value SHOULD be the OP's Issuer
+        Identifier URL. The aud value SHOULD be or include the RP's Client ID
+        value.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :rtype: Claims as a dict OR JWT/JWS/JWE as a string
+
+        Method is used by:
+            UserInfoEndpoint
+        """

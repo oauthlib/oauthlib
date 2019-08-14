@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.openid.connect.core.request_validator import RequestValidator
+from oauthlib.openid import RequestValidator
 
 from tests.unittest import TestCase
 
@@ -22,8 +22,8 @@ class RequestValidatorTest(TestCase):
         )
         self.assertRaises(
             NotImplementedError,
-            v.get_id_token,
-            'token', 'token_handler', 'request'
+            v.finalize_id_token,
+            'id_token', 'token', 'token_handler', 'request'
         )
         self.assertRaises(
             NotImplementedError,
