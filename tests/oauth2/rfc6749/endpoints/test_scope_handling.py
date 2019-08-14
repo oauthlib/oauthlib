@@ -65,13 +65,13 @@ class TestScopeHandling(TestCase):
         for scope, correct_scopes in scopes:
             scopes, _ = self.web.validate_authorization_request(
                     uri % (scope, 'code'))
-            self.assertItemsEqual(scopes, correct_scopes)
+            self.assertCountEqual(scopes, correct_scopes)
             scopes, _ = self.mobile.validate_authorization_request(
                     uri % (scope, 'token'))
-            self.assertItemsEqual(scopes, correct_scopes)
+            self.assertCountEqual(scopes, correct_scopes)
             scopes, _ = self.server.validate_authorization_request(
                 uri % (scope, 'code'))
-            self.assertItemsEqual(scopes, correct_scopes)
+            self.assertCountEqual(scopes, correct_scopes)
 
     def test_scope_preservation(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'

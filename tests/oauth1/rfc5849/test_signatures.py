@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import unicode_type
 from oauthlib.oauth1.rfc5849.signature import (collect_parameters,
                                                signature_base_string,
                                                base_string_uri,
@@ -232,7 +231,7 @@ class SignatureTests(TestCase):
         normalized = normalize_parameters(parameters)
 
         # Unicode everywhere and always
-        self.assertIsInstance(normalized, unicode_type)
+        self.assertIsInstance(normalized, str)
 
         # Lets see if things are in order
         # check to see that querystring keys come in alphanumeric order:

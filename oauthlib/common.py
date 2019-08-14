@@ -51,17 +51,10 @@ always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 log = logging.getLogger('oauthlib')
 
-PY3 = sys.version_info[0] == 3
-
-if PY3:
-    unicode_type = str
-else:
-    unicode_type = unicode
-
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
 def quote(s, safe=b'/'):
-    s = s.encode('utf-8') if isinstance(s, unicode_type) else s
+    s = s.encode('utf-8') if isinstance(s, str) else s
     s = _quote(s, safe)
     # PY3 always returns unicode.  PY2 may return either, depending on whether
     # it had to modify the string.
@@ -83,7 +76,7 @@ def unquote(s):
 def urlencode(params):
     utf8_params = encode_params_utf8(params)
     urlencoded = _urlencode(utf8_params)
-    if isinstance(urlencoded, unicode_type):  # PY3 returns unicode
+    if isinstance(urlencoded, str):
         return urlencoded
     else:
         return urlencoded.decode("utf-8")
@@ -96,8 +89,8 @@ def encode_params_utf8(params):
     encoded = []
     for k, v in params:
         encoded.append((
-            k.encode('utf-8') if isinstance(k, unicode_type) else k,
-            v.encode('utf-8') if isinstance(v, unicode_type) else v))
+            k.encode('utf-8') if isinstance(k, str) else k,
+            v.encode('utf-8') if isinstance(v, str) else v))
     return encoded
 
 
@@ -141,22 +134,6 @@ def urldecode(query):
     if INVALID_HEX_PATTERN.search(query):
         raise ValueError('Invalid hex encoding in query string.')
 
-    # We encode to utf-8 prior to parsing because parse_qsl behaves
-    # differently on unicode input in python 2 and 3.
-    # Python 2.7
-    # >>> urlparse.parse_qsl(u'%E5%95%A6%E5%95%A6')
-    # u'\xe5\x95\xa6\xe5\x95\xa6'
-    # Python 2.7, non unicode input gives the same
-    # >>> urlparse.parse_qsl('%E5%95%A6%E5%95%A6')
-    # '\xe5\x95\xa6\xe5\x95\xa6'
-    # but now we can decode it to unicode
-    # >>> urlparse.parse_qsl('%E5%95%A6%E5%95%A6').decode('utf-8')
-    # u'\u5566\u5566'
-    # Python 3.3 however
-    # >>> urllib.parse.parse_qsl(u'%E5%95%A6%E5%95%A6')
-    # u'\u5566\u5566'
-    query = query.encode(
-        'utf-8') if not PY3 and isinstance(query, unicode_type) else query
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
     params = urlparse.parse_qsl(query, keep_blank_values=True)
@@ -173,7 +150,7 @@ def extract_params(raw):
     empty list of parameters. Any other input will result in a return
     value of None.
     """
-    if isinstance(raw, (bytes, unicode_type)):
+    if isinstance(raw, (bytes, str)):
         try:
             params = urldecode(raw)
         except ValueError:
@@ -206,7 +183,7 @@ def generate_nonce():
     .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode_type(unicode_type(randbits(64)) + generate_timestamp())
+    return str(str(randbits(64)) + generate_timestamp())
 
 
 def generate_timestamp():
@@ -218,7 +195,7 @@ def generate_timestamp():
     .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode_type(int(time.time()))
+    return str(int(time.time()))
 
 
 def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
@@ -305,11 +282,11 @@ def safe_string_equals(a, b):
 
 def to_unicode(data, encoding='UTF-8'):
     """Convert a number of different types of objects to unicode."""
-    if isinstance(data, unicode_type):
+    if isinstance(data, str):
         return data
 
     if isinstance(data, bytes):
-        return unicode_type(data, encoding=encoding)
+        return str(data, encoding=encoding)
 
     if hasattr(data, '__iter__'):
         try:

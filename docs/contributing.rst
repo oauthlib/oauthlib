@@ -152,7 +152,7 @@ request that fails this test suite will be **rejected**.
 Testing multiple versions of Python
 -----------------------------------
 
-OAuthLib supports Python 2.7, 3.4, 3.5, 3.6 and PyPy. Testing
+OAuthLib supports Python 3.4, 3.5, 3.6 and PyPy. Testing
 all versions conveniently can be done using `Tox`_.
 
 .. sourcecode:: bash
@@ -166,8 +166,6 @@ version. For Ubuntu you can easily install all after adding one ppa.
 
    $ sudo add-apt-repository ppa:fkrull/deadsnakes
    $ sudo apt-get update
-   $ sudo apt-get install python2.6 python2.6-dev
-   $ sudo apt-get install python2.7 python2.7-dev
    $ sudo apt-get install python3.2 python3.2-dev
    $ sudo apt-get install python3.3 python3.3-dev
    $ sudo apt-get install pypy pypy-dev

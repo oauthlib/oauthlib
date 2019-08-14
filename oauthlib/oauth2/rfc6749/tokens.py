@@ -15,7 +15,7 @@ from binascii import b2a_base64
 import warnings
 
 from oauthlib import common
-from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
+from oauthlib.common import add_params_to_qs, add_params_to_uri
 
 from . import utils
 
@@ -158,7 +158,7 @@ def prepare_mac_header(token, uri, key, http_method,
     base_string = '\n'.join(base) + '\n'
 
     # hmac struggles with unicode strings - http://bugs.python.org/issue5285
-    if isinstance(key, unicode_type):
+    if isinstance(key, str):
         key = key.encode('utf-8')
     sign = hmac.new(key, base_string.encode('utf-8'), h)
     sign = b2a_base64(sign.digest())[:-1].decode('utf-8')

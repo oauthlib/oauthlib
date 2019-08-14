@@ -8,7 +8,7 @@ spec.
 """
 from __future__ import absolute_import, unicode_literals
 
-from oauthlib.common import quote, unicode_type, unquote
+from oauthlib.common import quote, unquote
 
 try:
     import urllib2
@@ -52,7 +52,7 @@ def escape(u):
     .. _`section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
 
     """
-    if not isinstance(u, unicode_type):
+    if not isinstance(u, str):
         raise ValueError('Only unicode objects are escapable. ' +
                          'Got %r of type %s.' % (u, type(u)))
     # Letters, digits, and the characters '_.-' are already treated as safe
@@ -61,7 +61,7 @@ def escape(u):
 
 
 def unescape(u):
-    if not isinstance(u, unicode_type):
+    if not isinstance(u, str):
         raise ValueError('Only unicode objects are unescapable.')
     return unquote(u)
 

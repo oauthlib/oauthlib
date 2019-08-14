@@ -28,8 +28,7 @@ import hashlib
 import hmac
 import logging
 
-from oauthlib.common import (extract_params, safe_string_equals,
-                             unicode_type, urldecode)
+from oauthlib.common import extract_params, safe_string_equals, urldecode
 
 from . import utils
 
@@ -128,7 +127,7 @@ def base_string_uri(uri, host=None):
 
     The host argument overrides the netloc part of the uri argument.
     """
-    if not isinstance(uri, unicode_type):
+    if not isinstance(uri, str):
         raise ValueError('uri must be a unicode object.')
 
     # FIXME: urlparse does not support unicode
@@ -577,7 +576,7 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     .. _`RFC3447, Section 8.2`: https://tools.ietf.org/html/rfc3447#section-8.2
 
     """
-    if isinstance(base_string, unicode_type):
+    if isinstance(base_string, str):
         base_string = base_string.encode('utf-8')
     # TODO: finish RSA documentation
     alg = _jwt_rs1_signing_algorithm()

@@ -8,7 +8,7 @@ import oauthlib
 from oauthlib.common import (CaseInsensitiveDict, Request, add_params_to_uri,
                              extract_params, generate_client_id,
                              generate_nonce, generate_timestamp,
-                             generate_token, unicode_type, urldecode)
+                             generate_token, urldecode)
 
 from .unittest import TestCase
 
@@ -21,23 +21,23 @@ URI = 'http://www.someuri.com'
 class EncodingTest(TestCase):
 
     def test_urldecode(self):
-        self.assertItemsEqual(urldecode(''), [])
-        self.assertItemsEqual(urldecode('='), [('', '')])
-        self.assertItemsEqual(urldecode('%20'), [(' ', '')])
-        self.assertItemsEqual(urldecode('+'), [(' ', '')])
-        self.assertItemsEqual(urldecode('c2'), [('c2', '')])
-        self.assertItemsEqual(urldecode('c2='), [('c2', '')])
-        self.assertItemsEqual(urldecode('foo=bar'), [('foo', 'bar')])
-        self.assertItemsEqual(urldecode('foo_%20~=.bar-'),
+        self.assertCountEqual(urldecode(''), [])
+        self.assertCountEqual(urldecode('='), [('', '')])
+        self.assertCountEqual(urldecode('%20'), [(' ', '')])
+        self.assertCountEqual(urldecode('+'), [(' ', '')])
+        self.assertCountEqual(urldecode('c2'), [('c2', '')])
+        self.assertCountEqual(urldecode('c2='), [('c2', '')])
+        self.assertCountEqual(urldecode('foo=bar'), [('foo', 'bar')])
+        self.assertCountEqual(urldecode('foo_%20~=.bar-'),
                               [('foo_ ~', '.bar-')])
-        self.assertItemsEqual(urldecode('foo=1,2,3'), [('foo', '1,2,3')])
-        self.assertItemsEqual(urldecode('foo=(1,2,3)'), [('foo', '(1,2,3)')])
-        self.assertItemsEqual(urldecode('foo=bar.*'), [('foo', 'bar.*')])
-        self.assertItemsEqual(urldecode('foo=bar@spam'), [('foo', 'bar@spam')])
-        self.assertItemsEqual(urldecode('foo=bar/baz'), [('foo', 'bar/baz')])
-        self.assertItemsEqual(urldecode('foo=bar?baz'), [('foo', 'bar?baz')])
-        self.assertItemsEqual(urldecode('foo=bar\'s'), [('foo', 'bar\'s')])
-        self.assertItemsEqual(urldecode('foo=$'), [('foo', '$')])
+        self.assertCountEqual(urldecode('foo=1,2,3'), [('foo', '1,2,3')])
+        self.assertCountEqual(urldecode('foo=(1,2,3)'), [('foo', '(1,2,3)')])
+        self.assertCountEqual(urldecode('foo=bar.*'), [('foo', 'bar.*')])
+        self.assertCountEqual(urldecode('foo=bar@spam'), [('foo', 'bar@spam')])
+        self.assertCountEqual(urldecode('foo=bar/baz'), [('foo', 'bar/baz')])
+        self.assertCountEqual(urldecode('foo=bar?baz'), [('foo', 'bar?baz')])
+        self.assertCountEqual(urldecode('foo=bar\'s'), [('foo', 'bar\'s')])
+        self.assertCountEqual(urldecode('foo=$'), [('foo', '$')])
         self.assertRaises(ValueError, urldecode, 'foo bar')
         self.assertRaises(ValueError, urldecode, '%R')
         self.assertRaises(ValueError, urldecode, '%RA')
@@ -48,20 +48,20 @@ class EncodingTest(TestCase):
 class ParameterTest(TestCase):
 
     def test_extract_params_dict(self):
-        self.assertItemsEqual(extract_params(PARAMS_DICT), PARAMS_TWOTUPLE)
+        self.assertCountEqual(extract_params(PARAMS_DICT), PARAMS_TWOTUPLE)
 
     def test_extract_params_twotuple(self):
-        self.assertItemsEqual(extract_params(PARAMS_TWOTUPLE), PARAMS_TWOTUPLE)
+        self.assertCountEqual(extract_params(PARAMS_TWOTUPLE), PARAMS_TWOTUPLE)
 
     def test_extract_params_formencoded(self):
-        self.assertItemsEqual(extract_params(PARAMS_FORMENCODED),
+        self.assertCountEqual(extract_params(PARAMS_FORMENCODED),
                               PARAMS_TWOTUPLE)
 
     def test_extract_params_blank_string(self):
-        self.assertItemsEqual(extract_params(''), [])
+        self.assertCountEqual(extract_params(''), [])
 
     def test_extract_params_empty_list(self):
-        self.assertItemsEqual(extract_params([]), [])
+        self.assertCountEqual(extract_params([]), [])
 
     def test_extract_non_formencoded_string(self):
         self.assertEqual(extract_params('not a formencoded string'), None)
@@ -80,7 +80,7 @@ class GeneratorTest(TestCase):
 
     def test_generate_timestamp(self):
         timestamp = generate_timestamp()
-        self.assertIsInstance(timestamp, unicode_type)
+        self.assertIsInstance(timestamp, str)
         self.assertTrue(int(timestamp))
         self.assertGreater(int(timestamp), 1331672335)
 
@@ -160,11 +160,11 @@ class RequestTest(TestCase):
 
     def test_list_body(self):
         r = Request(URI, body=PARAMS_TWOTUPLE)
-        self.assertItemsEqual(r.decoded_body, PARAMS_TWOTUPLE)
+        self.assertCountEqual(r.decoded_body, PARAMS_TWOTUPLE)
 
     def test_dict_body(self):
         r = Request(URI, body=PARAMS_DICT)
-        self.assertItemsEqual(r.decoded_body, PARAMS_TWOTUPLE)
+        self.assertCountEqual(r.decoded_body, PARAMS_TWOTUPLE)
 
     def test_getattr_existing_attribute(self):
         r = Request(URI, body='foo bar')
