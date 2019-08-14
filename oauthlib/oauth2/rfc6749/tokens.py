@@ -16,13 +16,10 @@ import warnings
 
 from oauthlib import common
 from oauthlib.common import add_params_to_qs, add_params_to_uri
+from urllib.parse import urlparse
 
 from . import utils
 
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
 
 
 class OAuth2Token(dict):

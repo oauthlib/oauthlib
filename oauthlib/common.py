@@ -12,9 +12,12 @@ import collections
 import datetime
 import logging
 import re
-import sys
 import time
+import urllib.parse as urlparse
 from . import get_debug
+from urllib.parse import quote as _quote
+from urllib.parse import unquote as _unquote
+from urllib.parse import urlencode as _urlencode
 
 try:
     from secrets import randbits
@@ -22,18 +25,6 @@ try:
 except ImportError:
     from random import getrandbits as randbits
     from random import SystemRandom
-try:
-    from urllib import quote as _quote
-    from urllib import unquote as _unquote
-    from urllib import urlencode as _urlencode
-except ImportError:
-    from urllib.parse import quote as _quote
-    from urllib.parse import unquote as _unquote
-    from urllib.parse import urlencode as _urlencode
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'

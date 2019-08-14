@@ -7,14 +7,10 @@ from mock import patch
 
 from oauthlib import signals
 from oauthlib.oauth2 import LegacyApplicationClient
+import urllib.parse as urlparse
 
 from ....unittest import TestCase
 
-# this is the same import method used in oauthlib/oauth2/rfc6749/parameters.py
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 
 @patch('time.time', new=lambda: 1000)

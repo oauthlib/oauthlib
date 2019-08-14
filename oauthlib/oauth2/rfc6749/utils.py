@@ -11,15 +11,8 @@ import datetime
 import os
 
 from oauthlib.common import urldecode
-
-try:
-    from urllib import quote
-except ImportError:
-    from urllib.parse import quote
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+from urllib.parse import quote
+from urllib.parse import urlparse
 
 
 def list_to_scope(scope):

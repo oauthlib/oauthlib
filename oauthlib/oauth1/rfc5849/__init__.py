@@ -12,11 +12,7 @@ import hashlib
 import logging
 log = logging.getLogger(__name__)
 
-import sys
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
+import urllib.parse as urlparse
 
 from oauthlib.common import Request, urlencode, generate_nonce
 from oauthlib.common import generate_timestamp, to_unicode

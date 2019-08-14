@@ -11,13 +11,10 @@ from oauthlib.oauth1.rfc5849.signature import (collect_parameters,
                                                sign_plaintext_with_client,
                                                sign_rsa_sha1,
                                                sign_rsa_sha1_with_client)
+from urllib.parse import quote
 
 from ...unittest import TestCase
 
-try:
-    from urllib import quote
-except ImportError:
-    from urllib.parse import quote
 
 
 

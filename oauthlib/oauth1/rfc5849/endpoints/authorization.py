@@ -12,11 +12,7 @@ from oauthlib.common import Request, add_params_to_uri
 
 from .. import errors
 from .base import BaseEndpoint
-
-try:
-    from urllib import urlencode
-except ImportError:
-    from urllib.parse import urlencode
+from urllib.parse import urlencode
 
 
 class AuthorizationEndpoint(BaseEndpoint):

@@ -15,17 +15,13 @@ import time
 
 from oauthlib.common import add_params_to_qs, add_params_to_uri
 from oauthlib.signals import scope_changed
+import urllib.parse as urlparse
 
 from .errors import (InsecureTransportError, MismatchingStateError,
                      MissingCodeError, MissingTokenError,
                      MissingTokenTypeError, raise_from_error)
 from .tokens import OAuth2Token
 from .utils import is_secure_transport, list_to_scope, scope_to_list
-
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,

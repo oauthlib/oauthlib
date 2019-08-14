@@ -29,13 +29,10 @@ import hmac
 import logging
 
 from oauthlib.common import extract_params, safe_string_equals, urldecode
+import urllib.parse as urlparse
 
 from . import utils
 
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 log = logging.getLogger(__name__)
 

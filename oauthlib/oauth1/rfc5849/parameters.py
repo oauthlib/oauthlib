@@ -13,10 +13,7 @@ from oauthlib.common import extract_params, urlencode
 
 from . import utils
 
-try:
-    from urlparse import urlparse, urlunparse
-except ImportError:  # noqa
-    from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse
 
 
 # TODO: do we need filter_params now that oauth_params are handled by Request?

@@ -10,10 +10,7 @@ from __future__ import absolute_import, unicode_literals
 
 from oauthlib.common import quote, unquote
 
-try:
-    import urllib2
-except ImportError:
-    import urllib.request as urllib2
+import urllib.request as urllib2
 
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'

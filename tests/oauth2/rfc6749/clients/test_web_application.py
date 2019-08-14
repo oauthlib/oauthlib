@@ -13,14 +13,10 @@ from oauthlib.oauth2 import (BackendApplicationClient, Client,
                              WebApplicationClient)
 from oauthlib.oauth2.rfc6749 import errors, utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
+import urllib.parse as urlparse
 
 from ....unittest import TestCase
 
-# this is the same import method used in oauthlib/oauth2/rfc6749/parameters.py
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 
 @patch('time.time', new=lambda: 1000)

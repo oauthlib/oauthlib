@@ -1,7 +1,4 @@
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
+import urllib.parse as urlparse
 
 
 def get_query_credentials(uri):
