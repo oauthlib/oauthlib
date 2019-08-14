@@ -144,7 +144,7 @@ the project root via:
 
 .. sourcecode:: bash
 
-   $ py.test
+   $ pytest
 
 The first thing the core committers will do is run this command. Any pull
 request that fails this test suite will be **rejected**.
@@ -299,7 +299,7 @@ First we pull the code into a local branch::
 
 Then we run the tests::
 
-    py.test
+    pytest
 
 We finish with a non-fastforward merge (to preserve the branch history) and push
 to GitHub::
