@@ -49,7 +49,7 @@ class OpenIDConnectEndpointTest(TestCase):
                                                         credentials=creds)
         expected = 'https://a.b/cb?state=abc&code=MOCK_CODE'
         self.assertURLEqual(h['Location'], expected)
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)
 
     def test_prompt_none_exclusiveness(self):

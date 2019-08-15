@@ -50,7 +50,7 @@ class OpenIDImplicitTest(TestCase):
 
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_fragment, parse_fragment=True)
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)
 
         self.request.response_type = 'id_token'
@@ -58,7 +58,7 @@ class OpenIDImplicitTest(TestCase):
         url = 'https://a.b/cb#state=abc&id_token=%s' % token
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], url, parse_fragment=True)
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)
 
     @mock.patch('oauthlib.common.generate_token')
@@ -74,7 +74,7 @@ class OpenIDImplicitTest(TestCase):
         self.request.id_token_hint = 'me@email.com'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_fragment, parse_fragment=True)
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)
 
         # Test alernative response modes
@@ -108,7 +108,7 @@ class OpenIDImplicitTest(TestCase):
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)
 
 
@@ -129,5 +129,5 @@ class OpenIDImplicitNoAccessTokenTest(OpenIDImplicitTest):
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)

@@ -64,11 +64,11 @@ class ParameterTest(TestCase):
         self.assertCountEqual(extract_params([]), [])
 
     def test_extract_non_formencoded_string(self):
-        self.assertEqual(extract_params('not a formencoded string'), None)
+        self.assertIsNone(extract_params('not a formencoded string'))
 
     def test_extract_invalid(self):
-        self.assertEqual(extract_params(object()), None)
-        self.assertEqual(extract_params([('')]), None)
+        self.assertIsNone(extract_params(object()))
+        self.assertIsNone(extract_params([('')]))
 
     def test_add_params_to_uri(self):
         correct = '{}?{}'.format(URI, PARAMS_FORMENCODED)
@@ -134,7 +134,7 @@ class RequestTest(TestCase):
 
     def test_none_body(self):
         r = Request(URI)
-        self.assertEqual(r.decoded_body, None)
+        self.assertIsNone(r.decoded_body)
 
     def test_empty_list_body(self):
         r = Request(URI, body=[])
@@ -151,12 +151,12 @@ class RequestTest(TestCase):
     def test_non_formencoded_string_body(self):
         body = 'foo bar'
         r = Request(URI, body=body)
-        self.assertEqual(r.decoded_body, None)
+        self.assertIsNone(r.decoded_body)
 
     def test_param_free_sequence_body(self):
         body = [1, 1, 2, 3, 5, 8, 13]
         r = Request(URI, body=body)
-        self.assertEqual(r.decoded_body, None)
+        self.assertIsNone(r.decoded_body)
 
     def test_list_body(self):
         r = Request(URI, body=PARAMS_TWOTUPLE)

@@ -163,7 +163,7 @@ class SignatureMethodTest(TestCase):
         Client.register_signature_method('PIZZA',
             lambda base_string, client: 'PIZZA')
 
-        self.assertTrue('PIZZA' in Client.SIGNATURE_METHODS)
+        self.assertIn('PIZZA', Client.SIGNATURE_METHODS)
 
         client = Client('client_key', signature_method='PIZZA',
             timestamp='1234567890', nonce='abc')
