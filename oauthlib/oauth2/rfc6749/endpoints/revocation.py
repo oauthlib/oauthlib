@@ -7,8 +7,6 @@ An implementation of the OAuth 2 `Token Revocation`_ spec (draft 11).
 
 .. _`Token Revocation`: https://tools.ietf.org/html/draft-ietf-oauth-revocation-11
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 from oauthlib.common import Request

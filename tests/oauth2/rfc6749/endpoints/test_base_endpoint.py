@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 from oauthlib.oauth2 import (FatalClientError, OAuth2Error, RequestValidator,
                              Server)
 from oauthlib.oauth2.rfc6749 import (BaseEndpoint,

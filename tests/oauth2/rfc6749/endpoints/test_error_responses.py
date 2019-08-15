@@ -1,7 +1,5 @@
 """Ensure the correct error responses are returned for all defined error types.
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 
 import mock

@@ -5,8 +5,6 @@ oauthlib.utils
 
 This module contains utility methods used by various parts of the OAuth 2 spec.
 """
-from __future__ import absolute_import, unicode_literals
-
 import datetime
 import os
 

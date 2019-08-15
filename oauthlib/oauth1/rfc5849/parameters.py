@@ -7,8 +7,6 @@ This module contains methods related to `section 3.5`_ of the OAuth 1.0a spec.
 
 .. _`section 3.5`: https://tools.ietf.org/html/rfc5849#section-3.5
 """
-from __future__ import absolute_import, unicode_literals
-
 from oauthlib.common import extract_params, urlencode
 
 from . import utils

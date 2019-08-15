@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 from oauthlib.oauth1.rfc5849.signature import (collect_parameters,
                                                signature_base_string,
                                                base_string_uri,

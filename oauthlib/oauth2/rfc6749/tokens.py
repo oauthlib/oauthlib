@@ -7,8 +7,6 @@ This module contains methods for adding two types of access tokens to requests.
 - Bearer https://tools.ietf.org/html/rfc6750
 - MAC https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
 """
-from __future__ import absolute_import, unicode_literals
-
 import hashlib
 import hmac
 from binascii import b2a_base64

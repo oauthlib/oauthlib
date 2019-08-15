@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 from re import sub
 
 from mock import MagicMock

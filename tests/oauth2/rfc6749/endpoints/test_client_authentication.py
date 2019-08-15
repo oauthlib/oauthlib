@@ -9,8 +9,6 @@ We make sure authentication is done by requiring a client object to be set
 on the request object with a client_id parameter. The client_id attribute
 prevents this check from being circumvented with a client form parameter.
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 
 import mock

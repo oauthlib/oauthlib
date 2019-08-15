@@ -7,8 +7,6 @@ An implementation of the `OAuth 2.0 Authorization Server Metadata`.
 
 .. _`OAuth 2.0 Authorization Server Metadata`: https://tools.ietf.org/html/rfc8414
 """
-from __future__ import absolute_import, unicode_literals
-
 import copy
 import json
 import logging

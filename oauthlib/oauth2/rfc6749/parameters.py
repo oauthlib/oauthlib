@@ -7,8 +7,6 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 
 .. _`Section 4`: https://tools.ietf.org/html/rfc6749#section-4
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import os
 import time

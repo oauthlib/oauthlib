@@ -6,8 +6,6 @@ oauthlib.utils
 This module contains utility methods used by various parts of the OAuth
 spec.
 """
-from __future__ import absolute_import, unicode_literals
-
 from oauthlib.common import quote, unquote
 
 import urllib.request as urllib2

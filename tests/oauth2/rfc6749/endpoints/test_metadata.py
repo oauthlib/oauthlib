@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 from oauthlib.oauth2 import MetadataEndpoint
 from oauthlib.oauth2 import TokenEndpoint
 from oauthlib.oauth2 import Server

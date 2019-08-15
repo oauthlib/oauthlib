@@ -3,8 +3,6 @@
 Fairly trivial in all grants except the Authorization Code Grant where scope
 need to be persisted temporarily in an authorization code.
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 
 import mock

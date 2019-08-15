@@ -4,8 +4,6 @@ oauthlib.openid.connect.core.endpoints.userinfo
 
 This module is an implementation of userinfo endpoint.
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import logging
 
