@@ -109,7 +109,6 @@ class SignatureTests(TestCase):
         base_string_url = base_string_uri(self.base_string_url.decode('utf-8'))
         base_string_url = base_string_url.encode('utf-8')
         querystring = self.base_string_url.split(b'?', 1)[1]
-        self.assertRaises(ValueError, collect_parameters, querystring)
         query_params = collect_parameters(querystring.decode('utf-8'),
                                           body=self.body)
         normalized_encoded_query_params = sorted(
