@@ -28,7 +28,7 @@ class SignatureTests(TestCase):
             for k, v in self.items():
                 self[k] = v.decode('utf-8')
 
-    uri_query = "b5=%3D%253D&a3=a&c%40=&a2=r%20b&c2=&a3=2+q"
+    uri_query = "b5=%3D%253D&a3=a&c%40=&a2=r%20b"
     authorization_header = """OAuth realm="Example",
     oauth_consumer_key="9djdj82h48djs9d2",
     oauth_token="kkk9d7dh3k39sjv7",
@@ -36,36 +36,38 @@ class SignatureTests(TestCase):
     oauth_timestamp="137131201",
     oauth_nonce="7d8f3e4a",
     oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D" """.strip()
-    body = "content=This+is+being+the+body+of+things"
+    body = "c2&a3=2+q"
     http_method = b"post"
-    base_string_url = quote("http://example.com/request?b5=%3D%253D"
-                            "&a3=a&c%40=&a2=r%20b").encode('utf-8')
-    normalized_encoded_request_parameters = quote(
-        'OAuth realm="Example",'
-        'oauth_consumer_key="9djdj82h48djs9d2",'
-        'oauth_token="kkk9d7dh3k39sjv7",'
-        'oauth_signature_method="HMAC-SHA1",'
-        'oauth_timestamp="137131201",'
-        'oauth_nonce="7d8f3e4a",'
-        'oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"'
-    ).encode('utf-8')
+    base_string_url = (
+        "http://example.com/request?{}".format(uri_query)).encode('utf-8')
+    unnormalized_request_parameters =[
+        ('OAuth realm',"Example"),
+        ('oauth_consumer_key',"9djdj82h48djs9d2"),
+        ('oauth_token',"kkk9d7dh3k39sjv7"),
+        ('oauth_signature_method',"HMAC-SHA1"),
+        ('oauth_timestamp',"137131201"),
+        ('oauth_nonce',"7d8f3e4a"),
+        ('oauth_signature',"bYT5CMsGcbgUdFHObYMEfcx6bsw%3D")
+    ]
+    normalized_encoded_request_params = sorted(
+        [(quote(k), quote(v)) for k, v in unnormalized_request_parameters
+         if k.lower() != "oauth realm"])
     client_secret = b"ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ"
     resource_owner_secret = b"just-a-string    asdasd"
     control_base_string = (
-        "POST&http%253A%2F%2Fexample.com%2Frequest%253F"
-        "b5%253D%25253D%2525253D%2526"
-        "a3%253D"
-        "a%2526"
-        "c%252540%253D%2526"
-        "a2%253D"
-        "r%252520b&"
-        "OAuth%2520realm%253D%2522Example%2522%252C"
-        "oauth_consumer_key%253D%25229djdj82h48djs9d2%2522%252C"
-        "oauth_token%253D%2522kkk9d7dh3k39sjv7%2522%252C"
-        "oauth_signature_method%253D%2522HMAC-SHA1%2522%252C"
-        "oauth_timestamp%253D%2522137131201%2522%252C"
-        "oauth_nonce%253D%25227d8f3e4a%2522%252C"
-        "oauth_signature%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522")
+        "POST&http%3A%2F%2Fexample.com%2Frequest&"
+        "a2%3Dr%2520b%26"
+        "a3%3D2%2520q%26"
+        "a3%3Da%26"
+        "b5%3D%253D%25253D%26"
+        "c%2540%3D%26"
+        "c2%3D%26"
+        "oauth_consumer_key%3D9djdj82h48djs9d2%26"
+        "oauth_nonce%3D7d8f3e4a%26"
+        "oauth_signature_method%3DHMAC-SHA1%26"
+        "oauth_timestamp%3D137131201%26"
+        "oauth_token%3Dkkk9d7dh3k39sjv7"
+    )
 
     def setUp(self):
         self.client = self.MockClient(
@@ -87,34 +89,42 @@ class SignatureTests(TestCase):
                            oauth_timestamp="137131201",
                            oauth_nonce="7d8f3e4a",
                            oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"
+            c2&a3=2+q
 
         Sample Base string generated and tested against::
-
-            POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D%25253D%252525
-            3D%2526a3%253Da%2526c%252540%253D%2526a2%253Dr%252520b&OAuth%2520re
-            alm%253D%2522Example%2522%252Coauth_consumer_key%253D%25229djdj82h4
-            8djs9d2%2522%252Coauth_token%253D%2522kkk9d7dh3k39sjv7%2522%252Coau
-            th_signature_method%253D%2522HMAC-SHA1%2522%252Coauth_timestamp%253
-            D%2522137131201%2522%252Coauth_nonce%253D%25227d8f3e4a%2522%252Coau
-            th_signature%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522
+            POST&http%3A%2F%2Fexample.com%2Frequest&a2%3Dr%2520b%26a3%3D2%2520q
+            %26a3%3Da%26b5%3D%253D%25253D%26c%2540%3D%26c2%3D%26oauth_consumer_
+            key%3D9djdj82h48djs9d2%26oauth_nonce%3D7d8f3e4a%26oauth_signature_m
+            ethod%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk
+            9d7dh3k39sjv7
         """
+
+        self.assertRaises(ValueError, base_string_uri, self.base_string_url)
+        base_string_url = base_string_uri(self.base_string_url.decode('utf-8'))
+        base_string_url = base_string_url.encode('utf-8')
+        querystring = self.base_string_url.split(b'?', 1)[1]
+        query_params = collect_parameters(querystring.decode('utf-8'),
+                                          body=self.body)
+        normalized_encoded_query_params = sorted(
+            [(quote(k), quote(v)) for k, v in query_params])
+        normalized_request_string = "&".join(sorted(
+            ['='.join((k, v)) for k, v in (
+                        self.normalized_encoded_request_params +
+                        normalized_encoded_query_params)
+             if k.lower() != 'oauth_signature']))
         self.assertRaises(ValueError, signature_base_string,
                           self.http_method,
-                          self.base_string_url,
-                          self.normalized_encoded_request_parameters)
+                          base_string_url,
+                          normalized_request_string)
         self.assertRaises(ValueError, signature_base_string,
                           self.http_method.decode('utf-8'),
-                          self.base_string_url,
-                          self.normalized_encoded_request_parameters)
-        self.assertRaises(ValueError, signature_base_string,
-                          self.http_method.decode('utf-8'),
-                          self.base_string_url.decode('utf-8'),
-                          self.normalized_encoded_request_parameters)
+                          base_string_url,
+                          normalized_request_string)
 
         base_string = signature_base_string(
             self.http_method.decode('utf-8'),
-            self.base_string_url.decode('utf-8'),
-            self.normalized_encoded_request_parameters.decode('utf-8')
+            base_string_url.decode('utf-8'),
+            normalized_request_string
         )
 
         self.assertEqual(self.control_base_string, base_string)
@@ -182,9 +192,7 @@ class SignatureTests(TestCase):
         correct_parameters = [('b5', '=%3D'),
                               ('a3', 'a'),
                               ('c@', ''),
-                              ('a2', 'r b'),
-                              ('c2', ''),
-                              ('a3', '2 q')]
+                              ('a2', 'r b')]
         self.assertEqual(sorted(parameters), sorted(correct_parameters))
 
         headers = {'Authorization': self.authorization_header}
@@ -208,13 +216,14 @@ class SignatureTests(TestCase):
                          sorted(correct_parameters_with_realm))
 
         # Add in the body.
-        # TODO: Add more content for the body. Daniel Greenfeld 2012/03/12
         # Redo again the checks against all the parameters. Duplicated code
         # but better safety
         parameters = collect_parameters(
             uri_query=self.uri_query, body=self.body, headers=headers)
         correct_parameters += [
-            ('content', 'This is being the body of things')]
+            ('c2', ''),
+            ('a3', '2 q')
+        ]
         self.assertEqual(sorted(parameters), sorted(correct_parameters))
 
     def test_normalize_parameters(self):
@@ -230,7 +239,7 @@ class SignatureTests(TestCase):
 
         # Lets see if things are in order
         # check to see that querystring keys come in alphanumeric order:
-        querystring_keys = ['a2', 'a3', 'b5', 'content', 'oauth_consumer_key',
+        querystring_keys = ['a2', 'a3', 'b5', 'oauth_consumer_key',
                             'oauth_nonce', 'oauth_signature_method',
                             'oauth_timestamp', 'oauth_token']
         index = -1  # start at -1 because the 'a2' key starts at index 0
@@ -240,7 +249,8 @@ class SignatureTests(TestCase):
 
     # Control signature created using openssl:
     # echo -n $(cat <message>) | openssl dgst -binary -hmac <key> | base64
-    control_signature = "Uau4O9Kpd2k6rvh7UZN/RN+RG7Y="
+    control_signature = "mwd09YMxVd2XJ1gudNaBuAuKKuY="
+    control_signature_s = "wsdNmjGB7lvis0UJuPAmjvX/PXw="
 
     def test_sign_hmac_sha1(self):
         """Verifying HMAC-SHA1 signature against one created by OpenSSL."""
@@ -250,9 +260,21 @@ class SignatureTests(TestCase):
 
         sign = sign_hmac_sha1(self.control_base_string,
                               self.client_secret.decode('utf-8'),
-                              self.resource_owner_secret.decode('utf-8'))
+                              b'')
         self.assertEqual(len(sign), 28)
         self.assertEqual(sign, self.control_signature)
+
+    def test_sign_hmac_sha1_with_secret(self):
+        """Verifying HMAC-SHA1 signature against one created by OpenSSL."""
+
+        self.assertRaises(ValueError, sign_hmac_sha1, self.control_base_string,
+                          self.client_secret, self.resource_owner_secret)
+
+        sign = sign_hmac_sha1(self.control_base_string,
+                              self.client_secret.decode('utf-8'),
+                              self.resource_owner_secret.decode('utf-8'))
+        self.assertEqual(len(sign), 28)
+        self.assertEqual(sign, self.control_signature_s)
 
     def test_sign_hmac_sha1_with_client(self):
         self.assertRaises(ValueError,
@@ -265,19 +287,16 @@ class SignatureTests(TestCase):
             self.control_base_string, self.client)
 
         self.assertEqual(len(sign), 28)
-        self.assertEqual(sign, self.control_signature)
+        self.assertEqual(sign, self.control_signature_s)
 
 
     control_base_string_rsa_sha1 = (
-        b"POST&http%253A%2F%2Fexample.com%2Frequest%253Fb5%253D"
-        b"%25253D%2525253D%2526a3%253Da%2526c%252540%253D%2526"
-        b"a2%253Dr%252520b&OAuth%2520realm%253D%2522Example%25"
-        b"22%252Coauth_consumer_key%253D%25229djdj82h48djs9d2"
-        b"%2522%252Coauth_token%253D%2522kkk9d7dh3k39sjv7%2522"
-        b"%252Coauth_signature_method%253D%2522HMAC-SHA1%2522"
-        b"%252Coauth_timestamp%253D%2522137131201%2522%252Coau"
-        b"th_nonce%253D%25227d8f3e4a%2522%252Coauth_signature"
-        b"%253D%2522bYT5CMsGcbgUdFHObYMEfcx6bsw%25253D%2522")
+        b"POST&http%3A%2F%2Fexample.com%2Frequest&a2%3Dr%2520b%26a3%3D2%2520q"
+        b"%26a3%3Da%26b5%3D%253D%25253D%26c%2540%3D%26c2%3D%26oauth_consumer_"
+        b"key%3D9djdj82h48djs9d2%26oauth_nonce%3D7d8f3e4a%26oauth_signature_m"
+        b"ethod%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk"
+        b"9d7dh3k39sjv7"
+    )
 
     # Generated using: $ openssl genrsa -out <key>.pem 1024
     # PEM encoding requires the key to be concatenated with
@@ -301,14 +320,14 @@ Ga6FHdjGPcfajt+nrpB1n8UQBEH9ZxniokR/IPvdMlxqXA==
     @property
     def control_signature_rsa_sha1(self):
         # Base string saved in "<message>". Signature obtained using:
-        # $ echo -n $(cat <message>) | openssl dgst -sign <key>.pem | base64
+        # $ echo -n $(cat <msg>) | openssl dgst -sha1 -sign <key>.pem | base64
         # where echo -n suppresses the last linebreak.
         return (
-            "zV5g8ArdMuJuOXlH8XOqfLHS11XdthfIn4HReDm7jz8JmgLabHGmVBqCkCfZoFJPH"
-            "dka7tLvCplK/jsV4FUOnftrJOQhbXguuBdi87/hmxOFKLmQYqqlEW7BdXmwKLZcki"
-            "qq3qE5XziBgKSAFRkxJ4gmJAymvJBtrJYN9728rK8="
-        )
+            "mFY2KOEnlYWsTvUA+5kxuBIcvBYXu+ljw9ttVJQxKduMueGSVPCB1tK1PlqVLK738"
+            "HK0t19ecBJfb6rMxUwrriw+MlBO+jpojkZIWccw1J4cAb4qu4M81DbpUAq4j/1w/Q"
+            "yTR4TWCODlEfN7Zfgy8+pf+TjiXfIwRC1jEWbuL1E="
 
+        )
 
     def test_sign_rsa_sha1(self):
         """Verify RSA-SHA1 signature against one created by OpenSSL."""
