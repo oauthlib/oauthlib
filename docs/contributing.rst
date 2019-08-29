@@ -152,7 +152,7 @@ request that fails this test suite will be **rejected**.
 Testing multiple versions of Python
 -----------------------------------
 
-OAuthLib supports Python 2.7, 3.4, 3.5, 3.6 and PyPy. Testing
+OAuthLib supports Python 2.7, 3.5, 3.6, 3.7 and PyPy 2.7 & PyPy 3. Testing
 all versions conveniently can be done using `Tox`_.
 
 .. sourcecode:: bash
@@ -160,20 +160,23 @@ all versions conveniently can be done using `Tox`_.
    $ tox
 
 Tox requires you to have `virtualenv`_ installed as well as respective python
-version. For Ubuntu you can easily install all after adding one ppa.
+version. We recommend using `pyenv`_ to install those Python versions.
+
+We recommend using the latest patch version for each Python version we support and the latest PyPy versions.
+The versions beloew may not be up to date.
 
 .. sourcecode:: bash
 
-   $ sudo add-apt-repository ppa:fkrull/deadsnakes
-   $ sudo apt-get update
-   $ sudo apt-get install python2.6 python2.6-dev
-   $ sudo apt-get install python2.7 python2.7-dev
-   $ sudo apt-get install python3.2 python3.2-dev
-   $ sudo apt-get install python3.3 python3.3-dev
-   $ sudo apt-get install pypy pypy-dev
+   $ pyenv install 2.7.16
+   $ pyenv install 3.5.7
+   $ pyenv install 3.6.9
+   $ pyenv install 3.7.4
+   $ pyenv install pypy2.7-7.1.1
+   $ pyenv install pypy3.6-7.1.1
 
 .. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
 .. _`virtualenv`: https://virtualenv.pypa.io/en/latest/installation/
+.. _`pyenv`: https://github.com/pyenv/pyenv
 
 Test upstream applications
 -----------------------------------
