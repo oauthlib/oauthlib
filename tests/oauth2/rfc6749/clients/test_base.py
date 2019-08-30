@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 import datetime
 
 from oauthlib import common
@@ -295,11 +293,11 @@ class ClientTest(TestCase):
         u, h, b = client.prepare_refresh_token_request(url, token, scope=scope)
         self.assertEqual(u, url)
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope=%s&refresh_token=%s' % (scope, token))
+        self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope={}&refresh_token={}'.format(scope, token))
 
         # provide scope while init
         client = Client(self.client_id, scope=scope)
         u, h, b = client.prepare_refresh_token_request(url, token, scope=scope)
         self.assertEqual(u, url)
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope=%s&refresh_token=%s' % (scope, token))
+        self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope={}&refresh_token={}'.format(scope, token))

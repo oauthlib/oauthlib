@@ -3,8 +3,6 @@
 oauthlib.openid.connect.core.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import unicode_literals, absolute_import
-
 from .authorization_code import AuthorizationCodeGrant
 from .implicit import ImplicitGrant
 from .base import GrantTypeBase

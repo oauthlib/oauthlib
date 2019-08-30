@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 from mock import patch
 
 from oauthlib import signals
@@ -77,9 +75,9 @@ class ParameterTests(TestCase):
     error_invalid = 'https://client.example.com/cb?error=invalid_request&state=xyz'
 
     implicit_base = 'https://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA&scope=abc&'
-    implicit_response = implicit_base + 'state={0}&token_type=example&expires_in=3600'.format(state)
-    implicit_notype = implicit_base + 'state={0}&expires_in=3600'.format(state)
-    implicit_wrongstate = implicit_base + 'state={0}&token_type=exampleexpires_in=3600'.format('invalid')
+    implicit_response = implicit_base + 'state={}&token_type=example&expires_in=3600'.format(state)
+    implicit_notype = implicit_base + 'state={}&expires_in=3600'.format(state)
+    implicit_wrongstate = implicit_base + 'state={}&token_type=exampleexpires_in=3600'.format('invalid')
     implicit_nostate = implicit_base + 'token_type=example&expires_in=3600'
     implicit_notoken = 'https://example.com/cb#state=xyz&token_type=example&expires_in=3600'
 
@@ -244,7 +242,7 @@ class ParameterTests(TestCase):
             for scope in new + old:
                 self.assertIn(scope, message)
             self.assertEqual(old, ['aaa'])
-            self.assertEqual(set(new), set(['abc', 'def']))
+            self.assertEqual(set(new), {'abc', 'def'})
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
@@ -278,7 +276,7 @@ class ParameterTests(TestCase):
             for scope in new + old:
                 self.assertIn(scope, message)
             self.assertEqual(old, ['aaa'])
-            self.assertEqual(set(new), set(['abc', 'def']))
+            self.assertEqual(set(new), {'abc', 'def'})
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']

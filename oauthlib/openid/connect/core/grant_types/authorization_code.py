@@ -3,8 +3,6 @@
 oauthlib.openid.connect.core.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 from oauthlib.oauth2.rfc6749.grant_types.authorization_code import AuthorizationCodeGrant as OAuth2AuthorizationCodeGrant
@@ -41,4 +39,4 @@ class AuthorizationCodeGrant(GrantTypeBase):
             request.redirect_uri,
             request
         )
-        return super(AuthorizationCodeGrant, self).add_id_token(token, token_handler, request, nonce=nonce)
+        return super().add_id_token(token, token_handler, request, nonce=nonce)

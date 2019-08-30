@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from .base import BaseEndpoint
 from .request_token import RequestTokenEndpoint
 from .authorization import AuthorizationEndpoint

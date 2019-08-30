@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 import json
 
 import mock
@@ -24,7 +22,7 @@ class OpenIDAuthCodeInterferenceTest(AuthorizationCodeGrantTest):
     """Test that OpenID don't interfere with normal OAuth 2 flows."""
 
     def setUp(self):
-        super(OpenIDAuthCodeInterferenceTest, self).setUp()
+        super().setUp()
         self.auth = AuthorizationCodeGrant(request_validator=self.mock_validator)
 
 
@@ -66,13 +64,13 @@ class OpenIDAuthCodeTest(TestCase):
         self.request.response_mode = 'query'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_query)
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)
 
         self.request.response_mode = 'fragment'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_fragment, parse_fragment=True)
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)
 
     @mock.patch('oauthlib.common.generate_token')
@@ -90,7 +88,7 @@ class OpenIDAuthCodeTest(TestCase):
         self.request.id_token_hint = 'me@email.com'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_query)
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)
 
         # Test alernative response modes
@@ -159,5 +157,5 @@ class OpenIDAuthCodeTest(TestCase):
         self.request.response_mode = 'query'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_query)
-        self.assertEqual(b, None)
+        self.assertIsNone(b)
         self.assertEqual(s, 302)

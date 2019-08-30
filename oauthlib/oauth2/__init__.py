@@ -6,8 +6,6 @@ oauthlib.oauth2
 This module is a wrapper for the most recent implementation of OAuth 2.0 Client
 and Server classes.
 """
-from __future__ import absolute_import, unicode_literals
-
 from .rfc6749.clients import Client
 from .rfc6749.clients import WebApplicationClient
 from .rfc6749.clients import MobileApplicationClient

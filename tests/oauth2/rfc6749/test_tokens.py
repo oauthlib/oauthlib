@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 import mock
 
 from oauthlib.common import Request

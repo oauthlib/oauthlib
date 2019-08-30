@@ -144,7 +144,7 @@ the project root via:
 
 .. sourcecode:: bash
 
-   $ py.test
+   $ pytest
 
 The first thing the core committers will do is run this command. Any pull
 request that fails this test suite will be **rejected**.
@@ -152,7 +152,7 @@ request that fails this test suite will be **rejected**.
 Testing multiple versions of Python
 -----------------------------------
 
-OAuthLib supports Python 2.7, 3.5, 3.6, 3.7 and PyPy 2.7 & PyPy 3. Testing
+OAuthLib supports Python 3.5, 3.6, 3.7 and PyPy 2.7 & PyPy 3. Testing
 all versions conveniently can be done using `Tox`_.
 
 .. sourcecode:: bash
@@ -167,7 +167,6 @@ The versions beloew may not be up to date.
 
 .. sourcecode:: bash
 
-   $ pyenv install 2.7.16
    $ pyenv install 3.5.7
    $ pyenv install 3.6.9
    $ pyenv install 3.7.4
@@ -304,7 +303,7 @@ First we pull the code into a local branch::
 
 Then we run the tests::
 
-    py.test
+    pytest
 
 We finish with a non-fastforward merge (to preserve the branch history) and push
 to GitHub::

@@ -9,11 +9,11 @@ try:
     from blinker import Namespace
     signals_available = True
 except ImportError:  # noqa
-    class Namespace(object):
+    class Namespace:
         def signal(self, name, doc=None):
             return _FakeSignal(name, doc)
 
-    class _FakeSignal(object):
+    class _FakeSignal:
         """If blinker is unavailable, create a fake class with the same
         interface that allows sending of signals but will fail with an
         error on anything else.  Instead of doing anything on send, it

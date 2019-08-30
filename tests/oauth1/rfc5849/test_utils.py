@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
-from oauthlib.common import unicode_type
 from oauthlib.oauth1.rfc5849.utils import *
 
 from ...unittest import TestCase
@@ -102,12 +99,12 @@ class UtilsTests(TestCase):
     def test_escape(self):
         self.assertRaises(ValueError, escape, b"I am a string type. Not a unicode type.")
         self.assertEqual(escape("I am a unicode type."), "I%20am%20a%20unicode%20type.")
-        self.assertIsInstance(escape("I am a unicode type."), unicode_type)
+        self.assertIsInstance(escape("I am a unicode type."), str)
 
     def test_unescape(self):
         self.assertRaises(ValueError, unescape, b"I am a string type. Not a unicode type.")
         self.assertEqual(unescape("I%20am%20a%20unicode%20type."), 'I am a unicode type.')
-        self.assertIsInstance(unescape("I%20am%20a%20unicode%20type."), unicode_type)
+        self.assertIsInstance(unescape("I%20am%20a%20unicode%20type."), str)
 
     def test_parse_authorization_header(self):
         # make us some headers
@@ -122,8 +119,8 @@ class UtilsTests(TestCase):
 
         # are the internal components of each tuple unicode?
         for k, v in authorization_headers:
-            self.assertIsInstance(k, unicode_type)
-            self.assertIsInstance(v, unicode_type)
+            self.assertIsInstance(k, str)
+            self.assertIsInstance(v, str)
 
         # let's check the parsed headers created
         correct_headers = [

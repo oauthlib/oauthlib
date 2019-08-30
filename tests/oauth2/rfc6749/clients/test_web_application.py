@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
-import datetime
 import os
 import warnings
 
@@ -13,14 +10,10 @@ from oauthlib.oauth2 import (BackendApplicationClient, Client,
                              WebApplicationClient)
 from oauthlib.oauth2.rfc6749 import errors, utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
+import urllib.parse as urlparse
 
 from ....unittest import TestCase
 
-# this is the same import method used in oauthlib/oauth2/rfc6749/parameters.py
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 
 @patch('time.time', new=lambda: 1000)
@@ -46,7 +39,7 @@ class WebApplicationClientTest(TestCase):
     code = "zzzzaaaa"
     body = "not=empty"
 
-    body_code = "not=empty&grant_type=authorization_code&code=%s&client_id=%s" % (code, client_id)
+    body_code = "not=empty&grant_type=authorization_code&code={}&client_id={}".format(code, client_id)
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 

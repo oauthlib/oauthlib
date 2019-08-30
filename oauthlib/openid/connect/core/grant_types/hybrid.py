@@ -3,8 +3,6 @@
 oauthlib.openid.connect.core.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 from oauthlib.oauth2.rfc6749.grant_types.authorization_code import AuthorizationCodeGrant as OAuth2AuthorizationCodeGrant
@@ -39,7 +37,7 @@ class HybridGrant(GrantTypeBase):
     def openid_authorization_validator(self, request):
         """Additional validation when following the Authorization Code flow.
         """
-        request_info = super(HybridGrant, self).openid_authorization_validator(request)
+        request_info = super().openid_authorization_validator(request)
         if not request_info:  # returns immediately if OAuth2.0
             return request_info
 

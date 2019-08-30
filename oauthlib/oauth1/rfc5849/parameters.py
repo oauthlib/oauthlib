@@ -7,16 +7,11 @@ This module contains methods related to `section 3.5`_ of the OAuth 1.0a spec.
 
 .. _`section 3.5`: https://tools.ietf.org/html/rfc5849#section-3.5
 """
-from __future__ import absolute_import, unicode_literals
-
 from oauthlib.common import extract_params, urlencode
 
 from . import utils
 
-try:
-    from urlparse import urlparse, urlunparse
-except ImportError:  # noqa
-    from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse
 
 
 # TODO: do we need filter_params now that oauth_params are handled by Request?
@@ -61,7 +56,7 @@ def prepare_headers(oauth_params, headers=None, realm=None):
         # 2.  Each parameter's name is immediately followed by an "=" character
         #     (ASCII code 61), a """ character (ASCII code 34), the parameter
         #     value (MAY be empty), and another """ character (ASCII code 34).
-        part = '{0}="{1}"'.format(escaped_name, escaped_value)
+        part = '{}="{}"'.format(escaped_name, escaped_value)
 
         authorization_header_parameters_parts.append(part)
 

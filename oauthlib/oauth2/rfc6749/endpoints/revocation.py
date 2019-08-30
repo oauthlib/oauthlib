@@ -7,8 +7,6 @@ An implementation of the OAuth 2 `Token Revocation`_ spec (draft 11).
 
 .. _`Token Revocation`: https://tools.ietf.org/html/draft-ietf-oauth-revocation-11
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 from oauthlib.common import Request
@@ -73,7 +71,7 @@ class RevocationEndpoint(BaseEndpoint):
             log.debug('Client error during validation of %r. %r.', request, e)
             response_body = e.json
             if self.enable_jsonp and request.callback:
-                response_body = '%s(%s);' % (request.callback, response_body)
+                response_body = '{}({});'.format(request.callback, response_body)
             resp_headers.update(e.headers)
             return resp_headers, response_body, e.status_code
 

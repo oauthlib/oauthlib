@@ -8,8 +8,6 @@ OAuth 1.0 RFC 5849. It validates the correctness of access token requests,
 creates and persists tokens as well as create the proper response to be
 returned to the client.
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 from oauthlib.common import urlencode

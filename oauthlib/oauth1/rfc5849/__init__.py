@@ -6,17 +6,12 @@ oauthlib.oauth1.rfc5849
 This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
 """
-from __future__ import absolute_import, unicode_literals
 import base64
 import hashlib
 import logging
 log = logging.getLogger(__name__)
 
-import sys
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
+import urllib.parse as urlparse
 
 from oauthlib.common import Request, urlencode, generate_nonce
 from oauthlib.common import generate_timestamp, to_unicode
@@ -36,7 +31,7 @@ SIGNATURE_TYPE_BODY = 'BODY'
 CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 
 
-class Client(object):
+class Client:
 
     """A client used to sign OAuth 1.0 RFC 5849 requests."""
     SIGNATURE_METHODS = {
@@ -106,8 +101,8 @@ class Client(object):
         attrs['rsa_key'] = '****' if attrs['rsa_key'] else None
         attrs[
             'resource_owner_secret'] = '****' if attrs['resource_owner_secret'] else None
-        attribute_str = ', '.join('%s=%s' % (k, v) for k, v in attrs.items())
-        return '<%s %s>' % (self.__class__.__name__, attribute_str)
+        attribute_str = ', '.join('{}={}'.format(k, v) for k, v in attrs.items())
+        return '<{} {}>'.format(self.__class__.__name__, attribute_str)
 
     def get_oauth_signature(self, request):
         """Get an OAuth signature to be used in signing a request
@@ -130,24 +125,24 @@ class Client(object):
             uri_query=urlparse.urlparse(uri).query,
             body=body,
             headers=headers)
-        log.debug("Collected params: {0}".format(collected_params))
+        log.debug("Collected params: {}".format(collected_params))
 
         normalized_params = signature.normalize_parameters(collected_params)
         normalized_uri = signature.base_string_uri(uri, headers.get('Host', None))
-        log.debug("Normalized params: {0}".format(normalized_params))
-        log.debug("Normalized URI: {0}".format(normalized_uri))
+        log.debug("Normalized params: {}".format(normalized_params))
+        log.debug("Normalized URI: {}".format(normalized_uri))
 
         base_string = signature.signature_base_string(request.http_method,
                                                       normalized_uri, normalized_params)
 
-        log.debug("Signing: signature base string: {0}".format(base_string))
+        log.debug("Signing: signature base string: {}".format(base_string))
 
         if self.signature_method not in self.SIGNATURE_METHODS:
             raise ValueError('Invalid signature method.')
 
         sig = self.SIGNATURE_METHODS[self.signature_method](base_string, self)
 
-        log.debug("Signature: {0}".format(sig))
+        log.debug("Signature: {}".format(sig))
         return sig
 
     def get_oauth_params(self, request):
@@ -278,8 +273,8 @@ class Client(object):
         #       header field set to "application/x-www-form-urlencoded".
         elif not should_have_params and has_params:
             raise ValueError(
-                "Body contains parameters but Content-Type header was {0} "
-                "instead of {1}".format(content_type or "not set",
+                "Body contains parameters but Content-Type header was {} "
+                "instead of {}".format(content_type or "not set",
                                         CONTENT_TYPE_FORM_URLENCODED))
 
         # 3.5.2.  Form-Encoded Body

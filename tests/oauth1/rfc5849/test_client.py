@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 from oauthlib.common import Request
 from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_HMAC_SHA1,
                              SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
@@ -163,7 +161,7 @@ class SignatureMethodTest(TestCase):
         Client.register_signature_method('PIZZA',
             lambda base_string, client: 'PIZZA')
 
-        self.assertTrue('PIZZA' in Client.SIGNATURE_METHODS)
+        self.assertIn('PIZZA', Client.SIGNATURE_METHODS)
 
         client = Client('client_key', signature_method='PIZZA',
             timestamp='1234567890', nonce='abc')
