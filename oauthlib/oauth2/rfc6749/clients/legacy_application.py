@@ -6,8 +6,6 @@ oauthlib.oauth2.rfc6749
 This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
-from __future__ import absolute_import, unicode_literals
-
 from ..parameters import parse_token_response, prepare_token_request
 from .base import Client
 
@@ -38,7 +36,7 @@ class LegacyApplicationClient(Client):
     grant_type = 'password'
 
     def __init__(self, client_id, **kwargs):
-        super(LegacyApplicationClient, self).__init__(client_id, **kwargs)
+        super().__init__(client_id, **kwargs)
 
     def prepare_request_body(self, username, password, body='', scope=None,
                              include_client_id=False, **kwargs):

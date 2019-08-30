@@ -6,8 +6,6 @@ oauthlib.oauth2.rfc6749
 This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
-from __future__ import absolute_import, unicode_literals
-
 import functools
 import logging
 
@@ -20,7 +18,7 @@ from oauthlib.common import CaseInsensitiveDict, urldecode
 log = logging.getLogger(__name__)
 
 
-class BaseEndpoint(object):
+class BaseEndpoint:
 
     def __init__(self):
         self._available = True

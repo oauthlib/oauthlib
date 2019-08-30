@@ -7,13 +7,10 @@ An implementation of the `OAuth 2.0 Authorization Server Metadata`.
 
 .. _`OAuth 2.0 Authorization Server Metadata`: https://tools.ietf.org/html/rfc8414
 """
-from __future__ import absolute_import, unicode_literals
-
 import copy
 import json
 import logging
 
-from ....common import unicode_type
 from .base import BaseEndpoint, catch_errors_and_unavailability
 from .authorization import AuthorizationEndpoint
 from .introspect import IntrospectEndpoint
@@ -85,7 +82,7 @@ class MetadataEndpoint(BaseEndpoint):
             if not isinstance(array[key], list):
                 raise ValueError("key {}: {} must be an Array".format(key, array[key]))
             for elem in array[key]:
-                if not isinstance(elem, unicode_type):
+                if not isinstance(elem, str):
                     raise ValueError("array {}: {} must contains only string (not {})".format(key, array[key], elem))
 
     def validate_metadata_token(self, claims, endpoint):

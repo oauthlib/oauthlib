@@ -1,7 +1,5 @@
 """Ensure extra credentials can be supplied for inclusion in tokens.
 """
-from __future__ import absolute_import, unicode_literals
-
 import mock
 
 from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,

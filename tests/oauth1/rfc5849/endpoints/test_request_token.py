@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 from mock import ANY, MagicMock
 
 from oauthlib.oauth1 import RequestValidator

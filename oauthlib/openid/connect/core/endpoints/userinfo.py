@@ -4,13 +4,10 @@ oauthlib.openid.connect.core.endpoints.userinfo
 
 This module is an implementation of userinfo endpoint.
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import logging
 
 from oauthlib.common import Request
-from oauthlib.common import unicode_type
 from oauthlib.oauth2.rfc6749.endpoints.base import BaseEndpoint
 from oauthlib.oauth2.rfc6749.endpoints.base import catch_errors_and_unavailability
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
@@ -55,7 +52,7 @@ class UserInfoEndpoint(BaseEndpoint):
                 log.error('Userinfo MUST have "sub" for %r.', request)
                 raise errors.ServerError(status_code=500)
             body = json.dumps(claims)
-        elif isinstance(claims, unicode_type):
+        elif isinstance(claims, str):
             resp_headers = {
                 'Content-Type': 'application/jwt'
             }

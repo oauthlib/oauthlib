@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 import json
 
 import mock
@@ -78,7 +76,7 @@ class AuthorizationEndpointTest(TestCase):
             uri, scopes=['all', 'of', 'them'])
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me?state=xyz', parse_fragment=True)
-        self.assertEqual(body, None)
+        self.assertIsNone(body)
         self.assertEqual(status_code, 302)
 
         # and without the state parameter
@@ -88,7 +86,7 @@ class AuthorizationEndpointTest(TestCase):
             uri, scopes=['all', 'of', 'them'])
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me', parse_fragment=True)
-        self.assertEqual(body, None)
+        self.assertIsNone(body)
         self.assertEqual(status_code, 302)
 
     def test_missing_type(self):

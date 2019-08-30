@@ -6,8 +6,6 @@ oauthlib.openid.connect.core.endpoints.pre_configured
 This module is an implementation of various endpoints needed
 for providing OpenID Connect servers.
 """
-from __future__ import absolute_import, unicode_literals
-
 from oauthlib.oauth2.rfc6749.endpoints import (
     AuthorizationEndpoint,
     IntrospectEndpoint,

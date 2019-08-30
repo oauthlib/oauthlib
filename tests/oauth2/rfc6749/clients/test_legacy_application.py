@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 import os
 
 from mock import patch
 
 from oauthlib import signals
 from oauthlib.oauth2 import LegacyApplicationClient
+import urllib.parse as urlparse
 
 from ....unittest import TestCase
 
-# this is the same import method used in oauthlib/oauth2/rfc6749/parameters.py
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 
 @patch('time.time', new=lambda: 1000)
@@ -32,7 +26,7 @@ class LegacyApplicationClientTest(TestCase):
     password = "user_password"
     body = "not=empty"
 
-    body_up = "not=empty&grant_type=password&username=%s&password=%s" % (username, password)
+    body_up = "not=empty&grant_type=password&username={}&password={}".format(username, password)
     body_kwargs = body_up + "&some=providers&require=extra+arguments"
 
     token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
@@ -105,8 +99,8 @@ class LegacyApplicationClientTest(TestCase):
 
         # scenario 1, default behavior to not include `client_id`
         r1 = client.prepare_request_body(username=self.username, password=self.password)
-        self.assertIn(r1, ('grant_type=password&username=%s&password=%s' % (self.username, self.password, ),
-                           'grant_type=password&password=%s&username=%s' % (self.password, self.username, ),
+        self.assertIn(r1, ('grant_type=password&username={}&password={}'.format(self.username, self.password),
+                           'grant_type=password&password={}&username={}'.format(self.password, self.username),
                           ))
 
         # scenario 2, include `client_id` in the body

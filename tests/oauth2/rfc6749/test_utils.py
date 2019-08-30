@@ -1,9 +1,6 @@
-from __future__ import absolute_import, unicode_literals
-
 import datetime
 import os
 
-from oauthlib.common import PY3
 from oauthlib.oauth2.rfc6749.utils import (escape, generate_age, host_from_uri,
                                            is_secure_transport, list_to_scope,
                                            params_from_uri, scope_to_list)
@@ -19,12 +16,8 @@ class ScopeObject:
     def __init__(self, scope):
         self.scope = scope
 
-    if PY3:
-        def __str__(self):
-            return self.scope
-    else:
-        def __unicode__(self):
-            return self.scope
+    def __str__(self):
+        return self.scope
 
 
 class UtilsTests(TestCase):

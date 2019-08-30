@@ -7,8 +7,6 @@ An implementation of the OAuth 2.0 `Token Introspection`.
 
 .. _`Token Introspection`: https://tools.ietf.org/html/rfc7662
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import logging
 

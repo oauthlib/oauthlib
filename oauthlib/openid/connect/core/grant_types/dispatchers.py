@@ -2,7 +2,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class Dispatcher(object):
+class Dispatcher:
     default_grant = None
     oidc_grant = None
 

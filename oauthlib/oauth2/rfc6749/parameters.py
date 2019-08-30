@@ -7,25 +7,19 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 
 .. _`Section 4`: https://tools.ietf.org/html/rfc6749#section-4
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import os
 import time
 
-from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
+from oauthlib.common import add_params_to_qs, add_params_to_uri
 from oauthlib.signals import scope_changed
+import urllib.parse as urlparse
 
 from .errors import (InsecureTransportError, MismatchingStateError,
                      MissingCodeError, MissingTokenError,
                      MissingTokenTypeError, raise_from_error)
 from .tokens import OAuth2Token
 from .utils import is_secure_transport, list_to_scope, scope_to_list
-
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
@@ -82,7 +76,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
 
     for k in kwargs:
         if kwargs[k]:
-            params.append((unicode_type(k), kwargs[k]))
+            params.append((str(k), kwargs[k]))
 
     return add_params_to_uri(uri, params)
 
@@ -146,18 +140,18 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
     client_id = kwargs.pop('client_id', None)
     if include_client_id:
         if client_id is not None:
-            params.append((unicode_type('client_id'), client_id))
+            params.append(('client_id', client_id))
 
     # the kwargs iteration below only supports including boolean truth (truthy)
     # values, but some servers may require an empty string for `client_secret`
     client_secret = kwargs.pop('client_secret', None)
     if client_secret is not None:
-        params.append((unicode_type('client_secret'), client_secret))
+        params.append(('client_secret', client_secret))
 
     # this handles: `code`, `redirect_uri`, and other undocumented params
     for k in kwargs:
         if kwargs[k]:
-            params.append((unicode_type(k), kwargs[k]))
+            params.append((str(k), kwargs[k]))
 
     return add_params_to_qs(body, params)
 
@@ -209,7 +203,7 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
 
     for k in kwargs:
         if kwargs[k]:
-            params.append((unicode_type(k), kwargs[k]))
+            params.append((str(k), kwargs[k]))
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 

@@ -6,8 +6,6 @@ The claims parameter is an optional query param for the Authorization Request en
  request the claims should be transferred (via the oauthlib request) to be persisted
  with the Access Token when it is created.
 """
-from __future__ import absolute_import, unicode_literals
-
 import mock
 
 from oauthlib.openid import RequestValidator

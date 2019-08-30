@@ -21,22 +21,16 @@ Steps for signing a request:
 
 .. _`section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
 """
-from __future__ import absolute_import, unicode_literals
-
 import binascii
 import hashlib
 import hmac
 import logging
 
-from oauthlib.common import (extract_params, safe_string_equals,
-                             unicode_type, urldecode)
+from oauthlib.common import extract_params, safe_string_equals, urldecode
+import urllib.parse as urlparse
 
 from . import utils
 
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 log = logging.getLogger(__name__)
 
@@ -128,7 +122,7 @@ def base_string_uri(uri, host=None):
 
     The host argument overrides the netloc part of the uri argument.
     """
-    if not isinstance(uri, unicode_type):
+    if not isinstance(uri, str):
         raise ValueError('uri must be a unicode object.')
 
     # FIXME: urlparse does not support unicode
@@ -301,7 +295,7 @@ def collect_parameters(uri_query='', body=[], headers=None,
     #
     # .. _`Section 3.5.1`: https://tools.ietf.org/html/rfc5849#section-3.5.1
     if headers:
-        headers_lower = dict((k.lower(), v) for k, v in headers.items())
+        headers_lower = {k.lower(): v for k, v in headers.items()}
         authorization_header = headers_lower.get('authorization')
         if authorization_header is not None:
             params.extend([i for i in utils.parse_authorization_header(
@@ -430,7 +424,7 @@ def normalize_parameters(params):
     # 3.  The name of each parameter is concatenated to its corresponding
     #     value using an "=" character (ASCII code 61) as a separator, even
     #     if the value is empty.
-    parameter_parts = ['{0}={1}'.format(k, v) for k, v in key_values]
+    parameter_parts = ['{}={}'.format(k, v) for k, v in key_values]
 
     # 4.  The sorted name/value pairs are concatenated together into a
     #     single string by using an "&" character (ASCII code 38) as
@@ -577,7 +571,7 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     .. _`RFC3447, Section 8.2`: https://tools.ietf.org/html/rfc3447#section-8.2
 
     """
-    if isinstance(base_string, unicode_type):
+    if isinstance(base_string, str):
         base_string = base_string.encode('utf-8')
     # TODO: finish RSA documentation
     alg = _jwt_rs1_signing_algorithm()
