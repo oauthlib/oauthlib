@@ -40,34 +40,34 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
-        auth_grant = AuthorizationCodeGrant(request_validator)
-        implicit_grant = ImplicitGrant(request_validator)
-        password_grant = ResourceOwnerPasswordCredentialsGrant(
+        self.auth_grant = AuthorizationCodeGrant(request_validator)
+        self.implicit_grant = ImplicitGrant(request_validator)
+        self.password_grant = ResourceOwnerPasswordCredentialsGrant(
             request_validator)
-        credentials_grant = ClientCredentialsGrant(request_validator)
-        refresh_grant = RefreshTokenGrant(request_validator)
+        self.credentials_grant = ClientCredentialsGrant(request_validator)
+        self.refresh_grant = RefreshTokenGrant(request_validator)
 
-        bearer = BearerToken(request_validator, token_generator,
+        self.bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
 
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                                        response_types={
-                                           'code': auth_grant,
-                                           'token': implicit_grant,
-                                           'none': auth_grant
+                                           'code': self.auth_grant,
+                                           'token': self.implicit_grant,
+                                           'none': self.auth_grant
                                        },
-                                       default_token_type=bearer)
+                                       default_token_type=self.bearer)
 
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                                grant_types={
-                                   'authorization_code': auth_grant,
-                                   'password': password_grant,
-                                   'client_credentials': credentials_grant,
-                                   'refresh_token': refresh_grant,
+                                   'authorization_code': self.auth_grant,
+                                   'password': self.password_grant,
+                                   'client_credentials': self.credentials_grant,
+                                   'refresh_token': self.refresh_grant,
                                },
-                               default_token_type=bearer)
+                               default_token_type=self.bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
-                                  token_types={'Bearer': bearer})
+                                  token_types={'Bearer': self.bearer})
         RevocationEndpoint.__init__(self, request_validator)
         IntrospectEndpoint.__init__(self, request_validator)
 
@@ -92,21 +92,21 @@ class WebApplicationServer(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpo
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
-        auth_grant = AuthorizationCodeGrant(request_validator)
-        refresh_grant = RefreshTokenGrant(request_validator)
-        bearer = BearerToken(request_validator, token_generator,
+        self.auth_grant = AuthorizationCodeGrant(request_validator)
+        self.refresh_grant = RefreshTokenGrant(request_validator)
+        self.bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
         AuthorizationEndpoint.__init__(self, default_response_type='code',
-                                       response_types={'code': auth_grant},
-                                       default_token_type=bearer)
+                                       response_types={'code': self.auth_grant},
+                                       default_token_type=self.bearer)
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                                grant_types={
-                                   'authorization_code': auth_grant,
-                                   'refresh_token': refresh_grant,
+                                   'authorization_code': self.auth_grant,
+                                   'refresh_token': self.refresh_grant,
                                },
-                               default_token_type=bearer)
+                               default_token_type=self.bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
-                                  token_types={'Bearer': bearer})
+                                  token_types={'Bearer': self.bearer})
         RevocationEndpoint.__init__(self, request_validator)
         IntrospectEndpoint.__init__(self, request_validator)
 
@@ -131,15 +131,15 @@ class MobileApplicationServer(AuthorizationEndpoint, IntrospectEndpoint,
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
-        implicit_grant = ImplicitGrant(request_validator)
-        bearer = BearerToken(request_validator, token_generator,
+        self.implicit_grant = ImplicitGrant(request_validator)
+        self.bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
         AuthorizationEndpoint.__init__(self, default_response_type='token',
                                        response_types={
-                                           'token': implicit_grant},
-                                       default_token_type=bearer)
+                                           'token': self.implicit_grant},
+                                       default_token_type=self.bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
-                                  token_types={'Bearer': bearer})
+                                  token_types={'Bearer': self.bearer})
         RevocationEndpoint.__init__(self, request_validator,
                                     supported_token_types=['access_token'])
         IntrospectEndpoint.__init__(self, request_validator,
@@ -166,19 +166,19 @@ class LegacyApplicationServer(TokenEndpoint, IntrospectEndpoint,
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
-        password_grant = ResourceOwnerPasswordCredentialsGrant(
+        self.password_grant = ResourceOwnerPasswordCredentialsGrant(
             request_validator)
-        refresh_grant = RefreshTokenGrant(request_validator)
-        bearer = BearerToken(request_validator, token_generator,
+        self.refresh_grant = RefreshTokenGrant(request_validator)
+        self.bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
         TokenEndpoint.__init__(self, default_grant_type='password',
                                grant_types={
-                                   'password': password_grant,
-                                   'refresh_token': refresh_grant,
+                                   'password': self.password_grant,
+                                   'refresh_token': self.refresh_grant,
                                },
-                               default_token_type=bearer)
+                               default_token_type=self.bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
-                                  token_types={'Bearer': bearer})
+                                  token_types={'Bearer': self.bearer})
         RevocationEndpoint.__init__(self, request_validator)
         IntrospectEndpoint.__init__(self, request_validator)
 
@@ -203,15 +203,15 @@ class BackendApplicationServer(TokenEndpoint, IntrospectEndpoint,
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
-        credentials_grant = ClientCredentialsGrant(request_validator)
-        bearer = BearerToken(request_validator, token_generator,
+        self.credentials_grant = ClientCredentialsGrant(request_validator)
+        self.bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
         TokenEndpoint.__init__(self, default_grant_type='client_credentials',
                                grant_types={
-                                   'client_credentials': credentials_grant},
-                               default_token_type=bearer)
+                                   'client_credentials': self.credentials_grant},
+                               default_token_type=self.bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
-                                  token_types={'Bearer': bearer})
+                                  token_types={'Bearer': self.bearer})
         RevocationEndpoint.__init__(self, request_validator,
                                     supported_token_types=['access_token'])
         IntrospectEndpoint.__init__(self, request_validator,

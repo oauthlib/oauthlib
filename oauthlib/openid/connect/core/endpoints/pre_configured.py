@@ -56,52 +56,52 @@ class Server(AuthorizationEndpoint, IntrospectEndpoint, TokenEndpoint,
         :param kwargs: Extra parameters to pass to authorization-,
                        token-, resource-, and revocation-endpoint constructors.
         """
-        auth_grant = OAuth2AuthorizationCodeGrant(request_validator)
-        implicit_grant = OAuth2ImplicitGrant(request_validator)
-        password_grant = ResourceOwnerPasswordCredentialsGrant(
+        self.auth_grant = OAuth2AuthorizationCodeGrant(request_validator)
+        self.implicit_grant = OAuth2ImplicitGrant(request_validator)
+        self.password_grant = ResourceOwnerPasswordCredentialsGrant(
             request_validator)
-        credentials_grant = ClientCredentialsGrant(request_validator)
-        refresh_grant = RefreshTokenGrant(request_validator)
-        openid_connect_auth = AuthorizationCodeGrant(request_validator)
-        openid_connect_implicit = ImplicitGrant(request_validator)
-        openid_connect_hybrid = HybridGrant(request_validator)
+        self.credentials_grant = ClientCredentialsGrant(request_validator)
+        self.refresh_grant = RefreshTokenGrant(request_validator)
+        self.openid_connect_auth = AuthorizationCodeGrant(request_validator)
+        self.openid_connect_implicit = ImplicitGrant(request_validator)
+        self.openid_connect_hybrid = HybridGrant(request_validator)
 
-        bearer = BearerToken(request_validator, token_generator,
+        self.bearer = BearerToken(request_validator, token_generator,
                              token_expires_in, refresh_token_generator)
 
-        jwt = JWTToken(request_validator, token_generator,
+        self.jwt = JWTToken(request_validator, token_generator,
                        token_expires_in, refresh_token_generator)
 
-        auth_grant_choice = AuthorizationCodeGrantDispatcher(default_grant=auth_grant, oidc_grant=openid_connect_auth)
-        implicit_grant_choice = ImplicitTokenGrantDispatcher(default_grant=implicit_grant, oidc_grant=openid_connect_implicit)
+        self.auth_grant_choice = AuthorizationCodeGrantDispatcher(default_grant=self.auth_grant, oidc_grant=self.openid_connect_auth)
+        self.implicit_grant_choice = ImplicitTokenGrantDispatcher(default_grant=self.implicit_grant, oidc_grant=self.openid_connect_implicit)
 
         # See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Combinations for valid combinations
         # internally our AuthorizationEndpoint will ensure they can appear in any order for any valid combination
         AuthorizationEndpoint.__init__(self, default_response_type='code',
                                        response_types={
-                                           'code': auth_grant_choice,
-                                           'token': implicit_grant_choice,
-                                           'id_token': openid_connect_implicit,
-                                           'id_token token': openid_connect_implicit,
-                                           'code token': openid_connect_hybrid,
-                                           'code id_token': openid_connect_hybrid,
-                                           'code id_token token': openid_connect_hybrid,
-                                           'none': auth_grant
+                                           'code': self.auth_grant_choice,
+                                           'token': self.implicit_grant_choice,
+                                           'id_token': self.openid_connect_implicit,
+                                           'id_token token': self.openid_connect_implicit,
+                                           'code token': self.openid_connect_hybrid,
+                                           'code id_token': self.openid_connect_hybrid,
+                                           'code id_token token': self.openid_connect_hybrid,
+                                           'none': self.auth_grant
                                        },
-                                       default_token_type=bearer)
+                                       default_token_type=self.bearer)
 
-        token_grant_choice = AuthorizationTokenGrantDispatcher(request_validator, default_grant=auth_grant, oidc_grant=openid_connect_auth)
+        self.token_grant_choice = AuthorizationTokenGrantDispatcher(request_validator, default_grant=self.auth_grant, oidc_grant=self.openid_connect_auth)
 
         TokenEndpoint.__init__(self, default_grant_type='authorization_code',
                                grant_types={
-                                   'authorization_code': token_grant_choice,
-                                   'password': password_grant,
-                                   'client_credentials': credentials_grant,
-                                   'refresh_token': refresh_grant,
+                                   'authorization_code': self.token_grant_choice,
+                                   'password': self.password_grant,
+                                   'client_credentials': self.credentials_grant,
+                                   'refresh_token': self.refresh_grant,
                                },
-                               default_token_type=bearer)
+                               default_token_type=self.bearer)
         ResourceEndpoint.__init__(self, default_token='Bearer',
-                                  token_types={'Bearer': bearer, 'JWT': jwt})
+                                  token_types={'Bearer': self.bearer, 'JWT': self.jwt})
         RevocationEndpoint.__init__(self, request_validator)
         IntrospectEndpoint.__init__(self, request_validator)
         UserInfoEndpoint.__init__(self, request_validator)
