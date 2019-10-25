@@ -1,5 +1,6 @@
+=================
 Custom Grant type
------------------
+=================
 
 Writing a custom grant type can be useful to implement a specification
 which is in an early draft, or implement a grant provided by a
@@ -38,12 +39,25 @@ for examples.
 3. Example
 ----------
 
-To be completed.
+Sample below shows the creation of a new custom `grant_type` parameter
+and declare it in the `/token` endpoint of your `Server`. Note that
+you can reuse `pre_configured.Server` or use your own class inheriting
+of the `Endpoint` classes you have decided.
 
 .. code-block:: python
-    class XXXZZZGrant(GrantTypeBase):
+
+    class MyCustomGrant(GrantTypeBase):
         def create_token_response(self, request, token_handler):
-            if not request.grant_type == 'xxx_zzz':
+            if not request.grant_type == 'urn:ietf:params:oauth:grant-type:my-custom-grant':
                 raise errors.UnsupportedGrantTypeError(request=request)
-            ...
-         
+            # implement your custom validation checks
+            # ..
+
+            token = token_handler.create_token(request,
+                                               refresh_token=self.issue_new_refresh_tokens)
+            return self._get_default_headers(), json.dumps(token), 200
+
+    def setup_oauthlib():
+        my_custom_grant = MyCustomGrant()
+        server = Server(request_validator)
+        server.grant_types["urn:ietf:params:oauth:grant-type:my-custom-grant"] = my_custom_grant
