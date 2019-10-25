@@ -21,8 +21,10 @@ serves less secure applications such as Mobile Applications or
 Single-Page Applications, the :doc:`Client Credentials grant
 </oauth2/grants/credentials>` is excellent for embedded services and
 backend applications. We have also the :doc:`Resource Owner Password
-Credentials grant </oauth2/grants/password>` for legacy applications
-to incrementally transition to OAuth 2.
+Credentials grant </oauth2/grants/password>` when there is a high
+degree of trust between the resource owner and the client, and when
+other authorization grant types are not available. This is also often
+used for legacy applications to incrementally transition to OAuth 2.
 
 The main purpose of the grant types is to authorize access to protected
 resources in various ways with different security credentials.
