@@ -188,7 +188,7 @@ submit a breaking change, confirm that other projects builds are not affected.
    $ make
 
 
-If you add code you need to add tests!
+If you add code, add tests!
 --------------------------------------
 
 We've learned the hard way that code without tests is undependable. If your pull
@@ -303,7 +303,7 @@ First we pull the code into a local branch::
 
 Then we run the tests::
 
-    pytest
+    tox
 
 We finish with a non-fastforward merge (to preserve the branch history) and push
 to GitHub::
@@ -311,6 +311,19 @@ to GitHub::
     git checkout master
     git merge --no-ff <branch-name>
     git push upstream master
+
+Sponsoring
+==========
+
+The OAuthlib project is open to sponsoring.
+
+As a sponsor, you can participate by clicking on the "Sponsor" button in
+the https://github.com/oauthlib/oauthlib homepage.
+
+As a contributor, you can adhere to the sponsoring program. Feel free
+to open a PR by adding your name into the ``.github/FUNDING.yml``
+file.
+
 
 .. _installation: install.html
 .. _GitHub project: https://github.com/oauthlib/oauthlib
