@@ -650,3 +650,21 @@ class RequestValidator:
 
         """
         raise NotImplementedError('Subclasses must implement this method.')
+
+    def register_client_metadata(self, request, metadata):
+        """
+
+        See OAuth2.0 Dynamic Client Registration protocol [`RFC7591`_].
+
+        .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
+
+        """
+
+    def validate_software_statement(self, request, statement):
+        """
+
+        See OAuth2.0 Dynamic Client Registration protocol [`RFC7591`_].
+
+        .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
+
+        """

@@ -20,6 +20,7 @@ client attempts to access the user resources on their behalf.
     metadata
     revocation
     resource
+    dynamic
 
 There are three main endpoints, the authorization endpoint which mainly
 handles user authorization, the token endpoint which provides tokens and the
