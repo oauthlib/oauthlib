@@ -3,31 +3,34 @@ Changelog
 
 3.1.0 (TBD)
 ------------------
-
 OAuth2.0 Provider - Features
-* #660: OIDC add support of nonce, c_hash, at_hash fields
-  - New RequestValidator.fill_id_token method
-  - Deprecated RequestValidator.get_id_token method
-* #677: OIDC add UserInfo endpoint
-  - New RequestValidator.get_userinfo_claims method
+
+  * #660: OIDC add support of `nonce`, `c_hash`, `at_hash fields`
+      - New `RequestValidator.fill_id_token` method
+      - Deprecated `RequestValidator.get_id_token` method
+  * #677: OIDC add `UserInfo` endpoint - New `RequestValidator.get_userinfo_claims` method
 
 OAuth2.0 Provider - Security
-* #665: Enhance data leak to logs
-  - New default to not expose request content in logs
-  - New function `oauthlib.set_debug(True)`
-* #666: Disabling query parameters for POST requests
+
+    * #665: Enhance data leak to logs
+        * New default to not expose request content in logs
+        * New function `oauthlib.set_debug(True)`
+    * #666: Disabling query parameters for POST requests
 
 OAuth2.0 Provider - Bugfixes
-* #670: Fix validate_authorization_request to return the new PKCE fields
-* #674: Fix token_type to be case-insensitive (bearer and Bearer)
+
+  * #670: Fix `validate_authorization_request` to return the new PKCE fields
+  * #674: Fix `token_type` to be case-insensitive (`bearer` and `Bearer`)
 
 OAuth2.0 Client - Bugfixes
-* #290: Fix Authorization Code's errors processing
-* #603: BackendApplication.Client.prepare_request_body use the "scope" argument as intended.
-* #672: Fix edge case when expires_in=Null
+
+  * #290: Fix Authorization Code's errors processing
+  * #603: BackendApplication.Client.prepare_request_body use the `scope` argument as intended.
+  * #672: Fix edge case when `expires_in=Null`
 
 OAuth1.0 Client
-* #669: Add case-insensitive headers to oauth1 BaseEndpoint
+
+  * #669: Add case-insensitive headers to oauth1 `BaseEndpoint`
 
 3.0.2 (2019-07-04)
 ------------------
