@@ -117,7 +117,7 @@ class ClientCredentialsGrant(GrantTypeBase):
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
 
-        log.debug('Authorizing access to user %r.', request.user)
+        log.debug('Authorizing access to client %r.', request.client.client_id)
         request.client_id = request.client_id or request.client.client_id
         self.validate_scopes(request)
 
