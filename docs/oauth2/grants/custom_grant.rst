@@ -6,8 +6,8 @@ Writing a custom grant type can be useful to implement a specification
 which is in an early draft, or implement a grant provided by a
 specific OAuth2.0 Authorization Server documentation but not provided
 by oauthlib. For information, any grant types with a clear
-specification can be integrated in oauthlib, just make a PR for that
-! See :doc:`how to contribute here </contributing>`.
+specification can be integrated in oauthlib, just make a PR for that !
+See :doc:`how to contribute here </contributing>`.
 
 Please find how to create a new grant and use it in an endpoint:
 
