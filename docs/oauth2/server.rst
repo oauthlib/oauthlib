@@ -239,6 +239,17 @@ the token.
         # the scopes into a string.
         scopes = django.db.models.TextField()
 
+**Redirect URI**:
+
+    If the client specifies a redirect_uri when obtaining code then that
+    redirect URI must be bound to the code and verified equal in this
+    method, according to RFC 6749 section 4.1. This field holds that
+    bound value.
+
+    .. code-block:: python
+
+        redirect_uri = django.db.models.TextField()
+
 **Authorization Code**:
 
     An unguessable unique string of characters.
