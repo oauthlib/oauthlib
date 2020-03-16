@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 import json
 
 from oauthlib.openid import RequestValidator

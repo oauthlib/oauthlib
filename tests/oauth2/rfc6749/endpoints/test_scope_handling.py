@@ -5,7 +5,7 @@ need to be persisted temporarily in an authorization code.
 """
 import json
 
-import mock
+from unittest import mock
 
 from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
                              MobileApplicationServer, RequestValidator, Server,

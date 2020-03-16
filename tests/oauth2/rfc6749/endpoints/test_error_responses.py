@@ -2,7 +2,7 @@
 """
 import json
 
-import mock
+from unittest import mock
 
 from oauthlib.common import urlencode
 from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,

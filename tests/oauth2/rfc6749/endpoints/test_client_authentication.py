@@ -11,7 +11,7 @@ prevents this check from being circumvented with a client form parameter.
 """
 import json
 
-import mock
+from unittest import mock
 
 from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
                              MobileApplicationServer, RequestValidator,
