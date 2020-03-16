@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.tokens import BearerToken

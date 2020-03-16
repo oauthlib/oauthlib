@@ -1,4 +1,4 @@
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import errors

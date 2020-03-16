@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-import mock
+from unittest import mock
 
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint

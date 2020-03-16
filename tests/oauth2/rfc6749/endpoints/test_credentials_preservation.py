@@ -5,7 +5,7 @@ uri and the Implicit Grant will need to preserve state.
 """
 import json
 
-import mock
+from unittest import mock
 
 from oauthlib.oauth2 import (MobileApplicationServer, RequestValidator,
                              WebApplicationServer)

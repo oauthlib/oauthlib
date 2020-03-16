@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from oauthlib.oauth2 import InvalidRequestError
 from oauthlib.oauth2.rfc6749.endpoints.authorization import \
