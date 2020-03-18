@@ -555,6 +555,13 @@ def _jwt_rs1_signing_algorithm():
         _jwtrs1 = jwtalgo.RSAAlgorithm(jwtalgo.hashes.SHA1)
     return _jwtrs1
 
+
+def sign_rsa_sha1_with_client(base_string, client):
+    if not client.rsa_key:
+        raise ValueError('rsa_key is required when using RSA signature method.')
+    return sign_rsa_sha1(base_string, client.rsa_key)
+
+
 def sign_rsa_sha1(base_string, rsa_private_key):
     """**RSA-SHA1**
 
@@ -580,10 +587,39 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     return binascii.b2a_base64(s)[:-1].decode('utf-8')
 
 
-def sign_rsa_sha1_with_client(base_string, client):
+_jwtrs256 = None
+
+
+def _jwt_rs256_signing_algorithm():
+    global _jwtrs256
+    if _jwtrs256 is None:
+        import jwt.algorithms as jwtalgo
+        _jwtrs256 = jwtalgo.RSAAlgorithm(jwtalgo.hashes.SHA256)
+    return _jwtrs256
+
+
+def sign_rsa_sha256_with_client(base_string, client):
     if not client.rsa_key:
         raise ValueError('rsa_key is required when using RSA signature method.')
-    return sign_rsa_sha1(base_string, client.rsa_key)
+    return sign_rsa_sha256(base_string, client.rsa_key)
+
+
+def sign_rsa_sha256(base_string, rsa_private_key):
+    """
+    **RSA-SHA256**
+
+    """
+    if isinstance(base_string, str):
+        base_string = base_string.encode('utf-8')
+    # TODO: finish RSA documentation
+    alg = _jwt_rs1_signing_algorithm()
+    key = _prepare_key_plus(alg, rsa_private_key)
+    s = alg.sign(base_string, key)
+    return binascii.b2a_base64(s)[:-1].decode('utf-8')
+
+
+def sign_plaintext_with_client(base_string, client):
+    return sign_plaintext(client.client_secret, client.resource_owner_secret)
 
 
 def sign_plaintext(client_secret, resource_owner_secret):
@@ -620,9 +656,8 @@ def sign_plaintext(client_secret, resource_owner_secret):
 
     return signature
 
-
-def sign_plaintext_with_client(base_string, client):
-    return sign_plaintext(client.client_secret, client.resource_owner_secret)
+# ================
+# Verify functions
 
 
 def verify_hmac_sha1(request, client_secret=None,
@@ -690,6 +725,7 @@ def _prepare_key_plus(alg, keystr):
         keystr = keystr.decode('utf-8')
     return alg.prepare_key(keystr)
 
+
 def verify_rsa_sha1(request, rsa_public_key):
     """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
 
@@ -719,6 +755,26 @@ def verify_rsa_sha1(request, rsa_public_key):
     verify_ok = alg.verify(sig_base_str, key, sig)
     if not verify_ok:
         log.debug('Verify RSA-SHA1 failed: signature base string: %s',
+                  sig_base_str)
+    return verify_ok
+
+
+def verify_rsa_sha256(request, rsa_public_key):
+    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
+
+    """
+    norm_params = normalize_parameters(request.params)
+    bs_uri = base_string_uri(request.uri)
+    sig_base_str = signature_base_string(request.http_method, bs_uri,
+                                         norm_params).encode('utf-8')
+    sig = binascii.a2b_base64(request.signature.encode('utf-8'))
+
+    alg = _jwt_rs256_signing_algorithm()
+    key = _prepare_key_plus(alg, rsa_public_key)
+
+    verify_ok = alg.verify(sig_base_str, key, sig)
+    if not verify_ok:
+        log.debug('Verify RSA-SHA256 failed: signature base string: %s',
                   sig_base_str)
     return verify_ok
 

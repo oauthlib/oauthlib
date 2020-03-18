@@ -5,6 +5,19 @@ oauthlib.oauth1.rfc5849
 
 This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
+
+It supports all three standard signature methods defined in RFC 5849:
+
+- HMAC-SHA1
+- RSA-SHA1
+- PLAINTEXT
+
+It also supports signature methods that are not defined in RFC 5849. These are
+based on the standard ones but replace SHA-1 with the more secure SHA-256:
+
+- HMAC-SHA256
+- RSA-SHA256
+
 """
 import base64
 import hashlib
@@ -20,9 +33,16 @@ from . import parameters, signature
 SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
 SIGNATURE_HMAC_SHA256 = "HMAC-SHA256"
 SIGNATURE_HMAC = SIGNATURE_HMAC_SHA1
-SIGNATURE_RSA = "RSA-SHA1"
+
+SIGNATURE_RSA_SHA1 = "RSA_SHA1"
+SIGNATURE_RSA_SHA256 = "RSA_SHA256"
+SIGNATURE_RSA = SIGNATURE_RSA_SHA1
+
 SIGNATURE_PLAINTEXT = "PLAINTEXT"
-SIGNATURE_METHODS = (SIGNATURE_HMAC_SHA1, SIGNATURE_HMAC_SHA256, SIGNATURE_RSA, SIGNATURE_PLAINTEXT)
+
+SIGNATURE_METHODS = (SIGNATURE_HMAC_SHA1, SIGNATURE_HMAC_SHA256,
+                     SIGNATURE_RSA_SHA1, SIGNATURE_RSA_SHA256,
+                     SIGNATURE_PLAINTEXT)
 
 SIGNATURE_TYPE_AUTH_HEADER = 'AUTH_HEADER'
 SIGNATURE_TYPE_QUERY = 'QUERY'
@@ -37,7 +57,8 @@ class Client:
     SIGNATURE_METHODS = {
         SIGNATURE_HMAC_SHA1: signature.sign_hmac_sha1_with_client,
         SIGNATURE_HMAC_SHA256: signature.sign_hmac_sha256_with_client,
-        SIGNATURE_RSA: signature.sign_rsa_sha1_with_client,
+        SIGNATURE_RSA_SHA1: signature.sign_rsa_sha1_with_client,
+        SIGNATURE_RSA_SHA256: signature.sign_rsa_sha256_with_client,
         SIGNATURE_PLAINTEXT: signature.sign_plaintext_with_client
     }
 
