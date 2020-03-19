@@ -35,6 +35,9 @@ from . import utils
 log = logging.getLogger(__name__)
 
 
+# ================================================================
+# Common functions
+
 def signature_base_string(http_method, base_str_uri,
                           normalized_encoded_request_parameters):
     """**Construct the signature base string.**
@@ -211,7 +214,7 @@ def base_string_uri(uri, host=None):
 #
 # .. _`section 3.4.1.3`: https://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
-def collect_parameters(uri_query='', body=[], headers=None,
+def collect_parameters(uri_query='', body=None, headers=None,
                        exclude_oauth_signature=True, with_realm=False):
     """**Parameter Sources**
 
@@ -270,6 +273,8 @@ def collect_parameters(uri_query='', body=[], headers=None,
 
     .. _`section 3.4.1.3.1`: https://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
     """
+    if body is None:
+        body = []
     headers = headers or {}
     params = []
 
@@ -432,72 +437,12 @@ def normalize_parameters(params):
     return '&'.join(parameter_parts)
 
 
-def sign_hmac_sha1_with_client(base_string, client):
-    return sign_hmac_sha1(base_string,
-                          client.client_secret,
-                          client.resource_owner_secret
-                          )
+# ================================================================
+# Common functions for HMAC-based signature methods
 
-
-def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
-    """**HMAC-SHA1**
-
-    The "HMAC-SHA1" signature method uses the HMAC-SHA1 signature
-    algorithm as defined in `RFC2104`_::
-
-        digest = HMAC-SHA1 (key, text)
-
-    Per `section 3.4.2`_ of the spec.
-
-    .. _`RFC2104`: https://tools.ietf.org/html/rfc2104
-    .. _`section 3.4.2`: https://tools.ietf.org/html/rfc5849#section-3.4.2
+def _hmac_sign(sig_base_str, hash_alg, client_secret, resource_owner_secret):
     """
-
-    # The HMAC-SHA1 function variables are used in following way:
-
-    # text is set to the value of the signature base string from
-    # `Section 3.4.1.1`_.
-    #
-    # .. _`Section 3.4.1.1`: https://tools.ietf.org/html/rfc5849#section-3.4.1.1
-    text = base_string
-
-    # key is set to the concatenated values of:
-    # 1.  The client shared-secret, after being encoded (`Section 3.6`_).
-    #
-    # .. _`Section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
-    key = utils.escape(client_secret or '')
-
-    # 2.  An "&" character (ASCII code 38), which MUST be included
-    #     even when either secret is empty.
-    key += '&'
-
-    # 3.  The token shared-secret, after being encoded (`Section 3.6`_).
-    #
-    # .. _`Section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
-    key += utils.escape(resource_owner_secret or '')
-
-    # FIXME: HMAC does not support unicode!
-    key_utf8 = key.encode('utf-8')
-    text_utf8 = text.encode('utf-8')
-    signature = hmac.new(key_utf8, text_utf8, hashlib.sha1)
-
-    # digest  is used to set the value of the "oauth_signature" protocol
-    #         parameter, after the result octet string is base64-encoded
-    #         per `RFC2045, Section 6.8`.
-    #
-    # .. _`RFC2045, Section 6.8`: https://tools.ietf.org/html/rfc2045#section-6.8
-    return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
-
-
-def sign_hmac_sha256_with_client(base_string, client):
-    return sign_hmac_sha256(base_string,
-                          client.client_secret,
-                          client.resource_owner_secret
-                          )
-
-
-def sign_hmac_sha256(base_string, client_secret, resource_owner_secret):
-    """**HMAC-SHA256**
+    **HMAC-SHA256**
 
     The "HMAC-SHA256" signature method uses the HMAC-SHA256 signature
     algorithm as defined in `RFC4634`_::
@@ -516,7 +461,7 @@ def sign_hmac_sha256(base_string, client_secret, resource_owner_secret):
     # `Section 3.4.1.1`_.
     #
     # .. _`Section 3.4.1.1`: https://tools.ietf.org/html/rfc5849#section-3.4.1.1
-    text = base_string
+    text = sig_base_str
 
     # key is set to the concatenated values of:
     # 1.  The client shared-secret, after being encoded (`Section 3.6`_).
@@ -536,7 +481,7 @@ def sign_hmac_sha256(base_string, client_secret, resource_owner_secret):
     # FIXME: HMAC does not support unicode!
     key_utf8 = key.encode('utf-8')
     text_utf8 = text.encode('utf-8')
-    signature = hmac.new(key_utf8, text_utf8, hashlib.sha256)
+    signature = hmac.new(key_utf8, text_utf8, hash_alg)
 
     # digest  is used to set the value of the "oauth_signature" protocol
     #         parameter, after the result octet string is base64-encoded
@@ -545,47 +490,254 @@ def sign_hmac_sha256(base_string, client_secret, resource_owner_secret):
     # .. _`RFC2045, Section 6.8`: https://tools.ietf.org/html/rfc2045#section-6.8
     return binascii.b2a_base64(signature.digest())[:-1].decode('utf-8')
 
-_jwtrs1 = None
 
-#jwt has some nice pycrypto/cryptography abstractions
-def _jwt_rs1_signing_algorithm():
-    global _jwtrs1
-    if _jwtrs1 is None:
-        import jwt.algorithms as jwtalgo
-        _jwtrs1 = jwtalgo.RSAAlgorithm(jwtalgo.hashes.SHA1)
-    return _jwtrs1
+def _hmac_verify(request, hash_alg,
+                 client_secret=None, resource_owner_secret=None):
+    """Verify a HMAC-SHA1 signature.
+
+    Per `section 3.4`_ of the spec.
+
+    .. _`section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
+
+    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
+    attribute MUST be an absolute URI whose netloc part identifies the
+    origin server or gateway on which the resource resides. Any Host
+    item of the request argument's headers dict attribute will be
+    ignored.
+
+    .. _`RFC2616 section 5.2`: https://tools.ietf.org/html/rfc2616#section-5.2
+
+    """
+    norm_params = normalize_parameters(request.params)
+    bs_uri = base_string_uri(request.uri)
+    sig_base_str = signature_base_string(request.http_method, bs_uri,
+                                         norm_params)
+    signature = _hmac_sign(sig_base_str, hash_alg,
+                           client_secret, resource_owner_secret)
+    match = safe_string_equals(signature, request.signature)
+    if not match:
+        log.debug('Verify HMAC failed: signature base string: %s', sig_base_str)
+    return match
 
 
-def sign_rsa_sha1_with_client(base_string, client):
-    if not client.rsa_key:
-        raise ValueError('rsa_key is required when using RSA signature method.')
-    return sign_rsa_sha1(base_string, client.rsa_key)
+# ================================================================
+# HMAC-SHA1
+#
+# Standard OAuth 1.0a signature method.
+
+def sign_hmac_sha1_with_client(sig_base_str, client):
+    return _hmac_sign(sig_base_str, hashlib.sha1,
+                      client.client_secret, client.resource_owner_secret)
 
 
-def sign_rsa_sha1(base_string, rsa_private_key):
-    """**RSA-SHA1**
+def verify_hmac_sha1(request, client_secret=None, resource_owner_secret=None):
+    return _hmac_verify(request, hashlib.sha1,
+                        client_secret, resource_owner_secret)
 
-    Per `section 3.4.3`_ of the spec.
 
-    The "RSA-SHA1" signature method uses the RSASSA-PKCS1-v1_5 signature
-    algorithm as defined in `RFC3447, Section 8.2`_ (also known as
-    PKCS#1), using SHA-1 as the hash function for EMSA-PKCS1-v1_5.  To
+# ================================================================
+# HMAC-SHA256
+#
+# Note: this signature method is not defined by OAuth 1.0a.
+
+def sign_hmac_sha256_with_client(sig_base_str, client):
+    return _hmac_sign(sig_base_str, hashlib.sha256,
+                      client.client_secret, client.resource_owner_secret)
+
+
+def verify_hmac_sha256(request, client_secret=None, resource_owner_secret=None):
+    return _hmac_verify(request, hashlib.sha256,
+                        client_secret, resource_owner_secret)
+
+
+# ================================================================
+# HMAC-SHA512
+#
+# Note: this signature method is not defined by OAuth 1.0a.
+
+def sign_hmac_sha512_with_client(sig_base_str, client):
+    return _hmac_sign(sig_base_str, hashlib.sha512,
+                      client.client_secret, client.resource_owner_secret)
+
+
+def verify_hmac_sha512(request, client_secret=None, resource_owner_secret=None):
+    return _hmac_verify(request, hashlib.sha512,
+                        client_secret, resource_owner_secret)
+
+
+# ================================================================
+# Common functions for RSA-based signature methods
+
+def _prepare_key_plus(alg, keystr):
+    """
+    Prepare a PEM encoded key (public or private), by invoking the `prepare_key`
+    method on alg with the keystr.
+
+    The keystr should be a string or bytes.  If the keystr is bytes, it is
+    decoded as UTF-8 before being passed to prepare_key. Otherwise, it
+    is passed directly.
+    """
+    if isinstance(keystr, bytes):
+        keystr = keystr.decode('utf-8')
+    return alg.prepare_key(keystr)
+
+
+def _rsa_sign(sig_base_str, alg, rsa_private_key):
+    """
+    Calculate the signature for an RSA-based signature method.
+
+    The ``alg`` is used to calculate the digest over the signature base string.
+    For the "RSA_SHA1" signature method, the alg must be SHA-1. While OAuth 1.0a
+    only defines the RSA-SHA1 signature method, this function can be used for
+    other non-standard signature methods that only differ from RSA-SHA1 by the
+    digest algorithm.
+
+    Signing for the RSA-SHA1 signature method is defined in
+    `section 3.4.3`_ of RFC 5849.
+
+    The RSASSA-PKCS1-v1_5 signature algorithm used defined by
+    `RFC3447, Section 8.2`_ (also known as PKCS#1), with the `alg` as the
+    hash function for EMSA-PKCS1-v1_5.  To
     use this method, the client MUST have established client credentials
     with the server that included its RSA public key (in a manner that is
     beyond the scope of this specification).
 
     .. _`section 3.4.3`: https://tools.ietf.org/html/rfc5849#section-3.4.3
     .. _`RFC3447, Section 8.2`: https://tools.ietf.org/html/rfc3447#section-8.2
-
     """
-    if isinstance(base_string, str):
-        base_string = base_string.encode('utf-8')
-    # TODO: finish RSA documentation
-    alg = _jwt_rs1_signing_algorithm()
-    key = _prepare_key_plus(alg, rsa_private_key)
-    s=alg.sign(base_string, key)
-    return binascii.b2a_base64(s)[:-1].decode('utf-8')
 
+    if not rsa_private_key:
+        raise ValueError('rsa_private_key required for RSA with ' +
+                         alg.hash_alg.name + ' signature method')
+
+    # Convert the "signature base string" into a sequence of bytes (M)
+    #
+    # The signature base string only contain printable US-ASCII characters.
+    # The ``encode`` method with the default "strict" error handling will raise
+    # a ``UnicodeError`` if it can't encode the value. So using "ascii" will
+    # always work unless the signature base string was incorrectly produced.
+
+    assert(isinstance(sig_base_str, str))
+    m = sig_base_str.encode('ascii')
+
+    # Perform signing: S = RSASSA-PKCS1-V1_5-SIGN (K, M)
+
+    key = _prepare_key_plus(alg, rsa_private_key)
+    s = alg.sign(m, key)
+
+    # base64-encoded per RFC2045 section 6.8.
+    #
+    # 1. While b2a_base64 implements base64 defined by RFC 3548. As used here,
+    #    it is the same as base64 defined by RFC 2045.
+    # 2. b2a_base64 includes a "\n" at the end of its result ([:-1] removes it)
+    # 3. b2a_base64 produces a binary string. Use decode to produce a str.
+    #    It should only contain only printable US-ASCII characters.
+
+    return binascii.b2a_base64(s)[:-1].decode('ascii')
+
+
+def _rsa_verify(request, alg, rsa_public_key):
+    """
+    Verify a base64 encoded signature for a RSA-based signature method.
+
+    The ``alg`` is used to calculate the digest over the signature base string.
+    For the "RSA_SHA1" signature method, the alg must be SHA-1. While OAuth 1.0a
+    only defines the RSA-SHA1 signature method, this function can be used for
+    other non-standard signature methods that only differ from RSA-SHA1 by the
+    digest algorithm.
+
+    Verification for the RSA-SHA1 signature method is defined in
+    `section 3.4.3`_ of RFC 5849.
+
+    .. _`section 3.4.3`: https://tools.ietf.org/html/rfc5849#section-3.4.3
+
+        To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
+        attribute MUST be an absolute URI whose netloc part identifies the
+        origin server or gateway on which the resource resides. Any Host
+        item of the request argument's headers dict attribute will be
+        ignored.
+
+        .. _`RFC2616 section 5.2`: https://tools.ietf.org/html/rfc2616#section-5.2
+    """
+
+    # Calculate the *signature base string* of the actual received request
+    #
+    # The signature base string only contain printable US-ASCII characters.
+    # The ``encode`` method with the default "strict" error handling will raise
+    # a ``UnicodeError`` if it can't encode the value. So using "ascii" will
+    # always work unless the signature base string was incorrectly produced.
+
+    norm_params = normalize_parameters(request.params)
+    bs_uri = base_string_uri(request.uri)
+    sig_base_str = signature_base_string(
+        request.http_method, bs_uri, norm_params).encode('ascii')
+
+    try:
+        # Obtain the signature that was received in the request
+
+        sig = binascii.a2b_base64(request.signature.encode('ascii'))
+
+        # Verify the received signature was produced by the private key
+        # corresponding to the `rsa_public_key`, signing exact same
+        # *signature base string*.
+        #
+        #     RSASSA-PKCS1-V1_5-VERIFY ((n, e), M, S)
+
+        key = _prepare_key_plus(alg, rsa_public_key)
+        verify_ok = alg.verify(sig_base_str, key, sig)
+
+        if not verify_ok:
+            log.debug('Verify failed: RSA with ' + alg.hash_alg.name +
+                      ': signature base string=%s' + sig_base_str)
+        return verify_ok
+
+    except UnicodeError:
+        # A properly encoded signature will only contain printable US-ASCII
+        # characters. The ``encode`` method with the default "strict" error
+        # handling will raise a ``UnicodeError`` if it can't decode the value.
+        # So using "ascii" will work with all valid signatures. But an
+        # incorrectly or maliciously produced signature could contain other
+        # bytes.
+        #
+        # This implementation treats that situation as equivalent to the
+        # signature verification having failed.
+        #
+        # Note: simply changing the encode to use 'utf-8' will not remove this
+        # case, since an incorrect or malicious request can contain bytes which
+        # are invalid as UTF-8.
+        return False
+
+
+# ================================================================
+# RSA-SHA1
+#
+# Standard OAuth 1.0a signature method.
+
+_jwtrs1 = None
+
+
+def _jwt_rs1_signing_algorithm():
+    global _jwtrs1
+    if _jwtrs1 is None:
+        # PyJWT has some nice pycrypto/cryptography abstractions
+        import jwt.algorithms as jwtalgo
+        _jwtrs1 = jwtalgo.RSAAlgorithm(jwtalgo.hashes.SHA1)
+    return _jwtrs1
+
+
+def sign_rsa_sha1_with_client(sig_base_str, client):
+    return _rsa_sign(sig_base_str, _jwt_rs1_signing_algorithm(),
+                     client.rsa_key)
+
+
+def verify_rsa_sha1(request, rsa_public_key):
+    return _rsa_verify(request, _jwt_rs1_signing_algorithm(), rsa_public_key)
+
+
+# ================================================================
+# RSA-SHA256
+#
+# Note: this signature method is not defined by OAuth 1.0a.
 
 _jwtrs256 = None
 
@@ -598,27 +750,48 @@ def _jwt_rs256_signing_algorithm():
     return _jwtrs256
 
 
-def sign_rsa_sha256_with_client(base_string, client):
-    if not client.rsa_key:
-        raise ValueError('rsa_key is required when using RSA signature method.')
-    return sign_rsa_sha256(base_string, client.rsa_key)
+def sign_rsa_sha256_with_client(sig_base_str, client):
+    return _rsa_sign(sig_base_str, _jwt_rs256_signing_algorithm(),
+                     client.rsa_key)
 
 
-def sign_rsa_sha256(base_string, rsa_private_key):
-    """
-    **RSA-SHA256**
-
-    """
-    if isinstance(base_string, str):
-        base_string = base_string.encode('utf-8')
-    # TODO: finish RSA documentation
-    alg = _jwt_rs1_signing_algorithm()
-    key = _prepare_key_plus(alg, rsa_private_key)
-    s = alg.sign(base_string, key)
-    return binascii.b2a_base64(s)[:-1].decode('utf-8')
+def verify_rsa_sha256(request, rsa_public_key):
+    return _rsa_verify(request, _jwt_rs256_signing_algorithm(), rsa_public_key)
 
 
-def sign_plaintext_with_client(base_string, client):
+# ================================================================
+# RSA-SHA512
+#
+# Note: this signature method is not defined by OAuth 1.0a.
+
+_jwtrs512 = None
+
+
+def _jwt_rs512_signing_algorithm():
+    global _jwtrs512
+    if _jwtrs512 is None:
+        import jwt.algorithms as jwtalgo
+        _jwtrs512 = jwtalgo.RSAAlgorithm(jwtalgo.hashes.SHA512)
+    return _jwtrs512
+
+
+def sign_rsa_sha512_with_client(sig_base_str, client):
+    return _rsa_sign(sig_base_str, _jwt_rs512_signing_algorithm(),
+                     client.rsa_key)
+
+
+def verify_rsa_sha512(request, rsa_public_key):
+    return _rsa_verify(request, _jwt_rs512_signing_algorithm(), rsa_public_key)
+
+
+# ================================================================
+# PLAINTEXT
+#
+# Standard OAuth 1.0a signature method.
+
+def sign_plaintext_with_client(_signature_base_string, client):
+    # _signature_base_string is not used because the signature with PLAINTEXT
+    # is just the secret: it isn't a real signature.
     return sign_plaintext(client.client_secret, client.resource_owner_secret)
 
 
@@ -655,128 +828,6 @@ def sign_plaintext(client_secret, resource_owner_secret):
     signature += utils.escape(resource_owner_secret or '')
 
     return signature
-
-# ================
-# Verify functions
-
-
-def verify_hmac_sha1(request, client_secret=None,
-                     resource_owner_secret=None):
-    """Verify a HMAC-SHA1 signature.
-
-    Per `section 3.4`_ of the spec.
-
-    .. _`section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
-
-    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
-    attribute MUST be an absolute URI whose netloc part identifies the
-    origin server or gateway on which the resource resides. Any Host
-    item of the request argument's headers dict attribute will be
-    ignored.
-
-    .. _`RFC2616 section 5.2`: https://tools.ietf.org/html/rfc2616#section-5.2
-
-    """
-    norm_params = normalize_parameters(request.params)
-    bs_uri = base_string_uri(request.uri)
-    sig_base_str = signature_base_string(request.http_method, bs_uri,
-                                         norm_params)
-    signature = sign_hmac_sha1(sig_base_str, client_secret,
-                               resource_owner_secret)
-    match = safe_string_equals(signature, request.signature)
-    if not match:
-        log.debug('Verify HMAC-SHA1 failed: signature base string: %s',
-                  sig_base_str)
-    return match
-
-
-def verify_hmac_sha256(request, client_secret=None,
-                     resource_owner_secret=None):
-    """Verify a HMAC-SHA256 signature.
-
-    Per `section 3.4`_ of the spec.
-
-    .. _`section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
-
-    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
-    attribute MUST be an absolute URI whose netloc part identifies the
-    origin server or gateway on which the resource resides. Any Host
-    item of the request argument's headers dict attribute will be
-    ignored.
-
-    .. _`RFC2616 section 5.2`: https://tools.ietf.org/html/rfc2616#section-5.2
-
-    """
-    norm_params = normalize_parameters(request.params)
-    bs_uri = base_string_uri(request.uri)
-    sig_base_str = signature_base_string(request.http_method, bs_uri,
-                                         norm_params)
-    signature = sign_hmac_sha256(sig_base_str, client_secret,
-                               resource_owner_secret)
-    match = safe_string_equals(signature, request.signature)
-    if not match:
-        log.debug('Verify HMAC-SHA256 failed: signature base string: %s',
-                  sig_base_str)
-    return match
-
-
-def _prepare_key_plus(alg, keystr):
-    if isinstance(keystr, bytes):
-        keystr = keystr.decode('utf-8')
-    return alg.prepare_key(keystr)
-
-
-def verify_rsa_sha1(request, rsa_public_key):
-    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
-
-    Per `section 3.4.3`_ of the spec.
-
-    Note this method requires the jwt and cryptography libraries.
-
-    .. _`section 3.4.3`: https://tools.ietf.org/html/rfc5849#section-3.4.3
-
-    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
-    attribute MUST be an absolute URI whose netloc part identifies the
-    origin server or gateway on which the resource resides. Any Host
-    item of the request argument's headers dict attribute will be
-    ignored.
-
-    .. _`RFC2616 section 5.2`: https://tools.ietf.org/html/rfc2616#section-5.2
-    """
-    norm_params = normalize_parameters(request.params)
-    bs_uri = base_string_uri(request.uri)
-    sig_base_str = signature_base_string(request.http_method, bs_uri,
-                                         norm_params).encode('utf-8')
-    sig = binascii.a2b_base64(request.signature.encode('utf-8'))
-
-    alg = _jwt_rs1_signing_algorithm()
-    key = _prepare_key_plus(alg, rsa_public_key)
-
-    verify_ok = alg.verify(sig_base_str, key, sig)
-    if not verify_ok:
-        log.debug('Verify RSA-SHA1 failed: signature base string: %s',
-                  sig_base_str)
-    return verify_ok
-
-
-def verify_rsa_sha256(request, rsa_public_key):
-    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
-
-    """
-    norm_params = normalize_parameters(request.params)
-    bs_uri = base_string_uri(request.uri)
-    sig_base_str = signature_base_string(request.http_method, bs_uri,
-                                         norm_params).encode('utf-8')
-    sig = binascii.a2b_base64(request.signature.encode('utf-8'))
-
-    alg = _jwt_rs256_signing_algorithm()
-    key = _prepare_key_plus(alg, rsa_public_key)
-
-    verify_ok = alg.verify(sig_base_str, key, sig)
-    if not verify_ok:
-        log.debug('Verify RSA-SHA256 failed: signature base string: %s',
-                  sig_base_str)
-    return verify_ok
 
 
 def verify_plaintext(request, client_secret=None, resource_owner_secret=None):

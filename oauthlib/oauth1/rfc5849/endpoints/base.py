@@ -177,38 +177,65 @@ class BaseEndpoint:
 
     def _check_signature(self, request, is_token_request=False):
         # ---- RSA Signature verification ----
-        if request.signature_method == SIGNATURE_RSA:
+        if request.signature_method == SIGNATURE_RSA_SHA1 or \
+           request.signature_method == SIGNATURE_RSA_SHA256 or \
+           request.signature_method == SIGNATURE_RSA_SHA512:
+            # RSA-based signature method
+
             # The server verifies the signature per `[RFC3447] section 8.2.2`_
             # .. _`[RFC3447] section 8.2.2`: https://tools.ietf.org/html/rfc3447#section-8.2.1
+
             rsa_key = self.request_validator.get_rsa_key(
                 request.client_key, request)
-            valid_signature = signature.verify_rsa_sha1(request, rsa_key)
+
+            if request.signature_method == SIGNATURE_RSA_SHA1:
+                valid_signature = signature.verify_rsa_sha1(request, rsa_key)
+            elif request.signature_method == SIGNATURE_RSA_SHA256:
+                valid_signature = signature.verify_rsa_sha256(request, rsa_key)
+            elif request.signature_method == SIGNATURE_RSA_SHA512:
+                valid_signature = signature.verify_rsa_sha512(request, rsa_key)
+            else:
+                valid_signature = False
 
         # ---- HMAC or Plaintext Signature verification ----
         else:
+            # Non-RSA based signature method
+
             # Servers receiving an authenticated request MUST validate it by:
             #   Recalculating the request signature independently as described in
             #   `Section 3.4`_ and comparing it to the value received from the
             #   client via the "oauth_signature" parameter.
             # .. _`Section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
+
             client_secret = self.request_validator.get_client_secret(
                 request.client_key, request)
+
             resource_owner_secret = None
             if request.resource_owner_key:
                 if is_token_request:
-                    resource_owner_secret = self.request_validator.get_request_token_secret(
-                        request.client_key, request.resource_owner_key, request)
+                    resource_owner_secret = \
+                        self.request_validator.get_request_token_secret(
+                            request.client_key, request.resource_owner_key,
+                            request)
                 else:
-                    resource_owner_secret = self.request_validator.get_access_token_secret(
-                        request.client_key, request.resource_owner_key, request)
+                    resource_owner_secret = \
+                        self.request_validator.get_access_token_secret(
+                            request.client_key, request.resource_owner_key,
+                            request)
 
             if request.signature_method == SIGNATURE_HMAC_SHA1:
-                valid_signature = signature.verify_hmac_sha1(request,
-                                                             client_secret, resource_owner_secret)
+                valid_signature = signature.verify_hmac_sha1(
+                    request, client_secret, resource_owner_secret)
             elif request.signature_method == SIGNATURE_HMAC_SHA256:
-                valid_signature = signature.verify_hmac_sha256(request,
-                                                             client_secret, resource_owner_secret)
+                valid_signature = signature.verify_hmac_sha256(
+                    request, client_secret, resource_owner_secret)
+            elif request.signature_method == SIGNATURE_HMAC_SHA512:
+                valid_signature = signature.verify_hmac_sha512(
+                    request, client_secret, resource_owner_secret)
+            elif request.signature_method == SIGNATURE_PLAINTEXT:
+                valid_signature = signature.verify_plaintext(
+                    request, client_secret, resource_owner_secret)
             else:
-                valid_signature = signature.verify_plaintext(request,
-                                                             client_secret, resource_owner_secret)
+                valid_signature = False
+
         return valid_signature

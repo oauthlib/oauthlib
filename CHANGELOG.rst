@@ -32,6 +32,10 @@ OAuth1.0 Client
 
   * #669: Add case-insensitive headers to oauth1 `BaseEndpoint`
 
+OAuth1.0
+
+  * Added support for HMAC-SHA512, RSA-SHA256 and RSA-SHA512 signature methods.
+
 3.0.2 (2019-07-04)
 ------------------
 * #650: Fixed space encoding in base string URI used in the signature base string.
