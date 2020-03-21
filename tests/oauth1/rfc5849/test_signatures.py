@@ -5,15 +5,17 @@ from oauthlib.oauth1.rfc5849.signature import (collect_parameters,
                                                normalize_parameters,
                                                sign_hmac_sha1,
                                                sign_hmac_sha1_with_client,
+                                               sign_hmac_sha256_with_client,
+                                               sign_hmac_sha512_with_client,
+                                               sign_rsa_sha1_with_client,
+                                               sign_rsa_sha256_with_client,
+                                               sign_rsa_sha512_with_client,
                                                sign_plaintext,
-                                               sign_plaintext_with_client,
-                                               sign_rsa_sha1,
-                                               sign_rsa_sha1_with_client)
+                                               sign_plaintext_with_client)
+
 from urllib.parse import quote
 
 from ...unittest import TestCase
-
-
 
 
 class SignatureTests(TestCase):
@@ -40,14 +42,14 @@ class SignatureTests(TestCase):
     http_method = b"post"
     base_string_url = (
         "http://example.com/request?{}".format(uri_query)).encode('utf-8')
-    unnormalized_request_parameters =[
-        ('OAuth realm',"Example"),
-        ('oauth_consumer_key',"9djdj82h48djs9d2"),
-        ('oauth_token',"kkk9d7dh3k39sjv7"),
-        ('oauth_signature_method',"HMAC-SHA1"),
-        ('oauth_timestamp',"137131201"),
-        ('oauth_nonce',"7d8f3e4a"),
-        ('oauth_signature',"bYT5CMsGcbgUdFHObYMEfcx6bsw%3D")
+    unnormalized_request_parameters = [
+        ('OAuth realm', "Example"),
+        ('oauth_consumer_key', "9djdj82h48djs9d2"),
+        ('oauth_token', "kkk9d7dh3k39sjv7"),
+        ('oauth_signature_method', "HMAC-SHA1"),
+        ('oauth_timestamp', "137131201"),
+        ('oauth_nonce', "7d8f3e4a"),
+        ('oauth_signature', "bYT5CMsGcbgUdFHObYMEfcx6bsw%3D")
     ]
     normalized_encoded_request_params = sorted(
         [(quote(k), quote(v)) for k, v in unnormalized_request_parameters
@@ -71,8 +73,8 @@ class SignatureTests(TestCase):
 
     def setUp(self):
         self.client = self.MockClient(
-            client_secret = self.client_secret,
-            resource_owner_secret = self.resource_owner_secret
+            client_secret=self.client_secret,
+            resource_owner_secret=self.resource_owner_secret
         )
 
     def test_signature_base_string(self):
@@ -247,6 +249,9 @@ class SignatureTests(TestCase):
             self.assertGreater(normalized.index(key), index)
             index = normalized.index(key)
 
+    # ================================================================
+    # HMAC-based signature methods tests
+
     # Control signature created using openssl:
     # echo -n $(cat <message>) | openssl dgst -binary -hmac <key> | base64
     control_signature = "mwd09YMxVd2XJ1gudNaBuAuKKuY="
@@ -254,6 +259,8 @@ class SignatureTests(TestCase):
 
     def test_sign_hmac_sha1(self):
         """Verifying HMAC-SHA1 signature against one created by OpenSSL."""
+
+        # Old testing of legacy ``sign_hmac_sha1`` function
 
         self.assertRaises(ValueError, sign_hmac_sha1, self.control_base_string,
                           self.client_secret, self.resource_owner_secret)
@@ -276,27 +283,52 @@ class SignatureTests(TestCase):
         self.assertEqual(len(sign), 28)
         self.assertEqual(sign, self.control_signature_s)
 
-    def test_sign_hmac_sha1_with_client(self):
-        self.assertRaises(ValueError,
-            sign_hmac_sha1_with_client,
-            self.control_base_string,
-            self.client)
+    def test_sign_hmac_sha1_with_client_old(self):
+        self.assertRaises(ValueError, sign_hmac_sha1_with_client,
+                          self.control_base_string, self.client)
 
         self.client.decode()
-        sign = sign_hmac_sha1_with_client(
-            self.control_base_string, self.client)
+        sign = sign_hmac_sha1_with_client(self.control_base_string, self.client)
 
         self.assertEqual(len(sign), 28)
         self.assertEqual(sign, self.control_signature_s)
 
+    # The following expected signatures were calculated by putting the value of
+    # the control_base_string in a file ("base-str.txt") and running:
+    #
+    # echo -n `cat base-str.txt` | openssl dgst -hmac KEY -sha1 -binary| base64
+    #
+    # Where the KEY is the concatenation of the client_secret, an ampersand and
+    # the resource_owner_secret. But those values need to be encoded properly,
+    # so the spaces in the resource_owner_secret must be represented as '%20'.
+    #
+    # Note: the "echo -n" is needed to remove the last newline character, which
+    # most text editors will add.
 
-    control_base_string_rsa_sha1 = (
-        b"POST&http%3A%2F%2Fexample.com%2Frequest&a2%3Dr%2520b%26a3%3D2%2520q"
-        b"%26a3%3Da%26b5%3D%253D%25253D%26c%2540%3D%26c2%3D%26oauth_consumer_"
-        b"key%3D9djdj82h48djs9d2%26oauth_nonce%3D7d8f3e4a%26oauth_signature_m"
-        b"ethod%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk"
-        b"9d7dh3k39sjv7"
-    )
+    def test_sign_hmac_sha1_with_client(self):
+        self.client.decode()
+
+        self.assertEqual(
+            'wsdNmjGB7lvis0UJuPAmjvX/PXw=',
+            sign_hmac_sha1_with_client(self.control_base_string, self.client))
+
+    def test_sign_hmac_sha256_with_client(self):
+        self.client.decode()
+
+        self.assertEqual(
+            'wdfdHUKXHbOnOGZP8WFAWMSAmWzN3EVBWWgXGlC/Eo4=',
+            sign_hmac_sha256_with_client(self.control_base_string, self.client))
+
+    def test_sign_hmac_sha512_with_client(self):
+        self.client.decode()
+
+        self.assertEqual(
+            'u/vlyZFDxOWOZ9UUXwRBJHvq8/T4jCA74ocRmn2ECnjUBTAeJiZIRU8hDTjS88Tz'
+            '1fGONffMpdZxUkUTW3k1kg==',
+            sign_hmac_sha512_with_client(self.control_base_string, self.client))
+
+    # ================================================================
+    # RSA-based signature methods tests
 
     # Generated using: $ openssl genrsa -out <key>.pem 1024
     # PEM encoding requires the key to be concatenated with
@@ -317,53 +349,94 @@ JzatanQit3+feev1PN3QewJAWv4RZeavEUhKv+kLe95Yd0su7lTLVduVgh4v5yLT
 Ga6FHdjGPcfajt+nrpB1n8UQBEH9ZxniokR/IPvdMlxqXA==
 -----END RSA PRIVATE KEY-----
 """
-    @property
-    def control_signature_rsa_sha1(self):
-        # Base string saved in "<message>". Signature obtained using:
-        # $ echo -n $(cat <msg>) | openssl dgst -sha1 -sign <key>.pem | base64
-        # where echo -n suppresses the last linebreak.
-        return (
-            "mFY2KOEnlYWsTvUA+5kxuBIcvBYXu+ljw9ttVJQxKduMueGSVPCB1tK1PlqVLK738"
-            "HK0t19ecBJfb6rMxUwrriw+MlBO+jpojkZIWccw1J4cAb4qu4M81DbpUAq4j/1w/Q"
-            "yTR4TWCODlEfN7Zfgy8+pf+TjiXfIwRC1jEWbuL1E="
 
-        )
-
-    def test_sign_rsa_sha1(self):
-        """Verify RSA-SHA1 signature against one created by OpenSSL."""
-        base_string = self.control_base_string_rsa_sha1
-
-        private_key = self.rsa_private_key
-
-        control_signature = self.control_signature_rsa_sha1
-
-        sign = sign_rsa_sha1(base_string, private_key)
-        self.assertEqual(sign, control_signature)
-        sign = sign_rsa_sha1(base_string.decode('utf-8'), private_key)
-        self.assertEqual(sign, control_signature)
-
+    # The following expected signatures were calculated by putting the private
+    # key in a file (test.pvt) and the value of sig_base_str_rsa in another file
+    # ("base-str.txt") and running:
+    #
+    # echo -n `cat base-str.txt` | openssl dgst -sha1 -sign test.pvt| base64
+    #
+    # Note: the "echo -n" is needed to remove the last newline character, which
+    # most text editors will add.
 
     def test_sign_rsa_sha1_with_client(self):
-        base_string = self.control_base_string_rsa_sha1
-
         self.client.rsa_key = self.rsa_private_key
 
-        control_signature = self.control_signature_rsa_sha1
+        self.assertEqual(
+            "mFY2KOEnlYWsTvUA+5kxuBIcvBYXu+ljw9ttVJQxKduMueGSVPCB1tK1PlqVLK738"
+            "HK0t19ecBJfb6rMxUwrriw+MlBO+jpojkZIWccw1J4cAb4qu4M81DbpUAq4j/1w/Q"
+            "yTR4TWCODlEfN7Zfgy8+pf+TjiXfIwRC1jEWbuL1E=",
+            sign_rsa_sha1_with_client(self.control_base_string, self.client))
 
-        sign = sign_rsa_sha1_with_client(base_string, self.client)
+        # Repeat to test reuse of cached RSAAlgorithm works
+        self.assertEqual(
+            "mFY2KOEnlYWsTvUA+5kxuBIcvBYXu+ljw9ttVJQxKduMueGSVPCB1tK1PlqVLK738"
+            "HK0t19ecBJfb6rMxUwrriw+MlBO+jpojkZIWccw1J4cAb4qu4M81DbpUAq4j/1w/Q"
+            "yTR4TWCODlEfN7Zfgy8+pf+TjiXfIwRC1jEWbuL1E=",
+            sign_rsa_sha1_with_client(self.control_base_string, self.client))
 
-        self.assertEqual(sign, control_signature)
+    def test_sign_rsa_sha256_with_client(self):
+        self.client.rsa_key = self.rsa_private_key
 
-        self.client.decode() ## Decode `rsa_private_key` from UTF-8
+        self.assertEqual(
+            "jqKl6m0WS69tiVJV8ZQ6aQEfJqISoZkiPBXRv6Al2+iFSaDpfeXjYm+Hbx6m1azR"
+            "drZ/35PM3cvuid3LwW/siAkzb0xQcGnTyAPH8YcGWzmnKGY7LsB7fkqThchNxvRK"
+            "/N7s9M1WMnfZZ+1dQbbwtTs1TG1+iexUcV7r3M7Heec=",
+            sign_rsa_sha256_with_client(self.control_base_string, self.client))
 
-        sign = sign_rsa_sha1_with_client(base_string, self.client)
+        # Repeat to test reuse of cached RSAAlgorithm works
+        self.assertEqual(
+            "jqKl6m0WS69tiVJV8ZQ6aQEfJqISoZkiPBXRv6Al2+iFSaDpfeXjYm+Hbx6m1azR"
+            "drZ/35PM3cvuid3LwW/siAkzb0xQcGnTyAPH8YcGWzmnKGY7LsB7fkqThchNxvRK"
+            "/N7s9M1WMnfZZ+1dQbbwtTs1TG1+iexUcV7r3M7Heec=",
+            sign_rsa_sha256_with_client(self.control_base_string, self.client))
 
-        self.assertEqual(sign, control_signature)
+    def test_sign_rsa_sha512_with_client(self):
+        self.client.rsa_key = self.rsa_private_key
 
+        self.assertEqual(
+            "jL1CnjlsNd25qoZVHZ2oJft47IRYTjpF5CvCUjL3LY0NTnbEeVhE4amWXUFBe9GL"
+            "DWdUh/79ZWNOrCirBFIP26cHLApjYdt4ZG7EVK0/GubS2v8wT1QPRsog8zyiMZkm"
+            "g4JXdWCGXG8YRvRJTg+QKhXuXwS6TcMNakrgzgFIVhA=",
+            sign_rsa_sha512_with_client(self.control_base_string, self.client))
+
+        # Repeat to test reuse of cached RSAAlgorithm works
+        self.assertEqual(
+            "jL1CnjlsNd25qoZVHZ2oJft47IRYTjpF5CvCUjL3LY0NTnbEeVhE4amWXUFBe9GL"
+            "DWdUh/79ZWNOrCirBFIP26cHLApjYdt4ZG7EVK0/GubS2v8wT1QPRsog8zyiMZkm"
+            "g4JXdWCGXG8YRvRJTg+QKhXuXwS6TcMNakrgzgFIVhA=",
+            sign_rsa_sha512_with_client(self.control_base_string, self.client))
+
+    # Since all the ``sign_rsa_*_with_client`` functions just invokes the
+    # ``sign_rsa`` function, we are not going needs tests for ``sign_rsa``.
+
+    def test_rsa_signing_needs_private_key(self):
+        """
+        Testing RSA-signing without a private key does not work.
+
+        This test is useful for coverage testing, so the private key checking
+        branch is executed.
+        """
+        for candidate in [None, '', 'this is not a private key']:
+            try:
+                self.client.rsa_key = candidate
+                sign_rsa_sha1_with_client(self.control_base_string, self.client)
+                self.fail('signing unexpectedly succeeded')
+            except ValueError:
+                pass
+
+
+    # ================================================================
+    # PLAINTEXT signature method tests
+
+    # With PLAINTEXT, the "signature" is always the same: regardless of the
+    # contents of the request. It is the concatenation of the encoded
+    # client_secret, an ampersand, and the encoded resource_owner_secret.
 
     control_signature_plaintext = (
-        "ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ&"
-        "just-a-string%20%20%20%20asdasd")
+        'ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ'
+        '&'
+        'just-a-string%20%20%20%20asdasd')
 
     def test_sign_plaintext(self):
         """ """
@@ -373,7 +446,6 @@ Ga6FHdjGPcfajt+nrpB1n8UQBEH9ZxniokR/IPvdMlxqXA==
         sign = sign_plaintext(self.client_secret.decode('utf-8'),
                               self.resource_owner_secret.decode('utf-8'))
         self.assertEqual(sign, self.control_signature_plaintext)
-
 
     def test_sign_plaintext_with_client(self):
         self.assertRaises(ValueError, sign_plaintext_with_client,
