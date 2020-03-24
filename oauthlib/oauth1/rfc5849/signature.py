@@ -25,6 +25,7 @@ import binascii
 import hashlib
 import hmac
 import logging
+import warnings
 
 from oauthlib.common import extract_params, safe_string_equals, urldecode
 import urllib.parse as urlparse
@@ -106,29 +107,24 @@ def signature_base_string(
 
 
 def base_string_uri(uri: str, host: str = None) -> str:
-    """**Base String URI**
-    Per `section 3.4.1.2`_ of RFC 5849.
-
-    For example, the HTTP request::
-
-        GET /r%20v/X?id=123 HTTP/1.1
-        Host: EXAMPLE.COM:80
-
-    is represented by the base string URI: "http://example.com/r%20v/X".
-
-    In another example, the HTTPS request::
-
-        GET /?q=1 HTTP/1.1
-        Host: www.example.net:8080
-
-    is represented by the base string URI: "https://www.example.net:8080/".
-
-    .. _`section 3.4.1.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.2
-
-    The host argument overrides the netloc part of the uri argument.
     """
+    Calculates the _base string URI_.
+
+    The ``host`` is optional. If provided, it is used to override any host and
+    port values in the ``uri``. The value for ``host`` is usually extracted from
+    the "Host" request header from the HTTP request. Its value may be just the
+    hostname, or the hostname followed by a colon and a TCP/IP port number
+    (hostname:port). If a value for the``host`` is provided but it does not
+    contain a port number, the default port number is used (i.e. if the ``uri``
+    contained a port number, it will be discarded).
+
+    :param uri: URI
+    :param host: hostname with optional port number, separated by a colon
+    :return: base string URI
+    """
+
     if not isinstance(uri, str):
-        raise ValueError('uri must be a unicode object.')
+        raise ValueError('uri must be a string.')
 
     # FIXME: urlparse does not support unicode
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(uri)
@@ -139,8 +135,8 @@ def base_string_uri(uri: str, host: str = None) -> str:
     #
     # .. _`RFC3986`: https://tools.ietf.org/html/rfc3986
 
-    if not scheme or not netloc:
-        raise ValueError('uri must include a scheme and netloc')
+    if not scheme:
+        raise ValueError('missing scheme')
 
     # Per `RFC 2616 section 5.1.2`_:
     #
@@ -154,11 +150,12 @@ def base_string_uri(uri: str, host: str = None) -> str:
     # 1.  The scheme and host MUST be in lowercase.
     scheme = scheme.lower()
     netloc = netloc.lower()
+    # Note: if ``host`` is used, it will be converted to lowercase below
 
     # 2.  The host and port values MUST match the content of the HTTP
     #     request "Host" header field.
     if host is not None:
-        netloc = host.lower()
+        netloc = host.lower()  # override value in uri with provided host
 
     # 3.  The port MUST be included if it is not the default port for the
     #     scheme, and MUST be excluded if it is the default.  Specifically,
@@ -168,14 +165,34 @@ def base_string_uri(uri: str, host: str = None) -> str:
     #
     # .. _`RFC2616`: https://tools.ietf.org/html/rfc2616
     # .. _`RFC2818`: https://tools.ietf.org/html/rfc2818
-    default_ports = (
-        ('http', '80'),
-        ('https', '443'),
-    )
+
     if ':' in netloc:
-        host, port = netloc.split(':', 1)
-        if (scheme, port) in default_ports:
-            netloc = host
+        # Contains a colon ":", so try to parse as "host:port"
+
+        hostname, port_str = netloc.split(':', 1)
+
+        if len(hostname) == 0:
+            raise ValueError('missing host')  # error: netloc was ":port" or ":"
+
+        if len(port_str) == 0:
+            netloc = hostname  # was "host:", so just use the host part
+        else:
+            try:
+                port_num = int(port_str)  # try to parse into an integer number
+            except ValueError:
+                raise ValueError('port is not an integer')
+
+            if port_num <= 0 or 65535 < port_num:
+                raise ValueError('port out of range')  # 16-bit unsigned ints
+            if (scheme, port_num) in (('http', 80), ('https', 443)):
+                netloc = hostname  # default port for scheme: exclude port num
+            else:
+                netloc = hostname + ':' + str(port_num)  # use hostname:port
+    else:
+        # Does not contain a colon, so entire value must be the hostname
+
+        if len(netloc) == 0:
+            raise ValueError('missing host')  # error: netloc was empty string
 
     v = urlparse.urlunparse((scheme, netloc, path, params, '', ''))
 
@@ -563,6 +580,8 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     test_signatures.py, but does any application invoke it directly? If not,
     it can be removed.
     """
+    warnings.warn('use sign_hmac_sha1_with_client instead of sign_hmac_sha1',
+                  DeprecationWarning)
 
     # For some unknown reason, the original implementation assumed base_string
     # could either be bytes or str. The signature base string calculating
@@ -601,6 +620,9 @@ def sign_hmac_sha256(base_string, client_secret, resource_owner_secret):
     test_signatures.py, but does any application invoke it directly? If not,
     it can be removed.
     """
+    warnings.warn(
+        'use sign_hmac_sha256_with_client instead of sign_hmac_sha256',
+        DeprecationWarning)
 
     # For some unknown reason, the original implementation assumed base_string
     # could either be bytes or str. The signature base string calculating
@@ -859,6 +881,8 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     test_signatures.py, but does any application invoke it directly? If not,
     it can be removed.
     """
+    warnings.warn('use _sign_rsa("SHA-1", ...) instead of sign_rsa_sha1',
+                  DeprecationWarning)
 
     if isinstance(base_string, bytes):
         base_string = base_string.decode('ascii')
