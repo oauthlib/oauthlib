@@ -163,10 +163,10 @@ class MetadataEndpoint(BaseEndpoint):
        response_types_supported
           REQUIRED.
 
-       * Other OPTIONAL fields:
-       jwks_uri
-       registration_endpoint
-       response_modes_supported
+       Other OPTIONAL fields:
+          jwks_uri,
+          registration_endpoint,
+          response_modes_supported
 
        grant_types_supported
           OPTIONAL.  JSON array containing a list of the OAuth 2.0 grant
