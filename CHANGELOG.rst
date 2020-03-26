@@ -34,7 +34,7 @@ OAuth1.0 Client
 
 OAuth1.0
 
-  * Added support for HMAC-SHA512, RSA-SHA256 and RSA-SHA512 signature methods.
+  * #722: Added support for HMAC-SHA512, RSA-SHA256 and RSA-SHA512 signature methods.
 
 3.0.2 (2019-07-04)
 ------------------
