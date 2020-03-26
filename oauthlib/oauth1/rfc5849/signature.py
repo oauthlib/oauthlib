@@ -1,26 +1,40 @@
 # -*- coding: utf-8 -*-
 """
-oauthlib.oauth1.rfc5849.signature
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This module is an implementation of `section 3.4`_ of RFC 5849.
 
-This module represents a direct implementation of `section 3.4`_ of the spec.
-
-Terminology:
- * Client: software interfacing with an OAuth API
- * Server: the API provider
- * Resource Owner: the user who is granting authorization to the client
+**Usage**
 
 Steps for signing a request:
 
-1. Collect parameters from the uri query, auth header, & body
-2. Normalize those parameters
-3. Normalize the uri
-4. Pass the normalized uri, normalized parameters, and http method to
-   construct the base string
-5. Pass the base string and any keys needed to a signing function
+1. Collect parameters from the request using ``collect_parameters``.
+2. Normalize those parameters using ``normalize_parameters``.
+3. Create the *base string URI* using ``base_string_uri``.
+4. Create the *signature base string* from the above three components
+   using ``signature_base_string``.
+5. Pass the *signature base string* and the client credentials to one of the
+   sign-with-client functions. The HMAC-based signing functions needs
+   client credentials with secrets. The RSA-based signing functions needs
+   client credentials with an RSA private key.
+
+To verify a request, pass the request and credentials to one of the verify
+functions. The HMAC-based signing functions needs the shared secrets. The
+RSA-based verify functions needs the RSA public key.
+
+**Scope**
+
+All of the functions in this module should be considered internal to OAuthLib,
+since they are not imported into the "oauthlib.oauth1" module. Programs using
+OAuthLib should not use directly invoke any of the functions in this module.
+
+**Deprecated functions**
+
+The "sign_" methods that are not "_with_client" have been deprecated. They may
+be removed in a future release. Since they are all internal functions, this
+should have no impact on properly behaving programs.
 
 .. _`section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
 """
+
 import binascii
 import hashlib
 import hmac
@@ -36,39 +50,22 @@ from . import utils
 log = logging.getLogger(__name__)
 
 
-# ================================================================
-# Common functions
+# ==== Common functions ==========================================
 
 def signature_base_string(
         http_method: str,
         base_str_uri: str,
         normalized_encoded_request_parameters: str) -> str:
-    """**Construct the signature base string.**
-    Per `section 3.4.1.1`_ of the spec.
+    """
+    Construct the signature base string.
 
-    For example, the HTTP request::
+    The *signature base string* is the value that is calculated and signed by
+    the client. It is also independently calculated by the server to verify
+    the signature, and therefore must produce the exact same value at both
+    ends or the signature won't verify.
 
-        POST /request?b5=%3D%253D&a3=a&c%40=&a2=r%20b HTTP/1.1
-        Host: example.com
-        Content-Type: application/x-www-form-urlencoded
-        Authorization: OAuth realm="Example",
-            oauth_consumer_key="9djdj82h48djs9d2",
-            oauth_token="kkk9d7dh3k39sjv7",
-            oauth_signature_method="HMAC-SHA1",
-            oauth_timestamp="137131201",
-            oauth_nonce="7d8f3e4a",
-            oauth_signature="bYT5CMsGcbgUdFHObYMEfcx6bsw%3D"
-
-        c2&a3=2+q
-
-    is represented by the following signature base string (line breaks
-    are for display purposes only)::
-
-        POST&http%3A%2F%2Fexample.com%2Frequest&a2%3Dr%2520b%26a3%3D2%2520q
-        %26a3%3Da%26b5%3D%253D%25253D%26c%2540%3D%26c2%3D%26oauth_consumer_
-        key%3D9djdj82h48djs9d2%26oauth_nonce%3D7d8f3e4a%26oauth_signature_m
-        ethod%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk
-        9d7dh3k39sjv7
+    The rules for calculating the *signature base string* are defined in
+    section 3.4.1.1`_ of RFC 5849.
 
     .. _`section 3.4.1.1`: https://tools.ietf.org/html/rfc5849#section-3.4.1.1
     """
@@ -110,6 +107,9 @@ def base_string_uri(uri: str, host: str = None) -> str:
     """
     Calculates the _base string URI_.
 
+    The *base string URI* is one of the components that make up the
+     *signature base string*.
+
     The ``host`` is optional. If provided, it is used to override any host and
     port values in the ``uri``. The value for ``host`` is usually extracted from
     the "Host" request header from the HTTP request. Its value may be just the
@@ -117,6 +117,11 @@ def base_string_uri(uri: str, host: str = None) -> str:
     (hostname:port). If a value for the``host`` is provided but it does not
     contain a port number, the default port number is used (i.e. if the ``uri``
     contained a port number, it will be discarded).
+
+    The rules for calculating the *base string URI* are defined in
+    section 3.4.1.2`_ of RFC 5849.
+
+    .. _`section 3.4.1.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.2
 
     :param uri: URI
     :param host: hostname with optional port number, separated by a colon
@@ -221,74 +226,24 @@ def base_string_uri(uri: str, host: str = None) -> str:
     return v.replace(' ', '%20')
 
 
-# ** Request Parameters **
-#
-#    Per `section 3.4.1.3`_ of the spec.
-#
-#    In order to guarantee a consistent and reproducible representation of
-#    the request parameters, the parameters are collected and decoded to
-#    their original decoded form.  They are then sorted and encoded in a
-#    particular manner that is often different from their original
-#    encoding scheme, and concatenated into a single string.
-#
-# .. _`section 3.4.1.3`: https://tools.ietf.org/html/rfc5849#section-3.4.1.3
-
 def collect_parameters(uri_query='', body=None, headers=None,
                        exclude_oauth_signature=True, with_realm=False):
-    """**Parameter Sources**
+    """
+    Gather the request parameters from all the parameter sources.
+
+    This function is used to extract all the parameters, which are then passed
+    to ``normalize_parameters`` to produce one of the components that make up
+    the *signature base string*.
 
     Parameters starting with `oauth_` will be unescaped.
 
     Body parameters must be supplied as a dict, a list of 2-tuples, or a
-    formencoded query string.
+    form encoded query string.
 
     Headers must be supplied as a dict.
 
-    Per `section 3.4.1.3.1`_ of the spec.
-
-    For example, the HTTP request::
-
-        POST /request?b5=%3D%253D&a3=a&c%40=&a2=r%20b HTTP/1.1
-        Host: example.com
-        Content-Type: application/x-www-form-urlencoded
-        Authorization: OAuth realm="Example",
-            oauth_consumer_key="9djdj82h48djs9d2",
-            oauth_token="kkk9d7dh3k39sjv7",
-            oauth_signature_method="HMAC-SHA1",
-            oauth_timestamp="137131201",
-            oauth_nonce="7d8f3e4a",
-            oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D"
-
-        c2&a3=2+q
-
-    contains the following (fully decoded) parameters used in the
-    signature base sting::
-
-        +------------------------+------------------+
-        |          Name          |       Value      |
-        +------------------------+------------------+
-        |           b5           |       =%3D       |
-        |           a3           |         a        |
-        |           c@           |                  |
-        |           a2           |        r b       |
-        |   oauth_consumer_key   | 9djdj82h48djs9d2 |
-        |       oauth_token      | kkk9d7dh3k39sjv7 |
-        | oauth_signature_method |     HMAC-SHA1    |
-        |     oauth_timestamp    |     137131201    |
-        |       oauth_nonce      |     7d8f3e4a     |
-        |           c2           |                  |
-        |           a3           |        2 q       |
-        +------------------------+------------------+
-
-    Note that the value of "b5" is "=%3D" and not "==".  Both "c@" and
-    "c2" have empty values.  While the encoding rules specified in this
-    specification for the purpose of constructing the signature base
-    string exclude the use of a "+" character (ASCII code 43) to
-    represent an encoded space character (ASCII code 32), this practice
-    is widely used in "application/x-www-form-urlencoded" encoded values,
-    and MUST be properly decoded, as demonstrated by one of the "a3"
-    parameter instances (the "a3" parameter is used twice in this
-    request).
+    The rules where the parameters must be sourced from are defined in
+    `section 3.4.1.3.1`_ of RFC 5849.
 
     .. _`Sec 3.4.1.3.1`: https://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
     """
@@ -358,73 +313,15 @@ def collect_parameters(uri_query='', body=None, headers=None,
     return unescaped_params
 
 
-def normalize_parameters(params):
-    """**Parameters Normalization**
-    Per `section 3.4.1.3.2`_ of the spec.
+def normalize_parameters(params) -> str:
+    """
+    Calculate the normalized request parameters.
 
-    For example, the list of parameters from the previous section would
-    be normalized as follows:
+    The *normalized request parameters* is one of the components that make up
+    the *signature base string*.
 
-    Encoded::
-
-    +------------------------+------------------+
-    |          Name          |       Value      |
-    +------------------------+------------------+
-    |           b5           |     %3D%253D     |
-    |           a3           |         a        |
-    |          c%40          |                  |
-    |           a2           |       r%20b      |
-    |   oauth_consumer_key   | 9djdj82h48djs9d2 |
-    |       oauth_token      | kkk9d7dh3k39sjv7 |
-    | oauth_signature_method |     HMAC-SHA1    |
-    |     oauth_timestamp    |     137131201    |
-    |       oauth_nonce      |     7d8f3e4a     |
-    |           c2           |                  |
-    |           a3           |       2%20q      |
-    +------------------------+------------------+
-
-    Sorted::
-
-    +------------------------+------------------+
-    |          Name          |       Value      |
-    +------------------------+------------------+
-    |           a2           |       r%20b      |
-    |           a3           |       2%20q      |
-    |           a3           |         a        |
-    |           b5           |     %3D%253D     |
-    |          c%40          |                  |
-    |           c2           |                  |
-    |   oauth_consumer_key   | 9djdj82h48djs9d2 |
-    |       oauth_nonce      |     7d8f3e4a     |
-    | oauth_signature_method |     HMAC-SHA1    |
-    |     oauth_timestamp    |     137131201    |
-    |       oauth_token      | kkk9d7dh3k39sjv7 |
-    +------------------------+------------------+
-
-    Concatenated Pairs::
-
-    +-------------------------------------+
-    |              Name=Value             |
-    +-------------------------------------+
-    |               a2=r%20b              |
-    |               a3=2%20q              |
-    |                 a3=a                |
-    |             b5=%3D%253D             |
-    |                c%40=                |
-    |                 c2=                 |
-    | oauth_consumer_key=9djdj82h48djs9d2 |
-    |         oauth_nonce=7d8f3e4a        |
-    |   oauth_signature_method=HMAC-SHA1  |
-    |      oauth_timestamp=137131201      |
-    |     oauth_token=kkk9d7dh3k39sjv7    |
-    +-------------------------------------+
-
-    and concatenated together into a single string (line breaks are for
-    display purposes only)::
-
-        a2=r%20b&a3=2%20q&a3=a&b5=%3D%253D&c%40=&c2=&oauth_consumer_key=9dj
-        dj82h48djs9d2&oauth_nonce=7d8f3e4a&oauth_signature_method=HMAC-SHA1
-        &oauth_timestamp=137131201&oauth_token=kkk9d7dh3k39sjv7
+    The rules for parameter normalization are defined in `section 3.4.1.3.2`_ of
+    RFC 5849.
 
     .. _`Sec 3.4.1.3.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
     """
@@ -456,8 +353,7 @@ def normalize_parameters(params):
     return '&'.join(parameter_parts)
 
 
-# ================================================================
-# Common functions for HMAC-based signature methods
+# ==== Common functions for HMAC-based signature methods =========
 
 def _sign_hmac(hash_algorithm_name: str,
                sig_base_str: str,
@@ -555,10 +451,7 @@ def _verify_hmac(hash_algorithm_name: str,
     return match
 
 
-# ================================================================
-# HMAC-SHA1
-#
-# Standard OAuth 1.0a signature method.
+# ==== HMAC-SHA1 =================================================
 
 def sign_hmac_sha1_with_client(sig_base_str, client):
     return _sign_hmac('SHA-1', sig_base_str,
@@ -594,10 +487,7 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
                       client_secret, resource_owner_secret)
 
 
-# ================================================================
-# HMAC-SHA256
-#
-# Note: this signature method is not defined by OAuth 1.0a.
+# ==== HMAC-SHA256 ===============================================
 
 def sign_hmac_sha256_with_client(sig_base_str, client):
     return _sign_hmac('SHA-256', sig_base_str,
@@ -635,10 +525,7 @@ def sign_hmac_sha256(base_string, client_secret, resource_owner_secret):
                       client_secret, resource_owner_secret)
 
 
-# ================================================================
-# HMAC-SHA512
-#
-# Note: this signature method is not defined by OAuth 1.0a.
+# ==== HMAC-SHA512 ===============================================
 
 def sign_hmac_sha512_with_client(sig_base_str: str,
                                  client):
@@ -653,18 +540,16 @@ def verify_hmac_sha512(request,
                         client_secret, resource_owner_secret)
 
 
-# ================================================================
-# Common functions for RSA-based signature methods
+# ==== Common functions for RSA-based signature methods ==========
 
-# --------------------------------------------------------------------
-# Cache of RSA-hash implementations from PyJWT jwt.algorithms
-
-_jwt_rsa = {}
+_jwt_rsa = {}  # cache of RSA-hash implementations from PyJWT jwt.algorithms
 
 
 def _get_jwt_rsa_algorithm(hash_algorithm_name: str):
     """
     Obtains an RSAAlgorithm object that implements RSA with the hash algorithm.
+
+    This method maintains the ``_jwt_rsa`` cache.
 
     Returns a jwt.algorithm.RSAAlgorithm.
     """
@@ -688,8 +573,6 @@ def _get_jwt_rsa_algorithm(hash_algorithm_name: str):
         return v
 
 
-# --------------------------------------------------------------------
-
 def _prepare_key_plus(alg, keystr):
     """
     Prepare a PEM encoded key (public or private), by invoking the `prepare_key`
@@ -703,8 +586,6 @@ def _prepare_key_plus(alg, keystr):
         keystr = keystr.decode('utf-8')
     return alg.prepare_key(keystr)
 
-
-# --------------------------------------------------------------------
 
 def _sign_rsa(hash_algorithm_name: str,
               sig_base_str: str,
@@ -847,11 +728,7 @@ def _verify_rsa(hash_algorithm_name: str,
         return False
 
 
-# ================================================================
-# RSA-SHA1
-#
-# Standard OAuth 1.0a signature method.
-
+# ==== RSA-SHA1 ==================================================
 
 def sign_rsa_sha1_with_client(sig_base_str, client):
     # For some reason, this function originally accepts both str and bytes.
@@ -890,11 +767,7 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     return _sign_rsa('SHA-1', base_string, rsa_private_key)
 
 
-# ================================================================
-# RSA-SHA256
-#
-# Note: this signature method is not defined by OAuth 1.0a.
-
+# ==== RSA-SHA256 ================================================
 
 def sign_rsa_sha256_with_client(sig_base_str: str, client):
     return _sign_rsa('SHA-256', sig_base_str, client.rsa_key)
@@ -904,11 +777,7 @@ def verify_rsa_sha256(request, rsa_public_key: str):
     return _verify_rsa('SHA-256', request, rsa_public_key)
 
 
-# ================================================================
-# RSA-SHA512
-#
-# Note: this signature method is not defined by OAuth 1.0a.
-
+# ==== RSA-SHA512 ================================================
 
 def sign_rsa_sha512_with_client(sig_base_str: str, client):
     return _sign_rsa('SHA-512', sig_base_str, client.rsa_key)
@@ -918,10 +787,7 @@ def verify_rsa_sha512(request, rsa_public_key: str):
     return _verify_rsa('SHA-512', request, rsa_public_key)
 
 
-# ================================================================
-# PLAINTEXT
-#
-# Standard OAuth 1.0a signature method.
+# ==== PLAINTEXT =================================================
 
 def sign_plaintext_with_client(_signature_base_string, client):
     # _signature_base_string is not used because the signature with PLAINTEXT

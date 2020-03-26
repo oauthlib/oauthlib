@@ -68,25 +68,31 @@ class MockClient:
 # ################################################################
 
 class SignatureTests(TestCase):
+    """
+    Unit tests for the oauthlib/oauth1/rfc5849/signature.py module.
 
-    # The tests in this class are organised into sections, to test the
-    # functions relating to:
-    #
-    # - Signature base string calculation
-    # - HMAC-based signature methods
-    # - RSA-based signature methods
-    # - PLAINTEXT signature method
-    #
-    # They all use some/all of the example test vector, defined in the first
-    # section below.
+    The tests in this class are organised into sections, to test the
+    functions relating to:
 
-    # ================================================================
-    # Example test vector
-    #
-    # This section contains the main example from the OAuth 1.0a specification.
+      - Signature base string calculation
+      - HMAC-based signature methods
+      - RSA-based signature methods
+      - PLAINTEXT signature method
 
-    # The _signature base string_ below is copied from the end of
-    # RFC 5849 section 3.4.1.1.
+    Each section is separated by a comment beginning with "====".
+
+    Those comments have been formatted to remain visible when the code is
+    collapsed using PyCharm's code folding feature. That is, those section
+    heading comments do not have any other comment lines around it, so they
+    don't get collapsed when the contents of the class is collapsed. While
+    there is a "Sequential comments" option in the code folding configuration,
+    by default they are folded.
+
+    They all use some/all of the example test vector, defined in the first
+    section below.
+    """
+
+    # ==== Example test vector =======================================
 
     eg_signature_base_string =\
         'POST&http%3A%2F%2Fexample.com%2Frequest&a2%3Dr%2520b%26a3%3D2%2520q' \
@@ -95,7 +101,10 @@ class SignatureTests(TestCase):
         'ethod%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk' \
         '9d7dh3k39sjv7'
 
-    # The above _signature base string_ corresponds to the three values below.
+    # The _signature base string_ above is copied from the end of
+    # RFC 5849 section 3.4.1.1.
+    #
+    # It corresponds to the three values below.
     #
     # The _normalized parameters_ below is copied from the end of
     # RFC 5849 section 3.4.1.3.2.
@@ -142,27 +151,7 @@ class SignatureTests(TestCase):
         ' oauth_timestamp="137131201", oauth_nonce="7d8f3e4a",' \
         ' oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D"'
 
-    # ================================================================
-    # Signature base string calculating function tests
-    #
-    # The tests in this section are for the functions used to create the
-    # _signature base string_. The top-level function being tested is
-    # ``signature_base_string`` (tested in ``test_signature_base_string``)
-    #
-    # That top level function takes three parameters. The first is the HTTP
-    # method (some aspects of which are also tested in
-    # `test_signature_base_string``).
-    #
-    # The second is the _base string URI_, which is produced by the function
-    # ``base_string_uri`` (tested in ``test_base_string_uri``).
-    #
-    # The third is the normalized parameters string. To obtain it, the
-    # parameters are gathered from the request by ``collect_parameters``
-    # (tested in ``test_collect_parameters``) and then normalized into a single
-    # string by ``normalize_parameters`` (tested in
-    # ``test_normalize_parameters``).
-
-    # ----------------------------------------------------------------
+    # ==== Signature base string calculating function tests ==========
 
     def test_signature_base_string(self):
         """
@@ -187,8 +176,6 @@ class SignatureTests(TestCase):
                     test_method,
                     self.eg_base_string_uri,
                     self.eg_normalized_parameters))
-
-    # ----------------------------------------------------------------
 
     def test_base_string_uri(self):
         """
@@ -362,8 +349,6 @@ class SignatureTests(TestCase):
         self.assertRaises(ValueError, base_string_uri, 'http://eg.com: ')
         self.assertRaises(ValueError, base_string_uri, 'http://eg.com:42:42')
 
-    # ----------------------------------------------------------------
-
     def test_collect_parameters(self):
         """
         Test the ``collect_parameters`` function.
@@ -417,8 +402,6 @@ class SignatureTests(TestCase):
         self.assertEqual(sorted(no_realm + [('realm', 'Example')]),
                          sorted(with_realm))
 
-    # ----------------------------------------------------------------
-
     def test_normalize_parameters(self):
         """
         Test the ``normalize_parameters`` function.
@@ -450,8 +433,7 @@ class SignatureTests(TestCase):
         self.assertEqual(self.eg_normalized_parameters,
                          normalize_parameters(self.eg_params))
 
-    # ================================================================
-    # HMAC-based signature methods tests
+    # ==== HMAC-based signature method tests =========================
 
     hmac_client = MockClient(
         client_secret='ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ',
@@ -479,8 +461,6 @@ class SignatureTests(TestCase):
         'u/vlyZFDxOWOZ9UUXwRBJHvq8/T4jCA74ocRmn2ECnjUBTAeJiZIRU8hDTjS88Tz' \
         '1fGONffMpdZxUkUTW3k1kg=='
 
-    # ----------------------------------------------------------------
-
     def test_sign_hmac_sha1_with_client(self):
         """
         Test sign and verify with HMAC-SHA1.
@@ -496,8 +476,6 @@ class SignatureTests(TestCase):
                         self.expected_signature_hmac_sha1),
             self.hmac_client.client_secret,
             self.hmac_client.resource_owner_secret))
-
-    # ----------------------------------------------------------------
 
     def test_sign_hmac_sha256_with_client(self):
         """
@@ -515,8 +493,6 @@ class SignatureTests(TestCase):
             self.hmac_client.client_secret,
             self.hmac_client.resource_owner_secret))
 
-    # ----------------------------------------------------------------
-
     def test_sign_hmac_sha512_with_client(self):
         """
         Test sign and verify with HMAC-SHA512.
@@ -532,8 +508,6 @@ class SignatureTests(TestCase):
                         self.expected_signature_hmac_sha512),
             self.hmac_client.client_secret,
             self.hmac_client.resource_owner_secret))
-
-    # ----------------------------------------------------------------
 
     def test_hmac_false_positives(self):
         """
@@ -606,15 +580,7 @@ class SignatureTests(TestCase):
                     self.hmac_client.client_secret,
                     self.hmac_client.resource_owner_secret))
 
-    # ================================================================
-    # RSA-based signature methods tests
-
-    # The following private key was generated using:
-    #     $ openssl genrsa -out example.pvt 1024
-    #     $ chmod 600 example.pvt
-    # Public key was extract from it using:
-    #     $ ssh-keygen -e -m pem -f example.pvt
-    # PEM encoding requires the key to be concatenated with linebreaks.
+    # ==== RSA-based signature methods tests =========================
 
     rsa_private_client = MockClient(rsa_key='''
 -----BEGIN RSA PRIVATE KEY-----
@@ -642,6 +608,13 @@ GLYT3Jw1Lfb1bbuck9Y0JsRJO7uydWUbxXyZ+8YaDfE2NMw7sh2vAgMBAAE=
 -----END RSA PUBLIC KEY-----
 ''')
 
+    # The above private key was generated using:
+    #     $ openssl genrsa -out example.pvt 1024
+    #     $ chmod 600 example.pvt
+    # Public key was extract from it using:
+    #     $ ssh-keygen -e -m pem -f example.pvt
+    # PEM encoding requires the key to be concatenated with linebreaks.
+
     # The following expected signatures were calculated by putting the private
     # key in a file (test.pvt) and the value of sig_base_str_rsa in another file
     # ("base-str.txt") and running:
@@ -666,8 +639,6 @@ GLYT3Jw1Lfb1bbuck9Y0JsRJO7uydWUbxXyZ+8YaDfE2NMw7sh2vAgMBAAE=
         'DWdUh/79ZWNOrCirBFIP26cHLApjYdt4ZG7EVK0/GubS2v8wT1QPRsog8zyiMZkm' \
         'g4JXdWCGXG8YRvRJTg+QKhXuXwS6TcMNakrgzgFIVhA='
 
-    # ----------------------------------------------------------------
-
     def test_sign_rsa_sha1_with_client(self):
         """
         Test sign and verify with RSA-SHA1.
@@ -682,8 +653,6 @@ GLYT3Jw1Lfb1bbuck9Y0JsRJO7uydWUbxXyZ+8YaDfE2NMw7sh2vAgMBAAE=
                         self.eg_params,
                         self.expected_signature_rsa_sha1),
             self.rsa_public_client.rsa_key))
-
-    # ----------------------------------------------------------------
 
     def test_sign_rsa_sha256_with_client(self):
         """
@@ -700,8 +669,6 @@ GLYT3Jw1Lfb1bbuck9Y0JsRJO7uydWUbxXyZ+8YaDfE2NMw7sh2vAgMBAAE=
                         self.expected_signature_rsa_sha256),
             self.rsa_public_client.rsa_key))
 
-    # ----------------------------------------------------------------
-
     def test_sign_rsa_sha512_with_client(self):
         """
         Test sign and verify with RSA-SHA512.
@@ -716,8 +683,6 @@ GLYT3Jw1Lfb1bbuck9Y0JsRJO7uydWUbxXyZ+8YaDfE2NMw7sh2vAgMBAAE=
                         self.eg_params,
                         self.expected_signature_rsa_sha512),
             self.rsa_public_client.rsa_key))
-
-    # ----------------------------------------------------------------
 
     def test_rsa_false_positives(self):
         """
@@ -781,8 +746,6 @@ MmgDHR2tt8KeYTSgfU+BAkBcaVF91EQ7VXhvyABNYjeYP7lU7orOgdWMa/zbLXSU
                                 bad_signature),
                     self.rsa_public_client.rsa_key))
 
-    # ----------------------------------------------------------------
-
     def test_rsa_bad_keys(self):
         """
         Testing RSA sign and verify with bad key values produces errors.
@@ -818,8 +781,6 @@ MmgDHR2tt8KeYTSgfU+BAkBcaVF91EQ7VXhvyABNYjeYP7lU7orOgdWMa/zbLXSU
         # For completeness, this text could repeat the above for RSA-SHA256 and
         # RSA-SHA512 signing and verification functions.
 
-    # ----------------------------------------------------------------
-
     def test_rsa_jwt_algorithm_cache(self):
         # Tests cache of RSAAlgorithm objects is implemented correctly.
 
@@ -842,17 +803,14 @@ MmgDHR2tt8KeYTSgfU+BAkBcaVF91EQ7VXhvyABNYjeYP7lU7orOgdWMa/zbLXSU
         self.test_sign_rsa_sha256_with_client()
         self.test_sign_rsa_sha512_with_client()
 
-    # ================================================================
-    # PLAINTEXT signature method tests
+    # ==== PLAINTEXT signature method tests ==========================
 
-    plaintext_client = hmac_client  # for convenience, use the same secrets
+    plaintext_client = hmac_client  # for convenience, use the same HMAC secrets
 
     expected_signature_plaintext = (
         'ECrDNoq1VYzzzzzzzzzyAK7TwZNtPnkqatqZZZZ'
         '&'
         'just-a-string%20%20%20%20asdasd')
-
-    # ----------------------------------------------------------------
 
     def test_sign_plaintext_with_client(self):
         # With PLAINTEXT, the "signature" is always the same: regardless of the
@@ -871,8 +829,6 @@ MmgDHR2tt8KeYTSgfU+BAkBcaVF91EQ7VXhvyABNYjeYP7lU7orOgdWMa/zbLXSU
                         self.expected_signature_plaintext),
             self.plaintext_client.client_secret,
             self.plaintext_client.resource_owner_secret))
-
-    # ----------------------------------------------------------------
 
     def test_plaintext_false_positives(self):
         """
