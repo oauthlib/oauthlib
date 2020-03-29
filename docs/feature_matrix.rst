@@ -16,8 +16,8 @@ Protocol* are supported:
 - RSA-SHA1
 - PLAINTEXT
 
-Non-standard *signature methods* that replaces SHA-1 with more
-stronger digest algorithms are also supported:
+Non-standard *signature methods* that replaces SHA-1 with stronger
+digest algorithms are also supported:
 
 - HMAC-SHA256
 - HMAC-SHA512
