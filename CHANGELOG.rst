@@ -25,8 +25,9 @@ OAuth2.0 Provider - Bugfixes
 OAuth2.0 Client - Bugfixes
 
   * #290: Fix Authorization Code's errors processing
-  * #603: BackendApplication.Client.prepare_request_body use the `scope` argument as intended.
+  * #603: BackendApplicationClient.prepare_request_body use the `scope` argument as intended.
   * #672: Fix edge case when `expires_in=Null`
+  * #725: LegacyApplicationClient.prepare_request_body now correctly uses the default `scope` provided in constructor
 
 OAuth1.0 Client
 
