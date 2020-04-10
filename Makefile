@@ -37,6 +37,9 @@ clean-build:
 format fmt:
 	isort --recursive oauthlib tests
 
+lint:
+	isort --recursive --check-only --diff oauthlib tests
+
 test:
 	tox
 

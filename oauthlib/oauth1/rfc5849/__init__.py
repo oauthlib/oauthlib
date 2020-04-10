@@ -9,13 +9,17 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 import base64
 import hashlib
 import logging
-log = logging.getLogger(__name__)
-
 import urllib.parse as urlparse
 
-from oauthlib.common import Request, urlencode, generate_nonce
-from oauthlib.common import generate_timestamp, to_unicode
+from oauthlib.common import (
+    Request, generate_nonce, generate_timestamp, to_unicode, urlencode,
+)
+
 from . import parameters, signature
+
+log = logging.getLogger(__name__)
+
+
 
 SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
 SIGNATURE_HMAC_SHA256 = "HMAC-SHA256"

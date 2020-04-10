@@ -7,7 +7,6 @@ import json
 import logging
 
 from .. import errors, utils
-from ..request_validator import RequestValidator
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)

@@ -8,11 +8,11 @@ import json
 import logging
 
 from oauthlib.common import Request
-from oauthlib.oauth2.rfc6749.endpoints.base import BaseEndpoint
-from oauthlib.oauth2.rfc6749.endpoints.base import catch_errors_and_unavailability
-from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.oauth2.rfc6749 import errors
-
+from oauthlib.oauth2.rfc6749.endpoints.base import (
+    BaseEndpoint, catch_errors_and_unavailability,
+)
+from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 log = logging.getLogger(__name__)
 
