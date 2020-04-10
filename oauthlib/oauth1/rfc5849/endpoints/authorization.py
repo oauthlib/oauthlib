@@ -8,7 +8,7 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 from urllib.parse import urlencode
 
-from oauthlib.common import Request, add_params_to_uri
+from oauthlib.common import add_params_to_uri
 
 from .. import errors
 from .base import BaseEndpoint
