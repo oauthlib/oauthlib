@@ -34,6 +34,9 @@ clean-build:
 	@rm -fr dist/
 	@rm -fr *.egg-info
 
+format fmt:
+	isort --recursive oauthlib tests
+
 test:
 	tox
 
