@@ -4,8 +4,11 @@ from unittest import mock
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types.hybrid import HybridGrant
-from tests.oauth2.rfc6749.grant_types.test_authorization_code import \
-    AuthorizationCodeGrantTest
+
+from tests.oauth2.rfc6749.grant_types.test_authorization_code import (
+    AuthorizationCodeGrantTest,
+)
+
 from .test_authorization_code import OpenIDAuthCodeTest
 
 

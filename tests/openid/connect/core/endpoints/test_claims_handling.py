@@ -11,8 +11,8 @@ from unittest import mock
 from oauthlib.openid import RequestValidator
 from oauthlib.openid.connect.core.endpoints.pre_configured import Server
 
-from tests.unittest import TestCase
 from tests.oauth2.rfc6749.endpoints.test_utils import get_query_credentials
+from tests.unittest import TestCase
 
 
 class TestClaimsHandling(TestCase):

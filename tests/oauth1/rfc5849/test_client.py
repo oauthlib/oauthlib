@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from oauthlib.common import Request
-from oauthlib.oauth1 import (SIGNATURE_PLAINTEXT, SIGNATURE_HMAC_SHA1,
-                             SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
-                             SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY)
+from oauthlib.oauth1 import (
+    SIGNATURE_HMAC_SHA1, SIGNATURE_HMAC_SHA256, SIGNATURE_PLAINTEXT,
+    SIGNATURE_RSA, SIGNATURE_TYPE_BODY, SIGNATURE_TYPE_QUERY,
+)
 from oauthlib.oauth1.rfc5849 import Client
 
-from ...unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ClientRealmTests(TestCase):

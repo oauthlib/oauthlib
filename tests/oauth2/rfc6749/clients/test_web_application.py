@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 import os
+import urllib.parse as urlparse
 import warnings
-
 from unittest.mock import patch
 
 from oauthlib import common, signals
-from oauthlib.oauth2 import (BackendApplicationClient, Client,
-                             LegacyApplicationClient, MobileApplicationClient,
-                             WebApplicationClient)
+from oauthlib.oauth2 import (
+    BackendApplicationClient, Client, LegacyApplicationClient,
+    MobileApplicationClient, WebApplicationClient,
+)
 from oauthlib.oauth2.rfc6749 import errors, utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
-import urllib.parse as urlparse
 
-from ....unittest import TestCase
-
+from tests.unittest import TestCase
 
 
 @patch('time.time', new=lambda: 1000)

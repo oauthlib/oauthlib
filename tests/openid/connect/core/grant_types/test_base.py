@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from unittest import mock
 import time
+from unittest import mock
 
 from oauthlib.common import Request
 from oauthlib.openid.connect.core.grant_types.base import GrantTypeBase
