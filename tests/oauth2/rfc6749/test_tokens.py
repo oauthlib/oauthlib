@@ -2,14 +2,11 @@ from unittest import mock
 
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.tokens import (
-    BearerToken,
-    prepare_bearer_body,
-    prepare_bearer_headers,
-    prepare_bearer_uri,
-    prepare_mac_header,
+    BearerToken, prepare_bearer_body, prepare_bearer_headers,
+    prepare_bearer_uri, prepare_mac_header,
 )
 
-from ...unittest import TestCase
+from tests.unittest import TestCase
 
 
 class TokenTest(TestCase):

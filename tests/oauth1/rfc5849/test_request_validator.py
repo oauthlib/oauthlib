@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from oauthlib.oauth1 import RequestValidator
 
-from ...unittest import TestCase
+from tests.unittest import TestCase
 
 
 class RequestValidatorTests(TestCase):
