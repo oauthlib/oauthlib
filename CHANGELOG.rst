@@ -27,6 +27,10 @@ OAuth2.0 Client - Bugfixes
   * #290: Fix Authorization Code's errors processing
   * #603: BackendApplication.Client.prepare_request_body use the `scope` argument as intended.
   * #672: Fix edge case when `expires_in=Null`
+  * #726: MobileApplicationClient.prepare_request_uri and MobileApplicationClient.parse_request_uri_response,
+    ServiceApplicationClient.prepare_request_body,
+    and WebApplicationClient.prepare_request_uri now correctly use the default `scope` provided in
+    constructor.
 
 OAuth1.0 Client
 
