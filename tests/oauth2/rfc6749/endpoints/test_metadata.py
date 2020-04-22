@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-from oauthlib.oauth2 import MetadataEndpoint
-from oauthlib.oauth2 import TokenEndpoint
-from oauthlib.oauth2 import Server
+from oauthlib.oauth2 import MetadataEndpoint, Server, TokenEndpoint
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class MetadataEndpointTest(TestCase):

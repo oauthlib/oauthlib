@@ -5,7 +5,9 @@ oauthlib.openid.connect.core.request_validator
 """
 import logging
 
-from oauthlib.oauth2.rfc6749.request_validator import RequestValidator as OAuth2RequestValidator
+from oauthlib.oauth2.rfc6749.request_validator import (
+    RequestValidator as OAuth2RequestValidator,
+)
 
 log = logging.getLogger(__name__)
 

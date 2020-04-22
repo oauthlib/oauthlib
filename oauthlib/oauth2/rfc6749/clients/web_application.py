@@ -8,9 +8,10 @@ for consuming and providing OAuth 2.0 RFC6749.
 """
 import warnings
 
-from ..parameters import (parse_authorization_code_response,
-                          parse_token_response, prepare_grant_uri,
-                          prepare_token_request)
+from ..parameters import (
+    parse_authorization_code_response, prepare_grant_uri,
+    prepare_token_request,
+)
 from .base import Client
 
 

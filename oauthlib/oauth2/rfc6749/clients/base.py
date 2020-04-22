@@ -11,11 +11,13 @@ import warnings
 
 from oauthlib.common import generate_token
 from oauthlib.oauth2.rfc6749 import tokens
-from oauthlib.oauth2.rfc6749.errors import (InsecureTransportError,
-                                            TokenExpiredError)
-from oauthlib.oauth2.rfc6749.parameters import (parse_token_response,
-                                                prepare_token_request,
-                                                prepare_token_revocation_request)
+from oauthlib.oauth2.rfc6749.errors import (
+    InsecureTransportError, TokenExpiredError,
+)
+from oauthlib.oauth2.rfc6749.parameters import (
+    parse_token_response, prepare_token_request,
+    prepare_token_revocation_request,
+)
 from oauthlib.oauth2.rfc6749.utils import is_secure_transport
 
 AUTH_HEADER = 'auth_header'

@@ -1,5 +1,5 @@
-from unittest import TestCase
 import urllib.parse as urlparse
+from unittest import TestCase
 
 
 # URL comparison where query param order is insignificant

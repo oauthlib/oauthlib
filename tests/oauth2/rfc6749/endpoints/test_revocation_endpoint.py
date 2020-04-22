@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from json import loads
-
 from unittest.mock import MagicMock
 
 from oauthlib.common import urlencode
 from oauthlib.oauth2 import RequestValidator, RevocationEndpoint
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class RevocationEndpointTest(TestCase):

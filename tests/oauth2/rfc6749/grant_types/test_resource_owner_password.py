@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import json
-
 from unittest import mock
 
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749 import errors
-from oauthlib.oauth2.rfc6749.grant_types import \
-    ResourceOwnerPasswordCredentialsGrant
+from oauthlib.oauth2.rfc6749.grant_types import (
+    ResourceOwnerPasswordCredentialsGrant,
+)
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ResourceOwnerPasswordCredentialsGrantTest(TestCase):

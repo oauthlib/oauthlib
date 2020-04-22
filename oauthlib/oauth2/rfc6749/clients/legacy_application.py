@@ -6,7 +6,7 @@ oauthlib.oauth2.rfc6749
 This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
-from ..parameters import parse_token_response, prepare_token_request
+from ..parameters import prepare_token_request
 from .base import Client
 
 

@@ -2,11 +2,12 @@
 """
 from unittest import mock
 
-from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
-                             MobileApplicationServer, RequestValidator,
-                             WebApplicationServer)
+from oauthlib.oauth2 import (
+    BackendApplicationServer, LegacyApplicationServer, MobileApplicationServer,
+    RequestValidator, WebApplicationServer,
+)
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ExtraCredentialsTest(TestCase):

@@ -10,9 +10,11 @@ import time
 
 from oauthlib.common import CaseInsensitiveDict, Request, generate_token
 
-from .. import (CONTENT_TYPE_FORM_URLENCODED, SIGNATURE_HMAC_SHA1, SIGNATURE_HMAC_SHA256, SIGNATURE_RSA,
-                SIGNATURE_TYPE_AUTH_HEADER, SIGNATURE_TYPE_BODY,
-                SIGNATURE_TYPE_QUERY, errors, signature, utils)
+from .. import (
+    CONTENT_TYPE_FORM_URLENCODED, SIGNATURE_HMAC_SHA1, SIGNATURE_HMAC_SHA256,
+    SIGNATURE_RSA, SIGNATURE_TYPE_AUTH_HEADER, SIGNATURE_TYPE_BODY,
+    SIGNATURE_TYPE_QUERY, errors, signature, utils,
+)
 
 
 class BaseEndpoint:
