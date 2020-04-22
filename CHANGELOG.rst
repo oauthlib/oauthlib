@@ -1,7 +1,16 @@
 Changelog
 =========
 
-3.1.0 (TBD)
+3.1.1 (TBD)
+------------------
+OAuth2.0 Client - Bugfixes
+  * #730: Base OAuth2 Client now has a consistent way of managing the `scope`: it consistently
+    relies on the `scope` provided in the constructor if any, except if overridden temporarily
+    in a method call. Note that in particular providing a non-None `scope` in
+    `prepare_authorization_request` or `prepare_refresh_token` does not override anymore
+    `self.scope` forever, it is just used temporarily.
+
+3.1.0 (2019-08-06)
 ------------------
 OAuth2.0 Provider - Features
 
