@@ -3,7 +3,7 @@ import os
 from time import time
 
 import jwt
-from mock import patch
+from unittest.mock import patch
 
 from oauthlib.common import Request
 from oauthlib.oauth2 import ServiceApplicationClient

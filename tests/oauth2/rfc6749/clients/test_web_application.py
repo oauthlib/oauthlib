@@ -2,7 +2,7 @@
 import os
 import warnings
 
-from mock import patch
+from unittest.mock import patch
 
 from oauthlib import common, signals
 from oauthlib.oauth2 import (BackendApplicationClient, Client,

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant

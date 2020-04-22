@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.tokens import (
