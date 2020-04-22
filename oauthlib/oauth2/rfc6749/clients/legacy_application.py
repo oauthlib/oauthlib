@@ -79,5 +79,6 @@ class LegacyApplicationClient(Client):
         """
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
+        scope = self.scope if scope is None else scope
         return prepare_token_request(self.grant_type, body=body, username=username,
                                      password=password, scope=scope, **kwargs)
