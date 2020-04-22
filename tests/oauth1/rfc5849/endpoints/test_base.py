@@ -1,6 +1,6 @@
 from re import sub
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from oauthlib.common import CaseInsensitiveDict, safe_string_equals
 from oauthlib.oauth1 import Client, RequestValidator

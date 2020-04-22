@@ -1,4 +1,4 @@
-from mock import ANY, MagicMock
+from unittest.mock import ANY, MagicMock
 
 from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import Client

@@ -9,8 +9,10 @@ class Dispatcher:
 
 class AuthorizationCodeGrantDispatcher(Dispatcher):
     """
-    This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
-    including 'openid' to either the default_grant or the oidc_grant based on the scopes requested.
+    This is an adapter class that will route simple Authorization Code
+    requests, those that have `response_type=code` and a scope including
+    `openid` to either the `default_grant` or the `oidc_grant` based on
+    the scopes requested.
     """
     def __init__(self, default_grant=None, oidc_grant=None):
         self.default_grant = default_grant
@@ -26,16 +28,20 @@ class AuthorizationCodeGrantDispatcher(Dispatcher):
         return handler
 
     def create_authorization_response(self, request, token_handler):
+        """Read scope and route to the designated handler."""
         return self._handler_for_request(request).create_authorization_response(request, token_handler)
 
     def validate_authorization_request(self, request):
+        """Read scope and route to the designated handler."""
         return self._handler_for_request(request).validate_authorization_request(request)
 
 
 class ImplicitTokenGrantDispatcher(Dispatcher):
     """
-    This is an adapter class that will route simple Authorization Code requests, those that have response_type=code and a scope
-    including 'openid' to either the default_grant or the oidc_grant based on the scopes requested.
+    This is an adapter class that will route simple Authorization
+    requests, those that have `id_token` in `response_type` and a scope
+    including `openid` to either the `default_grant` or the `oidc_grant`
+    based on the scopes requested.
     """
     def __init__(self, default_grant=None, oidc_grant=None):
         self.default_grant = default_grant
@@ -51,9 +57,11 @@ class ImplicitTokenGrantDispatcher(Dispatcher):
         return handler
 
     def create_authorization_response(self, request, token_handler):
+        """Read scope and route to the designated handler."""
         return self._handler_for_request(request).create_authorization_response(request, token_handler)
 
     def validate_authorization_request(self, request):
+        """Read scope and route to the designated handler."""
         return self._handler_for_request(request).validate_authorization_request(request)
 
 
@@ -75,7 +83,7 @@ class AuthorizationTokenGrantDispatcher(Dispatcher):
         code = parameters.get('code', None)
         redirect_uri = parameters.get('redirect_uri', None)
 
-        # If code is not pressent fallback to `default_grant` wich will
+        # If code is not pressent fallback to `default_grant` which will
         # raise an error for the missing `code` in `create_token_response` step.
         if code:
             scopes = self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri, request)
@@ -87,5 +95,6 @@ class AuthorizationTokenGrantDispatcher(Dispatcher):
         return handler
 
     def create_token_response(self, request, token_handler):
+        """Read scope and route to the designated handler."""
         handler = self._handler_for_request(request)
         return handler.create_token_response(request, token_handler)

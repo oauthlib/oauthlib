@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from json import loads
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from oauthlib.common import urlencode
 from oauthlib.oauth2 import RequestValidator, RevocationEndpoint

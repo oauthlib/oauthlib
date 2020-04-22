@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from oauthlib.openid.connect.core.tokens import JWTToken
 
