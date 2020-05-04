@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 import json
-
 from unittest import mock
 
 from oauthlib.oauth2.rfc6749 import errors
-from oauthlib.oauth2.rfc6749.endpoints.authorization import AuthorizationEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.authorization import (
+    AuthorizationEndpoint,
+)
 from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
-
-from oauthlib.openid.connect.core.grant_types.authorization_code import AuthorizationCodeGrant
-from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
+from oauthlib.openid.connect.core.grant_types.authorization_code import (
+    AuthorizationCodeGrant,
+)
 from oauthlib.openid.connect.core.grant_types.hybrid import HybridGrant
+from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
 
 from tests.unittest import TestCase
 

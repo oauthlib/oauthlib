@@ -1,11 +1,12 @@
 import datetime
 import os
 
-from oauthlib.oauth2.rfc6749.utils import (escape, generate_age, host_from_uri,
-                                           is_secure_transport, list_to_scope,
-                                           params_from_uri, scope_to_list)
+from oauthlib.oauth2.rfc6749.utils import (
+    escape, generate_age, host_from_uri, is_secure_transport, list_to_scope,
+    params_from_uri, scope_to_list,
+)
 
-from ...unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ScopeObject:

@@ -6,7 +6,7 @@ from oauthlib.oauth2 import Client, InsecureTransportError, TokenExpiredError
 from oauthlib.oauth2.rfc6749 import utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ClientTest(TestCase):

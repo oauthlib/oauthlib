@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
 from time import time
+from unittest.mock import patch
 
 import jwt
-from unittest.mock import patch
 
 from oauthlib.common import Request
 from oauthlib.oauth2 import ServiceApplicationClient
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ServiceApplicationClientTest(TestCase):

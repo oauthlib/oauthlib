@@ -8,9 +8,10 @@ for consuming and providing OAuth 2.0 RFC6749.
 """
 import warnings
 
-from ..parameters import (parse_authorization_code_response,
-                          parse_token_response, prepare_grant_uri,
-                          prepare_token_request)
+from ..parameters import (
+    parse_authorization_code_response, prepare_grant_uri,
+    prepare_token_request,
+)
 from .base import Client
 
 
@@ -84,6 +85,7 @@ class WebApplicationClient(Client):
         .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
         .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         """
+        scope = self.scope if scope is None else scope
         return prepare_grant_uri(uri, self.client_id, 'code',
                                  redirect_uri=redirect_uri, scope=scope, state=state, **kwargs)
 

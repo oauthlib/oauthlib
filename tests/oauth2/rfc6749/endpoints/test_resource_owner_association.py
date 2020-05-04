@@ -1,14 +1,15 @@
 """Ensure all tokens are associated with a resource owner.
 """
 import json
-
 from unittest import mock
 
-from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
-                             MobileApplicationServer, RequestValidator,
-                             WebApplicationServer)
+from oauthlib.oauth2 import (
+    BackendApplicationServer, LegacyApplicationServer, MobileApplicationServer,
+    RequestValidator, WebApplicationServer,
+)
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
+
 from .test_utils import get_fragment_credentials, get_query_credentials
 
 

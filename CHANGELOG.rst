@@ -1,7 +1,22 @@
 Changelog
 =========
 
-3.1.0 (TBD)
+3.1.1 (TBD)
+------------------
+OAuth2.0 Client - Bugfixes
+
+  * #730: Base OAuth2 Client now has a consistent way of managing the `scope`: it consistently
+    relies on the `scope` provided in the constructor if any, except if overridden temporarily
+    in a method call. Note that in particular providing a non-None `scope` in
+    `prepare_authorization_request` or `prepare_refresh_token` does not override anymore
+    `self.scope` forever, it is just used temporarily.
+  * #726: MobileApplicationClient.prepare_request_uri and MobileApplicationClient.parse_request_uri_response,
+    ServiceApplicationClient.prepare_request_body,
+    and WebApplicationClient.prepare_request_uri now correctly use the default `scope` provided in
+    constructor.
+  * #725: LegacyApplicationClient.prepare_request_body now correctly uses the default `scope` provided in constructor
+
+3.1.0 (2019-08-06)
 ------------------
 OAuth2.0 Provider - Features
 
@@ -25,7 +40,7 @@ OAuth2.0 Provider - Bugfixes
 OAuth2.0 Client - Bugfixes
 
   * #290: Fix Authorization Code's errors processing
-  * #603: BackendApplication.Client.prepare_request_body use the `scope` argument as intended.
+  * #603: BackendApplicationClient.prepare_request_body use the `scope` argument as intended.
   * #672: Fix edge case when `expires_in=Null`
 
 OAuth1.0 Client

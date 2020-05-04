@@ -19,8 +19,7 @@ from oauthlib.oauth1.rfc5849.signature import (
     verify_rsa_sha512,
     verify_plaintext
 )
-
-from ...unittest import TestCase
+from tests.unittest import TestCase
 
 
 # ################################################################

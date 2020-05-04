@@ -1,5 +1,7 @@
-from . import (AccessTokenEndpoint, AuthorizationEndpoint,
-               RequestTokenEndpoint, ResourceEndpoint)
+from . import (
+    AccessTokenEndpoint, AuthorizationEndpoint, RequestTokenEndpoint,
+    ResourceEndpoint,
+)
 
 
 class WebApplicationServer(RequestTokenEndpoint, AuthorizationEndpoint,
