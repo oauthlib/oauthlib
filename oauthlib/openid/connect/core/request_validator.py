@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.openid.connect.core.request_validator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
