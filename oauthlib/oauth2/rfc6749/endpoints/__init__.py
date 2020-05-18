@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749
 ~~~~~~~~~~~~~~~~~~~~~~~

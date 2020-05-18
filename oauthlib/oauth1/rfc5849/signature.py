@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module is an implementation of `section 3.4`_ of RFC 5849.
 
