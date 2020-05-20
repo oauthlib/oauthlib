@@ -4,14 +4,15 @@ Fairly trivial in all grants except the Authorization Code Grant where scope
 need to be persisted temporarily in an authorization code.
 """
 import json
+from unittest import mock
 
-import mock
+from oauthlib.oauth2 import (
+    BackendApplicationServer, LegacyApplicationServer, MobileApplicationServer,
+    RequestValidator, Server, WebApplicationServer,
+)
 
-from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
-                             MobileApplicationServer, RequestValidator, Server,
-                             WebApplicationServer)
+from tests.unittest import TestCase
 
-from ....unittest import TestCase
 from .test_utils import get_fragment_credentials, get_query_credentials
 
 

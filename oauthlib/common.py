@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.common
 ~~~~~~~~~~~~~~
@@ -12,10 +11,11 @@ import logging
 import re
 import time
 import urllib.parse as urlparse
+from urllib.parse import (
+    quote as _quote, unquote as _unquote, urlencode as _urlencode,
+)
+
 from . import get_debug
-from urllib.parse import quote as _quote
-from urllib.parse import unquote as _unquote
-from urllib.parse import urlencode as _urlencode
 
 try:
     from secrets import randbits

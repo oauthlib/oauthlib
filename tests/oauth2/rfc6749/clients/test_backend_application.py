@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-
-from mock import patch
+from unittest.mock import patch
 
 from oauthlib import signals
 from oauthlib.oauth2 import BackendApplicationClient
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 @patch('time.time', new=lambda: 1000)

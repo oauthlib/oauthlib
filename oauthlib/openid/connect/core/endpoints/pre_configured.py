@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.openid.connect.core.endpoints.pre_configured
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,29 +6,20 @@ This module is an implementation of various endpoints needed
 for providing OpenID Connect servers.
 """
 from oauthlib.oauth2.rfc6749.endpoints import (
-    AuthorizationEndpoint,
-    IntrospectEndpoint,
-    ResourceEndpoint,
-    RevocationEndpoint,
-    TokenEndpoint
+    AuthorizationEndpoint, IntrospectEndpoint, ResourceEndpoint,
+    RevocationEndpoint, TokenEndpoint,
 )
 from oauthlib.oauth2.rfc6749.grant_types import (
     AuthorizationCodeGrant as OAuth2AuthorizationCodeGrant,
-    ImplicitGrant as OAuth2ImplicitGrant,
-    ClientCredentialsGrant,
-    RefreshTokenGrant,
-    ResourceOwnerPasswordCredentialsGrant
+    ClientCredentialsGrant, ImplicitGrant as OAuth2ImplicitGrant,
+    RefreshTokenGrant, ResourceOwnerPasswordCredentialsGrant,
 )
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
-from ..grant_types import (
-    AuthorizationCodeGrant,
-    ImplicitGrant,
-    HybridGrant,
-)
+
+from ..grant_types import AuthorizationCodeGrant, HybridGrant, ImplicitGrant
 from ..grant_types.dispatchers import (
-    AuthorizationCodeGrantDispatcher,
+    AuthorizationCodeGrantDispatcher, AuthorizationTokenGrantDispatcher,
     ImplicitTokenGrantDispatcher,
-    AuthorizationTokenGrantDispatcher
 )
 from ..tokens import JWTToken
 from .userinfo import UserInfoEndpoint

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
-
 import oauthlib
-from oauthlib.common import (CaseInsensitiveDict, Request, add_params_to_uri,
-                             extract_params, generate_client_id,
-                             generate_nonce, generate_timestamp,
-                             generate_token, urldecode)
+from oauthlib.common import (
+    CaseInsensitiveDict, Request, add_params_to_uri, extract_params,
+    generate_client_id, generate_nonce, generate_timestamp, generate_token,
+    urldecode,
+)
 
-from .unittest import TestCase
+from tests.unittest import TestCase
 
 PARAMS_DICT = {'foo': 'bar', 'baz': '123', }
 PARAMS_TWOTUPLE = [('foo', 'bar'), ('baz', '123')]

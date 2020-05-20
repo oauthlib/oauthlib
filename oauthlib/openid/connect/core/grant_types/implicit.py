@@ -1,14 +1,15 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.openid.connect.core.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 import logging
 
-from .base import GrantTypeBase
-
-from oauthlib.oauth2.rfc6749.grant_types.implicit import ImplicitGrant as OAuth2ImplicitGrant
 from oauthlib.oauth2.rfc6749.errors import InvalidRequestError
+from oauthlib.oauth2.rfc6749.grant_types.implicit import (
+    ImplicitGrant as OAuth2ImplicitGrant,
+)
+
+from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
 

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-import mock
 import json
+from unittest import mock
 
-from oauthlib.openid import RequestValidator
-from oauthlib.openid import UserInfoEndpoint
 from oauthlib.oauth2.rfc6749 import errors
+from oauthlib.openid import RequestValidator, UserInfoEndpoint
 
 from tests.unittest import TestCase
 

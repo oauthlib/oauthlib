@@ -1,15 +1,16 @@
 from re import sub
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from oauthlib.common import CaseInsensitiveDict, safe_string_equals
 from oauthlib.oauth1 import Client, RequestValidator
-from oauthlib.oauth1.rfc5849 import (SIGNATURE_HMAC, SIGNATURE_PLAINTEXT,
-                                     SIGNATURE_RSA, errors)
-from oauthlib.oauth1.rfc5849.endpoints import (BaseEndpoint,
-                                               RequestTokenEndpoint)
+from oauthlib.oauth1.rfc5849 import (
+    SIGNATURE_HMAC, SIGNATURE_PLAINTEXT, SIGNATURE_RSA, errors,
+)
+from oauthlib.oauth1.rfc5849.endpoints import (
+    BaseEndpoint, RequestTokenEndpoint,
+)
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 URLENCODED = {"Content-Type": "application/x-www-form-urlencoded"}
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,8 +6,8 @@ import logging
 from itertools import chain
 
 from oauthlib.common import add_params_to_uri
-from oauthlib.uri_validate import is_absolute_uri
 from oauthlib.oauth2.rfc6749 import errors, utils
+from oauthlib.uri_validate import is_absolute_uri
 
 from ..request_validator import RequestValidator
 

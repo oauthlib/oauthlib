@@ -1,19 +1,13 @@
 # -*- coding: utf-8 -*-
-from oauthlib.oauth1.rfc5849.signature import (collect_parameters,
-                                               signature_base_string,
-                                               base_string_uri,
-                                               normalize_parameters,
-                                               sign_hmac_sha1,
-                                               sign_hmac_sha1_with_client,
-                                               sign_plaintext,
-                                               sign_plaintext_with_client,
-                                               sign_rsa_sha1,
-                                               sign_rsa_sha1_with_client)
 from urllib.parse import quote
 
-from ...unittest import TestCase
+from oauthlib.oauth1.rfc5849.signature import (
+    base_string_uri, collect_parameters, normalize_parameters, sign_hmac_sha1,
+    sign_hmac_sha1_with_client, sign_plaintext, sign_plaintext_with_client,
+    sign_rsa_sha1, sign_rsa_sha1_with_client, signature_base_string,
+)
 
-
+from tests.unittest import TestCase
 
 
 class SignatureTests(TestCase):

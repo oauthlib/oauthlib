@@ -10,14 +10,15 @@ on the request object with a client_id parameter. The client_id attribute
 prevents this check from being circumvented with a client form parameter.
 """
 import json
+from unittest import mock
 
-import mock
+from oauthlib.oauth2 import (
+    BackendApplicationServer, LegacyApplicationServer, MobileApplicationServer,
+    RequestValidator, WebApplicationServer,
+)
 
-from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
-                             MobileApplicationServer, RequestValidator,
-                             WebApplicationServer)
+from tests.unittest import TestCase
 
-from ....unittest import TestCase
 from .test_utils import get_fragment_credentials
 
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.endpoint.revocation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11,7 +10,7 @@ import logging
 
 from oauthlib.common import Request
 
-from ..errors import OAuth2Error, UnsupportedTokenTypeError
+from ..errors import OAuth2Error
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
 log = logging.getLogger(__name__)

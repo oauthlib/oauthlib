@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.openid.connect.core.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 import logging
 
-from oauthlib.oauth2.rfc6749.grant_types.authorization_code import AuthorizationCodeGrant as OAuth2AuthorizationCodeGrant
+from oauthlib.oauth2.rfc6749.grant_types.authorization_code import (
+    AuthorizationCodeGrant as OAuth2AuthorizationCodeGrant,
+)
 
 from .base import GrantTypeBase
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,7 +6,6 @@ import json
 import logging
 
 from .. import errors, utils
-from ..request_validator import RequestValidator
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth1.rfc5849
 ~~~~~~~~~~~~~~
@@ -6,8 +5,6 @@ oauthlib.oauth1.rfc5849
 This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
 """
-import sys
-
 from . import SIGNATURE_METHODS, utils
 
 

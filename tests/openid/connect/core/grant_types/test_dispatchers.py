@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from oauthlib.common import Request
-
-from oauthlib.openid.connect.core.grant_types.authorization_code import AuthorizationCodeGrant
-from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
-from oauthlib.openid.connect.core.grant_types.dispatchers import (
-    ImplicitTokenGrantDispatcher,
-    AuthorizationTokenGrantDispatcher
-)
-
 from oauthlib.oauth2.rfc6749.grant_types import (
     AuthorizationCodeGrant as OAuth2AuthorizationCodeGrant,
     ImplicitGrant as OAuth2ImplicitGrant,
 )
-
+from oauthlib.openid.connect.core.grant_types.authorization_code import (
+    AuthorizationCodeGrant,
+)
+from oauthlib.openid.connect.core.grant_types.dispatchers import (
+    AuthorizationTokenGrantDispatcher, ImplicitTokenGrantDispatcher,
+)
+from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
 
 from tests.unittest import TestCase
 

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 import json
-
-import mock
+from unittest import mock
 
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
-
-from oauthlib.openid.connect.core.grant_types.authorization_code import AuthorizationCodeGrant
+from oauthlib.openid.connect.core.grant_types.authorization_code import (
+    AuthorizationCodeGrant,
+)
 from oauthlib.openid.connect.core.grant_types.exceptions import OIDCNoPrompt
 
+from tests.oauth2.rfc6749.grant_types.test_authorization_code import (
+    AuthorizationCodeGrantTest,
+)
 from tests.unittest import TestCase
-from tests.oauth2.rfc6749.grant_types.test_authorization_code import \
-    AuthorizationCodeGrantTest
 
 
 def get_id_token_mock(token, token_handler, request):

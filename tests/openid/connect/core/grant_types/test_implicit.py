@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types.exceptions import OIDCNoPrompt
 from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
+
 from tests.oauth2.rfc6749.grant_types.test_implicit import ImplicitGrantTest
 from tests.unittest import TestCase
+
 from .test_authorization_code import get_id_token_mock
 
 

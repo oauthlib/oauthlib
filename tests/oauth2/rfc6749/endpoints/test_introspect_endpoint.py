@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from json import loads
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from oauthlib.common import urlencode
-from oauthlib.oauth2 import RequestValidator, IntrospectEndpoint
+from oauthlib.oauth2 import IntrospectEndpoint, RequestValidator
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class IntrospectEndpointTest(TestCase):

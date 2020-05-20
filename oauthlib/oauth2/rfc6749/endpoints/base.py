@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -9,11 +8,10 @@ for consuming and providing OAuth 2.0 RFC6749.
 import functools
 import logging
 
-from ..errors import (FatalClientError, OAuth2Error, ServerError,
-                      TemporarilyUnavailableError, InvalidRequestError,
-                      InvalidClientError, UnsupportedTokenTypeError)
-
-from oauthlib.common import CaseInsensitiveDict, urldecode
+from ..errors import (
+    FatalClientError, InvalidClientError, InvalidRequestError, OAuth2Error,
+    ServerError, TemporarilyUnavailableError, UnsupportedTokenTypeError,
+)
 
 log = logging.getLogger(__name__)
 

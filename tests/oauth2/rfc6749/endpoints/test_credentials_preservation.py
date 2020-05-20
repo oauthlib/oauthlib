@@ -4,14 +4,15 @@ The Authorization Code Grant will need to preserve state as well as redirect
 uri and the Implicit Grant will need to preserve state.
 """
 import json
+from unittest import mock
 
-import mock
-
-from oauthlib.oauth2 import (MobileApplicationServer, RequestValidator,
-                             WebApplicationServer)
+from oauthlib.oauth2 import (
+    MobileApplicationServer, RequestValidator, WebApplicationServer,
+)
 from oauthlib.oauth2.rfc6749 import errors
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
+
 from .test_utils import get_fragment_credentials, get_query_credentials
 
 

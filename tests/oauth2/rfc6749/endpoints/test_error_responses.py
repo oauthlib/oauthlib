@@ -1,15 +1,16 @@
 """Ensure the correct error responses are returned for all defined error types.
 """
 import json
-
-import mock
+from unittest import mock
 
 from oauthlib.common import urlencode
-from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
-                             MobileApplicationServer, RequestValidator,
-                             WebApplicationServer)
+from oauthlib.oauth2 import (
+    BackendApplicationServer, LegacyApplicationServer, MobileApplicationServer,
+    RequestValidator, WebApplicationServer,
+)
 from oauthlib.oauth2.rfc6749 import errors
-from ....unittest import TestCase
+
+from tests.unittest import TestCase
 
 
 class ErrorResponseTest(TestCase):

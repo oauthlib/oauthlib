@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.utils
 ~~~~~~~~~~~~~~
@@ -6,10 +5,9 @@ oauthlib.utils
 This module contains utility methods used by various parts of the OAuth
 spec.
 """
-from oauthlib.common import quote, unquote
-
 import urllib.request as urllib2
 
+from oauthlib.common import quote, unquote
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'

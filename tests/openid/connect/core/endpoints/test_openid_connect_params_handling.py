@@ -1,11 +1,12 @@
-import mock
+from unittest import mock
+from urllib.parse import urlencode
 
 from oauthlib.oauth2 import InvalidRequestError
-from oauthlib.oauth2.rfc6749.endpoints.authorization import \
-    AuthorizationEndpoint
+from oauthlib.oauth2.rfc6749.endpoints.authorization import (
+    AuthorizationEndpoint,
+)
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types import AuthorizationCodeGrant
-from urllib.parse import urlencode
 
 from tests.unittest import TestCase
 

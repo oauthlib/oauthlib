@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
-
-from mock import patch
+import urllib.parse as urlparse
+from unittest.mock import patch
 
 from oauthlib import signals
 from oauthlib.oauth2 import LegacyApplicationClient
-import urllib.parse as urlparse
 
-from ....unittest import TestCase
-
+from tests.unittest import TestCase
 
 
 @patch('time.time', new=lambda: 1000)

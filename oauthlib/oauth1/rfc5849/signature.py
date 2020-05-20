@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth1.rfc5849.signature
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,12 +24,11 @@ import binascii
 import hashlib
 import hmac
 import logging
-
-from oauthlib.common import extract_params, safe_string_equals, urldecode
 import urllib.parse as urlparse
 
-from . import utils
+from oauthlib.common import extract_params, safe_string_equals, urldecode
 
+from . import utils
 
 log = logging.getLogger(__name__)
 

@@ -1,12 +1,13 @@
 """Ensure extra credentials can be supplied for inclusion in tokens.
 """
-import mock
+from unittest import mock
 
-from oauthlib.oauth2 import (BackendApplicationServer, LegacyApplicationServer,
-                             MobileApplicationServer, RequestValidator,
-                             WebApplicationServer)
+from oauthlib.oauth2 import (
+    BackendApplicationServer, LegacyApplicationServer, MobileApplicationServer,
+    RequestValidator, WebApplicationServer,
+)
 
-from ....unittest import TestCase
+from tests.unittest import TestCase
 
 
 class ExtraCredentialsTest(TestCase):
