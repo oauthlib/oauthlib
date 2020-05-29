@@ -61,7 +61,7 @@ Features to be implemented (any help/PR are welcomed):
 Platforms
 ---------
 
-OAuthLib is mainly developed andtested on 64-bit Linux. It works on
+OAuthLib is mainly developed and tested on 64-bit Linux. It works on
 Unix and Unix-like operating systems (including macOS), as well as
 Microsoft Windows.
 
