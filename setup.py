@@ -16,9 +16,9 @@ def fread(fn):
         return f.read()
 
 
-rsa_require = ['cryptography']
-signedtoken_require = ['cryptography', 'pyjwt>=1.0.0']
-signals_require = ['blinker']
+rsa_require = ['cryptography>=1.4.0']
+signedtoken_require = ['cryptography>=1.4.0', 'pyjwt>=1.6.0']
+signals_require = ['blinker>=1.4.0']
 
 setup(
     name='oauthlib',
