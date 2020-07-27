@@ -12,7 +12,7 @@ What parts of OAuth 1 & 2 are supported?
     See :doc:`feature_matrix`.
 
 OAuth 1 with RSA-SHA1 signatures says "could not import cryptography". What should I do?
-----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 
     Install oauthlib with rsa flag or install cryptography manually via pip.
 

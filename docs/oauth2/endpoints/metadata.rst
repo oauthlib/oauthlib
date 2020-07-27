@@ -2,7 +2,7 @@
 Metadata endpoint
 ===================
 
-OAuth2.0 Authorization Server Metadata (`RFC8414`_) endpoint provide the metadata of your authorization server. Since the metadata results can be a combination of OAuthlib's Endpoint (see :doc:`preconfigured_servers`), the MetadataEndpoint's class takes a list of Endpoints in parameter, and aggregate the metadata in the response.
+OAuth2.0 Authorization Server Metadata (`RFC8414`_) endpoint provide the metadata of your authorization server. Since the metadata results can be a combination of OAuthlib's Endpoint (see :doc:`/oauth2/preconfigured_servers`), the MetadataEndpoint's class takes a list of Endpoints in parameter, and aggregate the metadata in the response.
 
 See below an example of usage with `bottle-oauthlib`_ when using a `LegacyApplicationServer` (password grant) endpoint:
 
