@@ -161,7 +161,7 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
     """Prepare a token revocation request.
 
     The client constructs the request by including the following parameters
-    using the "application/x-www-form-urlencoded" format in the HTTP request
+    using the ``application/x-www-form-urlencoded`` format in the HTTP request
     entity-body:
 
     :param token: REQUIRED.  The token that the client wants to get revoked.
@@ -427,7 +427,7 @@ def parse_token_response(body, scope=None):
 
 
 def validate_token_parameters(params):
-    """Ensures token precence, token type, expiration and scope in params."""
+    """Ensures token presence, token type, expiration and scope in params."""
     if 'error' in params:
         raise_from_error(params.get('error'), params)
 
