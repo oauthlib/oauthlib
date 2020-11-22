@@ -61,6 +61,9 @@ class Client:
                  state=None,
                  redirect_url=None,
                  state_generator=generate_token,
+                 code_verifier=None,
+                 code_challenge=None,
+                 code_challenge_method=None,
                  **kwargs):
         """Initialize a client with commonly used attributes.
 
@@ -99,6 +102,15 @@ class Client:
 
         :param state_generator: A no argument state generation callable. Defaults
         to :py:meth:`oauthlib.common.generate_token`.
+
+        :param code_verifier: A cryptographically random string that is used to correlate the
+        authorization request to the token request.
+
+        :param code_challenge: A challenge derived from the code verifier that is sent in the
+        authorization request, to be verified against later.
+
+        :param code_challenge_method: A method that was used to derive code challenge.
+        Defaults to "plain" if not present in the request.
         """
 
         self.client_id = client_id
@@ -113,6 +125,9 @@ class Client:
         self.state_generator = state_generator
         self.state = state
         self.redirect_url = redirect_url
+        self.code_verifier = code_verifier
+        self.code_challenge = code_challenge
+        self.code_challenge_method = code_challenge_method
         self.code = None
         self.expires_in = None
         self._expires_at = None
