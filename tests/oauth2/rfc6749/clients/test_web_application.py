@@ -24,10 +24,15 @@ class WebApplicationClientTest(TestCase):
     uri_id = uri + "&response_type=code&client_id=" + client_id
     uri_redirect = uri_id + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
     redirect_uri = "http://my.page.com/callback"
+    code_verifier = "code_verifier"
     scope = ["/profile"]
     state = "xyz"
+    code_challenge = "code_challenge"
+    code_challenge_method = "S256"
     uri_scope = uri_id + "&scope=%2Fprofile"
     uri_state = uri_id + "&state=" + state
+    uri_code_challenge = uri_id + "&code_challenge=" + code_challenge + "&code_challenge_method=" + code_challenge_method
+    uri_code_challenge_method = uri_id + "&code_challenge=" + code_challenge + "&code_challenge_method=plain"
     kwargs = {
         "some": "providers",
         "require": "extra arguments"
@@ -40,6 +45,7 @@ class WebApplicationClientTest(TestCase):
 
     body_code = "not=empty&grant_type=authorization_code&code={}&client_id={}".format(code, client_id)
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
+    bode_code_verifier = body_code + "&code_verifier=code_verifier"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 
     response_uri = "https://client.example.com/cb?code=zzzzaaaa&state=xyz"
@@ -80,6 +86,14 @@ class WebApplicationClientTest(TestCase):
         uri = client.prepare_request_uri(self.uri, state=self.state)
         self.assertURLEqual(uri, self.uri_state)
 
+        # with code_challenge and code_challenge_method
+        uri = client.prepare_request_uri(self.uri, code_challenge=self.code_challenge, code_challenge_method=self.code_challenge_method)
+        self.assertURLEqual(uri, self.uri_code_challenge)
+
+        # with no code_challenge_method
+        uri = client.prepare_request_uri(self.uri, code_challenge=self.code_challenge)
+        self.assertURLEqual(uri, self.uri_code_challenge_method)
+
         # With extra parameters through kwargs
         uri = client.prepare_request_uri(self.uri, **self.kwargs)
         self.assertURLEqual(uri, self.uri_kwargs)
@@ -98,6 +112,10 @@ class WebApplicationClientTest(TestCase):
         # With redirection uri
         body = client.prepare_request_body(body=self.body, redirect_uri=self.redirect_uri)
         self.assertFormBodyEqual(body, self.body_redirect)
+
+        # With code verifier
+        body = client.prepare_request_body(body=self.body, code_verifier=self.code_verifier)
+        self.assertFormBodyEqual(body, self.bode_code_verifier)
 
         # With extra parameters
         body = client.prepare_request_body(body=self.body, **self.kwargs)

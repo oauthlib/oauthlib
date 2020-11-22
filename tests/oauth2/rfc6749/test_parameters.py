@@ -21,12 +21,15 @@ class ParameterTests(TestCase):
     list_scope = ['list', 'of', 'scopes']
 
     auth_grant = {'response_type': 'code'}
+    auth_grant_pkce = {'response_type': 'code', 'code_challenge': "code_challenge",
+                       'code_challenge_method': 'code_challenge_method'}
     auth_grant_list_scope = {}
     auth_implicit = {'response_type': 'token', 'extra': 'extra'}
     auth_implicit_list_scope = {}
 
     def setUp(self):
         self.auth_grant.update(self.auth_base)
+        self.auth_grant_pkce.update(self.auth_base)
         self.auth_implicit.update(self.auth_base)
         self.auth_grant_list_scope.update(self.auth_grant)
         self.auth_grant_list_scope['scope'] = self.list_scope
@@ -37,7 +40,14 @@ class ParameterTests(TestCase):
                      '&client_id=s6BhdRkqt3&redirect_uri=https%3A%2F%2F'
                      'client.example.com%2Fcb&scope={1}&state={2}{3}')
 
+    auth_base_uri_pkce = ('https://server.example.com/authorize?response_type={0}'
+                     '&client_id=s6BhdRkqt3&redirect_uri=https%3A%2F%2F'
+                     'client.example.com%2Fcb&scope={1}&state={2}{3}&code_challenge={4}'
+                     '&code_challenge_method={5}')
+
     auth_grant_uri = auth_base_uri.format('code', 'photos', state, '')
+    auth_grant_uri_pkce = auth_base_uri_pkce.format('code', 'photos', state, '', 'code_challenge',
+                                                    'code_challenge_method')
     auth_grant_uri_list_scope = auth_base_uri.format('code', 'list+of+scopes', state, '')
     auth_implicit_uri = auth_base_uri.format('token', 'photos', state, '&extra=extra')
     auth_implicit_uri_list_scope = auth_base_uri.format('token', 'list+of+scopes', state, '&extra=extra')
@@ -47,11 +57,21 @@ class ParameterTests(TestCase):
         'code': 'SplxlOBeZQQYbYS6WxSbIA',
         'redirect_uri': 'https://client.example.com/cb'
     }
+    grant_body_pkce = {
+        'grant_type': 'authorization_code',
+        'code': 'SplxlOBeZQQYbYS6WxSbIA',
+        'redirect_uri': 'https://client.example.com/cb',
+        'code_verifier': 'code_verifier'
+    }
     grant_body_scope = {'scope': 'photos'}
     grant_body_list_scope = {'scope': list_scope}
     auth_grant_body = ('grant_type=authorization_code&'
                        'code=SplxlOBeZQQYbYS6WxSbIA&'
                        'redirect_uri=https%3A%2F%2Fclient.example.com%2Fcb')
+    auth_grant_body_pkce = ('grant_type=authorization_code&'
+                       'code=SplxlOBeZQQYbYS6WxSbIA&'
+                       'redirect_uri=https%3A%2F%2Fclient.example.com%2Fcb'
+                       '&code_verifier=code_verifier')
     auth_grant_body_scope = auth_grant_body + '&scope=photos'
     auth_grant_body_list_scope = auth_grant_body + '&scope=list+of+scopes'
 
@@ -179,12 +199,14 @@ class ParameterTests(TestCase):
         self.assertURLEqual(prepare_grant_uri(**self.auth_grant_list_scope), self.auth_grant_uri_list_scope)
         self.assertURLEqual(prepare_grant_uri(**self.auth_implicit), self.auth_implicit_uri)
         self.assertURLEqual(prepare_grant_uri(**self.auth_implicit_list_scope), self.auth_implicit_uri_list_scope)
+        self.assertURLEqual(prepare_grant_uri(**self.auth_grant_pkce), self.auth_grant_uri_pkce)
 
     def test_prepare_token_request(self):
         """Verify correct access token request body construction."""
         self.assertFormBodyEqual(prepare_token_request(**self.grant_body), self.auth_grant_body)
         self.assertFormBodyEqual(prepare_token_request(**self.pwd_body), self.password_body)
         self.assertFormBodyEqual(prepare_token_request(**self.cred_grant), self.cred_body)
+        self.assertFormBodyEqual(prepare_token_request(**self.grant_body_pkce), self.auth_grant_body_pkce)
 
     def test_grant_response(self):
         """Verify correct parameter parsing and validation for auth code responses."""
