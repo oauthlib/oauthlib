@@ -67,6 +67,15 @@ class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
         self.assertIsNone(b)
         self.assertEqual(s, 302)
 
+    def test_id_token_contains_nonce(self):
+        token = {}
+        self.mock_validator.get_id_token.side_effect = None
+        self.mock_validator.get_id_token.return_value = None
+        token = self.auth.add_id_token(token, None, self.request)
+        assert self.mock_validator.finalize_id_token.call_count == 1
+        claims = self.mock_validator.finalize_id_token.call_args[0][0]
+        assert "nonce" in claims
+
 
 class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
 
