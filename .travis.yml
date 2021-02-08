@@ -1,22 +1,23 @@
 language: python
-python: 3.7
-dist: xenial
+python: 3.8
+dist: bionic
 cache: pip
 matrix:
   include:
-  - python: 3.5
-    env: TOXENV=py35
   - python: 3.6
     env: TOXENV=py36
   - python: 3.7
     env: TOXENV=py37
-  - python: 3.7
+  - python: 3.8
+    env: TOXENV=py38
+  - python: 3.8
     env: TOXENV=bandit
-  - python: pypy3.5
+  - python: pypy3
     env: TOXENV=pypy3
-install:
-- pip install -U setuptools
-- pip install tox coveralls
+before_install:
+  - python -m pip install --upgrade pip setuptools
+  - python -m pip install tox coveralls
+  - if [ "$TOXENV" == "pypy3" ]; then curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env ; fi
 script: tox
 after_success: COVERALLS_PARALLEL=true coveralls
 notifications:
