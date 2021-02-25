@@ -16,8 +16,8 @@ def fread(fn):
         return f.read()
 
 
-rsa_require = ['cryptography>=1.4.0']
-signedtoken_require = ['cryptography>=1.4.0', 'pyjwt>=1.6.0']
+rsa_require = ['cryptography>=3.0.0,<4']
+signedtoken_require = ['cryptography>=3.0.0,<4', 'pyjwt>=2.0.0,<3']
 signals_require = ['blinker>=1.4.0']
 
 setup(
@@ -34,7 +34,7 @@ setup(
     platforms='any',
     license='BSD',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     extras_require={
         'rsa': rsa_require,
         'signedtoken': signedtoken_require,
@@ -51,9 +51,9 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: Implementation',
         'Programming Language :: Python :: Implementation :: CPython',
