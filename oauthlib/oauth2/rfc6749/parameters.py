@@ -89,7 +89,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     return add_params_to_uri(uri, params)
 
 
-def prepare_token_request(grant_type, code_verifier=None, body='', include_client_id=True, **kwargs):
+def prepare_token_request(grant_type, body='', include_client_id=True, code_verifier=None, **kwargs):
     """Prepare the access token request.
 
     The client makes a request to the token endpoint by adding the

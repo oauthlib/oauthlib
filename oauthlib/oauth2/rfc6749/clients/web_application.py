@@ -100,8 +100,8 @@ class WebApplicationClient(Client):
                                  redirect_uri=redirect_uri, scope=scope, state=state, code_challenge=code_challenge,
                                  code_challenge_method=code_challenge_method, **kwargs)
 
-    def prepare_request_body(self, code=None, redirect_uri=None, code_verifier=None, body='',
-                             include_client_id=True, **kwargs):
+    def prepare_request_body(self, code=None, redirect_uri=None, body='',
+                             include_client_id=True, code_verifier=None, **kwargs):
         """Prepare the access token request body.
 
         The client makes a request to the token endpoint by adding the
@@ -115,9 +115,6 @@ class WebApplicationClient(Client):
                                 authorization request as described in `Section 4.1.1`_, and their
                                 values MUST be identical.
 
-        :param code_verifier: OPTIONAL. A cryptographically random string that is used to correlate the
-                                        authorization request to the token request.
-
         :param body: Existing request body (URL encoded string) to embed parameters
                      into. This may contain extra paramters. Default ''.
 
@@ -126,6 +123,9 @@ class WebApplicationClient(Client):
                                   if the client is not authenticating with the
                                   authorization server as described in `Section 3.2.1`_.
         :type include_client_id: Boolean
+
+        :param code_verifier: OPTIONAL. A cryptographically random string that is used to correlate the
+                                        authorization request to the token request.
 
         :param kwargs: Extra parameters to include in the token request.
 
@@ -169,8 +169,8 @@ class WebApplicationClient(Client):
 
         kwargs['client_id'] = self.client_id
         kwargs['include_client_id'] = include_client_id
-        return prepare_token_request(self.grant_type, code=code, code_verifier=code_verifier,
-                                     body=body, redirect_uri=redirect_uri, **kwargs)
+        return prepare_token_request(self.grant_type, code=code, body=body,
+                                     redirect_uri=redirect_uri, code_verifier=code_verifier, **kwargs)
 
     def parse_request_uri_response(self, uri, state=None):
         """Parse the URI query for code and state.
