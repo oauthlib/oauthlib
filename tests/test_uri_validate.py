@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import oauthlib
-
 from oauthlib.uri_validate import is_absolute_uri
-import re
 
 from tests.unittest import TestCase
 
