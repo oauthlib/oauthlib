@@ -8,6 +8,5 @@ from .dispatchers import (
     AuthorizationCodeGrantDispatcher, AuthorizationTokenGrantDispatcher,
     ImplicitTokenGrantDispatcher,
 )
-from .exceptions import OIDCNoPrompt
 from .hybrid import HybridGrant
 from .implicit import ImplicitGrant
