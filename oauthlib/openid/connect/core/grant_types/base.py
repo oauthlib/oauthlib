@@ -8,7 +8,6 @@ from oauthlib.oauth2.rfc6749.errors import (
     ConsentRequired, InvalidRequestError, LoginRequired,
 )
 
-from .exceptions import OIDCNoPrompt
 
 log = logging.getLogger(__name__)
 
@@ -33,13 +32,7 @@ class GrantTypeBase:
 
         :returns: (list of scopes, dict of request info)
         """
-        # If request.prompt is 'none' then no login/authorization form should
-        # be presented to the user. Instead, a silent login/authorization
-        # should be performed.
-        if request.prompt == 'none':
-            raise OIDCNoPrompt()
-        else:
-            return self.proxy_target.validate_authorization_request(request)
+        return self.proxy_target.validate_authorization_request(request)
 
     def _inflate_claims(self, request):
         # this may be called multiple times in a single request so make sure we only de-serialize the claims once
