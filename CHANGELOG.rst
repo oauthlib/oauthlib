@@ -16,6 +16,9 @@ OAuth2.0 Client - Bugfixes
     constructor.
   * #725: LegacyApplicationClient.prepare_request_body now correctly uses the default `scope` provided in constructor
 
+OAuth2.0 Provider - Bugfixes
+  * #756: Different prompt values are now handled according to spec
+
 3.1.0 (2019-08-06)
 ------------------
 OAuth2.0 Provider - Features

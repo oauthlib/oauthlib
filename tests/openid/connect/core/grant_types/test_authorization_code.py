@@ -3,11 +3,13 @@ import json
 from unittest import mock
 
 from oauthlib.common import Request
+from oauthlib.oauth2.rfc6749.errors import (
+    ConsentRequired, InvalidRequestError, LoginRequired,
+)
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types.authorization_code import (
     AuthorizationCodeGrant,
 )
-from oauthlib.openid.connect.core.grant_types.exceptions import OIDCNoPrompt
 
 from tests.oauth2.rfc6749.grant_types.test_authorization_code import (
     AuthorizationCodeGrantTest,
@@ -77,11 +79,7 @@ class OpenIDAuthCodeTest(TestCase):
     @mock.patch('oauthlib.common.generate_token')
     def test_no_prompt_authorization(self, generate_token):
         generate_token.return_value = 'abc'
-        scope, info = self.auth.validate_authorization_request(self.request)
         self.request.prompt = 'none'
-        self.assertRaises(OIDCNoPrompt,
-                          self.auth.validate_authorization_request,
-                          self.request)
 
         bearer = BearerToken(self.mock_validator)
 
@@ -92,7 +90,7 @@ class OpenIDAuthCodeTest(TestCase):
         self.assertIsNone(b)
         self.assertEqual(s, 302)
 
-        # Test alernative response modes
+        # Test alternative response modes
         self.request.response_mode = 'fragment'
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], self.url_fragment, parse_fragment=True)
@@ -100,19 +98,59 @@ class OpenIDAuthCodeTest(TestCase):
         # Ensure silent authentication and authorization is done
         self.mock_validator.validate_silent_login.return_value = False
         self.mock_validator.validate_silent_authorization.return_value = True
+        self.assertRaises(LoginRequired,
+                          self.auth.validate_authorization_request,
+                          self.request)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=login_required', h['Location'])
 
         self.mock_validator.validate_silent_login.return_value = True
         self.mock_validator.validate_silent_authorization.return_value = False
+        self.assertRaises(ConsentRequired,
+                          self.auth.validate_authorization_request,
+                          self.request)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=consent_required', h['Location'])
 
         # ID token hint must match logged in user
         self.mock_validator.validate_silent_authorization.return_value = True
         self.mock_validator.validate_user_match.return_value = False
+        self.assertRaises(LoginRequired,
+                          self.auth.validate_authorization_request,
+                          self.request)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=login_required', h['Location'])
+
+    def test_none_multi_prompt(self):
+        bearer = BearerToken(self.mock_validator)
+
+        self.request.prompt = 'none login'
+        self.assertRaises(InvalidRequestError,
+                          self.auth.validate_authorization_request,
+                          self.request)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertIn('error=invalid_request', h['Location'])
+
+        self.request.prompt = 'none consent'
+        self.assertRaises(InvalidRequestError,
+                          self.auth.validate_authorization_request,
+                          self.request)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertIn('error=invalid_request', h['Location'])
+
+        self.request.prompt = 'none select_account'
+        self.assertRaises(InvalidRequestError,
+                          self.auth.validate_authorization_request,
+                          self.request)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertIn('error=invalid_request', h['Location'])
+
+        self.request.prompt = 'consent none login'
+        self.assertRaises(InvalidRequestError,
+                          self.auth.validate_authorization_request,
+                          self.request)
+        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertIn('error=invalid_request', h['Location'])
 
     def set_scopes(self, client_id, code, client, request):
         request.scopes = self.request.scopes
