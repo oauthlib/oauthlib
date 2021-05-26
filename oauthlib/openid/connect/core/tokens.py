@@ -46,8 +46,9 @@ class JWTToken(TokenBase):
             token, request.scopes, request)
 
     def estimate_type(self, request):
-        token = request.headers.get('Authorization', '')[7:]
-        if token.startswith('ey') and token.count('.') in (2, 4):
-            return 10
-        else:
-            return 0
+        split_header = request.headers.get('Authorization').split()
+        if len(split_header) == 2 and split_header[0].lower() == 'bearer':
+            token = split_header[1]
+            if token.startswith('ey') and token.count('.') in (2, 4):
+                return 10
+        return 0
