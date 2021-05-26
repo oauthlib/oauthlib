@@ -76,6 +76,32 @@ class JWTTokenTestCase(TestCase):
                                                                                      request.scopes,
                                                                                      request)
 
+    def test_validate_request_token_from_headers_basic(self):
+        """
+        Wrong kind of token (Basic) retrieved from headers. Confirm token is not parsed.
+        """
+
+        with mock.patch('oauthlib.common.Request', autospec=True) as RequestMock, \
+                mock.patch('oauthlib.openid.RequestValidator',
+                           autospec=True) as RequestValidatorMock:
+            request_validator_mock = RequestValidatorMock()
+
+            token = JWTToken(request_validator=request_validator_mock)
+
+            request = RequestMock('/uri')
+            # Scopes is retrieved using the __call__ method which is not picked up correctly by mock.patch
+            # with autospec=True
+            request.scopes = mock.MagicMock()
+            request.headers = {
+                'Authorization': 'Basic some-token-from-header'
+            }
+
+            token.validate_request(request=request)
+
+            request_validator_mock.validate_jwt_bearer_token.assert_called_once_with(None,
+                                                                                     request.scopes,
+                                                                                     request)
+
     def test_validate_token_from_request(self):
         """
         Token get retrieved from request object.
