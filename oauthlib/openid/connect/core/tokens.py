@@ -37,7 +37,9 @@ class JWTToken(TokenBase):
     def validate_request(self, request):
         token = None
         if 'Authorization' in request.headers:
-            token = request.headers.get('Authorization')[7:]
+            split_header = request.headers.get('Authorization').split()
+            if len(split_header) == 2 and split_header[0].lower() == 'bearer':
+                token = split_header[1]
         else:
             token = request.access_token
         return self.request_validator.validate_jwt_bearer_token(
