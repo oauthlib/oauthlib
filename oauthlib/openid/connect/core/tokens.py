@@ -4,7 +4,7 @@ authlib.openid.connect.core.tokens
 
 This module contains methods for adding JWT tokens to requests.
 """
-from oauthlib.oauth2.rfc6749.tokens import TokenBase, random_token_generator
+from oauthlib.oauth2.rfc6749.tokens import TokenBase, random_token_generator, get_token_from_header
 
 
 class JWTToken(TokenBase):
@@ -35,20 +35,12 @@ class JWTToken(TokenBase):
         return self.request_validator.get_jwt_bearer_token(None, None, request)
 
     def validate_request(self, request):
-        token = None
-        if 'Authorization' in request.headers:
-            split_header = request.headers.get('Authorization').split()
-            if len(split_header) == 2 and split_header[0].lower() == 'bearer':
-                token = split_header[1]
-        else:
-            token = request.access_token
+        token = get_token_from_header(request)
         return self.request_validator.validate_jwt_bearer_token(
             token, request.scopes, request)
 
     def estimate_type(self, request):
-        split_header = request.headers.get('Authorization').split()
-        if len(split_header) == 2 and split_header[0].lower() == 'bearer':
-            token = split_header[1]
-            if token.startswith('ey') and token.count('.') in (2, 4):
-                return 10
+        token = get_token_from_header(request)
+        if token and token.startswith('ey') and token.count('.') in (2, 4):
+            return 10
         return 0
