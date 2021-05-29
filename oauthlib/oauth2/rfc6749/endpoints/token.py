@@ -36,7 +36,6 @@ class TokenEndpoint(BaseEndpoint):
         https://example.com/path?query=component             # OK
         https://example.com/path?query=component#fragment    # Not OK
 
-    Since requests to the authorization endpoint result in user
     Since requests to the token endpoint result in the transmission of
     clear-text credentials (in the HTTP request and response), the
     authorization server MUST require the use of TLS as described in

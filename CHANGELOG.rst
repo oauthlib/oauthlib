@@ -3,6 +3,10 @@ Changelog
 
 3.1.1 (TBD)
 ------------------
+OAuth2.0 Provider - Bugfixes
+
+  * #753: Fix acceptance of valid IPv6 addresses in URI validation
+
 OAuth2.0 Client - Bugfixes
 
   * #730: Base OAuth2 Client now has a consistent way of managing the `scope`: it consistently
