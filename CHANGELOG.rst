@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.1.1 (TBD)
+3.1.1 (2021-05-31)
 ------------------
 OAuth2.0 Provider - Bugfixes
 
@@ -21,7 +21,18 @@ OAuth2.0 Client - Bugfixes
   * #725: LegacyApplicationClient.prepare_request_body now correctly uses the default `scope` provided in constructor
 
 OAuth2.0 Provider - Bugfixes
-  * #756: Different prompt values are now handled according to spec
+  * #711: client_credentials grant: fix log message
+  * #746: OpenID Connect Hybrid - fix nonce not passed to add_id_token
+  * #756: Different prompt values are now handled according to spec (e.g. prompt=none)
+  * #759: OpenID Connect - fix Authorization: Basic parsing
+
+General
+  * #716: improved skeleton validator for public vs private client
+  * #720: replace mock library with standard unittest.mock
+  * #727: build isort integration
+  * #734: python2 code removal
+  * #735, #750: add python3.8 support
+  * #749: bump minimum versions of pyjwt and cryptography 
 
 3.1.0 (2019-08-06)
 ------------------
