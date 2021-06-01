@@ -27,20 +27,20 @@ notifications:
     on_failure: always
     on_start: never
 deploy:
-  - provider: pypi
-    user: JonathanHuot
-    password:
-      secure: "OozNM16flVLvqDoNzmoTENchhS1w0/dEJZvXBQK2KWmh8fyGj2UZus1vkl6bA5V3Yu9MZLYFpDcltl/qraY3Up6iXQpwKz4q+ICygAudYM2kJ5l8ZEe+wy2FikWbD6LkXf5uKIJJnPNSC8AI86ZyxM/XZxbYjj/+jXyJ1YFZwwQ="
-    distributions: sdist bdist_wheel
+  - provider: releases
+    api_key:
+      secure: "eqEWOzKWZCuvd1a77CA03OX/HCrsYlsu1/Sz/RhXQIEhKz6tKp10KGw9zr57bHAIl0OfJFK9k63lI2HOctAmwkKeeQ4HdNqw4pHFa8Gk3liGp31KSmshVtHX8Rtn0DuFA028Wm7w5n+fOVc8tJVU/UsKjsfsAzRHnQjMamckoXU="
+    skip_cleanup: true
     on:
       tags: true
       all_branches: true
       condition: $TOXENV = py36
       repo: oauthlib/oauthlib
-  - provider: releases
-    api_key:
-      secure: "eqEWOzKWZCuvd1a77CA03OX/HCrsYlsu1/Sz/RhXQIEhKz6tKp10KGw9zr57bHAIl0OfJFK9k63lI2HOctAmwkKeeQ4HdNqw4pHFa8Gk3liGp31KSmshVtHX8Rtn0DuFA028Wm7w5n+fOVc8tJVU/UsKjsfsAzRHnQjMamckoXU="
-    skip_cleanup: true
+  - provider: pypi
+    user: JonathanHuot
+    password:
+      secure: "OozNM16flVLvqDoNzmoTENchhS1w0/dEJZvXBQK2KWmh8fyGj2UZus1vkl6bA5V3Yu9MZLYFpDcltl/qraY3Up6iXQpwKz4q+ICygAudYM2kJ5l8ZEe+wy2FikWbD6LkXf5uKIJJnPNSC8AI86ZyxM/XZxbYjj/+jXyJ1YFZwwQ="
+    distributions: sdist bdist_wheel
     on:
       tags: true
       all_branches: true
