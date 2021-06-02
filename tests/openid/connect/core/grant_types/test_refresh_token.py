@@ -60,9 +60,12 @@ class OpenIDRefreshTokenTest(TestCase):
         self.assertIn('token_type', token)
         self.assertIn('expires_in', token)
         self.assertEqual(token['scope'], 'hello openid')
+        self.mock_validator.refresh_id_token.assert_called_once_with(
+            self.request
+        )
 
     def test_refresh_id_token_false(self):
-        self.auth.refresh_id_token = False
+        self.mock_validator.refresh_id_token.return_value = False
         self.mock_validator.get_original_scopes.return_value = [
             'hello', 'openid'
         ]
@@ -80,6 +83,9 @@ class OpenIDRefreshTokenTest(TestCase):
         self.assertIn('expires_in', token)
         self.assertEqual(token['scope'], 'hello openid')
         self.assertNotIn('id_token', token)
+        self.mock_validator.refresh_id_token.assert_called_once_with(
+            self.request
+        )
 
     def test_refresh_token_without_openid_scope(self):
         self.request.scope = "hello"
