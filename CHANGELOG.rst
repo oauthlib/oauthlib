@@ -7,6 +7,9 @@ OAuth2.0 Provider - Bugfixes
 
   * #753: Fix acceptance of valid IPv6 addresses in URI validation
 
+OAuth2.0 Provider - Features
+  * #751: OIDC add support of refreshing ID Tokens
+
 OAuth2.0 Client - Bugfixes
 
   * #730: Base OAuth2 Client now has a consistent way of managing the `scope`: it consistently
@@ -25,6 +28,8 @@ OAuth2.0 Provider - Bugfixes
   * #746: OpenID Connect Hybrid - fix nonce not passed to add_id_token
   * #756: Different prompt values are now handled according to spec (e.g. prompt=none)
   * #759: OpenID Connect - fix Authorization: Basic parsing
+  * #751: The RefreshTokenGrant modifiers now take the same arguments as the
+    AuthorizationCodeGrant modifiers (`token`, `token_handler`, `request`).
 
 General
   * #716: improved skeleton validator for public vs private client
