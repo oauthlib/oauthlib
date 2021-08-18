@@ -272,6 +272,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         grant = self.create_authorization_code(request)
         for modifier in self._code_modifiers:
             grant = modifier(grant, token_handler, request)
+        if 'access_token' in grant:
+            self.request_validator.save_token(grant, request)
         log.debug('Saving grant %r for %r.', grant, request)
         self.request_validator.save_authorization_code(
             request.client_id, grant, request)

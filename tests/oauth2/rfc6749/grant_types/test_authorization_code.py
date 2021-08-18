@@ -324,3 +324,18 @@ class AuthorizationCodeGrantTest(TestCase):
             authorization_code.code_challenge_method_s256("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
                                                           "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
         )
+
+    def test_code_modifier_called(self):
+        bearer = BearerToken(self.mock_validator)
+        code_modifier = mock.MagicMock(wraps=lambda grant, *a: grant)
+        self.auth.register_code_modifier(code_modifier)
+        self.auth.create_authorization_response(self.request, bearer)
+        code_modifier.assert_called_once()
+
+    def test_hybrid_token_save(self):
+        bearer = BearerToken(self.mock_validator)
+        self.auth.register_code_modifier(
+            lambda grant, *a: dict(list(grant.items()) + [('access_token', 1)])
+        )
+        self.auth.create_authorization_response(self.request, bearer)
+        self.mock_validator.save_token.assert_called_once()
