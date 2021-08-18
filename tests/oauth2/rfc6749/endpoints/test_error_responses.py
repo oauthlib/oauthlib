@@ -178,21 +178,21 @@ class ErrorResponseTest(TestCase):
         description = 'Duplicate client_id parameter.'
 
         # Authorization code
-        self.assertRaisesRegexp(errors.InvalidRequestFatalError,
+        self.assertRaisesRegex(errors.InvalidRequestFatalError,
                               description,
                               self.web.validate_authorization_request,
                               uri.format('code'))
-        self.assertRaisesRegexp(errors.InvalidRequestFatalError,
+        self.assertRaisesRegex(errors.InvalidRequestFatalError,
                               description,
                               self.web.create_authorization_response,
                               uri.format('code'), scopes=['foo'])
 
         # Implicit grant
-        self.assertRaisesRegexp(errors.InvalidRequestFatalError,
+        self.assertRaisesRegex(errors.InvalidRequestFatalError,
                               description,
                               self.mobile.validate_authorization_request,
                               uri.format('token'))
-        self.assertRaisesRegexp(errors.InvalidRequestFatalError,
+        self.assertRaisesRegex(errors.InvalidRequestFatalError,
                               description,
                               self.mobile.create_authorization_response,
                               uri.format('token'), scopes=['foo'])
