@@ -16,8 +16,8 @@ def fread(fn):
         return f.read()
 
 
-rsa_require = ['cryptography>=3.0.0,<4']
-signedtoken_require = ['cryptography>=3.0.0,<4', 'pyjwt>=2.0.0,<3']
+rsa_require = ['cryptography>=3.0.0']
+signedtoken_require = ['cryptography>=3.0.0', 'pyjwt>=2.0.0,<3']
 signals_require = ['blinker>=1.4.0']
 
 setup(
