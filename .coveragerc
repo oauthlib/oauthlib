@@ -1,7 +1,6 @@
 [run]
 branch = 1
 cover_pylib = 0
-include=*oauthlib/*
 omit = oauthlib.tests.*
 
 [report]
