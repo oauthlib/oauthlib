@@ -301,3 +301,27 @@ class ClientTest(TestCase):
         self.assertEqual(u, url)
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope={}&refresh_token={}'.format(scope, token))
+
+    def test_parse_token_response_invalid_expires_at(self):
+        token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
+                      '    "token_type":"example",'
+                      '    "expires_at":"2006-01-02T15:04:05Z",'
+                      '    "scope":"/profile",'
+                      '    "example_parameter":"example_value"}')
+        token = {
+            "access_token": "2YotnFZFEjr1zCsicMWpAA",
+            "token_type": "example",
+            "expires_at": "2006-01-02T15:04:05Z",
+            "scope": ["/profile"],
+            "example_parameter": "example_value"
+        }
+
+        client = Client(self.client_id)
+
+        # Parse code and state
+        response = client.parse_request_body_response(token_json, scope=["/profile"])
+        self.assertEqual(response, token)
+        self.assertEqual(None, client._expires_at)
+        self.assertEqual(client.access_token, response.get("access_token"))
+        self.assertEqual(client.refresh_token, response.get("refresh_token"))
+        self.assertEqual(client.token_type, response.get("token_type"))
