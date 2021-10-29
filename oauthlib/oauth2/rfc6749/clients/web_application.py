@@ -62,10 +62,11 @@ class WebApplicationClient(Client):
                         to the client.  The parameter SHOULD be used for preventing
                         cross-site request forgery as described in `Section 10.12`_.
 
-        :param code_challenge: OPTIONAL. A challenge derived from the code verifier that is sent in the
-                               authorization request, to be verified against later.
+        :param code_challenge: OPTIONAL. PKCE parameter. REQUIRED if PKCE is enforced. 
+                        A challenge derived from the code_verifier that is sent in the 
+                        authorization request, to be verified against later.
 
-        :param code_challenge_method: OPTIONAL. A method that was used to derive code challenge.
+        :param code_challenge_method: OPTIONAL. PKCE parameter. A method that was used to derive code challenge.
                                       Defaults to "plain" if not present in the request.
 
         :param kwargs:  Extra arguments to include in the request URI.

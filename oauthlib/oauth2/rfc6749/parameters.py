@@ -124,7 +124,7 @@ def prepare_token_request(grant_type, body='', include_client_id=True, code_veri
                          authorization request as described in
                          `Section 4.1.1`_, and their values MUST be identical. *
 
-    :param code_verifier: A cryptographically random string that is used to correlate the
+    :param code_verifier: PKCE parameter. A cryptographically random string that is used to correlate the
                           authorization request to the token request.
 
     :param kwargs: Extra arguments to embed in the request body.
