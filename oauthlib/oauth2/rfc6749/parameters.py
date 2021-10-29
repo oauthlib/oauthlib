@@ -45,10 +45,11 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
                   back to the client.  The parameter SHOULD be used for
                   preventing cross-site request forgery as described in
                   `Section 10.12`_.
-    :param code_challenge: A challenge derived from the code verifier that is sent in the
-                           authorization request, to be verified against later.
-    :param code_challenge_method: A method that was used to derive code challenge.
-                                  Defaults to "plain" if not present in the request.
+    :param code_challenge: PKCE paramater. A challenge derived from the 
+                           code_verifier that is sent in the authorization 
+                           request, to be verified against later.
+    :param code_challenge_method: PKCE parameter. A method that was used to derive the 
+                                  code_challenge. Defaults to "plain" if not present in the request.
     :param kwargs: Extra arguments to embed in the grant/authorization URL.
 
     An example of an authorization code grant authorization URL:

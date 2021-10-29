@@ -103,13 +103,13 @@ class Client:
         :param state_generator: A no argument state generation callable. Defaults
         to :py:meth:`oauthlib.common.generate_token`.
 
-        :param code_verifier: A cryptographically random string that is used to correlate the
+        :param code_verifier: PKCE parameter. A cryptographically random string that is used to correlate the
         authorization request to the token request.
 
-        :param code_challenge: A challenge derived from the code verifier that is sent in the
+        :param code_challenge: PKCE parameter. A challenge derived from the code verifier that is sent in the
         authorization request, to be verified against later.
 
-        :param code_challenge_method: A method that was used to derive code challenge.
+        :param code_challenge_method: PKCE parameter. A method that was used to derive code challenge.
         Defaults to "plain" if not present in the request.
         """
 
