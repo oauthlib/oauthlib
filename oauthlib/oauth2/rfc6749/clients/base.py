@@ -512,8 +512,7 @@ class Client:
         if not length <= 128:
             raise ValueError("Length must be less than or equal to 128")
 
-        allowed_characters = r'[^a-z0-9\-\.\_\~]'
-
+        allowed_characters = re.compile('^[A-Zaa-z0-9-._~]')
         code_verifier = secrets.token_urlsafe(length)
 
         if not re.search(allowed_characters, code_verifier):
