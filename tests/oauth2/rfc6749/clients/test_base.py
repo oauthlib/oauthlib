@@ -325,3 +325,16 @@ class ClientTest(TestCase):
         self.assertEqual(client.access_token, response.get("access_token"))
         self.assertEqual(client.refresh_token, response.get("refresh_token"))
         self.assertEqual(client.token_type, response.get("token_type"))
+
+
+    def test_create_code_verifier_min_length(self):
+        client = Client(self.client_id)
+        length = 43
+        code_verifier = client.create_code_verifier(length=length)
+        self.assertEqual(client.code_verifier, code_verifier)
+
+    def test_create_code_verifier_max_length(self):
+        client = Client(self.client_id)
+        length = 128
+        code_verifier = client.create_code_verifier(length=length)
+        self.assertEqual(client.code_verifier, code_verifier)
