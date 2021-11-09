@@ -569,6 +569,8 @@ class Client:
             h.update(code_verifier.encode(encoding='ascii'))
             sha256_val = h.digest()
             code_challenge = bytes.decode(base64.urlsafe_b64encode(sha256_val))
+            # replace '+' with '-', '/' with '_', and remove trailing '='
+            code_challenge = code_challenge.replace("+", "-").replace("/", "_").replace("=", "")
             self.code_challenge = code_challenge
 
         return code_challenge
