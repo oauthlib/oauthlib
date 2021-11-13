@@ -87,7 +87,7 @@ class IntrospectEndpointTest(TestCase):
             'Content-Type': 'application/json',
             'Cache-Control': 'no-store',
             'Pragma': 'no-cache',
-            "WWW-Authenticate": 'Bearer, error="invalid_client"'
+            "WWW-Authenticate": 'Bearer error="invalid_client"'
         })
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
@@ -115,7 +115,7 @@ class IntrospectEndpointTest(TestCase):
             'Content-Type': 'application/json',
             'Cache-Control': 'no-store',
             'Pragma': 'no-cache',
-            "WWW-Authenticate": 'Bearer, error="invalid_client"'
+            "WWW-Authenticate": 'Bearer error="invalid_client"'
         })
         self.assertEqual(loads(b)['error'], 'invalid_client')
         self.assertEqual(s, 401)
