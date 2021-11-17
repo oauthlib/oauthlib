@@ -46,3 +46,6 @@ class RequestValidatorTest(TestCase):
         self.assertRaises(NotImplementedError, v.validate_user,
                 'username', 'password', 'client', 'request')
         self.assertTrue(v.client_authentication_required('r'))
+        self.assertFalse(
+            v.is_origin_allowed('client_id', 'https://foo.bar', 'r')
+        )
