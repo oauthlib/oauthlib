@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from oauthlib.oauth2 import MetadataEndpoint, Server, TokenEndpoint
 
+import json
 from tests.unittest import TestCase
 
 
@@ -36,6 +37,20 @@ class MetadataEndpointTest(TestCase):
 
         self.maxDiff = None
         self.assertEqual(openid_claims, oauth2_claims)
+
+    def test_create_metadata_response(self):
+        endpoint = TokenEndpoint(None, None, grant_types={"password": None})
+        metadata = MetadataEndpoint([endpoint], {
+            "issuer": 'https://foo.bar',
+            "token_endpoint": "https://foo.bar/token"
+        })
+        headers, body, status = metadata.create_metadata_response('/', 'GET')
+        assert headers == {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+        }
+        claims = json.loads(body)
+        assert claims['issuer'] == 'https://foo.bar'
 
     def test_token_endpoint(self):
         endpoint = TokenEndpoint(None, None, grant_types={"password": None})
