@@ -118,7 +118,7 @@ Install from GitHub
 -------------------
 
 Alternatively, install it directly from the source repository on
-GitHub.  This is the "bleading edge" version, but it may be useful for
+GitHub.  This is the "bleeding edge" version, but it may be useful for
 accessing bug fixes and/or new features that have not been released.
 
 Standard install
