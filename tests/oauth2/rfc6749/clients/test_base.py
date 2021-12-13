@@ -325,3 +325,31 @@ class ClientTest(TestCase):
         self.assertEqual(client.access_token, response.get("access_token"))
         self.assertEqual(client.refresh_token, response.get("refresh_token"))
         self.assertEqual(client.token_type, response.get("token_type"))
+
+
+    def test_create_code_verifier_min_length(self):
+        client = Client(self.client_id)
+        length = 43
+        code_verifier = client.create_code_verifier(length=length)
+        self.assertEqual(client.code_verifier, code_verifier)
+
+    def test_create_code_verifier_max_length(self):
+        client = Client(self.client_id)
+        length = 128
+        code_verifier = client.create_code_verifier(length=length)
+        self.assertEqual(client.code_verifier, code_verifier)
+
+    def test_create_code_challenge_plain(self):
+        client = Client(self.client_id)
+        code_verifier = client.create_code_verifier(length=128)
+        code_challenge_plain = client.create_code_challenge(code_verifier=code_verifier)
+
+        # if no code_challenge_method specified, code_challenge = code_verifier
+        self.assertEqual(code_challenge_plain, client.code_verifier)
+        self.assertEqual(client.code_challenge_method, "plain")
+
+    def test_create_code_challenge_s256(self):
+        client = Client(self.client_id)
+        code_verifier = client.create_code_verifier(length=128)
+        code_challenge_s256 = client.create_code_challenge(code_verifier=code_verifier, code_challenge_method='S256')
+        self.assertEqual(code_challenge_s256, client.code_challenge)
