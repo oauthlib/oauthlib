@@ -8,7 +8,10 @@ for consuming and providing OAuth 2.0 Device Authorization RFC8628.
 """
 
 from oauthlib.oauth2 import BackendApplicationClient, Client
+from oauthlib.oauth2.rfc6749.errors import InsecureTransportError
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_request
+from oauthlib.oauth2.rfc6749.utils import is_secure_transport, list_to_scope
+from oauthlib.common import add_params_to_uri
 
 
 class DeviceClient(Client):
@@ -26,6 +29,29 @@ class DeviceClient(Client):
     """
 
     grant_type = 'urn:ietf:params:oauth:grant-type:device_code'
+
+    def __init__(self, client_id, **kwargs):
+        super().__init__(client_id, **kwargs)
+        self.client_secret = kwargs.get('client_secret')
+
+    def prepare_request_uri(self, uri, scope=None, **kwargs):
+        if not is_secure_transport(uri):
+            raise InsecureTransportError()
+
+        scope = self.scope if scope is None else scope
+        params = [(('client_id', self.client_id)), (('grant_type', self.grant_type))]
+
+        if self.client_secret is not None:
+            params.append(('client_secret', self.client_secret))
+
+        if scope:
+            params.append(('scope', list_to_scope(scope)))
+
+        for k in kwargs:
+            if kwargs[k]:
+                params.append((str(k), kwargs[k]))
+
+        return add_params_to_uri(uri, params)
 
     def prepare_request_body(self, device_code, body='', scope=None,
                              include_client_id=False, **kwargs):
