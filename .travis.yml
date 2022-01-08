@@ -14,6 +14,7 @@ matrix:
     env: TOXENV=py39
   - python: "3.10"
     env: TOXENV=py310
+    dist: focal
   - python: "3.11-dev"
     env: TOXENV=py311
   - python: "pypy3"
