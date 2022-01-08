@@ -18,6 +18,8 @@ matrix:
     env: TOXENV=py311
   - python: "pypy3"
     env: TOXENV=pypy3
+  allow_failures:
+  - python: "3.11-dev"
 before_install:
   - python -m pip install --upgrade pip setuptools
   - python -m pip install tox coveralls
