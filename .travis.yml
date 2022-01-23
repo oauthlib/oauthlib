@@ -12,7 +12,7 @@ matrix:
     env: TOXENV=py38,bandit,docs,readme
   - python: "3.9"
     env: TOXENV=py39
-  - python: "3.10.1"
+  - python: "3.10.2"
     env: TOXENV=py310
   - python: "3.11-dev"
     env: TOXENV=py311
