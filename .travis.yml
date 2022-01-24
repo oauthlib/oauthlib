@@ -1,8 +1,9 @@
 language: python
 python: 3.8
+os: linux
 dist: bionic
 cache: pip
-matrix:
+jobs:
   include:
   - python: "3.6"
     env: TOXENV=py36
@@ -12,7 +13,7 @@ matrix:
     env: TOXENV=py38,bandit,docs,readme
   - python: "3.9"
     env: TOXENV=py39
-  - python: "3.10.1"
+  - python: "3.10.2"
     env: TOXENV=py310
   - python: "3.11-dev"
     env: TOXENV=py311
@@ -36,7 +37,7 @@ notifications:
     on_start: never
 deploy:
   - provider: releases
-    api_key:
+    token:
       secure: "eqEWOzKWZCuvd1a77CA03OX/HCrsYlsu1/Sz/RhXQIEhKz6tKp10KGw9zr57bHAIl0OfJFK9k63lI2HOctAmwkKeeQ4HdNqw4pHFa8Gk3liGp31KSmshVtHX8Rtn0DuFA028Wm7w5n+fOVc8tJVU/UsKjsfsAzRHnQjMamckoXU="
     skip_cleanup: true
     on:
@@ -45,7 +46,7 @@ deploy:
       condition: $TOXENV = py36
       repo: oauthlib/oauthlib
   - provider: pypi
-    user: JonathanHuot
+    username: JonathanHuot
     password:
       secure: "OozNM16flVLvqDoNzmoTENchhS1w0/dEJZvXBQK2KWmh8fyGj2UZus1vkl6bA5V3Yu9MZLYFpDcltl/qraY3Up6iXQpwKz4q+ICygAudYM2kJ5l8ZEe+wy2FikWbD6LkXf5uKIJJnPNSC8AI86ZyxM/XZxbYjj/+jXyJ1YFZwwQ="
     distributions: sdist bdist_wheel
