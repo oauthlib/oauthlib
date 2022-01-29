@@ -1,6 +1,12 @@
 Changelog
 =========
 
+3.2.0 (TBD)
+------------------
+
+In Progress
+
+
 3.1.1 (2021-05-31)
 ------------------
 OAuth2.0 Provider - Bugfixes
