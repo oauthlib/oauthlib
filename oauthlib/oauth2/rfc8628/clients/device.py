@@ -79,7 +79,7 @@ class DeviceClient(Client):
         the ``grant_type`` parameter set to
         ``urn:ietf:params:oauth:grant-type:device_code``::
 
-            >>> from oauthlib.oauth2 import BackendApplicationClient
+            >>> from oauthlib.oauth2 import DeviceClient
             >>> client = DeviceClient('your_id', 'your_code')
             >>> client.prepare_request_body(scope=['hello', 'world'])
             'grant_type=urn:ietf:params:oauth:grant-type:device_code&scope=hello+world'

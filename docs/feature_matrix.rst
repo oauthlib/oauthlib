@@ -1,8 +1,8 @@
-Supported features and platforms
-================================
+Features and platforms
+======================
 
-Features
---------
+.. contents::
+   :local:
 
 OAuth 1.0a
 ..........
@@ -39,16 +39,16 @@ OAuth 2.0 client and provider support for:
 - `RFC 6749 section-6`_: Refresh Tokens
 - `RFC 6750`_: Bearer Tokens
 - `RFC 7009`_: Token Revocation
+- `RFC 7636`_: Proof Key for Code Exchange by OAuth Public Clients (PKCE)
+- `RFC 8628`_: OAuth2.0 Device Authorization Grant
 - `RFC Draft`_ Message Authentication Code (MAC) Tokens
+
+Partial implementations (any help/PR are welcomed to complete the list):
+
 - OAuth2.0 Provider: `OpenID Connect Core`_
-- OAuth2.0 Provider: `RFC 7636`_: Proof Key for Code Exchange by OAuth Public Clients (PKCE)
 - OAuth2.0 Provider: `RFC 7662`_: Token Introspection
 - OAuth2.0 Provider: `RFC 8414`_: Authorization Server Metadata
-
-Features to be implemented (any help/PR are welcomed):
-
 - OAuth2.0 **Client**: `OpenID Connect Core`_
-- OAuth2.0 **Client**: `RFC 7636`_: Proof Key for Code Exchange by OAuth Public Clients (PKCE)
 - OAuth2.0 **Client**: `RFC 7662`_: Token Introspection
 - OAuth2.0 **Client**: `RFC 8414`_: Authorization Server Metadata
 - SAML2
@@ -59,7 +59,7 @@ Features to be implemented (any help/PR are welcomed):
 - ...and more
 
 Platforms
----------
+.........
 
 OAuthLib is mainly developed and tested on 64-bit Linux. It works on
 Unix and Unix-like operating systems (including macOS), as well as
@@ -85,5 +85,6 @@ additional packages: see the installation instructions for details.
 .. _`RFC 7009`: https://tools.ietf.org/html/rfc7009
 .. _`RFC 7662`: https://tools.ietf.org/html/rfc7662
 .. _`RFC 7636`: https://tools.ietf.org/html/rfc7636
+.. _`RFC 8628`: https://tools.ietf.org/html/rfc8628
 .. _`OpenID Connect Core`: https://openid.net/specs/openid-connect-core-1_0.html
 .. _`RFC 8414`: https://tools.ietf.org/html/rfc8414
