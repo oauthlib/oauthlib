@@ -1,20 +1,33 @@
 Changelog
 =========
 
-3.2.0 (TBD)
+3.2.0 (2022-01-29)
 ------------------
+OAuth2.0 Client:
+* #795: Add Device Authorization Flow for Web Application
+* #786: Add PKCE support for Client
+* #783: Fallback to none in case of wrong expires_at format.
 
-In Progress
+OAuth2.0 Provider:
+* #790: Add support for CORS to metadata endpoint.
+* #791: Add support for CORS to token endpoint.
+* #787: Remove comma after Bearer in WWW-Authenticate
 
+OAuth2.0 Provider - OIDC:
+  * #755: Call save_token in Hybrid code flow
+  * #751: OIDC add support of refreshing ID Tokens with `refresh_id_token`
+  * #751: The RefreshTokenGrant modifiers now take the same arguments as the
+    AuthorizationCodeGrant modifiers (`token`, `token_handler`, `request`).
+
+General:
+  * Added Python 3.9, 3.10, 3.11
+  * Improve Travis & Coverage
 
 3.1.1 (2021-05-31)
 ------------------
 OAuth2.0 Provider - Bugfixes
 
   * #753: Fix acceptance of valid IPv6 addresses in URI validation
-
-OAuth2.0 Provider - Features
-  * #751: OIDC add support of refreshing ID Tokens
 
 OAuth2.0 Client - Bugfixes
 
@@ -34,8 +47,6 @@ OAuth2.0 Provider - Bugfixes
   * #746: OpenID Connect Hybrid - fix nonce not passed to add_id_token
   * #756: Different prompt values are now handled according to spec (e.g. prompt=none)
   * #759: OpenID Connect - fix Authorization: Basic parsing
-  * #751: The RefreshTokenGrant modifiers now take the same arguments as the
-    AuthorizationCodeGrant modifiers (`token`, `token_handler`, `request`).
 
 General
   * #716: improved skeleton validator for public vs private client
