@@ -36,7 +36,6 @@ class UserInfoEndpoint(BaseEndpoint):
         using UTF-8.
         """
         request = Request(uri, http_method, body, headers)
-        request.scopes = ["openid"]
         self.validate_userinfo_request(request)
 
         claims = self.request_validator.get_userinfo_claims(request)
