@@ -135,3 +135,13 @@ class MetadataEndpointTest(TestCase):
         sort_list(metadata.claims)
         sort_list(expected_claims)
         self.assertEqual(sorted(metadata.claims.items()), sorted(expected_claims.items()))
+
+    def test_metadata_validate_issuer(self):
+        with self.assertRaises(ValueError):
+            endpoint = TokenEndpoint(
+                None, None, grant_types={"password": None},
+            )
+            metadata = MetadataEndpoint([endpoint], {
+                "issuer": 'http://foo.bar',
+                "token_endpoint": "https://foo.bar/token",
+            })
