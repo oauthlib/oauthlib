@@ -18,6 +18,7 @@ class RefreshTokenGrantTest(TestCase):
         self.request = Request('http://a.b/path')
         self.request.grant_type = 'refresh_token'
         self.request.refresh_token = 'lsdkfhj230'
+        self.request.client_id = 'abcdef'
         self.request.client = mock_client
         self.request.scope = 'foo'
         self.mock_validator = mock.MagicMock()
@@ -168,3 +169,43 @@ class RefreshTokenGrantTest(TestCase):
         del self.request.scope
         self.auth.validate_token_request(self.request)
         self.assertEqual(self.request.scopes, 'foo bar baz'.split())
+
+    # CORS
+
+    def test_create_cors_headers(self):
+        bearer = BearerToken(self.mock_validator)
+        self.request.headers['origin'] = 'https://foo.bar'
+        self.mock_validator.is_origin_allowed.return_value = True
+
+        headers = self.auth.create_token_response(self.request, bearer)[0]
+        self.assertEqual(
+            headers['Access-Control-Allow-Origin'], 'https://foo.bar'
+        )
+        self.mock_validator.is_origin_allowed.assert_called_once_with(
+            'abcdef', 'https://foo.bar', self.request
+        )
+
+    def test_create_cors_headers_no_origin(self):
+        bearer = BearerToken(self.mock_validator)
+        headers = self.auth.create_token_response(self.request, bearer)[0]
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.mock_validator.is_origin_allowed.assert_not_called()
+
+    def test_create_cors_headers_insecure_origin(self):
+        bearer = BearerToken(self.mock_validator)
+        self.request.headers['origin'] = 'http://foo.bar'
+
+        headers = self.auth.create_token_response(self.request, bearer)[0]
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.mock_validator.is_origin_allowed.assert_not_called()
+
+    def test_create_cors_headers_invalid_origin(self):
+        bearer = BearerToken(self.mock_validator)
+        self.request.headers['origin'] = 'https://foo.bar'
+        self.mock_validator.is_origin_allowed.return_value = False
+
+        headers = self.auth.create_token_response(self.request, bearer)[0]
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.mock_validator.is_origin_allowed.assert_called_once_with(
+            'abcdef', 'https://foo.bar', self.request
+        )

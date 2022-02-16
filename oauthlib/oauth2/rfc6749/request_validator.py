@@ -671,6 +671,7 @@ class RequestValidator:
 
         Method is used by:
             - Authorization Code Grant
+            - Refresh Token Grant
 
         """
         return False
