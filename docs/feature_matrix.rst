@@ -30,7 +30,7 @@ the request.
 OAuth 2.0
 .........
 
-OAuth 2.0 client and provider support for:
+OAuth 2.0 full client and provider supports for:
 
 - `RFC 6749 section-4.1`_: Authorization Code Grant
 - `RFC 6749 section-4.2`_: Implicit Grant
@@ -40,23 +40,28 @@ OAuth 2.0 client and provider support for:
 - `RFC 6750`_: Bearer Tokens
 - `RFC 7009`_: Token Revocation
 - `RFC 7636`_: Proof Key for Code Exchange by OAuth Public Clients (PKCE)
-- `RFC 8628`_: OAuth2.0 Device Authorization Grant
 - `RFC Draft`_ Message Authentication Code (MAC) Tokens
 
-Partial implementations (any help/PR are welcomed to complete the list):
+Only OAuth2.0 Provider has been implemented:
 
-- OAuth2.0 Provider: `OpenID Connect Core`_
-- OAuth2.0 Provider: `RFC 7662`_: Token Introspection
-- OAuth2.0 Provider: `RFC 8414`_: Authorization Server Metadata
-- OAuth2.0 **Client**: `OpenID Connect Core`_
-- OAuth2.0 **Client**: `RFC 7662`_: Token Introspection
-- OAuth2.0 **Client**: `RFC 8414`_: Authorization Server Metadata
+- `OpenID Connect Core`_
+- `RFC 7662`_: Token Introspection
+- `RFC 8414`_: Authorization Server Metadata
+
+Only OAuth2.0 Client has been implemented:
+
+- `RFC 8628`_: Device Authorization Grant
+
+Missing features:
+
 - SAML2
 - Bearer JWT as Client Authentication
 - Dynamic client registration
 - OpenID Discovery
 - OpenID Session Management
-- ...and more
+
+Any help are welcomed and will be carefully reviewed and integrated to the project. Don't hesitate to be part of the community !
+
 
 Platforms
 .........
