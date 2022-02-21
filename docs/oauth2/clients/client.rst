@@ -14,6 +14,7 @@ to use them please browse the documentation for each client type below.
     mobileapplicationclient
     legacyapplicationclient
     backendapplicationclient
+    deviceclient
 
 **Existing libraries**
     If you are using the `requests`_ HTTP library you may be interested in using
