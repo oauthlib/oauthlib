@@ -454,20 +454,16 @@ class Client:
 
         If the authorization server issued a refresh token to the client, the
         client makes a refresh request to the token endpoint by adding the
-        following parameters using the "application/x-www-form-urlencoded"
+        following parameters using the `application/x-www-form-urlencoded`
         format in the HTTP request entity-body:
 
-        grant_type
-                REQUIRED.  Value MUST be set to "refresh_token".
-        refresh_token
-                REQUIRED.  The refresh token issued to the client.
-        scope
-                OPTIONAL.  The scope of the access request as described by
-                Section 3.3.  The requested scope MUST NOT include any scope
-                not originally granted by the resource owner, and if omitted is
-                treated as equal to the scope originally granted by the
-                resource owner. Note that if none is provided, the ones provided
-                in the constructor are used if any.
+        :param refresh_token: REQUIRED.  The refresh token issued to the client.
+        :param scope:  OPTIONAL.  The scope of the access request as described by
+            Section 3.3.  The requested scope MUST NOT include any scope
+            not originally granted by the resource owner, and if omitted is
+            treated as equal to the scope originally granted by the
+            resource owner. Note that if none is provided, the ones provided
+            in the constructor are used if any.
         """
         refresh_token = refresh_token or self.refresh_token
         scope = self.scope if scope is None else scope
