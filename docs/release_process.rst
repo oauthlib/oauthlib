@@ -26,7 +26,7 @@ changes and pings the primary contacts for each downstream project.  Please
 respond within those 2 days if you have major concerns. 
 
 How to get on the notifications list
------------------------------------
+------------------------------------
 
 Which projects and the instructions for testing each will be defined in
 OAuthLibs ``Makefile``.  To add your project, simply open a pull request or

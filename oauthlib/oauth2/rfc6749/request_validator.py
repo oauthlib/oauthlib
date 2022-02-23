@@ -191,6 +191,7 @@ class RequestValidator:
         claims associated, or `None` in case the token is unknown.
 
         Below the list of registered claims you should be interested in:
+
         - scope : space-separated list of scopes
         - client_id : client identifier
         - username : human-readable identifier for the resource owner
@@ -204,7 +205,7 @@ class RequestValidator:
         - jti : string identifier for the token
 
         Note that most of them are coming directly from JWT RFC. More details
-        can be found in `Introspect Claims`_ or `_JWT Claims`_.
+        can be found in `Introspect Claims`_ or `JWT Claims`_.
 
         The implementation can use *token_type_hint* to improve lookup
         efficency, but must fallback to other types to be compliant with RFC.
@@ -443,6 +444,7 @@ class RequestValidator:
             - request.user
             - request.scopes
             - request.claims (if given)
+
         OBS! The request.user attribute should be set to the resource owner
         associated with this authorization code. Similarly request.scopes
         must also be set.
@@ -451,6 +453,7 @@ class RequestValidator:
 
         If PKCE is enabled (see 'is_pkce_required' and 'save_authorization_code')
         you MUST set the following based on the information stored:
+
             - request.code_challenge
             - request.code_challenge_method
 
