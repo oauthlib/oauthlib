@@ -22,7 +22,7 @@ jobs:
   allow_failures:
   - python: "3.11-dev"
 before_install:
-  - python -m pip install --upgrade pip setuptools
+  - python -m pip install --upgrade pip setuptools<60.9
   - python -m pip install tox coveralls
   - if [ "$TOXENV" == "pypy3" ]; then curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env ; fi
 script: tox
