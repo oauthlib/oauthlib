@@ -1,17 +1,17 @@
 Creating a Provider
-=============================================
+===================
 
 .. contents::
    :depth: 2
 
 1. Create an OIDC provider
------------------------
+--------------------------
 If you don't have an OAuth2.0 Provider, you can follow the instructions at
 :doc:`OAuth2.0 Creating a Provider </oauth2/server>`. Then, follow the
 migration step below.
 
 2. Migrate your OAuth2.0 provider into an OIDC provider
-----------------------------------------------------
+-------------------------------------------------------
 
 If you have a OAuth2.0 provider running and want to upgrade to OIDC, you can
 upgrade it by replacing one line of code:

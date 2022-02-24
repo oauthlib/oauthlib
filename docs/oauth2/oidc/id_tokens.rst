@@ -11,7 +11,8 @@ See examples below.
 
 .. _`ID Tokens`: http://openid.net/specs/openid-connect-core-1_0.html#IDToken
 
-.. autoclass:: oauthlib.oauth2.RequestValidator
+.. autoclass:: oauthlib.openid.RequestValidator
+   :noindex:
    :members: finalize_id_token
 
 

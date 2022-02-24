@@ -39,3 +39,4 @@ checks the presence of `openid` scope in the parameters.
    authcode
    implicit
    hybrid
+   refresh_token
