@@ -6,6 +6,7 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 
 .. _`Section 4`: https://tools.ietf.org/html/rfc6749#section-4
 """
+import difflib
 import json
 import os
 import time
@@ -459,9 +460,16 @@ def validate_token_parameters(params):
     # parameter to inform the client of the actual scope granted.
     # https://tools.ietf.org/html/rfc6749#section-3.3
     if params.scope_changed:
-        message = 'Scope has changed from "{old}" to "{new}".'.format(
-            old=params.old_scope, new=params.scope,
-        )
+        message = 'Scope has changed. Difference:\n{diff}'.format(
+            old=params.old_scope,
+            new=params.scope,
+            diff="\n".join(
+                difflib.ndiff(
+                    sorted(params.old_scope.split(" ")),
+                    sorted(params.scope.split(" ")),
+                )
+            )
+         )
         scope_changed.send(message=message, old=params.old_scopes, new=params.scopes)
         if not os.environ.get('OAUTHLIB_RELAX_TOKEN_SCOPE', None):
             w = Warning(message)
