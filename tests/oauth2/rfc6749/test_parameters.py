@@ -312,4 +312,5 @@ class ParameterTests(TestCase):
             assert isinstance(w, TokenScopeChangedWarning)
             assert all(hasattr(w, attr) for attr in ('token', 'old_scope', 'new_scope'))
             assert w.old_scope == ['aaa']
-            assert w.new_scope == ['def', 'abc']
+            assert 'abc' in w.new_scope
+            assert 'def' in w.new_scope

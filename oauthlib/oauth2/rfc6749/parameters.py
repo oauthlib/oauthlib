@@ -9,6 +9,7 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 import json
 import os
 import time
+from typing import List
 import urllib.parse as urlparse
 
 from oauthlib.common import add_params_to_qs, add_params_to_uri
