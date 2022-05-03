@@ -60,7 +60,7 @@ class OAuth2Error(Exception):
             self.response_type = request.response_type
             self.response_mode = request.response_mode
             self.grant_type = request.grant_type
-            if not state:
+            if state is None:
                 self.state = request.state
         else:
             self.redirect_uri = None
