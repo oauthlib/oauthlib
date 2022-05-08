@@ -45,7 +45,7 @@ class WebApplicationClientTest(TestCase):
 
     body_code = "not=empty&grant_type=authorization_code&code={}&client_id={}".format(code, client_id)
     body_redirect = body_code + "&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback"
-    bode_code_verifier = body_code + "&code_verifier=code_verifier"
+    body_code_verifier = body_code + "&code_verifier=code_verifier"
     body_kwargs = body_code + "&some=providers&require=extra+arguments"
 
     response_uri = "https://client.example.com/cb?code=zzzzaaaa&state=xyz"
@@ -115,7 +115,7 @@ class WebApplicationClientTest(TestCase):
 
         # With code verifier
         body = client.prepare_request_body(body=self.body, code_verifier=self.code_verifier)
-        self.assertFormBodyEqual(body, self.bode_code_verifier)
+        self.assertFormBodyEqual(body, self.body_code_verifier)
 
         # With extra parameters
         body = client.prepare_request_body(body=self.body, **self.kwargs)
