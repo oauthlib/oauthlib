@@ -173,7 +173,7 @@ def base_string_uri(uri: str, host: str = None) -> str:
     if ':' in netloc:
         # Contains a colon ":", so try to parse as "host:port"
 
-        hostname, port_str = netloc.split(':', 1)
+        hostname, port_str = netloc.rsplit(':', 1)
 
         if len(hostname) == 0:
             raise ValueError('missing host')  # error: netloc was ":port" or ":"
