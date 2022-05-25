@@ -447,7 +447,7 @@ The example using Django but should be transferable to any framework.
             response[k] = v
         return response
 
-    def response_from_error(e)
+    def response_from_error(e):
         return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
 
 
