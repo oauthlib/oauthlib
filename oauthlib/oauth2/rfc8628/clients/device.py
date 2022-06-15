@@ -5,12 +5,11 @@ oauthlib.oauth2.rfc8628
 This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 Device Authorization RFC8628.
 """
-
+from oauthlib.common import add_params_to_uri
 from oauthlib.oauth2 import BackendApplicationClient, Client
 from oauthlib.oauth2.rfc6749.errors import InsecureTransportError
 from oauthlib.oauth2.rfc6749.parameters import prepare_token_request
 from oauthlib.oauth2.rfc6749.utils import is_secure_transport, list_to_scope
-from oauthlib.common import add_params_to_uri
 
 
 class DeviceClient(Client):
