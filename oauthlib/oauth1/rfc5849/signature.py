@@ -138,8 +138,6 @@ def base_string_uri(uri: str, host: str = None) -> str:
     port = output.port
     path = output.path
     params = output.params
-    query = output.query
-    fragment = output.fragment
 
     # The scheme, authority, and path of the request resource URI `RFC3986`
     # are included by constructing an "http" or "https" URI representing
