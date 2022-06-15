@@ -5,8 +5,6 @@ dist: bionic
 cache: pip
 jobs:
   include:
-  - python: "3.6"
-    env: TOXENV=py36
   - python: "3.7"
     env: TOXENV=py37,docs
   - python: "3.8"
@@ -44,7 +42,7 @@ deploy:
     on:
       tags: true
       all_branches: true
-      condition: $TOXENV = py36
+      condition: $TOXENV = py37
       repo: oauthlib/oauthlib
   - provider: pypi
     username: JonathanHuot
@@ -54,5 +52,5 @@ deploy:
     on:
       tags: true
       all_branches: true
-      condition: $TOXENV = py36
+      condition: $TOXENV = py37
       repo: oauthlib/oauthlib
