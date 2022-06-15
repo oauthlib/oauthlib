@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import json
+
 from oauthlib.oauth2 import MetadataEndpoint, Server, TokenEndpoint
 
-import json
 from tests.unittest import TestCase
 
 
