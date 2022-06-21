@@ -6,12 +6,12 @@ oauthlib.oauth2.rfc6749
 This module is an implementation of various logic needed
 for consuming OAuth 2.0 RFC6749.
 """
+import base64
+import hashlib
+import re
+import secrets
 import time
 import warnings
-import secrets
-import re
-import hashlib
-import base64
 
 from oauthlib.common import generate_token
 from oauthlib.oauth2.rfc6749 import tokens

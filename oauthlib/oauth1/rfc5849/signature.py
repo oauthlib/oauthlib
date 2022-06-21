@@ -39,13 +39,12 @@ import hashlib
 import hmac
 import ipaddress
 import logging
+import urllib.parse as urlparse
 import warnings
 
 from oauthlib.common import extract_params, safe_string_equals, urldecode
-import urllib.parse as urlparse
 
 from . import utils
-
 
 log = logging.getLogger(__name__)
 

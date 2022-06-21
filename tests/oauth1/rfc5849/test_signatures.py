@@ -1,26 +1,15 @@
 # -*- coding: utf-8 -*-
 from oauthlib.oauth1.rfc5849.signature import (
-    collect_parameters,
-    signature_base_string,
-    base_string_uri,
-    normalize_parameters,
-    sign_hmac_sha1_with_client,
-    sign_hmac_sha256_with_client,
-    sign_hmac_sha512_with_client,
-    sign_rsa_sha1_with_client,
-    sign_rsa_sha256_with_client,
-    sign_rsa_sha512_with_client,
-    sign_plaintext_with_client,
-    verify_hmac_sha1,
-    verify_hmac_sha256,
-    verify_hmac_sha512,
-    verify_rsa_sha1,
-    verify_rsa_sha256,
-    verify_rsa_sha512,
-    verify_plaintext
+    base_string_uri, collect_parameters, normalize_parameters,
+    sign_hmac_sha1_with_client, sign_hmac_sha256_with_client,
+    sign_hmac_sha512_with_client, sign_plaintext_with_client,
+    sign_rsa_sha1_with_client, sign_rsa_sha256_with_client,
+    sign_rsa_sha512_with_client, signature_base_string, verify_hmac_sha1,
+    verify_hmac_sha256, verify_hmac_sha512, verify_plaintext, verify_rsa_sha1,
+    verify_rsa_sha256, verify_rsa_sha512,
 )
-from tests.unittest import TestCase
 
+from tests.unittest import TestCase
 
 # ################################################################
 
