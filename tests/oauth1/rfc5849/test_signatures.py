@@ -348,6 +348,7 @@ class SignatureTests(TestCase):
         self.assertRaises(ValueError, base_string_uri, 'http://:8080')
 
         # Port is not a valid TCP/IP port number
+        self.assertRaises(ValueError, base_string_uri, 'http://eg.com:0')
         self.assertRaises(ValueError, base_string_uri, 'http://eg.com:-1')
         self.assertRaises(ValueError, base_string_uri, 'http://eg.com:65536')
         self.assertRaises(ValueError, base_string_uri, 'http://eg.com:3.14')

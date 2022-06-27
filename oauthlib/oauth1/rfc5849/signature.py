@@ -198,7 +198,7 @@ def base_string_uri(uri: str, host: str = None) -> str:
     elif isinstance(hostname, ipaddress.IPv4Address):
         hostname = f"{hostname}"
 
-    if port is not None and not (0 <= port <= 65535):
+    if port is not None and not (0 < port <= 65535):
         raise ValueError('port out of range')  # 16-bit unsigned ints
     if (scheme, port) in (('http', 80), ('https', 443)):
         netloc = hostname  # default port for scheme: exclude port num
