@@ -274,7 +274,7 @@ class Client:
             request (if there was one).
         :param state:
         :param body: Existing request body (URL encoded string) to embed parameters
-                     into. This may contain extra paramters. Default ''.
+                     into. This may contain extra parameters. Default ''.
         :param kwargs: Additional parameters to included in the request.
         :returns: The prepared request tuple with (url, headers, body).
         """
@@ -303,7 +303,7 @@ class Client:
         :param token_url: Provider token refresh endpoint URL.
         :param refresh_token: Refresh token string.
         :param body: Existing request body (URL encoded string) to embed parameters
-            into. This may contain extra paramters. Default ''.
+            into. This may contain extra parameters. Default ''.
         :param scope: List of scopes to request. Must be equal to
             or a subset of the scopes granted when obtaining the refresh
             token. If none is provided, the ones provided in the constructor are

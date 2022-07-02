@@ -42,7 +42,7 @@ class RevocationEndpoint(BaseEndpoint):
 
 
         The authorization server responds with HTTP status code 200 if the
-        token has been revoked sucessfully or if the client submitted an
+        token has been revoked successfully or if the client submitted an
         invalid token.
 
         Note: invalid tokens do not cause an error response since the client

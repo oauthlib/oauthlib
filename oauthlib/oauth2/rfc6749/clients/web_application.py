@@ -117,7 +117,7 @@ class WebApplicationClient(Client):
                                 values MUST be identical.
 
         :param body: Existing request body (URL encoded string) to embed parameters
-                     into. This may contain extra paramters. Default ''.
+                     into. This may contain extra parameters. Default ''.
 
         :param include_client_id: `True` (default) to send the `client_id` in the
                                   body of the upstream request. This is required

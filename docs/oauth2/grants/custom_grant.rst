@@ -37,7 +37,7 @@ existing ones.
 
 3. Associate it with Endpoints
 ------------------------------
-Then, once implemented, you have to instanciate the grant object and
+Then, once implemented, you have to instantiate the grant object and
 bind it to your endpoint. Either :py:class:`AuthorizationEndpoint`,
 :py:class:`TokenEndpoint` or both.
 
@@ -48,7 +48,7 @@ This example shows how to add a simple extension to the `Token endpoint`:
 * creation of a new class ``MyCustomGrant``, and implement ``create_token_response``.
 * do basics and custom request validations, then call a custom method
   of `Request Validator` to extend the interface for the implementor.
-* instanciate the new grant, and bind it with an existing ``Server``.
+* instantiate the new grant, and bind it with an existing ``Server``.
 
 .. code-block:: python
 
