@@ -99,7 +99,7 @@ class ServiceApplicationClient(Client):
         :param extra_claims: A dict of additional claims to include in the JWT.
 
         :param body: Existing request body (URL encoded string) to embed parameters
-                     into. This may contain extra paramters. Default ''.
+                     into. This may contain extra parameters. Default ''.
 
         :param scope: The scope of the access request.
 

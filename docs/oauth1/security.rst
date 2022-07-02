@@ -20,7 +20,7 @@ A few important facts regarding OAuth security
         for Python 3.6 and later. The ``secrets`` module is designed for
         generating cryptographically strong random numbers. For earlier versions
         of Python, use ``random.SystemRandom`` which is based on ``os.urandom``
-        rather than the default ``random`` based on the effecient but not truly
+        rather than the default ``random`` based on the efficient but not truly
         random Mersenne Twister. Predictable tokens allow attackers to bypass
         virtually all defences OAuth provides.
 
