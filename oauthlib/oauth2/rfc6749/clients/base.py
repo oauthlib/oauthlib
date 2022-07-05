@@ -267,7 +267,7 @@ class Client:
 
         :param token_url: Provider token creation endpoint URL.
         :param authorization_response: The full redirection URL string, i.e.
-            the location to which the user was redirected after successfull
+            the location to which the user was redirected after successful
             authorization. Used to mine credentials needed to obtain a token
             in this step, such as authorization code.
         :param redirect_url: The redirect_url supplied with the authorization

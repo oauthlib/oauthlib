@@ -292,7 +292,7 @@ Consolidated example
 		:param client: User's defined Client object, see ``.authenticate_client``.
 		:param bar: Another example.
 		:param key: Another param.
-		:return: Explaination of return value and type
+		:return: Explanation of return value and type
 
 		.. _`MAC Access Authentication`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
 		"""

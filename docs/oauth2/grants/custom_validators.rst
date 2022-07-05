@@ -3,7 +3,7 @@ Custom Validators
 
 The Custom validators are useful when you want to change a particular
 behavior of an existing grant. That is often needed because of the
-diversity of the identity softwares and to let the oauthlib framework to be
+diversity of the identity software and to let the oauthlib framework to be
 flexible as possible.
 
 However, if you are looking into writing a custom grant type, please

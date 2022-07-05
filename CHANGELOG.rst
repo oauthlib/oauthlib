@@ -146,7 +146,7 @@ OAuth1.0 Client:
 General fixes:
 
 * $ and ' are allowed to be unencoded in query strings #564
-* Request attributes are no longer overriden by HTTP Headers #409
+* Request attributes are no longer overridden by HTTP Headers #409
 * Removed unnecessary code for handling python2.6
 * Add support of python3.7 #621
 * Several minors updates to setup.py and tox
@@ -204,7 +204,7 @@ General fixes:
 * Added log statements to except clauses.
 * According to RC7009 Section 2.1, a client should include authentication credentials when revoking its tokens.
   As discussed in #339, this is not make sense for public clients.
-  However, in that case, the public client should still be checked that is infact a public client (authenticate_client_id).
+  However, in that case, the public client should still be checked that is in fact a public client (authenticate_client_id).
 * Improved prompt parameter validation.
 * Added two error codes from RFC 6750.
 * Hybrid response types are now be fragment-encoded.
@@ -354,7 +354,7 @@ Quick fix. OAuth 1 client repr in 0.6.2 overwrote secrets when scrubbing for pri
 Draft revocation endpoint features and numerous fixes including:
 
 * (OAuth 2 Provider) is_within_original_scope to check whether a refresh token
-  is trying to aquire a new set of scopes that are a subset of the original scope.
+  is trying to acquire a new set of scopes that are a subset of the original scope.
 
 * (OAuth 2 Provider) expires_in token lifetime can be set per request.
 

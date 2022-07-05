@@ -103,7 +103,7 @@ busy and therefore slow to reply but we love feedback!
 
 Chances are you have run into something annoying that you wish there was
 documentation for, if you wish to gain eternal fame and glory, and a drink if we
-have the pleasure to run into eachother, please send a docs pull request =)
+have the pleasure to run into each other, please send a docs pull request =)
 
 .. _`Gitter community`: https://gitter.im/oauthlib/Lobby
 

@@ -95,7 +95,7 @@ class RevocationEndpoint(BaseEndpoint):
         submitted for revocation.  Clients MAY pass this parameter in order to
         help the authorization server to optimize the token lookup.  If the
         server is unable to locate the token using the given hint, it MUST
-        extend its search accross all of its supported token types.  An
+        extend its search across all of its supported token types.  An
         authorization server MAY ignore this parameter, particularly if it is
         able to detect the token type automatically.  This specification
         defines two such values:

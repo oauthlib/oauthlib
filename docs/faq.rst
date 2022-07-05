@@ -48,7 +48,7 @@ What does ValueError `Error trying to decode a non urlencoded string` mean?
     include non percent encoded characters such as `£`. Which could be because
     it has already been decoded by your web framework. 
     
-    If you believe it contains characters that should be excempt from this
+    If you believe it contains characters that should be exempt from this
     check please open an issue and state why.
     
      
