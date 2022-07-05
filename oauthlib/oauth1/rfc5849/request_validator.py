@@ -19,7 +19,7 @@ class RequestValidator:
     Methods used to check the format of input parameters. Common tests include
     length, character set, membership, range or pattern. These tests are
     referred to as `whitelisting or blacklisting`_. Whitelisting is better
-    but blacklisting can be usefull to spot malicious activity.
+    but blacklisting can be useful to spot malicious activity.
     The following have methods a default implementation:
 
     - check_client_key

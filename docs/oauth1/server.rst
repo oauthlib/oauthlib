@@ -59,7 +59,7 @@ The client interested in accessing protected resources.
 
 **Client secret**:
     Required for HMAC-SHA1 and PLAINTEXT. The secret the client will use when
-    verifying requests during the OAuth workflow. Has to be accesible as
+    verifying requests during the OAuth workflow. Has to be accessible as
     plaintext (i.e. not hashed) since it is used to recreate and validate
     request signatured::
 
@@ -175,7 +175,7 @@ you should consider expiring them as it increases security dramatically.
 The user and realms will need to be transferred from the request token to the
 access token. It is possible that the list of authorized realms is smaller
 than the list of requested realms. Clients can observe whether this is the case
-by comparing the `oauth_realms` parameter given in the token reponse. This way
+by comparing the `oauth_realms` parameter given in the token response. This way
 of indicating change of realms is backported from OAuth2 scope behaviour and is
 not in the OAuth 1 spec.
 

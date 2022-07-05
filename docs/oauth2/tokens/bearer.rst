@@ -79,7 +79,7 @@ And you will find all claims in its decoded form:
 Sometime you may want to generate custom `access_token` with a reference from a
 database (as text) or use a HASH signature in JWT or use JWE (encrypted content).
 
-Also, note that you can declare the generate function in your instanciated
+Also, note that you can declare the generate function in your instantiated
 validator to benefit of the `self` variables.
 
 See the example below:

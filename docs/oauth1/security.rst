@@ -5,7 +5,7 @@ A few important facts regarding OAuth security
         SSL for all interactions both with your API as well as for setting up
         tokens. An example of when it's especially bad is when sending POST
         requests with form data, this data is not accounted for in the OAuth
-        signature and a successfull man-in-the-middle attacker could swap your
+        signature and a successful man-in-the-middle attacker could swap your
         form data (or files) to whatever he pleases without invalidating the
         signature. This is an even bigger issue if you fail to check
         nonce/timestamp pairs for each request, allowing an attacker who

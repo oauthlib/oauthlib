@@ -3,7 +3,7 @@ Provider Endpoints
 
 Endpoints in OAuth 2 are targets with a specific responsibility and often
 associated with a particular URL. Because of this the word endpoint might be
-used interchangably from the endpoint url.
+used interchangeably from the endpoint url.
 
 The main three responsibilities in an OAuth 2 flow is to authorize access to a
 certain users resources to a client, to supply said client with a token

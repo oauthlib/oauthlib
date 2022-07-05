@@ -208,7 +208,7 @@ class RequestValidator:
         can be found in `Introspect Claims`_ or `JWT Claims`_.
 
         The implementation can use *token_type_hint* to improve lookup
-        efficency, but must fallback to other types to be compliant with RFC.
+        efficiency, but must fallback to other types to be compliant with RFC.
 
         The dict of claims is added to request.token after this method.
 
@@ -564,7 +564,7 @@ class RequestValidator:
         OBS! The validation should also set the user attribute of the request
         to a valid resource owner, i.e. request.user = username or similar. If
         not set you will be unable to associate a token with a user in the
-        persistance method used (commonly, save_bearer_token).
+        persistence method used (commonly, save_bearer_token).
 
         :param username: Unicode username.
         :param password: Unicode password.

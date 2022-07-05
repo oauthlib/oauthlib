@@ -5,7 +5,7 @@ Resource authorization
 Resource endpoints verify that the token presented is valid and granted access
 to the scopes associated with the resource in question.
 
-**Request Verfication**
+**Request Verification**
     Each view may set certain scopes under which it is bound. Only requests
     that present an access token bound to the correct scopes may access the
     view. Access tokens are commonly embedded in the authorization header but
