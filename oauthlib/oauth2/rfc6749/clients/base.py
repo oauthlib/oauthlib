@@ -589,11 +589,11 @@ class Client:
 
         if 'expires_in' in response:
             self.expires_in = response.get('expires_in')
-            self._expires_at = time.time() + int(self.expires_in)
+            self._expires_at = round(time.time()) + int(self.expires_in)
 
         if 'expires_at' in response:
             try:
-                self._expires_at = int(response.get('expires_at'))
+                self._expires_at = round(float(response.get('expires_at')))
             except:
                 self._expires_at = None
 

@@ -345,7 +345,7 @@ def parse_implicit_response(uri, state=None, scope=None):
         params['scope'] = scope_to_list(params['scope'])
 
     if 'expires_in' in params:
-        params['expires_at'] = time.time() + int(params['expires_in'])
+        params['expires_at'] = round(time.time()) + int(params['expires_in'])
 
     if state and params.get('state', None) != state:
         raise ValueError("Mismatching or missing state in params.")
@@ -436,6 +436,9 @@ def parse_token_response(body, scope=None):
             params.pop('expires_in')
         else:
             params['expires_at'] = time.time() + int(params['expires_in'])
+
+    if isinstance(params.get('expires_at'), float):
+        params['expires_at'] = round(params['expires_at'])
 
     params = OAuth2Token(params, old_scope=scope)
     validate_token_parameters(params)
