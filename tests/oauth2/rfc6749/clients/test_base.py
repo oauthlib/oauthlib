@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+from unittest.mock import patch
 
 from oauthlib import common
 from oauthlib.oauth2 import Client, InsecureTransportError, TokenExpiredError
@@ -353,3 +354,35 @@ class ClientTest(TestCase):
         code_verifier = client.create_code_verifier(length=128)
         code_challenge_s256 = client.create_code_challenge(code_verifier=code_verifier, code_challenge_method='S256')
         self.assertEqual(code_challenge_s256, client.code_challenge)
+
+    def test_parse_token_response_expires_at_is_int(self):
+        expected_expires_at = 1661185149
+        token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
+                      '    "token_type":"example",'
+                      '    "expires_at":1661185148.6437678,'
+                      '    "scope":"/profile",'
+                      '    "example_parameter":"example_value"}')
+
+        client = Client(self.client_id)
+
+        response = client.parse_request_body_response(token_json, scope=["/profile"])
+
+        self.assertEqual(response['expires_at'], expected_expires_at)
+        self.assertEqual(client._expires_at, expected_expires_at)
+
+    @patch('time.time')
+    def test_parse_token_response_generated_expires_at_is_int(self, t):
+        t.return_value = 1661185148.6437678
+        expected_expires_at = round(t.return_value) + 3600
+        token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
+                      '    "token_type":"example",'
+                      '    "expires_in":3600,'
+                      '    "scope":"/profile",'
+                      '    "example_parameter":"example_value"}')
+
+        client = Client(self.client_id)
+
+        response = client.parse_request_body_response(token_json, scope=["/profile"])
+
+        self.assertEqual(response['expires_at'], expected_expires_at)
+        self.assertEqual(client._expires_at, expected_expires_at)
