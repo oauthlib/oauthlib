@@ -31,3 +31,11 @@ class UriValidateTest(TestCase):
         self.assertIsNone(is_absolute_uri('wrong'))
         self.assertIsNone(is_absolute_uri('http://[:1]:38432/path'))
         self.assertIsNone(is_absolute_uri('http://[abcd:efgh::1]/'))
+
+    def test_recursive_regex(self):
+        from datetime import datetime
+        t0 = datetime.now()
+        self.assertIsNone(is_absolute_uri('http://[::::::::::::::::::::::::::]/path'))
+        t1 = datetime.now()
+        spent = t1 - t0
+        self.assertGreater(0.1, spent.total_seconds(), "possible recursive loop detected")
