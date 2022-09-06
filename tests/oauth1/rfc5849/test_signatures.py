@@ -229,6 +229,26 @@ class SignatureTests(TestCase):
             base_string_uri('http:///path', 'OVERRIDE.example.com'))
 
         # ----------------
+        # Host: valid host allows for IPv4 and IPv6
+
+        self.assertEqual(
+            'https://192.168.0.1/',
+            base_string_uri('https://192.168.0.1')
+        )
+        self.assertEqual(
+            'https://192.168.0.1:13000/',
+            base_string_uri('https://192.168.0.1:13000')
+        )
+        self.assertEqual(
+            'https://[123:db8:fd00:1000::5]:13000/',
+            base_string_uri('https://[123:db8:fd00:1000::5]:13000')
+        )
+        self.assertEqual(
+            'https://[123:db8:fd00:1000::5]/',
+            base_string_uri('https://[123:db8:fd00:1000::5]')
+        )
+
+        # ----------------
         # Port: default ports always excluded; non-default ports always included
 
         self.assertEqual(
