@@ -1,6 +1,18 @@
 Changelog
 =========
 
+3.2.1 (2022-09-06)
+------------------
+OAuth2.0 Provider:
+* #803: Metadata endpoint support of non-HTTPS
+
+OAuth1.0:
+* #818: Allow IPv6 being parsed by signature
+
+General:
+* Improved and fixed documentation warnings.
+* Cosmetic changes based on isort
+
 3.2.0 (2022-01-29)
 ------------------
 OAuth2.0 Client:
