@@ -32,7 +32,7 @@ setup(
     maintainer_email='ib.lundgren@gmail.com',
     url='https://github.com/oauthlib/oauthlib',
     platforms='any',
-    license='BSD',
+    license='BSD-3-Clause',
     packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
     python_requires='>=3.6',
     extras_require={
