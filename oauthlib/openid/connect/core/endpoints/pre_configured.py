@@ -12,11 +12,13 @@ from oauthlib.oauth2.rfc6749.endpoints import (
 from oauthlib.oauth2.rfc6749.grant_types import (
     AuthorizationCodeGrant as OAuth2AuthorizationCodeGrant,
     ClientCredentialsGrant, ImplicitGrant as OAuth2ImplicitGrant,
-    RefreshTokenGrant, ResourceOwnerPasswordCredentialsGrant,
+    ResourceOwnerPasswordCredentialsGrant,
 )
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from ..grant_types import AuthorizationCodeGrant, HybridGrant, ImplicitGrant
+from ..grant_types import (
+    AuthorizationCodeGrant, HybridGrant, ImplicitGrant, RefreshTokenGrant
+)
 from ..grant_types.dispatchers import (
     AuthorizationCodeGrantDispatcher, AuthorizationTokenGrantDispatcher,
     ImplicitTokenGrantDispatcher,
