@@ -1,11 +1,15 @@
 Changelog
 =========
 
+3.2.2 (2022-10-17)
+------------------
+OAuth2.0 Provider:
+* CVE-2022-36087
+
 3.2.1 (2022-09-09)
 ------------------
 OAuth2.0 Provider:
 * #803: Metadata endpoint support of non-HTTPS
-* CVE-2022-36087
 
 OAuth1.0:
 * #818: Allow IPv6 being parsed by signature
