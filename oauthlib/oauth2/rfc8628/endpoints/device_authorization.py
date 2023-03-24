@@ -6,13 +6,17 @@ This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
 import json
+import logging
 
-from oauthlib.common import generate_token
+from oauthlib.common import Request, generate_token
+from oauthlib.oauth2.rfc6749 import errors
 
 from oauthlib.oauth2.rfc6749.endpoints.base import (
     BaseEndpoint,
     catch_errors_and_unavailability,
 )
+
+log = logging.getLogger(__name__)
 
 
 class DeviceAuthorizationEndpoint(BaseEndpoint):
@@ -32,17 +36,21 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
 
     def __init__(
         self,
+        request_validator,
         verification_uri,
         expires_in=1800,
         interval=None,
         verification_uri_complete=None,
     ):
         """
+        :param request_validator: An instance of RequestValidator.
+        :type request_validator: oauthlib.oauth2.rfc6749.RequestValidator.
         :param verification_uri: a string containing the URL that can be polled by the client application
         :param expires_in: a number that represents the lifetime of the `user_code` and `device_code`
         :param interval: an option number that represents the number of seconds between each poll requests
         :param verification_uri_complete: a string of a function that can be called with `user_data` as parameter
         """
+        self.request_validator = request_validator
         self._expires_in = expires_in
         self._interval = interval
         self._verification_uri = verification_uri
@@ -82,15 +90,72 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         return None
 
     @catch_errors_and_unavailability
-    def create_device_authorization_response(self, uri):
+    def validate_device_authorization_request(self, request):
+        """Validate the device authorization request.
+
+        The client_id is required if the client is not authenticating with the
+        authorization server as described in `Section 3.2.1. of [RFC6749]`_.
+        The client identifier as described in `Section 2.2 of [RFC6749]`_.
+
+        .. _`Section 3.2.1. of [RFC6749]`: https://www.rfc-editor.org/rfc/rfc6749#section-3.2.1
+        .. _`Section 2.2 of [RFC6749]`: https://www.rfc-editor.org/rfc/rfc6749#section-2.2
+        """
+
+        # First check duplicate parameters
+        for param in ("client_id", "scope"):
+            try:
+                duplicate_params = request.duplicate_params
+            except ValueError:
+                raise errors.InvalidRequestFatalError(
+                    description="Unable to parse query string", request=request
+                )
+            if param in duplicate_params:
+                raise errors.InvalidRequestFatalError(
+                    description="Duplicate %s parameter." % param, request=request
+                )
+
+        # the "application/x-www-form-urlencoded" format, per Appendix B of [RFC6749]
+        # https://www.rfc-editor.org/rfc/rfc6749#appendix-B
+        if request.headers["Content-Type"] != "application/x-www-form-urlencoded":
+            raise errors.InvalidRequestError(
+                "Content-Type must be application/x-www-form-urlencoded",
+                request=request,
+            )
+
+        # REQUIRED. The client identifier as described in Section 2.2.
+        # https://tools.ietf.org/html/rfc6749#section-2.2
+        # TODO: extract client_id an helper validation function.
+        if not request.client_id:
+            raise errors.MissingClientIdError(request=request)
+
+        if not self.request_validator.validate_client_id(request.client_id, request):
+            raise errors.InvalidClientIdError(request=request)
+
+        # The client authentication requirements of Section 3.2.1 of [RFC6749]
+        # apply to requests on this endpoint, which means that confidential
+        # clients (those that have established client credentials) authenticate
+        # in the same manner as when making requests to the token endpoint, and
+        # public clients provide the "client_id" parameter to identify
+        # themselves.
+        self._raise_on_invalid_client(request)
+
+    @catch_errors_and_unavailability
+    def create_device_authorization_response(
+        self, uri, http_method="POST", body=None, headers=None
+    ):
         """create_device_authorization_response - generates a unique device
         verification code and an end-user code that are valid for a limited
         time and includes them in the HTTP response body using the
         "application/json" format [RFC8259] with a 200 (OK) status code, as
         described in `Section-3.2`_.
 
-        :param uri: a string representing the current parameter.
-        :return: the response payload as a JSON string.
+        :param uri: The full URI of the token request.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :returns: A tuple of 3 elements.
+                  1. A dict of headers to set on the response.
+                  2. The response body as a string.
+                  3. The response status code as an integer.
 
         The response contains the following parameters:
 
@@ -137,6 +202,10 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
 
         .. _`Section-3.2`: https://www.rfc-editor.org/rfc/rfc8628#section-3.2
         """
+        request = Request(uri, http_method, body, headers)
+        self.validate_device_authorization_request(request)
+        log.debug("Pre resource owner authorization validation ok for %r.", request)
+
         headers = {}
         user_code = generate_token()
         data = {
