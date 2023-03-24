@@ -1,5 +1,5 @@
 """
-oauthlib.oauth2.rfc6749
+oauthlib.oauth2.rfc8628
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various logic needed
