@@ -3,7 +3,7 @@ oauthlib.oauth2.rfc6749
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This module is an implementation of various logic needed
-for consuming and providing OAuth 2.0 RFC6749.
+for consuming and providing OAuth 2.0 RFC8628.
 """
 import json
 import logging
