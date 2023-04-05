@@ -213,11 +213,15 @@ class Client:
         if not (self.access_token or self.token.get('access_token')):
             raise ValueError("Missing access token.")
 
-        if self._expires_at and self._expires_at < time.time():
+        if self.is_expired():
             raise TokenExpiredError()
 
         return case_insensitive_token_types[self.token_type.lower()](uri, http_method, body,
                                                                      headers, token_placement, **kwargs)
+
+    def is_expired(self):
+        """Returns true when the access token is expired."""
+        return self._expires_at and self._expires_at < time.time()
 
     def prepare_authorization_request(self, authorization_url, state=None,
                                       redirect_url=None, scope=None, **kwargs):

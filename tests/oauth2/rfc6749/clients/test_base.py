@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 from unittest.mock import patch
+import time
 
 from oauthlib import common
 from oauthlib.oauth2 import Client, InsecureTransportError, TokenExpiredError
@@ -134,6 +135,17 @@ class ClientTest(TestCase):
                 default_token_placement="invalid")
         self.assertRaises(ValueError, client.add_token, self.uri, body=self.body,
                 headers=self.headers)
+
+    def test_is_expired(self):
+        expired = 523549800
+        expired_token = {'expires_at': expired}
+        client = Client(self.client_id, token=expired_token, access_token=self.access_token, token_type="Bearer")
+        self.assertTrue(client.is_expired())
+
+        not_expired = time.time() + 60 * 10
+        token = {'expires_at': not_expired}
+        client = Client(self.client_id, token=token, access_token=self.access_token, token_type="Bearer")
+        self.assertFalse(client.is_expired())
 
     def test_add_mac_token(self):
         # Missing access token
