@@ -197,7 +197,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     return ''.join(rand.choice(chars) for x in range(length))
 
 
-def generate_signed_token(private_pem, request):
+def generate_signed_token(private_pem, request, algorithm='RS256', headers=None):
     import jwt
 
     now = datetime.datetime.utcnow()
@@ -209,7 +209,7 @@ def generate_signed_token(private_pem, request):
 
     claims.update(request.claims)
 
-    token = jwt.encode(claims, private_pem, 'RS256')
+    token = jwt.encode(claims, private_pem, algorithm=algorithm, headers=headers)
     token = to_unicode(token, "UTF-8")
 
     return token
