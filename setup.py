@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 # Hack because logging + setuptools sucks.
-try:
+import contextlib
+with contextlib.suppress(ImportError):
     import multiprocessing
-except ImportError:
-    pass
+
 
 from os.path import dirname, join
 

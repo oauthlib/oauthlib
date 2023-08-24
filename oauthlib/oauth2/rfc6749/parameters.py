@@ -45,10 +45,10 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
                   back to the client.  The parameter SHOULD be used for
                   preventing cross-site request forgery as described in
                   `Section 10.12`_.
-    :param code_challenge: PKCE parameter. A challenge derived from the 
-                           code_verifier that is sent in the authorization 
+    :param code_challenge: PKCE parameter. A challenge derived from the
+                           code_verifier that is sent in the authorization
                            request, to be verified against later.
-    :param code_challenge_method: PKCE parameter. A method that was used to derive the 
+    :param code_challenge_method: PKCE parameter. A method that was used to derive the
                                   code_challenge. Defaults to "plain" if not present in the request.
     :param kwargs: Extra arguments to embed in the grant/authorization URL.
 
@@ -150,9 +150,8 @@ def prepare_token_request(grant_type, body='', include_client_id=True, code_veri
 
     # pull the `client_id` out of the kwargs.
     client_id = kwargs.pop('client_id', None)
-    if include_client_id:
-        if client_id is not None:
-            params.append(('client_id', client_id))
+    if include_client_id and client_id is not None:
+        params.append(('client_id', client_id))
 
     # use code_verifier if code_challenge was passed in the authorization request
     if code_verifier is not None:
@@ -280,7 +279,7 @@ def parse_authorization_code_response(uri, state=None):
     if 'error' in params:
         raise_from_error(params.get('error'), params)
 
-    if not 'code' in params:
+    if 'code' not in params:
         raise MissingCodeError("Missing code parameter in response.")
 
     return params
@@ -450,12 +449,11 @@ def validate_token_parameters(params):
     if 'error' in params:
         raise_from_error(params.get('error'), params)
 
-    if not 'access_token' in params:
+    if 'access_token' not in params:
         raise MissingTokenError(description="Missing access token parameter.")
 
-    if not 'token_type' in params:
-        if os.environ.get('OAUTHLIB_STRICT_TOKEN_TYPE'):
-            raise MissingTokenTypeError()
+    if 'token_type' not in params and os.environ.get('OAUTHLIB_STRICT_TOKEN_TYPE'):
+        raise MissingTokenTypeError()
 
     # If the issued access token scope is different from the one requested by
     # the client, the authorization server MUST include the "scope" response

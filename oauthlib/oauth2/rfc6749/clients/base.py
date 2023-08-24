@@ -207,7 +207,7 @@ class Client:
 
         case_insensitive_token_types = {
             k.lower(): v for k, v in self.token_types.items()}
-        if not self.token_type.lower() in case_insensitive_token_types:
+        if self.token_type.lower() not in case_insensitive_token_types:
             raise ValueError("Unsupported token type: %s" % self.token_type)
 
         if not (self.access_token or self.token.get('access_token')):
@@ -466,7 +466,7 @@ class Client:
         return uri, headers, body
 
     def create_code_verifier(self, length):
-        """Create PKCE **code_verifier** used in computing **code_challenge**. 
+        """Create PKCE **code_verifier** used in computing **code_challenge**.
         See `RFC7636 Section 4.1`_
 
         :param length: REQUIRED. The length of the code_verifier.
@@ -530,10 +530,10 @@ class Client:
         """
         code_challenge = None
 
-        if code_verifier == None:
+        if code_verifier is None:
             raise ValueError("Invalid code_verifier")
 
-        if code_challenge_method == None:
+        if code_challenge_method is None:
             code_challenge_method = "plain"
             self.code_challenge_method = code_challenge_method
             code_challenge = code_verifier
