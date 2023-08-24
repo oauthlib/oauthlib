@@ -28,8 +28,7 @@ jobs:
         toxenv: ["docs", "readme"]
     runs-on: ubuntu-latest
     steps:
-      - name: Install dot
-        run: sudo apt install -y graphviz
+      - run: sudo apt install -y graphviz
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
