@@ -69,8 +69,10 @@ class BaseEndpoint:
     def _create_request(self, uri, http_method, body, headers):
         # Only include body data from x-www-form-urlencoded requests
         headers = CaseInsensitiveDict(headers or {})
-        request = Request(uri, http_method, body, headers) if 'Content-Type' in headers and CONTENT_TYPE_FORM_URLENCODED in headers['Content-Type'] else Request(uri, http_method, '', headers)
-
+        if "Content-Type" in headers and CONTENT_TYPE_FORM_URLENCODED in headers["Content-Type"]:  # noqa: SIM108
+            request = Request(uri, http_method, body, headers)
+        else:
+            request = Request(uri, http_method, '', headers)
         signature_type, params, oauth_params = (
             self._get_signature_type_and_params(request))
 
