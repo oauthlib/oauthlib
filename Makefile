@@ -81,4 +81,4 @@ dance:
 
 .DEFAULT_GOAL := all
 .PHONY: clean test bottle dance django flask requests
-all: clean test bottle dance django flask requests
+all: test bottle dance django flask requests
