@@ -45,6 +45,7 @@ import warnings
 from oauthlib.common import extract_params, safe_string_equals, urldecode
 
 from . import utils
+import contextlib
 
 log = logging.getLogger(__name__)
 
@@ -188,10 +189,9 @@ def base_string_uri(uri: str, host: str = None) -> str:
         raise ValueError('missing host')
 
     # NOTE: Try guessing if we're dealing with IP or hostname
-    try:
+    with contextlib.suppress(ValueError):
         hostname = ipaddress.ip_address(hostname)
-    except ValueError:
-        pass
+
 
     if isinstance(hostname, ipaddress.IPv6Address):
         hostname = f"[{hostname}]"

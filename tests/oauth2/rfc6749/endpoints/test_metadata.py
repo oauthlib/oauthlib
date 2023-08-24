@@ -130,7 +130,7 @@ class MetadataEndpointTest(TestCase):
         }
 
         def sort_list(claims):
-            for k in claims.keys():
+            for k in claims:
                 claims[k] = sorted(claims[k])
 
         sort_list(metadata.claims)
