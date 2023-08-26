@@ -150,7 +150,6 @@ class FatalClientError(OAuth2Error):
 
     Instead the user should be informed of the error by the provider itself.
     """
-    pass
 
 
 class InvalidRequestFatalError(FatalClientError):

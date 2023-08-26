@@ -19,16 +19,16 @@ logging.getLogger('oauthlib').addHandler(NullHandler())
 _DEBUG = False
 
 def set_debug(debug_val):
-	"""Set value of debug flag
-	
+    """Set value of debug flag
+
     :param debug_val: Value to set. Must be a bool value.
-	"""
-	global _DEBUG
-	_DEBUG = debug_val
+    """
+    global _DEBUG  # noqa: PLW0603
+    _DEBUG = debug_val
 
 def get_debug():
-	"""Get debug mode value. 
-	
-	:return: `True` if debug mode is on, `False` otherwise
-	"""
-	return _DEBUG	
+    """Get debug mode value.
+
+    :return: `True` if debug mode is on, `False` otherwise
+    """
+    return _DEBUG

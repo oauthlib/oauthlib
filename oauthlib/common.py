@@ -34,7 +34,7 @@ INVALID_HEX_PATTERN = re.compile(r'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]')
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                'abcdefghijklmnopqrstuvwxyz'
-               '0123456789' '_.-')
+               '0123456789_.-')
 
 log = logging.getLogger('oauthlib')
 
@@ -346,7 +346,8 @@ class Request:
     def __init__(self, uri, http_method='GET', body=None, headers=None,
                  encoding='utf-8'):
         # Convert to unicode using encoding if given, else assume unicode
-        encode = lambda x: to_unicode(x, encoding) if encoding else x
+        def encode(x):
+            return to_unicode(x, encoding) if encoding else x
 
         self.uri = encode(uri)
         self.http_method = encode(http_method)

@@ -54,7 +54,7 @@ copyright = '2019, The OAuthlib Community'
 #
 # The short X.Y version.
 
-from oauthlib import __version__ as v
+from oauthlib import __version__ as v  # noqa: E402
 version = v[:3]
 # The full version, including alpha/beta/rc tags.
 release = v

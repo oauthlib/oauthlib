@@ -72,8 +72,8 @@ class InvalidRequestURI(OpenIDClientError):
     contains invalid data.
     """
     error = 'invalid_request_uri'
-    description = 'The request_uri in the Authorization Request returns an ' \
-                  'error or contains invalid data.'
+    description = ('The request_uri in the Authorization Request returns an '
+                  'error or contains invalid data.')
 
 
 class InvalidRequestObject(OpenIDClientError):
