@@ -4,6 +4,7 @@ on: [push]
 jobs:
   tests:
     env:
+      FORCE_COLOR: 1
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       matrix:
