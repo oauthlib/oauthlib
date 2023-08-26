@@ -1,0 +1,32 @@
+name: Production deploy
+on:
+  workflow_run:
+    workflows: ["Python Tests"]
+    types:
+      - completed
+jobs:
+  pypi-publish:
+    if: |
+      ${{ github.event.workflow_run.conclusion == 'success' }} &&
+      ${{ github.ref_type == 'tag' }}
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/oauthlib
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install prereq
+      run: pip install wheel
+    - name: Build python package
+      run: python setup.py build
+    - name: Package python package
+      run: python setup.py sdist bdist_wheel
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

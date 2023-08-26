@@ -1,0 +1,41 @@
+name: Python Tests
+run-name: Run Tests by ${{ github.actor }}
+on: [push]
+jobs:
+  tests:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        python: ["3.8", "3.9", "3.10", "3.11"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install prereq
+        run: pip install tox coveralls
+      - name: Run python tests
+        run: tox -e ${{ matrix.python }}
+      - name: Coveralls
+        run: coveralls
+  docs:
+    strategy:
+      matrix:
+        toxenv: ["docs", "readme"]
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt install -y graphviz
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install prereq
+        run: pip install tox
+      - name: Run python tests
+        run: tox -e ${{ matrix.toxenv }}
