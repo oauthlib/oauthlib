@@ -1,6 +1,6 @@
 name: Python Tests
 run-name: Run Tests by ${{ github.actor }}
-on: [push]
+on: [push, pull_request, workflow_dispatch]
 jobs:
   tests:
     env:
