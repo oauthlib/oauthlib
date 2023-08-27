@@ -152,7 +152,7 @@ request that fails this test suite will be **rejected**.
 Testing multiple versions of Python
 -----------------------------------
 
-OAuthLib supports Python 3.5, 3.6, 3.7 and PyPy 2.7 & PyPy 3. Testing
+OAuthLib supports Python 3.6+ and PyPy3. Testing
 all versions conveniently can be done using `Tox`_.
 
 .. sourcecode:: bash
