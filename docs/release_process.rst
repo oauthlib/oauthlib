@@ -18,7 +18,7 @@ failing tests we will either:
 
 Ideally, this process will allow rapid and graceful releases but in the case of
 downstream projects remaining in a broken stage for long we will simply advice
-they lock the oauthlib version in ``setup.py`` and release anyway.
+they lock the oauthlib version in ``oauthlib/__init__.py`` and release anyway.
 
 Unittests might not be enough and as an extra measure we will create an
 OAuthLib release issue on Github at least 2 days prior to release detailing the
