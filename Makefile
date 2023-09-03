@@ -34,11 +34,11 @@ clean-build:
 	@rm -fr dist/
 	@rm -fr *.egg-info
 
-format fmt:
-	isort --recursive oauthlib tests
+format fmt black:
+	black .
 
-lint:
-	isort --recursive --check-only --diff oauthlib tests
+lint ruff:
+	ruff .
 
 test:
 	tox
@@ -81,4 +81,4 @@ dance:
 
 .DEFAULT_GOAL := all
 .PHONY: clean test bottle dance django flask requests
-all: test bottle dance django flask requests
+all: lint test bottle dance django flask requests
