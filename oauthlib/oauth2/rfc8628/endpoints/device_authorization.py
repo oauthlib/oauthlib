@@ -10,10 +10,8 @@ import logging
 
 from oauthlib.common import Request, generate_token
 from oauthlib.oauth2.rfc6749 import errors
-
 from oauthlib.oauth2.rfc6749.endpoints.base import (
-    BaseEndpoint,
-    catch_errors_and_unavailability,
+    BaseEndpoint, catch_errors_and_unavailability,
 )
 
 log = logging.getLogger(__name__)
