@@ -26,7 +26,7 @@ class ErrorResponseTest(TestCase):
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
-    def assertRequestRaises(self, error, request):
+    def assert_request_raises(self, error, request):
         """Test that the request fails similarly on the validation and response endpoint."""
         self.assertRaises(
             error,
@@ -53,7 +53,7 @@ class ErrorResponseTest(TestCase):
     def test_missing_client_id(self):
         # Device code grant
         request = self.build_request(client_id=None)
-        self.assertRequestRaises(errors.MissingClientIdError, request)
+        self.assert_request_raises(errors.MissingClientIdError, request)
 
     def test_empty_client_id(self):
         # Device code grant
@@ -70,30 +70,30 @@ class ErrorResponseTest(TestCase):
         request = self.build_request(client_id="foo")
         # Device code grant
         self.validator.validate_client_id.return_value = False
-        self.assertRequestRaises(errors.InvalidClientIdError, request)
+        self.assert_request_raises(errors.InvalidClientIdError, request)
 
     def test_duplicate_client_id(self):
         request = self.build_request()
         request.body = "client_id=foo&client_id=bar"
         # Device code grant
         self.validator.validate_client_id.return_value = False
-        self.assertRequestRaises(errors.InvalidRequestFatalError, request)
+        self.assert_request_raises(errors.InvalidRequestFatalError, request)
 
     def test_unauthenticated_confidential_client(self):
         self.validator.client_authentication_required.return_value = True
         self.validator.authenticate_client.return_value = False
         request = self.build_request()
-        self.assertRequestRaises(errors.InvalidClientError, request)
+        self.assert_request_raises(errors.InvalidClientError, request)
 
     def test_unauthenticated_public_client(self):
         self.validator.client_authentication_required.return_value = False
         self.validator.authenticate_client_id.return_value = False
         request = self.build_request()
-        self.assertRequestRaises(errors.InvalidClientError, request)
+        self.assert_request_raises(errors.InvalidClientError, request)
 
     def test_duplicate_scope_parameter(self):
         request = self.build_request()
         request.body = "client_id=foo&scope=foo&scope=bar"
         # Device code grant
         self.validator.validate_client_id.return_value = False
-        self.assertRequestRaises(errors.InvalidRequestFatalError, request)
+        self.assert_request_raises(errors.InvalidRequestFatalError, request)
