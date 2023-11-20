@@ -61,12 +61,12 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_jwt_bearer_token(self, token, token_handler, request):
+    def get_jwt_bearer_token(self, token_dict, token_handler, request):
         """Get JWT Bearer token or OpenID Connect ID token
 
         If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
 
-        :param token: A Bearer token dict
+        :param token_dict: A Bearer token dict
         :param token_handler: the token handler (BearerToken class)
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -77,7 +77,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_id_token(self, token, token_handler, request):
+    def get_id_token(self, token_dict, token_handler, request):
         """Get OpenID Connect ID token
 
         This method is OPTIONAL and is NOT RECOMMENDED.
@@ -108,7 +108,7 @@ class RequestValidator(OAuth2RequestValidator):
         .. _`3.2.2.10`: http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
         .. _`3.3.2.11`: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
 
-        :param token: A Bearer token dict
+        :param token_dict: A Bearer token dict
         :param token_handler: the token handler (BearerToken class)
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -116,7 +116,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         return None
 
-    def finalize_id_token(self, id_token, token, token_handler, request):
+    def finalize_id_token(self, id_token_dict, token_dict, token_handler, request):
         """Finalize OpenID Connect ID token & Sign or Encrypt.
 
         In the OpenID Connect workflows when an ID Token is requested
@@ -124,7 +124,7 @@ class RequestValidator(OAuth2RequestValidator):
         construction, signing and optional encryption of the ID Token
         as described in the OpenID Connect spec.
 
-        The `id_token` parameter is a dict containing a couple of OIDC
+        The `id_token_dict` parameter is a dict containing a couple of OIDC
         technical fields related to the specification. Prepopulated
         attributes are:
 
@@ -150,8 +150,8 @@ class RequestValidator(OAuth2RequestValidator):
 
         .. _`OpenID Connect Core#Claims`: https://openid.net/specs/openid-connect-core-1_0.html#Claims
 
-        :param id_token: A dict containing technical fields of id_token
-        :param token: A Bearer token dict
+        :param id_token_dict: A dict containing technical fields of id_token
+        :param token_dict: A Bearer token dict
         :param token_handler: the token handler (BearerToken class)
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -159,7 +159,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_jwt_bearer_token(self, token, scopes, request):
+    def validate_jwt_bearer_token(self, token_str, scopes, request):
         """Ensure the JWT Bearer token or OpenID Connect ID token are valids and authorized access to scopes.
 
         If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
@@ -172,7 +172,7 @@ class RequestValidator(OAuth2RequestValidator):
             - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation
             - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation2
 
-        :param token: Unicode Bearer token
+        :param token_str: Unicode Bearer token
         :param scopes: List of scopes (defined by you)
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -185,7 +185,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_id_token(self, token, scopes, request):
+    def validate_id_token(self, token_str, scopes, request):
         """Ensure the id token is valid and authorized access to scopes.
 
         OpenID connect core 1.0 describe how to validate an id_token:
@@ -194,7 +194,7 @@ class RequestValidator(OAuth2RequestValidator):
             - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation
             - http://openid.net/specs/openid-connect-core-1_0.html#HybridIDTValidation2
 
-        :param token: Unicode Bearer token
+        :param token_str: Unicode Bearer token
         :param scopes: List of scopes (defined by you)
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request

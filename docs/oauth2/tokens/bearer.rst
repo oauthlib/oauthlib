@@ -92,13 +92,13 @@ See the example below:
             self.issuer = issuer
 
         def generate_access_token(self, request):
-            token = jwt.encode({
+            token_str = jwt.encode({
                 "ref": str(libuuid.uuid4()),
                 "aud": request.client_id,
                 "iss": self.issuer,
                 "exp": now + datetime.timedelta(seconds=request.expires_in)
             }, self.secret, algorithm='HS256').decode()
-            return token
+            return token_str
 
 
 Then associate it to your `Server`:

@@ -158,23 +158,23 @@ class RequestValidator:
         return (set(client_key) <= self.safe_characters and
                 lower <= len(client_key) <= upper)
 
-    def check_request_token(self, request_token):
+    def check_request_token(self, token_str:str):
         """Checks that the request token contains only safe characters
         and is no shorter than lower and no longer than upper.
         """
         lower, upper = self.request_token_length
-        return (set(request_token) <= self.safe_characters and
-                lower <= len(request_token) <= upper)
+        return (set(token_str) <= self.safe_characters and
+                lower <= len(token_str) <= upper)
 
-    def check_access_token(self, request_token):
+    def check_access_token(self, token_str:str):
         """Checks that the token contains only safe characters
         and is no shorter than lower and no longer than upper.
         """
         lower, upper = self.access_token_length
-        return (set(request_token) <= self.safe_characters and
-                lower <= len(request_token) <= upper)
+        return (set(token_str) <= self.safe_characters and
+                lower <= len(token_str) <= upper)
 
-    def check_nonce(self, nonce):
+    def check_nonce(self, nonce:str):
         """Checks that the nonce only contains only safe characters
         and is no shorter than lower and no longer than upper.
         """
@@ -182,13 +182,13 @@ class RequestValidator:
         return (set(nonce) <= self.safe_characters and
                 lower <= len(nonce) <= upper)
 
-    def check_verifier(self, verifier):
+    def check_verifier(self, verifier_str:str):
         """Checks that the verifier contains only safe characters
         and is no shorter than lower and no longer than upper.
         """
         lower, upper = self.verifier_length
-        return (set(verifier) <= self.safe_characters and
-                lower <= len(verifier) <= upper)
+        return (set(verifier_str) <= self.safe_characters and
+                lower <= len(verifier_str) <= upper)
 
     def check_realms(self, realms):
         """Check that the realm is one of a set allowed realms."""
@@ -294,11 +294,11 @@ class RequestValidator:
         """
         raise self._subclass_must_implement('get_client_secret')
 
-    def get_request_token_secret(self, client_key, token, request):
+    def get_request_token_secret(self, client_key, token_str, request):
         """Retrieves the shared secret associated with the request token.
 
         :param client_key: The client/consumer key.
-        :param token: The request token string.
+        :param token_str: The request token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: The token secret as a string.
@@ -327,11 +327,11 @@ class RequestValidator:
         """
         raise self._subclass_must_implement('get_request_token_secret')
 
-    def get_access_token_secret(self, client_key, token, request):
+    def get_access_token_secret(self, client_key, token_str, request):
         """Retrieves the shared secret associated with the access token.
 
         :param client_key: The client/consumer key.
-        :param token: The access token string.
+        :param token_str: The access token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: The token secret as a string.
@@ -377,10 +377,10 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("get_default_realms")
 
-    def get_realms(self, token, request):
+    def get_realms(self, token_str, request):
         """Get realms associated with a request token.
 
-        :param token: The request token string.
+        :param token_str: The request token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: The list of realms associated with the request token.
@@ -392,10 +392,10 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("get_realms")
 
-    def get_redirect_uri(self, token, request):
+    def get_redirect_uri(self, token_str, request):
         """Get the redirect URI associated with a request token.
 
-        :param token: The request token string.
+        :param token_str: The request token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: The redirect URI associated with the request token.
@@ -434,11 +434,11 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("get_rsa_key")
 
-    def invalidate_request_token(self, client_key, request_token, request):
+    def invalidate_request_token(self, client_key, token_str, request):
         """Invalidates a used request token.
 
         :param client_key: The client/consumer key.
-        :param request_token: The request token string.
+        :param token_str: The request token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: None
@@ -498,11 +498,11 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_client_key")
 
-    def validate_request_token(self, client_key, token, request):
+    def validate_request_token(self, client_key, token_str, request):
         """Validates that supplied request token is registered and valid.
 
         :param client_key: The client/consumer key.
-        :param token: The request token string.
+        :param token_str: The request token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: True or False
@@ -533,11 +533,11 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_request_token")
 
-    def validate_access_token(self, client_key, token, request):
+    def validate_access_token(self, client_key, token_str, request):
         """Validates that supplied access token is registered and valid.
 
         :param client_key: The client/consumer key.
-        :param token: The access token string.
+        :param token_str: The access token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: True or False
@@ -569,14 +569,15 @@ class RequestValidator:
         raise self._subclass_must_implement("validate_access_token")
 
     def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
-                                     request, request_token=None, access_token=None):
+                                     request, request_token_str=None,
+                                     access_token_str=None):
         """Validates that the nonce has not been used before.
 
         :param client_key: The client/consumer key.
         :param timestamp: The ``oauth_timestamp`` parameter.
         :param nonce: The ``oauth_nonce`` parameter.
-        :param request_token: Request token string, if any.
-        :param access_token: Access token string, if any.
+        :param request_token_str: Request token string, if any.
+        :param access_token_str: Access token string, if any.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: True or False
@@ -605,9 +606,9 @@ class RequestValidator:
            ]
 
            def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
-              request_token=None, access_token=None):
+              request_token_str=None, access_token_str=None):
 
-              return ((client_key, timestamp, nonce, request_token or access_token)
+              return ((client_key, timestamp, nonce, request_token_str or access_token_str)
                        not in self.nonces_and_timestamps_database)
 
         This method is used by
@@ -672,12 +673,12 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_requested_realms")
 
-    def validate_realms(self, client_key, token, request, uri=None,
+    def validate_realms(self, client_key, token_str, request, uri=None,
                         realms=None):
         """Validates access to the request realm.
 
         :param client_key: The client/consumer key.
-        :param token: A request token string.
+        :param token_str: A request token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :param uri: The URI the realms is protecting.
@@ -695,7 +696,7 @@ class RequestValidator:
         Can be as simple as::
 
             from your_datastore import RequestToken
-            request_token = RequestToken.get(token, None)
+            request_token = RequestToken.get(token_str, None)
 
             if not request_token:
                 return False
@@ -707,11 +708,11 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_realms")
 
-    def validate_verifier(self, client_key, token, verifier, request):
+    def validate_verifier(self, client_key, token_str, verifier, request):
         """Validates a verification code.
 
         :param client_key: The client/consumer key.
-        :param token: A request token string.
+        :param token_str: A request token string.
         :param verifier: The authorization verifier string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -739,10 +740,10 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_verifier")
 
-    def verify_request_token(self, token, request):
+    def verify_request_token(self, token_str, request):
         """Verify that the given OAuth1 request token is valid.
 
-        :param token: A request token string.
+        :param token_str: A request token string.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :returns: True or False
@@ -758,10 +759,10 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("verify_request_token")
 
-    def verify_realms(self, token, realms, request):
+    def verify_realms(self, token_str, realms, request):
         """Verify authorized realms to see if they match those given to token.
 
-        :param token: An access token string.
+        :param token_str: An access token string.
         :param realms: A list of realms the client attempts to access.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -782,10 +783,10 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("verify_realms")
 
-    def save_access_token(self, token, request):
+    def save_access_token(self, token_dict, request):
         """Save an OAuth1 access token.
 
-        :param token: A dict with token credentials.
+        :param token_dict: A dict with token credentials.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
 
@@ -806,10 +807,10 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("save_access_token")
 
-    def save_request_token(self, token, request):
+    def save_request_token(self, token_dict, request):
         """Save an OAuth1 request token.
 
-        :param token: A dict with token credentials.
+        :param token_dict: A dict with token credentials.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
 
@@ -827,10 +828,10 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("save_request_token")
 
-    def save_verifier(self, token, verifier, request):
+    def save_verifier(self, token_str, verifier, request):
         """Associate an authorization verifier with a request token.
 
-        :param token: A request token string.
+        :param token_str: A request token string.
         :param verifier: A dictionary containing the oauth_verifier and
                         oauth_token
         :param request: OAuthlib request.

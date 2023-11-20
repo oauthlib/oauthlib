@@ -9,6 +9,8 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 import json
 import os
 import time
+from typing import Dict
+from typing import Optional
 import urllib.parse as urlparse
 
 from oauthlib.common import add_params_to_qs, add_params_to_uri
@@ -23,7 +25,8 @@ from .utils import is_secure_transport, list_to_scope, scope_to_list
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
-                      scope=None, state=None, code_challenge=None, code_challenge_method='plain', **kwargs):
+                      scope=None, state=None, code_challenge=None,
+                      code_challenge_method='plain', **kwargs):
     """Prepare the authorization grant request URI.
 
     The client constructs the request URI by adding the following
@@ -171,15 +174,15 @@ def prepare_token_request(grant_type, body='', include_client_id=True, code_veri
     return add_params_to_qs(body, params)
 
 
-def prepare_token_revocation_request(url, token, token_type_hint="access_token",
-        callback=None, body='', **kwargs):
+def prepare_token_revocation_request(url, token_str,
+    token_type_hint="access_token", callback=None, body='', **kwargs):
     """Prepare a token revocation request.
 
     The client constructs the request by including the following parameters
     using the ``application/x-www-form-urlencoded`` format in the HTTP request
     entity-body:
 
-    :param token: REQUIRED.  The token that the client wants to get revoked.
+    :param token_str: REQUIRED.  The token that the client wants to get revoked.
 
     :param token_type_hint: OPTIONAL.  A hint about the type of the token
                             submitted for revocation. Clients MAY pass this
@@ -211,7 +214,7 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
     if not is_secure_transport(url):
         raise InsecureTransportError()
 
-    params = [('token', token)]
+    params = [('token', token_str)]
 
     if token_type_hint:
         params.append(('token_type_hint', token_type_hint))
@@ -354,7 +357,7 @@ def parse_implicit_response(uri, state=None, scope=None):
     return params
 
 
-def parse_token_response(body, scope=None):
+def parse_token_response(body:str, scope:Optional[str]=None) -> Dict:
     """Parse the JSON token response body into a dict.
 
     The authorization server issues an access token and optional refresh

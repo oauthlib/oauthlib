@@ -29,7 +29,7 @@ class AccessTokenEndpoint(BaseEndpoint):
     validator methods to implement for this endpoint.
     """
 
-    def create_access_token(self, request, credentials):
+    def create_access_token(self, request, credentials) -> str:
         """Create and save a new access token.
 
         Similar to OAuth 2, indication of granted scopes will be included as a
@@ -41,15 +41,15 @@ class AccessTokenEndpoint(BaseEndpoint):
         """
         request.realms = self.request_validator.get_realms(
             request.resource_owner_key, request)
-        token = {
+        token_data = {
             'oauth_token': self.token_generator(),
             'oauth_token_secret': self.token_generator(),
             # Backport the authorized scopes indication used in OAuth2
             'oauth_authorized_realms': ' '.join(request.realms)
         }
-        token.update(credentials)
-        self.request_validator.save_access_token(token, request)
-        return urlencode(token.items())
+        token_data.update(credentials)
+        self.request_validator.save_access_token(token_data, request)
+        return urlencode(token_data.items())
 
     def create_access_token_response(self, uri, http_method='GET', body=None,
                                      headers=None, credentials=None):
@@ -105,12 +105,12 @@ class AccessTokenEndpoint(BaseEndpoint):
             valid, processed_request = self.validate_access_token_request(
                 request)
             if valid:
-                token = self.create_access_token(request, credentials or {})
+                token_str = self.create_access_token(request, credentials or {})
                 self.request_validator.invalidate_request_token(
                     request.client_key,
                     request.resource_owner_key,
                     request)
-                return resp_headers, token, 200
+                return resp_headers, token_str, 200
             else:
                 return {}, None, 401
         except errors.OAuth1Error as e:
