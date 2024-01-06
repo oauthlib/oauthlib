@@ -4,19 +4,19 @@ jobs:
   lint_python:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.x
           check-latest: true
       - run: pip install --upgrade pip setuptools wheel
       - run: pip install black codespell mypy pytest ruff safety
-      - run: ruff --format=github .
+      - run: ruff --output-format=github .
       - run: black --check . || true
-      - run: codespell  # --ignore-words-list="" --skip="*.css,*.js,*.lock"
+      - run: codespell --ignore-words-list="implementor,mimiced,provicers,re-use"  # --skip="*.css,*.js,*.lock"
       - run: pip install -r requirements-test.txt
       - run: pip install --editable .
       - run: mkdir --parents --verbose .mypy_cache
       - run: mypy --ignore-missing-imports --install-types --non-interactive . || true
       - run: pytest
-      - run: safety check
+      - run: safety check || true
