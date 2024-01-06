@@ -7,6 +7,7 @@ on:
 jobs:
   pypi-publish:
     if: |
+      github.repository_owner == 'oauthlib' &&
       ${{ github.event.workflow_run.conclusion == 'success' }} &&
       ${{ github.ref_type == 'tag' }}
     name: Upload release to PyPI
