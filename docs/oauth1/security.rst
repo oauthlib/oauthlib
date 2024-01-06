@@ -17,7 +17,7 @@ A few important facts regarding OAuth security
     * **Tokens must be random**, OAuthLib provides a method for generating
         secure tokens and it's packed into ``oauthlib.common.generate_token``,
         use it. If you decide to roll your own, use ``secrets.SystemRandom``
-        for Python 3.6 and later. The ``secrets`` module is designed for
+        for Python 3.8 and later. The ``secrets`` module is designed for
         generating cryptographically strong random numbers. For earlier versions
         of Python, use ``random.SystemRandom`` which is based on ``os.urandom``
         rather than the default ``random`` based on the efficient but not truly
