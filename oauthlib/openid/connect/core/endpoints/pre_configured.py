@@ -17,7 +17,7 @@ from oauthlib.oauth2.rfc6749.grant_types import (
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from ..grant_types import (
-    AuthorizationCodeGrant, HybridGrant, ImplicitGrant, RefreshTokenGrant
+    AuthorizationCodeGrant, HybridGrant, ImplicitGrant, RefreshTokenGrant,
 )
 from ..grant_types.dispatchers import (
     AuthorizationCodeGrantDispatcher, AuthorizationTokenGrantDispatcher,
