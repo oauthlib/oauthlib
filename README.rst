@@ -2,7 +2,7 @@ OAuthLib - Python Framework for OAuth1 & OAuth2
 ===============================================
 
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
-logic for Python 3.6+.*
+logic for Python 3.8+*
 
 .. image:: https://github.com/oauthlib/oauthlib/actions/workflows/python-build.yml/badge.svg
   :target: https://github.com/oauthlib/oauthlib/actions

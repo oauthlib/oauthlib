@@ -152,8 +152,8 @@ request that fails this test suite will be **rejected**.
 Testing multiple versions of Python
 -----------------------------------
 
-OAuthLib supports Python 3.6+ and PyPy3. Testing
-all versions conveniently can be done using `Tox`_.
+OAuthLib supports Python 3.8+ & PyPy 3. Testing
+all versions conveniently at once can be done using `Tox`_.
 
 .. sourcecode:: bash
 
@@ -167,11 +167,10 @@ The versions beloew may not be up to date.
 
 .. sourcecode:: bash
 
-   $ pyenv install 3.5.7
-   $ pyenv install 3.6.9
-   $ pyenv install 3.7.4
-   $ pyenv install pypy2.7-7.1.1
-   $ pyenv install pypy3.6-7.1.1
+   $ pyenv install -l # check which versions you want to use
+   $ pyenv install 3.8.18
+   $ pyenv install 3.11.7
+   $ pyenv install pypy3.10-7.3.13
 
 .. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
 .. _`virtualenv`: https://virtualenv.pypa.io/en/latest/installation/
