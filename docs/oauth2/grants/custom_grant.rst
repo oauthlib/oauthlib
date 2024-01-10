@@ -63,8 +63,8 @@ This example shows how to add a simple extension to the `Token endpoint`:
             # ..
             self.request_validator.your_custom_check(request)
 
-            token = token_handler.create_token(request)
-            return self._get_default_headers(), json.dumps(token), 200
+            token_dict = token_handler.create_token(request)
+            return self._get_default_headers(), json.dumps(token_dict), 200
 
     def setup_oauthlib():
         my_custom_grant = MyCustomGrant()

@@ -52,15 +52,16 @@ class Client:
 
     """
     refresh_token_key = 'refresh_token'
+    token: Dict
 
     def __init__(self, client_id,
                  default_token_placement=AUTH_HEADER,
                  token_type='Bearer',
-                 access_token=None,
-                 refresh_token=None,
+                 access_token_str=None,
+                 refresh_token_str=None,
                  mac_key=None,
                  mac_algorithm=None,
-                 token=None,
+                 token_dict=None,
                  scope=None,
                  state=None,
                  redirect_url=None,
@@ -81,20 +82,20 @@ class Client:
         :param token_type: OAuth 2 token type. Defaults to Bearer. Change this
         if you specify the ``access_token`` parameter and know it is of a
         different token type, such as a MAC, JWT or SAML token. Can
-        also be supplied as ``token_type`` inside the ``token`` dict parameter.
+        also be supplied as ``token_type`` inside the ``token_dict`` dict parameter.
 
-        :param access_token: An access token (string) used to authenticate
+        :param access_token_str: An access token (string) used to authenticate
         requests to protected resources. Can also be supplied inside the
         ``token`` dict parameter.
 
-        :param refresh_token: A refresh token (string) used to refresh expired
+        :param refresh_token_str: A refresh token (string) used to refresh expired
         tokens. Can also be supplied inside the ``token`` dict parameter.
 
         :param mac_key: Encryption key used with MAC tokens.
 
         :param mac_algorithm:  Hashing algorithm for MAC tokens.
 
-        :param token: A dict of token attributes such as ``access_token``,
+        :param token_dict: A dict of token attributes such as ``access_token``,
         ``token_type`` and ``expires_at``.
 
         :param scope: A list of default scopes to request authorization for.
@@ -120,11 +121,11 @@ class Client:
         self.client_id = client_id
         self.default_token_placement = default_token_placement
         self.token_type = token_type
-        self.access_token = access_token
-        self.refresh_token = refresh_token
+        self.access_token_str = access_token_str
+        self.refresh_token_str = refresh_token_str
         self.mac_key = mac_key
         self.mac_algorithm = mac_algorithm
-        self.token = token or {}
+        self.token = token_dict or {}
         self.scope = scope
         self.state_generator = state_generator
         self.state = state
@@ -136,6 +137,11 @@ class Client:
         self.expires_in = None
         self._expires_at = None
         self.populate_token_attributes(self.token)
+
+    @property
+    def token_dict(self):
+        """for compat; `token` renamed to `token_dict`"""
+        return self.token
 
     @property
     def token_types(self):
@@ -291,7 +297,7 @@ class Client:
 
         return token_url, FORM_ENC_HEADERS, body
 
-    def prepare_refresh_token_request(self, token_url, refresh_token=None,
+    def prepare_refresh_token_request(self, token_url, refresh_token_str=None,
                                       body='', scope=None, **kwargs):
         """Prepare an access token refresh request.
 
@@ -301,7 +307,7 @@ class Client:
         obtain a new access token, and possibly a new refresh token.
 
         :param token_url: Provider token refresh endpoint URL.
-        :param refresh_token: Refresh token string.
+        :param refresh_token_str: Refresh token string.
         :param body: Existing request body (URL encoded string) to embed parameters
             into. This may contain extra parameters. Default ''.
         :param scope: List of scopes to request. Must be equal to
@@ -317,15 +323,17 @@ class Client:
         # do not assign scope to self automatically anymore
         scope = self.scope if scope is None else scope
         body = self.prepare_refresh_body(body=body,
-                                         refresh_token=refresh_token, scope=scope, **kwargs)
+                                         refresh_token_str=refresh_token_str,
+                                         scope=scope, **kwargs)
         return token_url, FORM_ENC_HEADERS, body
 
-    def prepare_token_revocation_request(self, revocation_url, token,
-                                         token_type_hint="access_token", body='', callback=None, **kwargs):
+    def prepare_token_revocation_request(self, revocation_url, token_str,
+                                         token_type_hint="access_token",
+                                         body='', callback=None, **kwargs):
         """Prepare a token revocation request.
 
         :param revocation_url: Provider token revocation endpoint URL.
-        :param token: The access or refresh token to be revoked (string).
+        :param token_str: The access or refresh token to be revoked (string).
         :param token_type_hint: ``"access_token"`` (default) or
             ``"refresh_token"``. This is optional and if you wish to not pass it you
             must provide ``token_type_hint=None``.
@@ -371,8 +379,9 @@ class Client:
         if not is_secure_transport(revocation_url):
             raise InsecureTransportError()
 
-        return prepare_token_revocation_request(revocation_url, token,
-                                                token_type_hint=token_type_hint, body=body, callback=callback,
+        return prepare_token_revocation_request(revocation_url, token_str,
+                                                token_type_hint=token_type_hint,
+                                                body=body, callback=callback,
                                                 **kwargs)
 
     def parse_request_body_response(self, body, scope=None, **kwargs):
@@ -424,11 +433,12 @@ class Client:
         .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
         """
         scope = self.scope if scope is None else scope
+        # self.token is a Dict
         self.token = parse_token_response(body, scope=scope)
         self.populate_token_attributes(self.token)
         return self.token
 
-    def prepare_refresh_body(self, body='', refresh_token=None, scope=None, **kwargs):
+    def prepare_refresh_body(self, body='', refresh_token_str=None, scope=None, **kwargs):
         """Prepare an access token request, using a refresh token.
 
         If the authorization server issued a refresh token to the client, the
@@ -436,7 +446,7 @@ class Client:
         following parameters using the `application/x-www-form-urlencoded`
         format in the HTTP request entity-body:
 
-        :param refresh_token: REQUIRED.  The refresh token issued to the client.
+        :param refresh_token_str: REQUIRED.  The refresh token issued to the client.
         :param scope:  OPTIONAL.  The scope of the access request as described by
             Section 3.3.  The requested scope MUST NOT include any scope
             not originally granted by the resource owner, and if omitted is
@@ -447,7 +457,7 @@ class Client:
         refresh_token = refresh_token or self.refresh_token
         scope = self.scope if scope is None else scope
         return prepare_token_request(self.refresh_token_key, body=body, scope=scope,
-                                     refresh_token=refresh_token, **kwargs)
+                                     refresh_token=refresh_token_str, **kwargs)
 
     def _add_bearer_token(self, uri, http_method='GET', body=None,
                           headers=None, token_placement=None):

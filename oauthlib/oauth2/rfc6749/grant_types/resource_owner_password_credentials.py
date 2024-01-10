@@ -100,16 +100,16 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, self.refresh_token)
+        token_dict = token_handler.create_token(request, self.refresh_token)
 
         for modifier in self._token_modifiers:
-            token = modifier(token)
+            token_dict = modifier(token_dict)
 
-        self.request_validator.save_token(token, request)
+        self.request_validator.save_token(token_dict, request)
 
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
-                  token, request.client_id, request.client, request.username)
-        return headers, json.dumps(token), 200
+                  token_dict, request.client_id, request.client, request.username)
+        return headers, json.dumps(token_dict), 200
 
     def validate_token_request(self, request):
         """
