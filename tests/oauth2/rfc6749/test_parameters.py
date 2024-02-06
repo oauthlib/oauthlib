@@ -37,13 +37,12 @@ class ParameterTests(TestCase):
         self.auth_implicit_list_scope['scope'] = self.list_scope
 
     auth_base_uri = ('https://server.example.com/authorize?response_type={0}'
-                     '&client_id=s6BhdRkqt3&redirect_uri=https%3A%2F%2F'
-                     'client.example.com%2Fcb&scope={1}&state={2}{3}')
+                     '&client_id=s6BhdRkqt3&scope={1}&state={2}{3}'
+                     '&redirect_uri=https%3A%2F%2Fclient.example.com%2Fcb')
 
     auth_base_uri_pkce = ('https://server.example.com/authorize?response_type={0}'
-                     '&client_id=s6BhdRkqt3&redirect_uri=https%3A%2F%2F'
-                     'client.example.com%2Fcb&scope={1}&state={2}{3}&code_challenge={4}'
-                     '&code_challenge_method={5}')
+                         '&client_id=s6BhdRkqt3&scope={1}&state={2}{3}&code_challenge={4}'
+                         '&code_challenge_method={5}&redirect_uri=https%3A%2F%2Fclient.example.com%2Fcb')
 
     auth_grant_uri = auth_base_uri.format('code', 'photos', state, '')
     auth_grant_uri_pkce = auth_base_uri_pkce.format('code', 'photos', state, '', 'code_challenge',
@@ -192,7 +191,6 @@ class ParameterTests(TestCase):
                            '&refresh_token=tGzv3JOkF0XG5Qx2TlKWIA'
                            '&example_parameter=example_value')
 
-
     def test_prepare_grant_uri(self):
         """Verify correct authorization URI construction."""
         self.assertURLEqual(prepare_grant_uri(**self.auth_grant), self.auth_grant_uri)
@@ -268,7 +266,6 @@ class ParameterTests(TestCase):
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
-
 
     def test_json_token_notype(self):
         """Verify strict token type parsing only when configured. """
