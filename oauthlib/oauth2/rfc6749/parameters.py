@@ -73,8 +73,6 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     params = [(('response_type', response_type)),
               (('client_id', client_id))]
 
-    if redirect_uri:
-        params.append(('redirect_uri', redirect_uri))
     if scope:
         params.append(('scope', list_to_scope(scope)))
     if state:
@@ -86,6 +84,9 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     for k in kwargs:
         if kwargs[k]:
             params.append((str(k), kwargs[k]))
+
+    if redirect_uri:
+        params.append(('redirect_uri', redirect_uri))
 
     return add_params_to_uri(uri, params)
 
