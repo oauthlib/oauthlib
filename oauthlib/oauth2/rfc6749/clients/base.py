@@ -13,7 +13,7 @@ import secrets
 import time
 import warnings
 
-from oauthlib.common import generate_token
+from oauthlib.common import UNICODE_ASCII_CHARACTER_SET, generate_token
 from oauthlib.oauth2.rfc6749 import tokens
 from oauthlib.oauth2.rfc6749.errors import (
     InsecureTransportError, TokenExpiredError,
@@ -492,7 +492,7 @@ class Client:
             raise ValueError("Length must be less than or equal to 128")
 
         allowed_characters = re.compile('^[A-Zaa-z0-9-._~]')
-        code_verifier = secrets.token_urlsafe(length)
+        code_verifier = generate_token(length, UNICODE_ASCII_CHARACTER_SET + "-._~")
 
         if not re.search(allowed_characters, code_verifier):
             raise ValueError("code_verifier contains invalid characters")
