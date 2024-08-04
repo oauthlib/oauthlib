@@ -344,7 +344,7 @@ class ClientTest(TestCase):
         client = Client(self.client_id)
         length = 96
         code_verifier = client.create_code_verifier(length=length)
-        self.assertEqual(len(code_verifier), 96)
+        self.assertEqual(len(code_verifier), length)
 
     def test_create_code_challenge_plain(self):
         client = Client(self.client_id)
