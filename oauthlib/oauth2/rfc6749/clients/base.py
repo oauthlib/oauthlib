@@ -490,7 +490,7 @@ class Client:
         if not length <= 128:
             raise ValueError("Length must be less than or equal to 128")
 
-        allowed_characters = re.compile('^[A-Zaa-z0-9-._~]')
+        allowed_characters = re.compile('^[A-Za-z0-9-._~]')
         code_verifier = generate_token(length, UNICODE_ASCII_CHARACTER_SET + "-._~")
 
         if not re.search(allowed_characters, code_verifier):
