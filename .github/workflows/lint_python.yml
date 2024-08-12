@@ -13,7 +13,7 @@ jobs:
       - run: pip install black codespell mypy pytest ruff safety
       - run: ruff check --output-format=github .
       - run: black --check . || true
-      - run: codespell --ignore-words-list="implementor,mimiced,provicers,re-use"  # --skip="*.css,*.js,*.lock"
+      - run: codespell --ignore-words-list="implementor,mimiced,provicers,re-use,THIRDPARTY,assertIn"  # --skip="*.css,*.js,*.lock"
       - run: pip install -r requirements-test.txt
       - run: pip install --editable .
       - run: mkdir --parents --verbose .mypy_cache
