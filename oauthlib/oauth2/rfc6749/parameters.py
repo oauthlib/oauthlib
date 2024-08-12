@@ -273,7 +273,7 @@ def parse_authorization_code_response(uri, state=None):
     query = urlparse.urlparse(uri).query
     params = dict(urlparse.parse_qsl(query))
 
-    if state and params.get('state', None) != state:
+    if state and params.get('state') != state:
         raise MismatchingStateError()
 
     if 'error' in params:
@@ -346,7 +346,7 @@ def parse_implicit_response(uri, state=None, scope=None):
     if 'expires_in' in params:
         params['expires_at'] = round(time.time()) + int(params['expires_in'])
 
-    if state and params.get('state', None) != state:
+    if state and params.get('state') != state:
         raise ValueError("Mismatching or missing state in params.")
 
     params = OAuth2Token(params, old_scope=scope)
