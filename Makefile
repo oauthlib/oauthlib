@@ -38,7 +38,7 @@ format fmt black:
 	black .
 
 lint ruff:
-	ruff .
+	ruff check .
 
 test:
 	tox

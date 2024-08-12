@@ -11,7 +11,7 @@ jobs:
           check-latest: true
       - run: pip install --upgrade pip setuptools wheel
       - run: pip install black codespell mypy pytest ruff safety
-      - run: ruff --output-format=github .
+      - run: ruff check --output-format=github .
       - run: black --check . || true
       - run: codespell --ignore-words-list="implementor,mimiced,provicers,re-use"  # --skip="*.css,*.js,*.lock"
       - run: pip install -r requirements-test.txt
