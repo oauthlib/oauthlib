@@ -316,7 +316,7 @@ class CaseInsensitiveDict(dict):
         return super().__getitem__(key)
 
     def get(self, k, default=None):
-        return self[k] if k in self else default
+        return self[k] if k in self else default  # noqa: SIM401
 
     def __setitem__(self, k, v):
         super().__setitem__(k, v)

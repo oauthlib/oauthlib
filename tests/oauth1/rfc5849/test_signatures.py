@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from jwt import InvalidKeyError
 from oauthlib.oauth1.rfc5849.signature import (
     base_string_uri, collect_parameters, normalize_parameters,
     sign_hmac_sha1_with_client, sign_hmac_sha256_with_client,
@@ -765,11 +766,16 @@ MmgDHR2tt8KeYTSgfU+BAkBcaVF91EQ7VXhvyABNYjeYP7lU7orOgdWMa/zbLXSU
 
         # Signing needs a private key
 
-        for bad_value in [None, '', 'foobar']:
+        for bad_value in [None, '']:
             self.assertRaises(ValueError,
                               sign_rsa_sha1_with_client,
                               self.eg_signature_base_string,
                               MockClient(rsa_key=bad_value))
+
+        self.assertRaises(InvalidKeyError,
+                            sign_rsa_sha1_with_client,
+                            self.eg_signature_base_string,
+                            MockClient(rsa_key='foobar'))
 
         self.assertRaises(AttributeError,
                           sign_rsa_sha1_with_client,

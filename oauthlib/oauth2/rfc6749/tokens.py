@@ -24,7 +24,7 @@ class OAuth2Token(dict):
     def __init__(self, params, old_scope=None):
         super().__init__(params)
         self._new_scope = None
-        if 'scope' in params and params['scope']:
+        if params.get('scope'):
             self._new_scope = set(utils.scope_to_list(params['scope']))
         if old_scope is not None:
             self._old_scope = set(utils.scope_to_list(old_scope))
