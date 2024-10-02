@@ -8,12 +8,13 @@ from tests.unittest import TestCase
 
 
 class DeviceAuthorizationEndpointTest(TestCase):
-    def _configure_endpoint(self, interval=None, verification_uri_complete=None):
+    def _configure_endpoint(self, interval=None, verification_uri_complete=None, user_code_generator=None):
         self.endpoint = DeviceAuthorizationEndpoint(
             request_validator=mock.MagicMock(spec=RequestValidator),
             verification_uri=self.verification_uri,
             interval=interval,
             verification_uri_complete=verification_uri_complete,
+            user_code_generator=user_code_generator
         )
 
     def setUp(self):
@@ -94,5 +95,31 @@ class DeviceAuthorizationEndpointTest(TestCase):
         )
         self.assertEqual(
             "http://i.l/v?user_code=abc",
+            json.loads(body)["verification_uri_complete"],
+        )
+
+    @mock.patch(
+        "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
+        lambda: "abc",
+    )
+    def test_device_authorization_grant_user_gode_generator(self):
+        def user_code():
+            """
+            A friendly user code the device can display and the user
+            can type in. It's up to the device how
+            this code should be displayed. e.g 123-456
+            """
+            return "123456"
+
+        self._configure_endpoint(
+            verification_uri_complete=lambda u: f"http://i.l/v?user_code={u}",
+            user_code_generator=user_code
+        )
+
+        _, body, _ = self.endpoint.create_device_authorization_response(
+            *self.response_payload()
+        )
+        self.assertEqual(
+            "http://i.l/v?user_code=123456",
             json.loads(body)["verification_uri_complete"],
         )

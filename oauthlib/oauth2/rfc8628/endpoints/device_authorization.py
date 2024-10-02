@@ -39,6 +39,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         expires_in=1800,
         interval=None,
         verification_uri_complete=None,
+        user_code_generator = None
     ):
         """
         :param request_validator: An instance of RequestValidator.
@@ -49,11 +50,11 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         :param verification_uri_complete: a string of a function that can be called with `user_data` as parameter
         """
         self.request_validator = request_validator
+        self.user_code_generator = user_code_generator
         self._expires_in = expires_in
         self._interval = interval
         self._verification_uri = verification_uri
         self._verification_uri_complete = verification_uri_complete
-        self._interval = interval
 
         BaseEndpoint.__init__(self)
 
@@ -149,6 +150,8 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
 
         :param uri: The full URI of the token request.
         :param request: OAuthlib request.
+        :param user_code_generator: A callable that returns a string for the user code
+        This allows the caller to decide how the user_code should be formatted
         :type request: oauthlib.common.Request
         :returns: A tuple of 3 elements.
                   1. A dict of headers to set on the response.
@@ -205,7 +208,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         log.debug("Pre resource owner authorization validation ok for %r.", request)
 
         headers = {}
-        user_code = generate_token()
+        user_code = self.user_code_generator() if self.user_code_generator else generate_token()
         data = {
             "verification_uri": self.verification_uri,
             "expires_in": self.expires_in,
