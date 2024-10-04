@@ -81,7 +81,7 @@ class SkeletonValidator(RequestValidator):
         # In this case, it must be "authorization_code" or "refresh_token"
         pass
 
-    def save_bearer_token(self, token, request, *args, **kwargs):
+    def save_bearer_token(self, token_dict, request, *args, **kwargs):
         # Remember to associate it with request.scopes, request.user and
         # request.client. The two former will be set when you validate
         # the authorization code. Don't forget to save both the
@@ -96,13 +96,13 @@ class SkeletonValidator(RequestValidator):
 
     # Protected resource request
 
-    def validate_bearer_token(self, token, scopes, request):
+    def validate_bearer_token(self, token_str, scopes, request):
         # Remember to check expiration and scope membership
         pass
 
     # Token refresh request
 
-    def get_original_scopes(self, refresh_token, request, *args, **kwargs):
+    def get_original_scopes(self, refresh_token_str, request, *args, **kwargs):
         # Obtain the token associated with the given refresh_token and
         # return its scopes, these will be passed on to the refreshed
         # access token if the client did not specify a scope during the

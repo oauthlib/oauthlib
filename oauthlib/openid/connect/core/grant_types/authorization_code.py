@@ -22,7 +22,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             self.openid_authorization_validator)
         self.register_token_modifier(self.add_id_token)
 
-    def add_id_token(self, token, token_handler, request):
+    def add_id_token(self, token_dict, token_handler, request):
         """
         Construct an initial version of id_token, and let the
         request_validator sign or encrypt it.
@@ -32,7 +32,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         """
         # Treat it as normal OAuth 2 auth code request if openid is not present
         if not request.scopes or 'openid' not in request.scopes:
-            return token
+            return token_dict
 
         nonce = self.request_validator.get_authorization_code_nonce(
             request.client_id,
@@ -40,4 +40,4 @@ class AuthorizationCodeGrant(GrantTypeBase):
             request.redirect_uri,
             request
         )
-        return super().add_id_token(token, token_handler, request, nonce=nonce)
+        return super().add_id_token(token_dict, token_handler, request, nonce=nonce)
