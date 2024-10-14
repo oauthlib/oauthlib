@@ -222,5 +222,4 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         if verification_uri_complete:
             data["verification_uri_complete"] = verification_uri_complete
 
-        body = json.dumps(data)
-        return headers, body, 200
+        return headers, data, 200
