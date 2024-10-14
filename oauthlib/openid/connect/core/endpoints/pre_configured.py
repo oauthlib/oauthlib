@@ -15,6 +15,7 @@ from oauthlib.oauth2.rfc6749.grant_types import (
     ResourceOwnerPasswordCredentialsGrant,
 )
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
+from oauthlib.oauth2.rfc8628.endpoints import DeviceAuthorizationEndpoint
 
 from ..grant_types import (
     AuthorizationCodeGrant, HybridGrant, ImplicitGrant, RefreshTokenGrant,
