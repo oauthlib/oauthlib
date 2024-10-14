@@ -7,6 +7,7 @@ for consuming and providing OAuth 2.0 RFC8628.
 """
 import json
 import logging
+from typing import Callable
 
 from oauthlib.common import Request, generate_token
 from oauthlib.oauth2.rfc6749 import errors
@@ -39,7 +40,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         expires_in=1800,
         interval=None,
         verification_uri_complete=None,
-        user_code_generator = None
+        user_code_generator: Callable[[None], str] = None
     ):
         """
         :param request_validator: An instance of RequestValidator.

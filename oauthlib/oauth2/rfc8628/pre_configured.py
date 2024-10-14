@@ -1,13 +1,14 @@
 from oauthlib.oauth2.rfc8628.endpoints.device_authorization import (
     DeviceAuthorizationEndpoint,
 )
+from typing import Callable
 
 
 class DeviceApplicationServer(DeviceAuthorizationEndpoint):
 
     """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
 
-    def __init__(self, request_validator, verification_uri, user_code_generator = None, **kwargs):
+    def __init__(self, request_validator, verification_uri, user_code_generator: Callable[[None], str] = None, **kwargs):
         """Construct a new web application server.
 
         :param request_validator: An implementation of
