@@ -5,6 +5,7 @@ oauthlib.oauth2.rfc8628
 This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC8628.
 """
+
 import json
 import logging
 from typing import Callable
@@ -12,14 +13,14 @@ from typing import Callable
 from oauthlib.common import Request, generate_token
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.endpoints.base import (
-    BaseEndpoint, catch_errors_and_unavailability,
+    BaseEndpoint,
+    catch_errors_and_unavailability,
 )
 
 log = logging.getLogger(__name__)
 
 
 class DeviceAuthorizationEndpoint(BaseEndpoint):
-
     """DeviceAuthorization endpoint - used by the client to initiate
     the authorization flow by requesting a set of verification codes
     from the authorization server by making an HTTP "POST" request to
@@ -33,15 +34,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
     themselves.
     """
 
-    def __init__(
-        self,
-        request_validator,
-        verification_uri,
-        expires_in=1800,
-        interval=None,
-        verification_uri_complete=None,
-        user_code_generator: Callable[[None], str] = None
-    ):
+    def __init__(self, request_validator, verification_uri, expires_in=1800, interval=None, verification_uri_complete=None, user_code_generator: Callable[[None], str] = None):
         """
         :param request_validator: An instance of RequestValidator.
         :type request_validator: oauthlib.oauth2.rfc6749.RequestValidator.
@@ -106,13 +99,9 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
             try:
                 duplicate_params = request.duplicate_params
             except ValueError:
-                raise errors.InvalidRequestFatalError(
-                    description="Unable to parse query string", request=request
-                )
+                raise errors.InvalidRequestFatalError(description="Unable to parse query string", request=request)
             if param in duplicate_params:
-                raise errors.InvalidRequestFatalError(
-                    description="Duplicate %s parameter." % param, request=request
-                )
+                raise errors.InvalidRequestFatalError(description="Duplicate %s parameter." % param, request=request)
 
         # the "application/x-www-form-urlencoded" format, per Appendix B of [RFC6749]
         # https://www.rfc-editor.org/rfc/rfc6749#appendix-B
@@ -140,9 +129,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         self._raise_on_invalid_client(request)
 
     @catch_errors_and_unavailability
-    def create_device_authorization_response(
-        self, uri, http_method="POST", body=None, headers=None
-    ):
+    def create_device_authorization_response(self, uri, http_method="POST", body=None, headers=None):
         """create_device_authorization_response - generates a unique device
         verification code and an end-user code that are valid for a limited
         time and includes them in the HTTP response body using the
