@@ -13,9 +13,7 @@ class ErrorResponseTest(TestCase):
         request.client.client_id = "mocked"
         return True
 
-    def build_request(
-        self, uri="https://example.com/device_authorize", client_id="foo"
-    ):
+    def build_request(self, uri="https://example.com/device_authorize", client_id="foo"):
         body = ""
         if client_id:
             body = f"client_id={client_id}"
@@ -46,9 +44,7 @@ class ErrorResponseTest(TestCase):
         self.validator = mock.MagicMock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = None
         self.validator.get_code_challenge.return_value = None
-        self.device = DeviceApplicationServer(
-            self.validator, "https://example.com/verify"
-        )
+        self.device = DeviceApplicationServer(self.validator, "https://example.com/verify")
 
     def test_missing_client_id(self):
         # Device code grant

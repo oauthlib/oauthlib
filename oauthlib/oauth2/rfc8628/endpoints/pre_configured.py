@@ -7,7 +7,13 @@ from typing import Callable
 class DeviceApplicationServer(DeviceAuthorizationEndpoint):
     """An all-in-one endpoint featuring Authorization code grant and Bearer tokens."""
 
-    def __init__(self, request_validator, verification_uri, user_code_generator: Callable[[None], str] = None, **kwargs):
+    def __init__(
+        self,
+        request_validator,
+        verification_uri,
+        user_code_generator: Callable[[None], str] = None,
+        **kwargs,
+    ):
         """Construct a new web application server.
 
         :param request_validator: An implementation of
@@ -15,4 +21,9 @@ class DeviceApplicationServer(DeviceAuthorizationEndpoint):
         :param verification_uri: the verification_uri to be send back.
         :param user_code_generator: a callable that allows the user code to be configured.
         """
-        DeviceAuthorizationEndpoint.__init__(self, request_validator, verification_uri=verification_uri, user_code_generator=user_code_generator)
+        DeviceAuthorizationEndpoint.__init__(
+            self,
+            request_validator,
+            verification_uri=verification_uri,
+            user_code_generator=user_code_generator,
+        )
