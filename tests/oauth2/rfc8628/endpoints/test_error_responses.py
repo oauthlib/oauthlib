@@ -3,7 +3,7 @@ from unittest import TestCase, mock
 
 from oauthlib.common import Request, urlencode
 from oauthlib.oauth2.rfc6749 import errors
-from oauthlib.oauth2.rfc8628.pre_configured import DeviceApplicationServer
+from oauthlib.oauth2.rfc8628.endpoints.pre_configured import DeviceApplicationServer
 from oauthlib.oauth2.rfc8628.request_validator import RequestValidator
 
 

@@ -15,6 +15,7 @@ client attempts to access the user resources on their behalf.
     :maxdepth: 2
 
     authorization
+    device
     introspect
     token
     metadata

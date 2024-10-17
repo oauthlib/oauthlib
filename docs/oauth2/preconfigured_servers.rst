@@ -36,3 +36,7 @@ This function is passed the request object and a boolean indicating whether to g
 
 .. autoclass:: oauthlib.oauth2.BackendApplicationServer
     :members:
+
+
+.. autoclass:: oauthlib.oauth2.DeviceApplicationServer
+    :members:
