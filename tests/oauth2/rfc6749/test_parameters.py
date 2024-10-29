@@ -302,3 +302,15 @@ class ParameterTests(TestCase):
         finally:
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
+
+    def test_validate_token_parameters_special_warning(self):
+        """When OAUTHLIB_RELAX_TOKEN_SCOPE is unset, the warning raised has
+        special attributes, ``token``, ``old_scope``, and ``new_scope``."""
+        try:
+            parse_token_response(self.url_encoded_response, scope='aaa')
+        except Warning as w:
+            assert isinstance(w, TokenScopeChangedWarning)
+            assert all(hasattr(w, attr) for attr in ('token', 'old_scope', 'new_scope'))
+            assert w.old_scope == ['aaa']
+            assert 'abc' in w.new_scope
+            assert 'def' in w.new_scope
