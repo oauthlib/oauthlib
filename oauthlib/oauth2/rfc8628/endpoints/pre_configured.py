@@ -2,6 +2,7 @@ from oauthlib.oauth2.rfc8628.endpoints.device_authorization import (
     DeviceAuthorizationEndpoint,
 )
 from typing import Callable
+from oauthlib.openid.connect.core.request_validator import RequestValidator
 
 
 class DeviceApplicationServer(DeviceAuthorizationEndpoint):
@@ -9,8 +10,9 @@ class DeviceApplicationServer(DeviceAuthorizationEndpoint):
 
     def __init__(
         self,
-        request_validator,
-        verification_uri,
+        request_validator: RequestValidator,
+        interval: int,
+        verification_uri: str,
         user_code_generator: Callable[[None], str] = None,
         **kwargs,
     ):
@@ -18,12 +20,14 @@ class DeviceApplicationServer(DeviceAuthorizationEndpoint):
 
         :param request_validator: An implementation of
                                   oauthlib.oauth2.rfc8626.RequestValidator.
+        :param interval: How long the device needs to wait before polling the server
         :param verification_uri: the verification_uri to be send back.
         :param user_code_generator: a callable that allows the user code to be configured.
         """
         DeviceAuthorizationEndpoint.__init__(
             self,
             request_validator,
+            interval=interval,
             verification_uri=verification_uri,
             user_code_generator=user_code_generator,
         )
