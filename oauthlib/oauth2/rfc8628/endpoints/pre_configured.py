@@ -11,8 +11,8 @@ class DeviceApplicationServer(DeviceAuthorizationEndpoint):
     def __init__(
         self,
         request_validator: RequestValidator,
-        interval: int,
         verification_uri: str,
+        interval: int = 5,
         user_code_generator: Callable[[None], str] = None,
         **kwargs,
     ):
