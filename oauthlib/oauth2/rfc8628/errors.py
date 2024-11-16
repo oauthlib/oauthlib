@@ -8,6 +8,7 @@ Error used both by OAuth2 clients and providers to represent the spec
 defined error responses specific to the the device grant
 """
 
+
 class AuthorizationPendingError(OAuth2Error):
     """
     For the device authorization grant;
@@ -21,7 +22,8 @@ class AuthorizationPendingError(OAuth2Error):
       increase in the polling interval required by the "slow_down"
       error.
     """
-    error = 'authorization_pending'
+
+    error = "authorization_pending"
 
 
 class SlowDownError(OAuth2Error):
@@ -30,7 +32,9 @@ class SlowDownError(OAuth2Error):
     still pending and polling should continue, but the interval MUST
     be increased by 5 seconds for this and all subsequent requests.
     """
-    error = 'slow_down'
+
+    error = "slow_down"
+
 
 class ExpiredTokenError(OAuth2Error):
     """
@@ -39,10 +43,13 @@ class ExpiredTokenError(OAuth2Error):
     authorization request but SHOULD wait for user interaction before
     restarting to avoid unnecessary polling.
     """
-    error = 'expired_token'
+
+    error = "expired_token"
+
 
 class AccessDenied(OAuth2Error):
     """
     The authorization request was denied.
     """
-    error = 'access_denied'
+
+    error = "access_denied"
