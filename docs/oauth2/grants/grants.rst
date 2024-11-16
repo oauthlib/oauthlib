@@ -10,6 +10,7 @@ Grant types
     password
     credentials
     refresh
+    device_code
     jwt
     custom_validators
     custom_grant
@@ -25,6 +26,13 @@ Credentials grant </oauth2/grants/password>` when there is a high
 degree of trust between the resource owner and the client, and when
 other authorization grant types are not available. This is also often
 used for legacy applications to incrementally transition to OAuth 2.
+
+The device code grant(officially referred to as 'urn:ietf:params:oauth:grant-type:device_code')
+is used when trying to authenticate device with limited or no input capabilities by getting
+the user to approve the login on an external device (like a mobile phone or laptop) in their
+possession that they're already logged into. Unlike the previously mentioned grants it is an extension grant, which is a type of grant
+to address specific authorization scenarios.
+:doc:`Device code grant </oauth2/grants/device_code>`
 
 The main purpose of the grant types is to authorize access to protected
 resources in various ways with different security credentials.
