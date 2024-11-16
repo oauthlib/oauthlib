@@ -98,6 +98,7 @@ class MetadataEndpointTest(TestCase):
             "scopes_supported": ["email", "profile"],
             "grant_types_supported": [
                 "authorization_code",
+                "urn:ietf:params:oauth:grant-type:device_code",
                 "password",
                 "client_credentials",
                 "refresh_token",
