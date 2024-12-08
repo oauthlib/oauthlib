@@ -19,8 +19,8 @@ from oauthlib.oauth2.rfc6749.grant_types import (
     ImplicitGrant as OAuth2ImplicitGrant,
     ResourceOwnerPasswordCredentialsGrant,
 )
+from oauthlib.oauth2.rfc8628.grant_types import DeviceCodeGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
-from oauthlib.oauth2.rfc8628.endpoints import DeviceAuthorizationEndpoint
 
 from ..grant_types import (
     AuthorizationCodeGrant,
@@ -45,7 +45,10 @@ class Server(
     RevocationEndpoint,
     UserInfoEndpoint,
 ):
-    """An all-in-one endpoint featuring all four major grant types."""
+    """
+    An all-in-one endpoint featuring all four major grant types
+    and extension grants.
+    """
 
     def __init__(
         self,
@@ -77,6 +80,7 @@ class Server(
         self.openid_connect_auth = AuthorizationCodeGrant(request_validator)
         self.openid_connect_implicit = ImplicitGrant(request_validator)
         self.openid_connect_hybrid = HybridGrant(request_validator)
+        self.device_code_grant = DeviceCodeGrant(request_validator)
 
         self.bearer = BearerToken(
             request_validator, token_generator, token_expires_in, refresh_token_generator
@@ -123,6 +127,7 @@ class Server(
                 "password": self.password_grant,
                 "client_credentials": self.credentials_grant,
                 "refresh_token": self.refresh_grant,
+                "urn:ietf:params:oauth:grant-type:device_code": self.device_code_grant,
             },
             default_token_type=self.bearer,
         )
