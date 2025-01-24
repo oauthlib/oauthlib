@@ -57,7 +57,7 @@ class Server(
         self.password_grant = ResourceOwnerPasswordCredentialsGrant(request_validator)
         self.credentials_grant = ClientCredentialsGrant(request_validator)
         self.refresh_grant = RefreshTokenGrant(request_validator)
-        self.device_code_grant = DeviceCodeGrant(request_validator)
+        self.device_code_grant = DeviceCodeGrant(request_validator, **kwargs)
 
         self.bearer = BearerToken(
             request_validator, token_generator, token_expires_in, refresh_token_generator
