@@ -98,6 +98,12 @@ max-complexity = 24  # default is 10
 "oauthlib/oauth2/rfc6749/endpoints/base.py" = ["BLE001"]
 "oauthlib/openid/connect/core/grant_types/base.py" = ["BLE001"]
 "tests/*" = ["PT009", "PT027", "S101"]
+"oauthlib/oauth1/rfc5849/endpoints/resource.py" = ["A005"]
+"oauthlib/oauth2/rfc6749/endpoints/resource.py" = ["A005"]
+"oauthlib/oauth2/rfc6749/endpoints/token.py" = ["A005"]
+"oauthlib/oauth2/rfc6749/parameters.py" = ["PLC0206"]
+"oauthlib/oauth2/rfc6749/tokens.py" = ["RUF023"]
+"oauthlib/openid/connect/core/tokens.py" = ["RUF023"]
 
 # [tool.ruff.pylint]
 [pylint]

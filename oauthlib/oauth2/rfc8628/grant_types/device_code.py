@@ -3,7 +3,7 @@ import json
 
 from typing import Callable
 
-from oauthlib import common # noqa: TCH001
+from oauthlib import common # noqa: TC001
 
 from oauthlib.oauth2.rfc6749 import errors as rfc6749_errors
 from oauthlib.oauth2.rfc6749.grant_types.base import GrantTypeBase
