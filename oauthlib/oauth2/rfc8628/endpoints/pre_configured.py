@@ -1,7 +1,8 @@
 from oauthlib.oauth2.rfc8628.endpoints.device_authorization import (
     DeviceAuthorizationEndpoint,
 )
-from typing import Callable
+
+from typing import Callable, Optional
 from oauthlib.openid.connect.core.request_validator import RequestValidator
 
 
@@ -13,6 +14,7 @@ class DeviceApplicationServer(DeviceAuthorizationEndpoint):
         request_validator: RequestValidator,
         verification_uri: str,
         interval: int = 5,
+        verification_uri_complete: Optional[str] = None,  # noqa: FA100
         user_code_generator: Callable[[None], str] = None,
         **kwargs,
     ):
@@ -30,4 +32,5 @@ class DeviceApplicationServer(DeviceAuthorizationEndpoint):
             interval=interval,
             verification_uri=verification_uri,
             user_code_generator=user_code_generator,
+            verification_uri_complete=verification_uri_complete,
         )

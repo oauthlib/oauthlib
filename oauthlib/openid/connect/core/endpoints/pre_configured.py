@@ -80,7 +80,7 @@ class Server(
         self.openid_connect_auth = AuthorizationCodeGrant(request_validator)
         self.openid_connect_implicit = ImplicitGrant(request_validator)
         self.openid_connect_hybrid = HybridGrant(request_validator)
-        self.device_code_grant = DeviceCodeGrant(request_validator)
+        self.device_code_grant = DeviceCodeGrant(request_validator, **kwargs)
 
         self.bearer = BearerToken(
             request_validator, token_generator, token_expires_in, refresh_token_generator

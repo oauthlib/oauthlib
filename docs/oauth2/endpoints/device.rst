@@ -22,12 +22,21 @@ the device authorization endpoint.
     from your_validator import your_validator
     verification_uri = "https://example.com/device"
 
+    # verification_uri_complete can either be a callable that receives user code as an arg
+    # or a string (e.g verification_uri_complete = "https://example.com/device=1234")
+    verification_uri_complete = lambda user_code: f"https://example.com/device={user_code}"
+
     def user_code():
        # some logic to generate a random string...
        return "123-456"
 
     # user code is optional
-    server = DeviceApplicationServer(your_validator, verification_uri, user_code)
+    server = DeviceApplicationServer(
+        request_validator=your_validator,
+        verification_uri=verification_uri,
+        verification_uri_complete=verification_uri_complete,
+        user_code=user_code
+    )
 
     headers, data, status = server.create_device_authorization_response(request)
 
