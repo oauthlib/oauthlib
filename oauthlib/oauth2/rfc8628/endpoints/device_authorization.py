@@ -224,6 +224,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         if self.interval is not None:
             data["interval"] = self.interval
 
+
         verification_uri_complete = self.verification_uri_complete(user_code)
         if verification_uri_complete:
             data["verification_uri_complete"] = verification_uri_complete
