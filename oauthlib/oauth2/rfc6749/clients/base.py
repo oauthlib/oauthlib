@@ -8,7 +8,6 @@ for consuming OAuth 2.0 RFC6749.
 """
 import base64
 import hashlib
-import re
 import time
 import warnings
 
