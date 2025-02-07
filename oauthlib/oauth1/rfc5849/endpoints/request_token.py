@@ -29,7 +29,7 @@ class RequestTokenEndpoint(BaseEndpoint):
     validator methods to implement for this endpoint.
     """
 
-    def create_request_token(self, request, credentials):
+    def create_request_token(self, request, credentials) -> str:
         """Create and save a new request token.
 
         :param request: OAuthlib request.
@@ -37,14 +37,14 @@ class RequestTokenEndpoint(BaseEndpoint):
         :param credentials: A dict of extra token credentials.
         :returns: The token as an urlencoded string.
         """
-        token = {
+        token_data = {
             'oauth_token': self.token_generator(),
             'oauth_token_secret': self.token_generator(),
             'oauth_callback_confirmed': 'true'
         }
-        token.update(credentials)
-        self.request_validator.save_request_token(token, request)
-        return urlencode(token.items())
+        token_data.update(credentials)
+        self.request_validator.save_request_token(token_data, request)
+        return urlencode(token_data.items())
 
     def create_request_token_response(self, uri, http_method='GET', body=None,
                                       headers=None, credentials=None):
@@ -100,8 +100,8 @@ class RequestTokenEndpoint(BaseEndpoint):
             valid, processed_request = self.validate_request_token_request(
                 request)
             if valid:
-                token = self.create_request_token(request, credentials or {})
-                return resp_headers, token, 200
+                token_str = self.create_request_token(request, credentials or {})
+                return resp_headers, token_str, 200
             else:
                 return {}, None, 401
         except errors.OAuth1Error as e:

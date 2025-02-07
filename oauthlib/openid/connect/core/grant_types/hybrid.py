@@ -35,8 +35,8 @@ class HybridGrant(GrantTypeBase):
         self.register_code_modifier(self.add_id_token)
         self.register_token_modifier(self.add_id_token)
 
-    def add_id_token(self, token, token_handler, request):
-        return super().add_id_token(token, token_handler, request, nonce=request.nonce)
+    def add_id_token(self, token_dict, token_handler, request):
+        return super().add_id_token(token_dict, token_handler, request, nonce=request.nonce)
 
     def openid_authorization_validator(self, request):
         """Additional validation when following the Authorization Code flow.
