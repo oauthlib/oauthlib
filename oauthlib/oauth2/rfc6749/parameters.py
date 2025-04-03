@@ -9,6 +9,7 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 import json
 import os
 import time
+from typing import List
 import urllib.parse as urlparse
 
 from oauthlib.common import add_params_to_qs, add_params_to_uri
@@ -444,6 +445,13 @@ def parse_token_response(body, scope=None):
     return params
 
 
+class TokenScopeChangedWarning(Warning):
+    token: dict
+    old_scope: List[str]
+    new_scope: List[str]
+
+
+
 def validate_token_parameters(params):
     """Ensures token presence, token type, expiration and scope in params."""
     if 'error' in params:
@@ -465,7 +473,7 @@ def validate_token_parameters(params):
         )
         scope_changed.send(message=message, old=params.old_scopes, new=params.scopes)
         if not os.environ.get('OAUTHLIB_RELAX_TOKEN_SCOPE', None):
-            w = Warning(message)
+            w = TokenScopeChangedWarning(message)
             w.token = params
             w.old_scope = params.old_scopes
             w.new_scope = params.scopes
