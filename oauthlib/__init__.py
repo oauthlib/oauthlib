@@ -5,7 +5,7 @@
     A generic, spec-compliant, thorough implementation of the OAuth
     request-signing logic.
 
-    :copyright: (c) 2019 by The OAuthlib Community
+    :copyright: (c) The OAuthlib Community
     :license: BSD, see LICENSE for details.
 """
 import logging
