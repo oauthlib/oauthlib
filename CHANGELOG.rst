@@ -1,6 +1,29 @@
 Changelog
 =========
 
+3.3.0 (2025-05-11):
+------------------
+OAuth2.0 Provider:
+* OIDC: #879 Changed in how ui_locales is parsed
+* RFC8628: Added OAuth2.0 Device Authorization Grant support
+* PKCE: #876, #893 Fixed `create_code_verifier` length
+* OIDC: Pre-configured OIDC server to use Refresh Token by default
+
+OAuth2.0 Common:
+* OAuth2Error: Allow 0 to be a valid state
+
+OAuth2.0 Client:
+* #745: expires_at is forced to be an int
+
+General:
+* Removed Python 3.5, 3.6, 3.7 support
+* #859, #883: Added Python 3.12, 3.13 Support
+* Added dependency-review GitHub Action
+* Updated various references of license (SPDX identifier..)
+* Added GitHub Action for lint, replaced bandy with ruff, removed isort...
+* Migrated to GitHub Actions from Travis
+* Added Security Policy
+
 3.2.2 (2022-10-17)
 ------------------
 OAuth2.0 Provider:
