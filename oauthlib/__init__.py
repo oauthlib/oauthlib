@@ -6,7 +6,7 @@
     request-signing logic.
 
     :copyright: (c) The OAuthlib Community
-    :license: BSD, see LICENSE for details.
+    :license: BSD-3-Clause, see LICENSE for details.
 """
 import logging
 from logging import NullHandler

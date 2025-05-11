@@ -44,7 +44,6 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
         'Operating System :: MacOS',
         'Operating System :: POSIX',
         'Operating System :: POSIX :: Linux',
