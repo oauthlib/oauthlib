@@ -1,4 +1,4 @@
-name: Production deploy
+name: Publish release
 on:
   workflow_run:
     workflows: ["Python Tests"]
@@ -6,10 +6,9 @@ on:
       - completed
 jobs:
   pypi-publish:
-    if: |
-      github.repository_owner == 'oauthlib' &&
-      ${{ github.event.workflow_run.conclusion == 'success' }} &&
-      ${{ github.ref_type == 'tag' }}
+    if: ${{ github.repository_owner == 'oauthlib' &&
+            github.event.workflow_run.conclusion == 'success' &&
+            github.ref_type == 'tag' }}
     name: Upload release to PyPI
     runs-on: ubuntu-latest
     environment:

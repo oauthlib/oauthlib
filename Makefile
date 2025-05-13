@@ -10,7 +10,7 @@
 #
 # Please specify your library as well as primary contacts.
 # Since these contacts will be addressed with Github mentions they
-# need to be Github users (for now)(sorry Bitbucket).
+# need to be Github users.
 #
 clean: clean-eggs clean-build
 	@find . -iname '*.pyc' -delete
@@ -45,17 +45,10 @@ test:
 
 bottle:
 	#---------------------------
-	# Library thomsonreuters/bottle-oauthlib
+	# Library refinitiv/bottle-oauthlib
 	# Contacts: Jonathan.Huot
-	cd bottle-oauthlib 2>/dev/null || git clone https://github.com/thomsonreuters/bottle-oauthlib.git
+	cd bottle-oauthlib 2>/dev/null || git clone https://github.com/refinitiv/bottle-oauthlib.git
 	cd bottle-oauthlib && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && sed -i.old '/oauthlib/d' requirements.txt && tox
-
-flask:
-	#---------------------------
-	# Library: lepture/flask-oauthLib
-	# Contacts: lepture,widnyana
-	cd flask-oauthlib 2>/dev/null || git clone https://github.com/lepture/flask-oauthlib.git
-	cd flask-oauthlib && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && sed -i.old '/oauthlib/d' requirements.txt && tox
 
 django:
 	#---------------------------
@@ -63,7 +56,7 @@ django:
 	# Contacts: evonove,masci
 	# (note: has tox.ini already)
 	cd django-oauth-toolkit 2>/dev/null || git clone https://github.com/evonove/django-oauth-toolkit.git
-	cd django-oauth-toolkit && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && tox -e py27,py35,py36
+	cd django-oauth-toolkit && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && tox
 
 requests:
 	#---------------------------
