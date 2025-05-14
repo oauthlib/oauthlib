@@ -1,4 +1,4 @@
 -r requirements.txt
 pytest>=4.0
 pytest-cov>=2.6
-pytest-subtests==0.14.1
+pytest-subtests
