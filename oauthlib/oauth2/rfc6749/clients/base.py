@@ -586,10 +586,30 @@ class Client:
             self._expires_at = round(time.time()) + int(self.expires_in)
 
         if 'expires_at' in response:
-            try:
-                self._expires_at = round(float(response.get('expires_at')))
-            except:
-                self._expires_at = None
+            # expires_at is not in specification
+            # so it does its best to :
+            # convert into a float, or
+            # convert into an integer, or
+            # reuse the type as-is
+
+            if isinstance(response.get('expires_at'), str):
+                try:
+                    self.expires_at = int(response.get('expires_at'))
+                except ValueError:
+                    self.expires_at = response.get('expires_at')
+                try:
+                    self.expires_at = float(response.get('expires_at'))
+                except ValueError:
+                    self.expires_at = response.get('expires_at')
+            else:
+                self.expires_at = response.get('expires_at')
+
+            # we preserve internal capability to raise TokenExpiredError
+            # for valid types only
+            if isinstance(self.expires_at, float):
+                self._expires_at = round(self.expires_at)
+            elif isinstance(self.expires_at, int):
+                self._expires_at = self.expires_at
 
         if 'mac_key' in response:
             self.mac_key = response.get('mac_key')
