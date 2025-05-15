@@ -594,13 +594,13 @@ class Client:
 
             if isinstance(response.get('expires_at'), str):
                 try:
+                    # Attempt to convert to int first, then float if int fails
                     self.expires_at = int(response.get('expires_at'))
                 except ValueError:
-                    self.expires_at = response.get('expires_at')
-                try:
-                    self.expires_at = float(response.get('expires_at'))
-                except ValueError:
-                    self.expires_at = response.get('expires_at')
+                    try:
+                        self.expires_at = float(response.get('expires_at'))
+                    except ValueError:
+                        self.expires_at = response.get('expires_at')
             else:
                 self.expires_at = response.get('expires_at')
 
