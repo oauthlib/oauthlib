@@ -434,10 +434,8 @@ def parse_token_response(body, scope=None):
         if params['expires_in'] is None:
             params.pop('expires_in')
         else:
-            params['expires_at'] = time.time() + int(params['expires_in'])
+            params['expires_at'] = round(time.time()) + int(params['expires_in'])
 
-    if isinstance(params.get('expires_at'), float):
-        params['expires_at'] = round(params['expires_at'])
 
     params = OAuth2Token(params, old_scope=scope)
     validate_token_parameters(params)
