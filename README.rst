@@ -75,7 +75,9 @@ Which web frameworks are supported?
 
 The following packages provide OAuth support using OAuthLib.
 
-- For Django there is `django-oauth-toolkit`_, which includes `Django REST framework`_ support.
+- For Django there is:
+ - `django-oauth-toolkit`_, which includes `Django REST framework`_ support.
+ - `django-allauth`_, which includes `Django REST framework`_ as well as `Django Ninja`_ support.
 - For Flask there is `flask-oauthlib`_ and `Flask-Dance`_.
 - For Pyramid there is `pyramid-oauthlib`_.
 - For Bottle there is `bottle-oauthlib`_.
@@ -89,6 +91,8 @@ please open a Pull Request, updating the documentation.
 .. _`Flask-Dance`: https://github.com/singingwolfboy/flask-dance
 .. _`pyramid-oauthlib`: https://github.com/tilgovi/pyramid-oauthlib
 .. _`bottle-oauthlib`: https://github.com/thomsonreuters/bottle-oauthlib
+.. _`django-allauth`: https://allauth.org/
+.. _`Django Ninja`: https://django-ninja.dev/
 
 Using OAuthLib? Please get in touch!
 ------------------------------------
