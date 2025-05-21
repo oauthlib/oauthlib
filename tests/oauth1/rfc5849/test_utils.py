@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from oauthlib.oauth1.rfc5849.utils import *
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class UtilsTests(TestCase):

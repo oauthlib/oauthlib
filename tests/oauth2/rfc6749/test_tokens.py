@@ -6,7 +6,7 @@ from oauthlib.oauth2.rfc6749.tokens import (
     prepare_bearer_uri, prepare_mac_header,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class TokenTest(TestCase):
