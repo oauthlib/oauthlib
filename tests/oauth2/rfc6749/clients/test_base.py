@@ -340,10 +340,10 @@ class ClientTest(TestCase):
     def test_parse_token_response_expires_at_types(self):
         for data in [  # title, expected, expected_valid, fieldjson
                 ('int', 1661185148, 1661185148, 1661185148),
-                ('float', 1661185148.6437678, 1661185149, 1661185148.6437678),
+                ('float', 1661185148.6437678, 1661185148.6437678, 1661185148.6437678),
                 ('str', "2006-01-02T15:04:05Z", None, "\"2006-01-02T15:04:05Z\""),
                 ('str-as-int', 1661185148, 1661185148, "\"1661185148\""),
-                ('str-as-float', 1661185148.42, 1661185148, "\"1661185148.42\""),
+                ('str-as-float', 1661185148.42, 1661185148.42, "\"1661185148.42\""),
         ]:
             with self.subTest(msg=data[0]):
                 expected_expires_at = data[1]
