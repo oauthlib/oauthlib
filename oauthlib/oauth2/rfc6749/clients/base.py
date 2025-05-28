@@ -607,7 +607,7 @@ class Client:
             # we preserve internal capability to raise TokenExpiredError
             # for valid types only
             if isinstance(self.expires_at, float):
-                self._expires_at = round(self.expires_at)
+                self._expires_at = self.expires_at
             elif isinstance(self.expires_at, int):
                 self._expires_at = self.expires_at
 
