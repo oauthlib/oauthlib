@@ -114,7 +114,7 @@ have the pleasure to run into each other, please send a docs pull request =)
 License
 -------
 
-OAuthLib is yours to use and abuse according to the terms of the BSD license.
+OAuthLib is yours to use and abuse according to the terms of the BSD-3-Clause license.
 Check the LICENSE file for full details.
 
 Credits
