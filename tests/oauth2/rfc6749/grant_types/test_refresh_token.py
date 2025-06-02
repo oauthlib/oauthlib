@@ -7,7 +7,7 @@ from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types import RefreshTokenGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class RefreshTokenGrantTest(TestCase):
@@ -184,7 +184,7 @@ class RefreshTokenGrantTest(TestCase):
         # all ok but without request.scope
         del self.request.scope
         self.auth.validate_token_request(self.request)
-        self.assertEqual(self.request.scopes, 'foo bar baz'.split())
+        self.assertEqual(self.request.scopes, ['foo', 'bar', 'baz'])
 
     # CORS
 

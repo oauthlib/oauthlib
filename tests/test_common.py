@@ -6,7 +6,7 @@ from oauthlib.common import (
     urldecode,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 PARAMS_DICT = {'foo': 'bar', 'baz': '123', }
 PARAMS_TWOTUPLE = [('foo', 'bar'), ('baz', '123')]
