@@ -148,10 +148,10 @@ class RequestValidator:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_original_scopes(self, refresh_token, request, *args, **kwargs):
+    def get_original_scopes(self, refresh_token_str, request, *args, **kwargs):
         """Get the list of scopes associated with the refresh token.
 
-        :param refresh_token: Unicode refresh token.
+        :param refresh_token_str: Unicode refresh token.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: List of scopes.
@@ -161,7 +161,7 @@ class RequestValidator:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def is_within_original_scope(self, request_scopes, refresh_token, request, *args, **kwargs):
+    def is_within_original_scope(self, request_scopes, refresh_token_str, request, *args, **kwargs):
         """Check if requested scopes are within a scope of the refresh token.
 
         When access tokens are refreshed the scope of the new token
@@ -173,7 +173,7 @@ class RequestValidator:
         get_original_scopes is not practical.
 
         :param request_scopes: A list of scopes that were requested by client.
-        :param refresh_token: Unicode refresh_token.
+        :param refresh_token_str: Unicode refresh_token.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
@@ -183,7 +183,7 @@ class RequestValidator:
         """
         return False
 
-    def introspect_token(self, token, token_type_hint, request, *args, **kwargs):
+    def introspect_token(self, token_str, token_type_hint, request, *args, **kwargs):
         """Introspect an access or refresh token.
 
         Called once the introspect request is validated. This method should
@@ -212,7 +212,7 @@ class RequestValidator:
 
         The dict of claims is added to request.token after this method.
 
-        :param token: The token string.
+        :param token_str: The token string.
         :param token_type_hint: access_token or refresh_token.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -238,10 +238,10 @@ class RequestValidator:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
+    def revoke_token(self, token_str, token_type_hint, request, *args, **kwargs):
         """Revoke an access or refresh token.
 
-        :param token: The token string.
+        :param token_str: The token string.
         :param token_type_hint: access_token or refresh_token.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -303,18 +303,18 @@ class RequestValidator:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def save_token(self, token, request, *args, **kwargs):
+    def save_token(self, token_dict, request, *args, **kwargs):
         """Persist the token with a token type specific method.
 
         Currently, only save_bearer_token is supported.
 
-        :param token: A (Bearer) token dict.
+        :param token_dict: A (Bearer) token dict.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
-        return self.save_bearer_token(token, request, *args, **kwargs)
+        return self.save_bearer_token(token_dict, request, *args, **kwargs)
 
-    def save_bearer_token(self, token, request, *args, **kwargs):
+    def save_bearer_token(self, token_dict, request, *args, **kwargs):
         """Persist the Bearer token.
 
         The Bearer token should at minimum be associated with:
@@ -351,7 +351,7 @@ class RequestValidator:
         the claims dict, which should be saved for later use when generating the
         id_token and/or UserInfo response content.
 
-        :param token: A Bearer token dict.
+        :param token_dict: A Bearer token dict.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: The default redirect URI for the client
@@ -364,10 +364,10 @@ class RequestValidator:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_bearer_token(self, token, scopes, request):
+    def validate_bearer_token(self, token_str, scopes, request):
         """Ensure the Bearer token is valid and authorized access to scopes.
 
-        :param token: A string of random characters.
+        :param token_str: A string of random characters.
         :param scopes: A list of scopes associated with the protected resource.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -402,7 +402,7 @@ class RequestValidator:
         one provided for django these attributes will be made available
         in all protected views as keyword arguments.
 
-        :param token: Unicode Bearer token
+        :param token_str: Unicode Bearer token
         :param scopes: List of scopes (defined by you)
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -505,13 +505,13 @@ class RequestValidator:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_refresh_token(self, refresh_token, client, request, *args, **kwargs):
+    def validate_refresh_token(self, refresh_token_str, client, request, *args, **kwargs):
         """Ensure the Bearer token is valid and authorized access to scopes.
 
         OBS! The request.user attribute should be set to the resource owner
         associated with this refresh token.
 
-        :param refresh_token: Unicode refresh token.
+        :param refresh_token_str: Unicode refresh token.
         :param client: Client object set by you, see ``.authenticate_client``.
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
