@@ -11,4 +11,4 @@ following versions are currently being supported with security updates.
 | < 3.2.0 | :x:                |
 
 ## Reporting a Vulnerability
-Contact auvipy@gmail.com for reporting any vulnerability.
+Please raise a draft advisory to start discussing about the vulnerability in a private channel with OAuthlib Admin: https://github.com/oauthlib/oauthlib/security/advisories/new
