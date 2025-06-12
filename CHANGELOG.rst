@@ -14,6 +14,7 @@ OAuth2.0 Common:
 
 OAuth2.0 Client:
 * #745: expires_at is forced to be an int
+* #899: expires_at clarification
 
 General:
 * Removed Python 3.5, 3.6, 3.7 support
