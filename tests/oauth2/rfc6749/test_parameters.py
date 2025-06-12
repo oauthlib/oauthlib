@@ -305,7 +305,7 @@ class ParameterTests(TestCase):
 
 
     def test_parse_expires(self):
-        for title, arg, expected in [  # title, arg_tuple, returned_expected_tuple,
+        for title, arg, expected in [
                 ('none', (None, None), (None, None, None)),
                 ('expires_in only', (3600, None), (3600, 4600, 4600)),
                 ('expires_in and expires_at', (3600, 200), (3600, 200, 200)),

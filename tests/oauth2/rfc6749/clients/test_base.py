@@ -338,7 +338,7 @@ class ClientTest(TestCase):
         self.assertEqual(code_challenge_s256, client.code_challenge)
 
     def test_parse_token_response_expires_at_types(self):
-        for title, fieldjson, expected, generated in [  # title, fieldjson, expected, expected_valid
+        for title, fieldjson, expected, generated in [
                 ('int', 1661185148, 1661185148, 1661185148),
                 ('float', 1661185148.6437678, 1661185148.6437678, 1661185148.6437678),
                 ('str', "\"2006-01-02T15:04:05Z\"", "2006-01-02T15:04:05Z", None),
