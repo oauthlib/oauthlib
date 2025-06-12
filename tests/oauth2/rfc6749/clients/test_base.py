@@ -338,30 +338,27 @@ class ClientTest(TestCase):
         self.assertEqual(code_challenge_s256, client.code_challenge)
 
     def test_parse_token_response_expires_at_types(self):
-        for data in [  # title, expected, expected_valid, fieldjson
+        for title, fieldjson, expected, generated in [  # title, fieldjson, expected, expected_valid
                 ('int', 1661185148, 1661185148, 1661185148),
                 ('float', 1661185148.6437678, 1661185148.6437678, 1661185148.6437678),
-                ('str', "2006-01-02T15:04:05Z", None, "\"2006-01-02T15:04:05Z\""),
-                ('str-as-int', 1661185148, 1661185148, "\"1661185148\""),
-                ('str-as-float', 1661185148.42, 1661185148.42, "\"1661185148.42\""),
+                ('str', "\"2006-01-02T15:04:05Z\"", "2006-01-02T15:04:05Z", None),
+                ('str-as-int', "\"1661185148\"", 1661185148, 1661185148),
+                ('str-as-float', "\"1661185148.42\"", 1661185148.42, 1661185148.42),
         ]:
-            with self.subTest(msg=data[0]):
-                expected_expires_at = data[1]
-                expected_valid_expires_at = data[2]
+            with self.subTest(msg=title):
                 token_json = ('{{  "access_token":"2YotnFZFEjr1zCsicMWpAA",'
                               '    "token_type":"example",'
                               '    "expires_at":{expires_at},'
                               '    "scope":"/profile",'
-                              '    "example_parameter":"example_value"}}'.format(expires_at=data[3]))
+                              '    "example_parameter":"example_value"}}'.format(expires_at=fieldjson))
 
                 client = Client(self.client_id)
-
                 response = client.parse_request_body_response(token_json, scope=["/profile"])
 
-                self.assertEqual(response['expires_at'], json.loads('{{"foo":{}}}'.format(data[3]))["foo"], "response attribute wrong")
-                self.assertEqual(client.expires_at, expected_expires_at, "client attribute wrong")
-                if expected_valid_expires_at:
-                    self.assertEqual(client._expires_at, expected_valid_expires_at, "internal expiration wrong")
+                self.assertEqual(response['expires_at'], expected, "response attribute wrong")
+                self.assertEqual(client.expires_at, expected, "client attribute wrong")
+                if generated:
+                    self.assertEqual(client._expires_at, generated, "internal expiration wrong")
 
     @patch('time.time')
     def test_parse_token_response_generated_expires_at_is_int(self, t):
