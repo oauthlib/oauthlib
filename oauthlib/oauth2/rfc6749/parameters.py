@@ -505,8 +505,7 @@ def parse_expires(params):
             raise ValueError("expires_int must be an int")
 
     if 'expires_at' in params:
-        if isinstance(params.get('expires_at'), float) or \
-           isinstance(params.get('expires_at'), int):
+        if isinstance(params.get('expires_at'), (float, int)):
             expires_at = params.get('expires_at')
             _expires_at = expires_at
         elif isinstance(params.get('expires_at'), str):
