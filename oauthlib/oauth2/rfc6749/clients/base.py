@@ -17,6 +17,7 @@ from oauthlib.oauth2.rfc6749.errors import (
     InsecureTransportError, TokenExpiredError,
 )
 from oauthlib.oauth2.rfc6749.parameters import (
+    parse_expires,
     parse_token_response, prepare_token_request,
     prepare_token_revocation_request,
 )
@@ -581,15 +582,13 @@ class Client:
         if 'token_type' in response:
             self.token_type = response.get('token_type')
 
-        if 'expires_in' in response:
-            self.expires_in = response.get('expires_in')
-            self._expires_at = round(time.time()) + int(self.expires_in)
-
-        if 'expires_at' in response:
-            try:
-                self._expires_at = round(float(response.get('expires_at')))
-            except:
-                self._expires_at = None
+        vin, vat, v_at = parse_expires(response)
+        if vin:
+            self.expires_in = vin
+        if vat:
+            self.expires_at = vat
+        if v_at:
+            self._expires_at = v_at
 
         if 'mac_key' in response:
             self.mac_key = response.get('mac_key')
