@@ -51,3 +51,26 @@ Minor point (1.1.0) releases will introduce non API breaking new features and
 changes. Bug releases (1.0.1) will include minor fixes that needs to be
 released quickly (e.g. after a bigger release unintentionally introduced a
 bug).
+
+For maintainer - Publishing a newer version
+--------------------------------------------
+
+List of tasks to do a release from a maintainer point of view:
+
+  - Create a Branch ``xyz-release``
+  - Update ``oauthlib/__init__.py`` version
+  - Update ``CHANGELOG.rst`` accordingly
+  - Review Github Issues and PR, and associate the milestone of the version
+  - Run ``make`` to cover the release readiness
+  - Create a PR to let downstreams developers test their apps and comments
+  - Create a tag and push tag, it will automatically publish the release to pypi
+  - Create a release with GitHub Releases
+  - Merge PR, close Github milestone
+
+
+Initial setup:
+  - Because we currently use "trusted publisher", it does not require to setup
+    token. However, OIDC Authorization flow has to be configured in `pypi publishing`.
+  - During setup, refer to the environment and name of the workflow directly in the code.
+
+.. _`pypi publishing`: https://pypi.org/manage/project/oauthlib/settings/publishing/
