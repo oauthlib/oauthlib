@@ -20,8 +20,8 @@ class MetadataEndpointTest(TestCase):
             "introspection_endpoint": "https://foo.bar/introspect",
             "token_endpoint": "https://foo.bar/token"
         }
-        from oauthlib.oauth2 import Server as OAuth2Server
-        from oauthlib.openid import Server as OpenIDServer
+        from oauthlib.oauth2 import Server as OAuth2Server  # noqa: PLC0415
+        from oauthlib.openid import Server as OpenIDServer  # noqa: PLC0415
 
         endpoint = OAuth2Server(None)
         metadata = MetadataEndpoint([endpoint], default_claims)

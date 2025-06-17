@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import json
 from unittest.mock import patch
 
 from oauthlib import common
@@ -303,31 +304,6 @@ class ClientTest(TestCase):
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope={}&refresh_token={}'.format(scope, token))
 
-    def test_parse_token_response_invalid_expires_at(self):
-        token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
-                      '    "token_type":"example",'
-                      '    "expires_at":"2006-01-02T15:04:05Z",'
-                      '    "scope":"/profile",'
-                      '    "example_parameter":"example_value"}')
-        token = {
-            "access_token": "2YotnFZFEjr1zCsicMWpAA",
-            "token_type": "example",
-            "expires_at": "2006-01-02T15:04:05Z",
-            "scope": ["/profile"],
-            "example_parameter": "example_value"
-        }
-
-        client = Client(self.client_id)
-
-        # Parse code and state
-        response = client.parse_request_body_response(token_json, scope=["/profile"])
-        self.assertEqual(response, token)
-        self.assertEqual(None, client._expires_at)
-        self.assertEqual(client.access_token, response.get("access_token"))
-        self.assertEqual(client.refresh_token, response.get("refresh_token"))
-        self.assertEqual(client.token_type, response.get("token_type"))
-
-
     def test_create_code_verifier_min_length(self):
         client = Client(self.client_id)
         length = 43
@@ -361,20 +337,28 @@ class ClientTest(TestCase):
         code_challenge_s256 = client.create_code_challenge(code_verifier=code_verifier, code_challenge_method='S256')
         self.assertEqual(code_challenge_s256, client.code_challenge)
 
-    def test_parse_token_response_expires_at_is_int(self):
-        expected_expires_at = 1661185149
-        token_json = ('{   "access_token":"2YotnFZFEjr1zCsicMWpAA",'
-                      '    "token_type":"example",'
-                      '    "expires_at":1661185148.6437678,'
-                      '    "scope":"/profile",'
-                      '    "example_parameter":"example_value"}')
+    def test_parse_token_response_expires_at_types(self):
+        for title, fieldjson, expected, generated in [
+                ('int', 1661185148, 1661185148, 1661185148),
+                ('float', 1661185148.6437678, 1661185148.6437678, 1661185148.6437678),
+                ('str', "\"2006-01-02T15:04:05Z\"", "2006-01-02T15:04:05Z", None),
+                ('str-as-int', "\"1661185148\"", 1661185148, 1661185148),
+                ('str-as-float', "\"1661185148.42\"", 1661185148.42, 1661185148.42),
+        ]:
+            with self.subTest(msg=title):
+                token_json = ('{{  "access_token":"2YotnFZFEjr1zCsicMWpAA",'
+                              '    "token_type":"example",'
+                              '    "expires_at":{expires_at},'
+                              '    "scope":"/profile",'
+                              '    "example_parameter":"example_value"}}'.format(expires_at=fieldjson))
 
-        client = Client(self.client_id)
+                client = Client(self.client_id)
+                response = client.parse_request_body_response(token_json, scope=["/profile"])
 
-        response = client.parse_request_body_response(token_json, scope=["/profile"])
-
-        self.assertEqual(response['expires_at'], expected_expires_at)
-        self.assertEqual(client._expires_at, expected_expires_at)
+                self.assertEqual(response['expires_at'], expected, "response attribute wrong")
+                self.assertEqual(client.expires_at, expected, "client attribute wrong")
+                if generated:
+                    self.assertEqual(client._expires_at, generated, "internal expiration wrong")
 
     @patch('time.time')
     def test_parse_token_response_generated_expires_at_is_int(self, t):

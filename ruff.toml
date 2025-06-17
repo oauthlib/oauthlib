@@ -7,7 +7,7 @@
 # start with [tool.ruff
 
 # [tool.ruff]
-select = [
+lint.select = [
   "A",      # flake8-builtins
   "AIR",    # Airflow
   "ASYNC",  # flake8-async
@@ -65,7 +65,7 @@ select = [
   # "TRY",  # tryceratops
   # "UP",   # pyupgrade
 ]
-ignore = [
+lint.ignore = [
   "F401",
   "F403",
   "F405",
@@ -88,11 +88,11 @@ line-length = 255
 target-version = "py37"
 
 # [tool.ruff.mccabe]
-[mccabe]
+[lint.mccabe]
 max-complexity = 24  # default is 10
 
 # [tool.ruff.per-file-ignores]
-[per-file-ignores]
+[lint.per-file-ignores]
 "docs/conf.py" = ["A001", "INP001"]
 "oauthlib/oauth2/rfc6749/clients/base.py" = ["E722"]
 "oauthlib/oauth2/rfc6749/endpoints/base.py" = ["BLE001"]
@@ -106,7 +106,7 @@ max-complexity = 24  # default is 10
 "oauthlib/openid/connect/core/tokens.py" = ["RUF023"]
 
 # [tool.ruff.pylint]
-[pylint]
+[lint.pylint]
 allow-magic-value-types = ["int", "str"]
 max-args = 16  # default is 5
 max-branches = 24  # default is 12

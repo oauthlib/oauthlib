@@ -198,7 +198,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 
 
 def generate_signed_token(private_pem, request):
-    import jwt
+    import jwt  # noqa: PLC0415
 
     now = datetime.datetime.utcnow()
 
@@ -216,7 +216,7 @@ def generate_signed_token(private_pem, request):
 
 
 def verify_signed_token(public_pem, token):
-    import jwt
+    import jwt  # noqa: PLC0415
 
     return jwt.decode(token, public_pem, algorithms=['RS256'])
 

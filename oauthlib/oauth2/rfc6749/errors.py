@@ -6,6 +6,8 @@ Error used both by OAuth 2 clients and providers to represent the spec
 defined error responses for all four core grant types.
 """
 import json
+import inspect
+import sys
 
 from oauthlib.common import add_params_to_uri, urlencode
 
@@ -386,8 +388,6 @@ class CustomOAuth2Error(OAuth2Error):
 
 
 def raise_from_error(error, params=None):
-    import inspect
-    import sys
     kwargs = {
         'description': params.get('error_description'),
         'uri': params.get('error_uri'),

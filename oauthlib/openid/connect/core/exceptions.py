@@ -5,6 +5,9 @@ oauthlib.oauth2.rfc6749.errors
 Error used both by OAuth 2 clients and providers to represent the spec
 defined error responses for all four core grant types.
 """
+import inspect
+import sys
+
 from oauthlib.oauth2.rfc6749.errors import FatalClientError, OAuth2Error
 
 
@@ -137,8 +140,6 @@ class InsufficientScopeError(OAuth2Error):
 
 
 def raise_from_error(error, params=None):
-    import inspect
-    import sys
     kwargs = {
         'description': params.get('error_description'),
         'uri': params.get('error_uri'),
