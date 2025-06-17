@@ -17,6 +17,8 @@ jobs:
     steps:
     - name: Check out repository code
       uses: actions/checkout@v4
+      with:  # by default, this event will trigger a workflow on the default branch.
+        ref: ${{ github.event.workflow_run.head_ref }}  # set source branch
     - uses: actions/setup-python@v5
       with:
         python-version: '3.10'
