@@ -71,6 +71,9 @@ List of tasks to do a release from a maintainer point of view:
 Initial setup:
   - Because we currently use "trusted publisher", it does not require to setup
     token. However, OIDC Authorization flow has to be configured in `pypi publishing`.
-  - During setup, refer to the environment and name of the workflow directly in the code.
+
+    - During setup, refer to the environment and name of the workflow directly in the code.
+  - GitHub Restrictions: tag protection must be enabled
+
 
 .. _`pypi publishing`: https://pypi.org/manage/project/oauthlib/settings/publishing/
