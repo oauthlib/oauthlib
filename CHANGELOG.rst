@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.3.0 (2025-05-11):
+3.3.0 (2025-06-17):
 ------------------
 OAuth2.0 Provider:
 * OIDC: #879 Changed in how ui_locales is parsed
