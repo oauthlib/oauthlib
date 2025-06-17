@@ -1,3 +1,4 @@
+from datetime import datetime
 import unittest
 
 from oauthlib.uri_validate import is_absolute_uri
@@ -77,7 +78,6 @@ class UriValidateTest(TestCase):
         self.assertIsNone(is_absolute_uri('http://[abcd:efgh::1]/'))
 
     def test_recursive_regex(self):
-        from datetime import datetime
         t0 = datetime.now()
         is_absolute_uri('http://[::::::::::::::::::::::::::]/path')
         t1 = datetime.now()

@@ -568,7 +568,7 @@ def _get_jwt_rsa_algorithm(hash_algorithm_name: str):
         # Not in cache: instantiate a new RSAAlgorithm
 
         # PyJWT has some nice pycrypto/cryptography abstractions
-        import jwt.algorithms as jwt_algorithms
+        import jwt.algorithms as jwt_algorithms  # noqa: PLC0415
         m = {
             'SHA-1': jwt_algorithms.hashes.SHA1,
             'SHA-256': jwt_algorithms.hashes.SHA256,

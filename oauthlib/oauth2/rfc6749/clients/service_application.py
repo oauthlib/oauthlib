@@ -149,7 +149,7 @@ class ServiceApplicationClient(Client):
 
         .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
-        import jwt
+        import jwt  # noqa: PLC0415
 
         key = private_key or self.private_key
         if not key:
