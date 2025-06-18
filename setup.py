@@ -33,7 +33,7 @@ setup(
     url='https://github.com/oauthlib/oauthlib',
     platforms='any',
     license='BSD-3-Clause',
-    packages=find_packages(exclude=('docs', 'tests', 'tests.*')),
+    packages=find_packages(exclude=('docs', 'examples', 'tests', 'tests.*')),
     python_requires='>=3.8',
     extras_require={
         'rsa': rsa_require,
