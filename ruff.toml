@@ -5,6 +5,7 @@
 
 # When switching from ruff.toml to pyproject.toml, use the section names that
 # start with [tool.ruff
+exclude = ["flask-dance", "requests-oauthlib", "bottle-oauthlib", "django-oauth-toolkit"]
 
 # [tool.ruff]
 lint.select = [
