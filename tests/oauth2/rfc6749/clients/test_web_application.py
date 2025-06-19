@@ -270,11 +270,16 @@ class WebApplicationClientTest(TestCase):
 
         client = WebApplicationClient(
             client_id="dummy",
-            token={"access_token": "xyz", "expires_in": "3600"}  # ← str on purpose
+            token={"access_token": "xyz", "expires_in": "3600"}
         )
         self.assertIsNotNone(client)
         client = WebApplicationClient(
             client_id="dummy",
-            token={"access_token": "xyz", "expires_in": 3600}  # ← str on purpose
+            token={"access_token": "xyz", "expires_in": 3600}
+        )
+        self.assertIsNotNone(client)
+        client = WebApplicationClient(
+            client_id="dummy",
+            token={"access_token": "xyz", "expires_in": 3600.12}
         )
         self.assertIsNotNone(client)
