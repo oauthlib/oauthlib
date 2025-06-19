@@ -159,24 +159,22 @@ all versions conveniently at once can be done using `Tox`_.
 
    $ tox
 
-Tox requires you to have `virtualenv`_ installed as well as respective python
-version. We recommend using `pyenv`_ to install those Python versions.
+Tox requires you to have respective python versions. We recommend using `uv`_ to install those Python versions.
 
-We recommend using the latest patch version for each Python version we support and the latest PyPy versions.
-The versions beloew may not be up to date.
 
 .. sourcecode:: bash
 
-   $ pyenv install -l # check which versions you want to use
-   $ pyenv install 3.8.18
-   $ pyenv install 3.11.7
-   $ pyenv install pypy3.10-7.3.13
+   $ uv tool install tox --with tox-uv
+   $ uv python list # check which versions you want to use
+   $ uv python install 3.8 3.9 3.10 3.11 3.12 3.13
+   $ uv python install pypy3
+   $ uvx --with tox-uv tox # that run all tests with all python versions
+
 
 .. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
-.. _`virtualenv`: https://virtualenv.pypa.io/en/latest/installation/
-.. _`pyenv`: https://github.com/pyenv/pyenv
+.. _`uv`: https://docs.astral.sh/uv/#python-versions
 
-Test upstream applications
+Test downstream applications
 -----------------------------------
 
 Remember, OAuthLib is used by several 3rd party projects. If you think you
@@ -185,6 +183,14 @@ submit a breaking change, confirm that other projects builds are not affected.
 .. sourcecode:: bash
 
    $ make
+
+Note be sure you are using ``uv`` as explained before with all python versions, including those from downstream libraries, to have all test cases running.
+
+As of 2025, additional downstreams python versions are as below:
+
+.. sourcecode:: bash
+
+   $ uv python install pypy3.10
 
 
 If you add code, add tests!

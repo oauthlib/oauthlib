@@ -35,36 +35,35 @@ clean-build:
 	@rm -fr *.egg-info
 
 test:
-	tox
+	uvx --with tox-uv tox
 
 bottle:
 	#---------------------------
 	# Library refinitiv/bottle-oauthlib
 	# Contacts: Jonathan.Huot
 	cd bottle-oauthlib 2>/dev/null || git clone https://github.com/refinitiv/bottle-oauthlib.git
-	cd bottle-oauthlib && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && sed -i.old '/oauthlib/d' requirements.txt && tox
+	cd bottle-oauthlib && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && sed -i.old '/oauthlib/d' requirements.txt && uvx --with tox-uv tox
 
 django:
 	#---------------------------
 	# Library: evonove/django-oauth-toolkit
 	# Contacts: evonove,masci
-	# (note: has tox.ini already)
 	cd django-oauth-toolkit 2>/dev/null || git clone https://github.com/evonove/django-oauth-toolkit.git
-	cd django-oauth-toolkit && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && tox
+	cd django-oauth-toolkit && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && uvx --with tox-uv tox
 
 requests:
 	#---------------------------
 	# Library requests/requests-oauthlib
 	# Contacts: ib-lundgren,lukasa
 	cd requests-oauthlib 2>/dev/null || git clone https://github.com/requests/requests-oauthlib.git
-	cd requests-oauthlib && sed -i.old 's,deps=,deps = --editable=file://{toxinidir}/../[signedtoken],' tox.ini && sed -i.old '/oauthlib/d' requirements.txt && tox
+	cd requests-oauthlib && sed -i.old 's,oauthlib.*,--editable=file://{toxinidir}/../../[signedtoken],' requirements.txt && uvx --with tox-uv tox
 
 dance:
 	#---------------------------
 	# Library singingwolfboy/flask-dance
 	# Contacts: singingwolfboy
 	cd flask-dance 2>/dev/null || git clone https://github.com/singingwolfboy/flask-dance.git
-	cd flask-dance && sed -i.old 's,deps=,deps = --editable=file://{toxinidir}/../,' tox.ini && sed -i.old '/oauthlib/d' requirements.txt && tox 
+	cd flask-dance && sed -i.old 's;"oauthlib.*";"oauthlib @ file://'`pwd`'/../";' pyproject.toml && uv venv && uv pip install -e '.[test]' && ./.venv/bin/coverage run -m pytest
 
 .DEFAULT_GOAL := all
 .PHONY: clean test bottle dance django flask requests
