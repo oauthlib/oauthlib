@@ -67,6 +67,12 @@ List of tasks to do a release from a maintainer point of view:
   - Create a release with GitHub Releases
   - Merge PR, close Github milestone
 
+In case of issues with CICD and a manual publish is required, follow these steps:
+
+  - Install dependencies `pip install build twine`
+  - Run `python -m build`
+  - Run `twine check dist/*`
+  - Run `twine upload dist/*`
 
 Initial setup:
   - Because we currently use "trusted publisher", it does not require to setup
