@@ -34,12 +34,6 @@ clean-build:
 	@rm -fr dist/
 	@rm -fr *.egg-info
 
-format fmt black:
-	black .
-
-lint ruff:
-	ruff check .
-
 test:
 	tox
 
@@ -74,4 +68,4 @@ dance:
 
 .DEFAULT_GOAL := all
 .PHONY: clean test bottle dance django flask requests
-all: lint test bottle dance django flask requests
+all: test bottle dance django flask requests
