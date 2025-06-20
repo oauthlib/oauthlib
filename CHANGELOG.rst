@@ -1,6 +1,12 @@
 Changelog
 =========
 
+3.3.1 (2025-06-19):
+------------------
+OAuth2.0 Client:
+* #906: fix regression of expires_in parsing when float in string.
+
+
 3.3.0 (2025-06-17):
 ------------------
 OAuth2.0 Provider:

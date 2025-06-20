@@ -476,7 +476,7 @@ def parse_expires(params):
     """Parse `expires_in`, `expires_at` fields from params
 
     Parse following these rules:
-    - `expires_in` must be either blank or a valid integer.
+    - `expires_in` must be either integer, float or None. If a float, it is converted into an integer.
     - `expires_at` is not in specification so it does its best to:
       - convert into a int, else
       - convert into a float, else
@@ -495,14 +495,16 @@ def parse_expires(params):
     if 'expires_in' in params:
         if isinstance(params.get('expires_in'), int):
             expires_in = params.get('expires_in')
+        elif isinstance(params.get('expires_in'), float):
+            expires_in = int(params.get('expires_in'))
         elif isinstance(params.get('expires_in'), str):
             try:
                 # Attempt to convert to int
                 expires_in = int(params.get('expires_in'))
             except ValueError:
-                raise ValueError("expires_int must be an int")
+                raise ValueError("expires_in must be an int")
         elif params.get('expires_in') is not None:
-            raise ValueError("expires_int must be an int")
+            raise ValueError("expires_in must be an int")
 
     if 'expires_at' in params:
         if isinstance(params.get('expires_at'), (float, int)):

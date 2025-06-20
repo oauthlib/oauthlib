@@ -262,3 +262,24 @@ class WebApplicationClientTest(TestCase):
         with self.assertWarns(DeprecationWarning), self.assertRaises(ValueError):
             client.prepare_request_body(client_id='different_client_id')
             # testing the exact exception message in Python2&Python3 is a pain
+
+    def test_expires_in_as_str(self):
+        """
+        see regression issue #906
+        """
+
+        client = WebApplicationClient(
+            client_id="dummy",
+            token={"access_token": "xyz", "expires_in": "3600"}
+        )
+        self.assertIsNotNone(client)
+        client = WebApplicationClient(
+            client_id="dummy",
+            token={"access_token": "xyz", "expires_in": 3600}
+        )
+        self.assertIsNotNone(client)
+        client = WebApplicationClient(
+            client_id="dummy",
+            token={"access_token": "xyz", "expires_in": 3600.12}
+        )
+        self.assertIsNotNone(client)
