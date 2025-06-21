@@ -131,7 +131,10 @@ class ParameterTests(TestCase):
                      '  "refresh_token": "tGzv3JOkF0XG5Qx2TlKWIA",'
                      '  "example_parameter": "example_value"}')
 
-    json_custom_error = '{ "error": "incorrect_client_credentials" }'
+    json_custom_errors = ['{ "error": "incorrect_client_credentials" }',
+                          '{ "Error": "incorrect_client_credentials" }',
+                          '{ "errorCode": "incorrect_client_credentials" }',
+                          '{ "ERROR": "incorrect_client_credentials" }']
     json_error = '{ "error": "access_denied" }'
 
     json_notoken = ('{ "token_type": "example",'
@@ -238,7 +241,8 @@ class ParameterTests(TestCase):
                 self.implicit_wrongstate, state=self.state)
 
     def test_custom_json_error(self):
-        self.assertRaises(CustomOAuth2Error, parse_token_response, self.json_custom_error)
+        for custom_error in self.json_custom_errors:
+            self.assertRaises(CustomOAuth2Error, parse_token_response, custom_error)
 
     def test_json_token_response(self):
         """Verify correct parameter parsing and validation for token responses. """
