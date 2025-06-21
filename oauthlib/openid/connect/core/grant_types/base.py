@@ -71,7 +71,7 @@ class GrantTypeBase:
         left_most = len(digest) // 2
         return base64.urlsafe_b64encode(digest[:left_most]).decode().rstrip("=")
 
-    def add_id_token(self, token, token_handler, request, nonce=None):
+    def add_id_token(self, token_dict, token_handler, request, nonce=None):
         """
         Construct an initial version of id_token, and let the
         request_validator sign or encrypt it.
@@ -86,17 +86,17 @@ class GrantTypeBase:
         """
         # Treat it as normal OAuth 2 auth code request if openid is not present
         if not request.scopes or 'openid' not in request.scopes:
-            return token
+            return token_dict
 
         # Only add an id token on auth/token step if asked for.
         if request.response_type and 'id_token' not in request.response_type:
-            return token
+            return token_dict
 
         # Implementation mint its own id_token without help.
-        id_token = self.request_validator.get_id_token(token, token_handler, request)
+        id_token = self.request_validator.get_id_token(token_dict, token_handler, request)
         if id_token:
-            token['id_token'] = id_token
-            return token
+            token_dict['id_token'] = id_token
+            return token_dict
 
         # Fallback for asking some help from oauthlib framework.
         # Start with technicals fields bound to the specification.
@@ -127,21 +127,21 @@ class GrantTypeBase:
         #
         # at_hash MAY NOT be used when:
         # - id_token (Implicit)
-        if "access_token" in token:
-            id_token["at_hash"] = self.id_token_hash(token["access_token"])
+        if "access_token" in token_dict:
+            id_token["at_hash"] = self.id_token_hash(token_dict["access_token"])
 
         # c_hash is REQUIRED when response_type value is:
         # - code id_token (Hybrid)
         # - code id_token token (Hybrid)
         #
         # c_hash is OPTIONAL for others.
-        if "code" in token:
-            id_token["c_hash"] = self.id_token_hash(token["code"])
+        if "code" in token_dict:
+            id_token["c_hash"] = self.id_token_hash(token_dict["code"])
 
         # Call request_validator to complete/sign/encrypt id_token
-        token['id_token'] = self.request_validator.finalize_id_token(id_token, token, token_handler, request)
+        token_dict['id_token'] = self.request_validator.finalize_id_token(id_token, token_dict, token_handler, request)
 
-        return token
+        return token_dict
 
     def openid_authorization_validator(self, request):
         """Perform OpenID Connect specific authorization request validation.

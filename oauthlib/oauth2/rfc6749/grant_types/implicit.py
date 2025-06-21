@@ -233,21 +233,21 @@ class ImplicitGrant(GrantTypeBase):
         # In OIDC implicit flow it is possible to have a request_type that does not include the access_token!
         # "id_token token" - return the access token and the id token
         # "id_token" - don't return the access token
-        token = token_handler.create_token(request, refresh_token=False) if 'token' in request.response_type.split() else {}
+        token_dict = token_handler.create_token(request, refresh_token=False) if 'token' in request.response_type.split() else {}
 
         if request.state is not None:
-            token['state'] = request.state
+            token_dict['state'] = request.state
 
         for modifier in self._token_modifiers:
-            token = modifier(token, token_handler, request)
+            token_dict = modifier(token_dict, token_handler, request)
 
         # In OIDC implicit flow it is possible to have a request_type that does
         # not include the access_token! In this case there is no need to save a token.
         if "token" in request.response_type.split():
-            self.request_validator.save_token(token, request)
+            self.request_validator.save_token(token_dict, request)
 
         return self.prepare_authorization_response(
-            request, token, {}, None, 302)
+            request, token_dict, {}, None, 302)
 
     def validate_authorization_request(self, request):
         """
