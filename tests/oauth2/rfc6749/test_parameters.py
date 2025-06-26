@@ -301,7 +301,25 @@ class ParameterTests(TestCase):
             self.assertEqual(set(new), {'abc', 'def'})
         finally:
             signals.scope_changed.disconnect(record_scope_change)
-        del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
+
+    def test_token_extra_scopes(self):
+        """Test that extra scopes don't raise warnings when OAUTHLIB_RELAX_TOKEN_SCOPE is not set"""
+        scope_changes_recorded = []
+        def record_scope_change(sender, message, old, new):
+            scope_changes_recorded.append((message, old, new))
+
+        signals.scope_changed.connect(record_scope_change)
+        try:
+            # Requested scope is a subset of returned scope
+            token = parse_token_response(self.url_encoded_response, scope='abc')
+            self.assertEqual(len(scope_changes_recorded), 1)
+            message, old, new = scope_changes_recorded[0]
+            for scope in new + old:
+                self.assertIn(scope, message)
+            self.assertEqual(old, ['abc'])
+            self.assertEqual(set(new), {'abc', 'def'})
+        finally:
+            signals.scope_changed.disconnect(record_scope_change)
 
 
     def test_parse_expires(self):
