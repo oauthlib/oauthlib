@@ -11,12 +11,11 @@ jobs:
         with:
           python-version: 3.x
           check-latest: true
-      - run: pip install --upgrade pip setuptools wheel
+      - run: pip install 'pip >= 25.1'  # for dependency group support
       - run: pip install codespell mypy pytest ruff safety
       - run: ruff check --output-format=github .
       - run: codespell --ignore-words-list="implementor,mimiced,provicers,re-use,THIRDPARTY,assertIn"  # --skip="*.css,*.js,*.lock"
-      - run: pip install -r requirements-test.txt
-      - run: pip install --editable .
+      - run: pip install --group test --editable ".[signals,signedtoken]"
       - run: mkdir --parents --verbose .mypy_cache
       - run: mypy --ignore-missing-imports --install-types --non-interactive . || true
       - run: pytest
