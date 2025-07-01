@@ -10,7 +10,7 @@ from oauthlib.oauth1.rfc5849.signature import (
     verify_rsa_sha256, verify_rsa_sha512,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 # ################################################################
 
