@@ -168,7 +168,7 @@ obtain an access token.
 ^^^^^^^^^^^^^^^^
 
 Access tokens are provided to clients able to present a valid request token
-together with its associated verifier. It will allow the client to access 
+together with its associated verifier. It will allow the client to access
 protected resources and is normally not associated with an expiration. Although
 you should consider expiring them as it increases security dramatically.
 
