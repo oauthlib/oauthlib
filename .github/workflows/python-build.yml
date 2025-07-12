@@ -98,7 +98,7 @@ jobs:
           name: python-package-distributions
           path: dist/
   pypi-publish:
-    if: success() && github.repository == 'oauthlib/oauthlib' && github.ref_type = 'tag'
+    if: success() && github.repository == 'oauthlib/oauthlib' && github.ref_type == 'tag'
     needs:
       - build
     name: Upload release to PyPI
