@@ -96,17 +96,11 @@ class RefreshTokenGrant(GrantTypeBase):
         # authentication requirements), the client MUST authenticate with the
         # authorization server as described in Section 3.2.1.
         # https://tools.ietf.org/html/rfc6749#section-3.2.1
-        if self.request_validator.client_authentication_required(request):
-            log.debug('Authenticating client, %r.', request)
-            if not self.request_validator.authenticate_client(request):
-                log.debug('Invalid client (%r), denying access.', request)
-                raise errors.InvalidClientError(request=request)
-            # Ensure that request.client_id is set.
-            if request.client_id is None and request.client is not None:
-                request.client_id = request.client.client_id
-        elif not self.request_validator.authenticate_client_id(request.client_id, request):
-            log.debug('Client authentication failed, %r.', request)
-            raise errors.InvalidClientError(request=request)
+        self.validate_client_authentication(request)
+
+        # Ensure that request.client_id is set.
+        if request.client_id is None and request.client is not None:
+            request.client_id = request.client.client_id
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
