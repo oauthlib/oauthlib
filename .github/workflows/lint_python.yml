@@ -10,14 +10,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
-          check-latest: true
-      - run: pip install --upgrade pip setuptools wheel
-      - run: pip install codespell mypy pytest ruff safety
-      - run: ruff check --output-format=github .
-      - run: codespell --ignore-words-list="implementor,mimiced,provicers,re-use,THIRDPARTY,assertIn"  # --skip="*.css,*.js,*.lock"
-      - run: pip install -r requirements-test.txt
+      - uses: pre-commit/action@v3.0.1
+      - run: pip install --upgrade pip
+      - run: pip install mypy pytest -r requirements-test.txt
       - run: pip install --editable .
       - run: mkdir --parents --verbose .mypy_cache
       - run: mypy --ignore-missing-imports --install-types --non-interactive . || true
       - run: pytest
-      - run: safety check || true
+      - run: pipx run safety check

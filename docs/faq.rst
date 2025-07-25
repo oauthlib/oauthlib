@@ -38,7 +38,7 @@ What does ValueError `Only unicode objects are escapable. Got one of type X.` me
 
    OAuthLib uses unicode everywhere and when creating a OAuth 1 signature
    a number of parameters need to be percent encoded (aka escaped). At least
-   one parameter could not be encoded. Usually because `None` or a non UTF-8 
+   one parameter could not be encoded. Usually because `None` or a non UTF-8
    encoded string was supplied.
 
 What does ValueError `Error trying to decode a non urlencoded string` mean?
@@ -46,12 +46,12 @@ What does ValueError `Error trying to decode a non urlencoded string` mean?
 
     You are trying to decode a response which is not properly encoded, e.g.
     include non percent encoded characters such as `£`. Which could be because
-    it has already been decoded by your web framework. 
-    
+    it has already been decoded by your web framework.
+
     If you believe it contains characters that should be exempt from this
     check please open an issue and state why.
-    
-     
+
+
 What is the difference between a client and a consumer?
 -------------------------------------------------------
 
@@ -65,7 +65,7 @@ How do I use OAuthLib with Google, Twitter and other providers?
 
     Most people will be using OAuthLib indirectly. Clients will want to look at
     `requests-oauthlib`_.
-    
+
 How do I use OAuthlib as a provider with Django, Flask and other web frameworks?
 --------------------------------------------------------------------------------
 
