@@ -30,7 +30,6 @@ setup(
     author='The OAuthlib Community',
     maintainer='Jonathan Huot',
     maintainer_email='jonathan.huot@gmail.com',
-    url='https://github.com/oauthlib/oauthlib',
     platforms='any',
     license='BSD-3-Clause',
     packages=find_packages(exclude=('docs', 'examples', 'tests', 'tests.*')),
@@ -39,6 +38,15 @@ setup(
         'rsa': rsa_require,
         'signedtoken': signedtoken_require,
         'signals': signals_require,
+    },
+    url='https://github.com/oauthlib/oauthlib',
+    project_urls={
+        'Changelog': 'https://github.com/oauthlib/oauthlib/blob/master/CHANGELOG.rst',
+        'Documentation': 'https://oauthlib.readthedocs.io/',
+        'Gitter': 'https://gitter.im/oauthlib/Lobby',
+        'Issues': 'https://github.com/oauthlib/oauthlib/issues',
+        'Source': 'https://github.com/oauthlib/oauthlib',
+        'Sponsor': 'https://github.com/sponsors/JonathanHuot',
     },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
