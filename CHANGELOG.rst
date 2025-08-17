@@ -101,7 +101,7 @@ General
   * #727: build isort integration
   * #734: python2 code removal
   * #735, #750: add python3.8 support
-  * #749: bump minimum versions of pyjwt and cryptography 
+  * #749: bump minimum versions of pyjwt and cryptography
 
 3.1.0 (2019-08-06)
 ------------------

@@ -366,58 +366,58 @@ The example using Django but should be transferable to any framework.
         def __init__(self):
             # Using the server from previous section
             self._authorization_endpoint = server
-    
+
         def get(self, request):
             # You need to define extract_params and make sure it does not
             # include file like objects waiting for input. In Django this
             # is request.META['wsgi.input'] and request.META['wsgi.errors']
             uri, http_method, body, headers = extract_params(request)
-    
+
             try:
                 scopes, credentials = self._authorization_endpoint.validate_authorization_request(
                     uri, http_method, body, headers)
-    
+
                 # Not necessarily in session but they need to be
                 # accessible in the POST view after form submit.
                 request.session['oauth2_credentials'] = credentials
-    
+
                 # You probably want to render a template instead.
                 response = HttpResponse()
                 response.write('<h1> Authorize access to %s </h1>' % client_id)
                 response.write('<form method="POST" action="/authorize">')
                 for scope in scopes or []:
-                    response.write('<input type="checkbox" name="scopes" ' + 
+                    response.write('<input type="checkbox" name="scopes" ' +
                     'value="%s"/> %s' % (scope, scope))
                     response.write('<input type="submit" value="Authorize"/>')
                 return response
-    
+
             # Errors that should be shown to the user on the provider website
             except errors.FatalClientError as e:
                 return response_from_error(e)
-    
+
             # Errors embedded in the redirect URI back to the client
             except errors.OAuth2Error as e:
                 return HttpResponseRedirect(e.in_uri(e.redirect_uri))
-    
+
         @csrf_exempt
         def post(self, request):
             uri, http_method, body, headers = extract_params(request)
-    
+
             # The scopes the user actually authorized, i.e. checkboxes
             # that were selected.
             scopes = request.POST.getlist(['scopes'])
-    
+
             # Extra credentials we need in the validator
             credentials = {'user': request.user}
-    
+
             # The previously stored (in authorization GET view) credentials
             credentials.update(request.session.get('oauth2_credentials', {}))
-    
+
             try:
                 headers, body, status = self._authorization_endpoint.create_authorization_response(
                 uri, http_method, body, headers, scopes, credentials)
                 return response_from_return(headers, body, status)
-    
+
             except errors.FatalClientError as e:
                 return response_from_error(e)
 
@@ -538,7 +538,7 @@ If you run into issues it can be helpful to enable debug logging.
     import oauthlib
     import sys
 
-    oauthlib.set_debug(True)    
+    oauthlib.set_debug(True)
     log = logging.getLogger('oauthlib')
     log.addHandler(logging.StreamHandler(sys.stdout))
     log.setLevel(logging.DEBUG)
