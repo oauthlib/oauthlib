@@ -72,16 +72,16 @@ class ClientCredentialsGrant(GrantTypeBase):
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=False)
+        token_dict = token_handler.create_token(request, refresh_token=False)
 
         for modifier in self._token_modifiers:
-            token = modifier(token)
+            token_dict = modifier(token_dict)
 
-        self.request_validator.save_token(token, request)
+        self.request_validator.save_token(token_dict, request)
 
         log.debug('Issuing token to client id %r (%r), %r.',
-                  request.client_id, request.client, token)
-        return headers, json.dumps(token), 200
+                  request.client_id, request.client, token_dict)
+        return headers, json.dumps(token_dict), 200
 
     def validate_token_request(self, request):
         """
