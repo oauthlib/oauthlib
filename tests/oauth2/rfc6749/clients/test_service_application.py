@@ -114,18 +114,24 @@ mfvGGg3xNjTMO7IdrwIDAQAB
         # Optional kwargs
         not_before = time() - 3600
         jwt_id = '8zd15df4s35f43sd'
+        extra_jwt_headers = {'extra': 'header'}
+        extra_claims = {'extra': 'claim'}
         body = client.prepare_request_body(issuer=self.issuer,
                                            subject=self.subject,
                                            audience=self.audience,
                                            body=self.body,
                                            not_before=not_before,
+                                           extra_jwt_headers=extra_jwt_headers,
+                                           extra_claims=extra_claims,
                                            jwt_id=jwt_id)
 
         r = Request('https://a.b', body=body)
         self.assertEqual(r.isnot, 'empty')
         self.assertEqual(r.grant_type, ServiceApplicationClient.grant_type)
 
-        claim = jwt.decode(r.assertion, self.public_key, audience=self.audience, algorithms=['RS256'])
+        token = jwt.api_jwt.decode_complete(r.assertion, self.public_key, audience=self.audience, algorithms=['RS256'])
+        header = token['header']
+        claim = token['payload']
 
         self.assertEqual(claim['iss'], self.issuer)
         # audience verification is handled during decode now
@@ -133,6 +139,9 @@ mfvGGg3xNjTMO7IdrwIDAQAB
         self.assertEqual(claim['iat'], int(t.return_value))
         self.assertEqual(claim['nbf'], not_before)
         self.assertEqual(claim['jti'], jwt_id)
+
+        self.assertLessEqual(extra_jwt_headers.items(), header.items())
+        self.assertLessEqual(extra_claims.items(), claim.items())
 
     @patch('time.time')
     def test_request_body_no_initial_private_key(self, t):
