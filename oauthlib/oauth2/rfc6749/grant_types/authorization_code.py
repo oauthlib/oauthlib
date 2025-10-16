@@ -39,8 +39,8 @@ def code_challenge_method_s256(verifier, challenge):
         return s;
     }
 
-    Python's urlsafe_b64encode already replaces '+' and '/', but preserves
-    the trailing '=', so we have to remove it.
+    Python's urlsafe_b64encode replaces '+' and '/', but preserves the 
+    trailing '=', so we have to remove it.
 
     .. _`Section 4.3`: https://tools.ietf.org/html/rfc7636#section-4.3
     """
