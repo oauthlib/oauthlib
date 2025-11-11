@@ -3,7 +3,7 @@ from unittest import mock
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.tokens import (
     BearerToken, prepare_bearer_body, prepare_bearer_headers,
-    prepare_bearer_uri, prepare_mac_header,
+    prepare_bearer_uri, prepare_mac_header, signed_token_generator,
 )
 
 from tests.unittest import TestCase
@@ -168,3 +168,27 @@ class TokenTest(TestCase):
                 self.assertEqual(result, 9)
             else:
                 self.assertEqual(result, 0)
+
+    @mock.patch("oauthlib.common.generate_signed_token")
+    def test_signed_token_generator_repsects_request_claims(self, common_generate):
+        class CustomMatcher:
+            def __eq__(self, other):
+                claims = getattr(other, "claims", dict())
+                return (
+                    2 == len(claims)
+                    and "signer" in claims
+                    and claims["signer"] == "John Hancock"
+                    and "color" in claims
+                    and claims["color"] == "red"
+                )
+
+        request = Request("http://test.test/")
+        request.claims = {"color": "red"}
+
+        generator = signed_token_generator("not a real pem", signer="John Hancock")
+
+        generator(request=request)
+        common_generate.assert_called_with(
+            "not a real pem",
+            CustomMatcher(),
+        )
