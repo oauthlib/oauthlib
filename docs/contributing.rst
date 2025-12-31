@@ -136,31 +136,24 @@ We want your submission. But we also want to provide a stable experience for our
 users and the community. Follow these rules and you should succeed without a
 problem!
 
-Run the tests!
---------------
+Setup Dev Environment
+---------------------
 
-Before you submit a pull request, please run the entire OAuthLib test suite from
-the project root via:
+DevContainer (recommended)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. sourcecode:: bash
+Setup in few minutes a full dev environment with DevContainer. Open straight with `VS Code`_, use `DevContainer CLI`_...
 
-   $ pytest
+.. _`VS Code`: https://code.visualstudio.com/docs/devcontainers/containers
+.. _`DevContainer CLI`: https://github.com/devcontainers/cli
 
-The first thing the core committers will do is run this command. Any pull
-request that fails this test suite will be **rejected**.
+Manually
+^^^^^^^^
 
-Testing multiple versions of Python
------------------------------------
+Alternatively, you can setup your own python development environment.
+You'll have to install `tox`_ and `uv`_ and specific Python versions.
 
-OAuthLib supports Python 3.8+ & PyPy 3. Testing
-all versions conveniently at once can be done using `Tox`_.
-
-.. sourcecode:: bash
-
-   $ tox
-
-Tox requires you to have respective python versions. We recommend using `uv`_ to install those Python versions.
-
+Once `uv`_ is installed, follow instructions below:
 
 .. sourcecode:: bash
 
@@ -170,11 +163,25 @@ Tox requires you to have respective python versions. We recommend using `uv`_ to
    $ uv python install pypy3
    $ uvx --with tox-uv tox # that run all tests with all python versions
 
-
 .. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
 .. _`uv`: https://docs.astral.sh/uv/#python-versions
 
-Test downstream applications
+Run the tests!
+--------------
+
+Before you submit a pull request, please run the entire OAuthLib test suite from
+the project root via:
+
+.. sourcecode:: bash
+
+   $ tox
+
+The first thing the core committers will do is run this command. Any pull
+request that fails this test suite will be **rejected**.
+Note that OAuthLib supports several versions of Python & PyPy. Testing all versions
+is done by using `Tox`_.
+
+Testing downstream applications
 -----------------------------------
 
 Remember, OAuthLib is used by several 3rd party projects. If you think you
@@ -204,13 +211,6 @@ Also, keep your tests as simple as possible. Complex tests end up requiring
 their own tests. We would rather see duplicated assertions across test methods
 than cunning utility methods that magically determine which assertions are
 needed at a particular stage. Remember: `Explicit is better than implicit`.
-
-Don't mix code changes with whitespace cleanup
-----------------------------------------------
-
-If you change two lines of code and correct 200 lines of whitespace issues in a
-file the diff on that pull request is functionally unreadable and will be
-**rejected**. Whitespace cleanups need to be in their own pull request.
 
 Keep your pull requests limited to a single issue
 --------------------------------------------------
@@ -316,6 +316,7 @@ First we pull the code into a local branch::
 Then we run the tests::
 
     tox
+    make
 
 We finish with a non-fastforward merge (to preserve the branch history) and push
 to GitHub::

@@ -12,35 +12,17 @@
 # Since these contacts will be addressed with Github mentions they
 # need to be Github users.
 #
-clean: clean-eggs clean-build
-	@find . -iname '*.pyc' -delete
-	@find . -iname '*.pyo' -delete
-	@find . -iname '*~' -delete
-	@find . -iname '*.swp' -delete
-	@find . -iname '__pycache__' -delete
-	rm -rf .tox
+clean:
 	rm -rf bottle-oauthlib
 	rm -rf dance
 	rm -rf django-oauth-toolkit
 	rm -rf flask-oauthlib
 	rm -rf requests-oauthlib
 
-clean-eggs:
-	@find . -name '*.egg' -print0|xargs -0 rm -rf --
-	@rm -rf .eggs/
-
-clean-build:
-	@rm -fr build/
-	@rm -fr dist/
-	@rm -fr *.egg-info
-
-test:
-	uvx --with tox-uv tox
-
 bottle:
 	#---------------------------
 	# Library refinitiv/bottle-oauthlib
-	# Contacts: Jonathan.Huot
+	# Contacts: JonathanHuot
 	cd bottle-oauthlib 2>/dev/null || git clone https://github.com/refinitiv/bottle-oauthlib.git
 	cd bottle-oauthlib && sed -i.old 's,deps =,deps= --editable=file://{toxinidir}/../,' tox.ini && sed -i.old '/oauthlib/d' requirements.txt && uvx --with tox-uv tox
 
@@ -66,5 +48,5 @@ dance:
 	cd flask-dance && sed -i.old 's;"oauthlib.*";"oauthlib @ file://'`pwd`'/../";' pyproject.toml && uv venv && uv pip install -e '.[test]' && ./.venv/bin/coverage run -m pytest
 
 .DEFAULT_GOAL := all
-.PHONY: clean test bottle dance django flask requests
-all: test bottle dance django flask requests
+.PHONY: clean bottle dance django flask requests
+all: bottle dance django flask requests
