@@ -1,5 +1,5 @@
 {
-    "name": "OAuthLib Development Container",
+    "name": "OAuthLib full Development Container",
     "context": "..",
     "dockerFile": "Dockerfile"
 }
