@@ -142,7 +142,7 @@ Setup Dev Environment
 DevContainer (recommended)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Setup in few minutes a full dev environment with DevContainer. Open straight with `VS Code`_, use `DevContainer CLI`_...
+Set up a full dev environment in a few minutes with DevContainer. Open straight with `VS Code`_, use `DevContainer CLI`_...
 
 .. _`VS Code`: https://code.visualstudio.com/docs/devcontainers/containers
 .. _`DevContainer CLI`: https://github.com/devcontainers/cli
