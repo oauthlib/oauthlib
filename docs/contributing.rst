@@ -161,7 +161,7 @@ Once `uv`_ is installed, follow instructions below:
    $ uv python list # check which versions you want to use
    $ uv python install 3.8 3.9 3.10 3.11 3.12 3.13
    $ uv python install pypy3
-   $ uvx --with tox-uv tox # that run all tests with all python versions
+   $ uvx --with tox-uv tox # this runs all tests with all python versions
 
 .. _`Tox`: https://tox.readthedocs.io/en/latest/install.html
 .. _`uv`: https://docs.astral.sh/uv/#python-versions
