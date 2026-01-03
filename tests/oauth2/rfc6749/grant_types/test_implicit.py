@@ -28,7 +28,7 @@ class ImplicitGrantTest(TestCase):
     def test_create_token_response(self, generate_token):
         generate_token.return_value = '1234'
         bearer = BearerToken(self.mock_validator, expires_in=1800)
-        h, b, s = self.auth.create_token_response(self.request, bearer)
+        h, _b, s = self.auth.create_token_response(self.request, bearer)
         correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=1800&state=xyz&scope=hello+world'
         self.assertEqual(s, 302)
         self.assertURLEqual(h['Location'], correct_uri, parse_fragment=True)
@@ -36,7 +36,7 @@ class ImplicitGrantTest(TestCase):
 
         correct_uri = 'https://b.c/p?access_token=1234&token_type=Bearer&expires_in=1800&state=xyz&scope=hello+world'
         self.request.response_mode = 'query'
-        h, b, s = self.auth.create_token_response(self.request, bearer)
+        h, _b, s = self.auth.create_token_response(self.request, bearer)
         self.assertURLEqual(h['Location'], correct_uri)
 
     def test_custom_validators(self):

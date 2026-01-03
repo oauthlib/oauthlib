@@ -122,7 +122,7 @@ class PreservationTest(TestCase):
         self.validator.confirm_redirect_uri.return_value = True
         code = get_query_credentials(h['Location'])['code'][0]
         self.validator.validate_code.return_value = True
-        _, body, s = self.web.create_token_response(token_uri,
+        _, _body, s = self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
         self.assertEqual(s, 200)
         self.assertEqual(self.validator.confirm_redirect_uri.call_args[0][2], self.DEFAULT_REDIRECT_URI)

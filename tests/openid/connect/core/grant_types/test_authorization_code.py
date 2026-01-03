@@ -60,7 +60,7 @@ class OpenIDAuthCodeTest(TestCase):
     @mock.patch('oauthlib.common.generate_token')
     def test_authorization(self, generate_token):
 
-        scope, info = self.auth.validate_authorization_request(self.request)
+        _scope, _info = self.auth.validate_authorization_request(self.request)
 
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
@@ -128,28 +128,28 @@ class OpenIDAuthCodeTest(TestCase):
         self.assertRaises(InvalidRequestError,
                           self.auth.validate_authorization_request,
                           self.request)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
 
         self.request.prompt = 'none consent'
         self.assertRaises(InvalidRequestError,
                           self.auth.validate_authorization_request,
                           self.request)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
 
         self.request.prompt = 'none select_account'
         self.assertRaises(InvalidRequestError,
                           self.auth.validate_authorization_request,
                           self.request)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
 
         self.request.prompt = 'consent none login'
         self.assertRaises(InvalidRequestError,
                           self.auth.validate_authorization_request,
                           self.request)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
 
     def set_scopes(self, client_id, code, client, request):
@@ -163,7 +163,7 @@ class OpenIDAuthCodeTest(TestCase):
 
         bearer = BearerToken(self.mock_validator)
 
-        h, token, s = self.auth.create_token_response(self.request, bearer)
+        _h, token, _s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
@@ -176,7 +176,7 @@ class OpenIDAuthCodeTest(TestCase):
         self.mock_validator.reset_mock()
 
         self.request.scopes = ('hello', 'world')
-        h, token, s = self.auth.create_token_response(self.request, bearer)
+        _h, token, _s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
@@ -190,7 +190,7 @@ class OpenIDAuthCodeTest(TestCase):
     def test_optional_nonce(self, generate_token):
         generate_token.return_value = 'abc'
         self.request.nonce = 'xyz'
-        scope, info = self.auth.validate_authorization_request(self.request)
+        _scope, _info = self.auth.validate_authorization_request(self.request)
 
         bearer = BearerToken(self.mock_validator)
         self.request.response_mode = 'query'
