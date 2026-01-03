@@ -1,5 +1,6 @@
 {
     "name": "OAuthLib full Development Container",
     "context": "..",
-    "dockerFile": "Dockerfile"
+    "dockerFile": "Dockerfile",
+    "postCreateCommand": "uvx pre-commit install"
 }
