@@ -4,7 +4,8 @@ USER vscode
 
 # Install deps
 RUN sudo apt update && \
-    sudo apt install -y graphviz
+    sudo apt install -y graphviz && \
+    sudo rm -rf /var/lib/apt/lists/*
 
 # Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
