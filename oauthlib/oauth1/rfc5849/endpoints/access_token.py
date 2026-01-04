@@ -102,7 +102,7 @@ class AccessTokenEndpoint(BaseEndpoint):
         resp_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         try:
             request = self._create_request(uri, http_method, body, headers)
-            valid, processed_request = self.validate_access_token_request(
+            valid, _processed_request = self.validate_access_token_request(
                 request)
             if valid:
                 token = self.create_access_token(request, credentials or {})

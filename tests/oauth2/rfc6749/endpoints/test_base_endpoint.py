@@ -24,7 +24,7 @@ class BaseEndpointTest(TestCase):
         validator = RequestValidator()
         server = Server(validator)
         server.catch_errors = True
-        h, b, s = server.create_token_response(
+        _h, b, s = server.create_token_response(
             'https://example.com', body='grant_type=authorization_code&code=abc'
         )
         self.assertIn("server_error", b)
@@ -34,7 +34,7 @@ class BaseEndpointTest(TestCase):
         validator = RequestValidator()
         server = Server(validator)
         server.available = False
-        h, b, s = server.create_authorization_response('https://example.com')
+        _h, b, s = server.create_authorization_response('https://example.com')
         self.assertIn("temporarily_unavailable", b)
         self.assertEqual(s, 503)
 
@@ -58,12 +58,12 @@ class BaseEndpointTest(TestCase):
         server = TestServer(validator)
 
         server.catch_errors = True
-        h, b, s = server.throw_error('a')
+        _h, b, s = server.throw_error('a')
         self.assertIn("server_error", b)
         self.assertEqual(s, 500)
 
         server.available = False
-        h, b, s = server.throw_error('a')
+        _h, b, s = server.throw_error('a')
         self.assertIn("temporarily_unavailable", b)
         self.assertEqual(s, 503)
 

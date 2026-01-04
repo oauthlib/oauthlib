@@ -25,25 +25,25 @@ class SignatureOnlyEndpointTest(TestCase):
                 'https://i.b/protected_resource')
 
     def test_missing_parameters(self):
-        v, r = self.endpoint.validate_request(
+        v, _r = self.endpoint.validate_request(
                 self.uri)
         self.assertFalse(v)
 
     def test_validate_client_key(self):
         self.validator.validate_client_key.return_value = False
-        v, r = self.endpoint.validate_request(
+        v, _r = self.endpoint.validate_request(
                 self.uri, headers=self.headers)
         self.assertFalse(v)
 
     def test_validate_signature(self):
         client = Client('foo')
         _, headers, _ = client.sign(self.uri + '/extra')
-        v, r = self.endpoint.validate_request(
+        v, _r = self.endpoint.validate_request(
                 self.uri, headers=headers)
         self.assertFalse(v)
 
     def test_valid_request(self):
-        v, r = self.endpoint.validate_request(
+        v, _r = self.endpoint.validate_request(
                 self.uri, headers=self.headers)
         self.assertTrue(v)
         self.validator.validate_timestamp_and_nonce.assert_called_once_with(

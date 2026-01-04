@@ -28,13 +28,13 @@ class BaseEndpointTest(TestCase):
 
     def test_ssl_enforcement(self):
         uri, headers, _ = self.client.sign('http://i.b/request_token')
-        h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = self.endpoint.create_request_token_response(
                 uri, headers=headers)
         self.assertEqual(s, 400)
         self.assertIn('insecure_transport_protocol', b)
 
     def test_missing_parameters(self):
-        h, b, s = self.endpoint.create_request_token_response(self.uri)
+        _h, b, s = self.endpoint.create_request_token_response(self.uri)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
@@ -42,7 +42,7 @@ class BaseEndpointTest(TestCase):
         headers = {}
         headers['Authorization'] = self.headers['Authorization'].replace(
                 'HMAC', 'RSA')
-        h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_signature_method', b)
@@ -51,7 +51,7 @@ class BaseEndpointTest(TestCase):
         headers = {}
         headers['Authorization'] = self.headers['Authorization'].replace(
                 '1.0', '2.0')
-        h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
@@ -62,21 +62,21 @@ class BaseEndpointTest(TestCase):
             headers['Authorization'] = sub(r'timestamp="\d*k?"',
                     'timestamp="%s"' % pattern,
                      self.headers['Authorization'])
-            h, b, s = self.endpoint.create_request_token_response(
+            _h, b, s = self.endpoint.create_request_token_response(
                     self.uri, headers=headers)
             self.assertEqual(s, 400)
             self.assertIn('invalid_request', b)
 
     def test_client_key_check(self):
         self.validator.check_client_key.return_value = False
-        h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
     def test_noncecheck(self):
         self.validator.check_nonce.return_value = False
-        h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)

@@ -34,7 +34,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -65,7 +65,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         self.auth = ResourceOwnerPasswordCredentialsGrant(
                 request_validator=self.mock_validator, refresh_token=False)
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)

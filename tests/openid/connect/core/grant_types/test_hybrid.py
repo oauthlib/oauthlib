@@ -34,7 +34,7 @@ class OpenIDHybridCodeTokenTest(OpenIDAuthCodeTest):
     def test_optional_nonce(self, generate_token):
         generate_token.return_value = 'abc'
         self.request.nonce = 'xyz'
-        scope, info = self.auth.validate_authorization_request(self.request)
+        _scope, _info = self.auth.validate_authorization_request(self.request)
 
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)

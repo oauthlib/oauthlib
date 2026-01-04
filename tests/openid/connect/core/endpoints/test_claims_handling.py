@@ -84,13 +84,13 @@ class TestClaimsHandling(TestCase):
         claims_urlquoted = '%7B%22id_token%22%3A%20%7B%22claim_2%22%3A%20%7B%22essential%22%3A%20true%7D%2C%20%22claim_1%22%3A%20null%7D%2C%20%22userinfo%22%3A%20%7B%22claim_4%22%3A%20null%2C%20%22claim_3%22%3A%20%7B%22essential%22%3A%20true%7D%7D%7D'
         uri = 'http://example.com/path?client_id=abc&scope=openid+test_scope&response_type=code&claims=%s'
 
-        h, b, s = self.server.create_authorization_response(uri % claims_urlquoted, scopes='openid test_scope')
+        h, _b, _s = self.server.create_authorization_response(uri % claims_urlquoted, scopes='openid test_scope')
 
         self.assertDictEqual(self.claims_from_auth_code_request, claims)
 
         code = get_query_credentials(h['Location'])['code'][0]
         token_uri = 'http://example.com/path'
-        _, body, _ = self.server.create_token_response(
+        _, _body, _ = self.server.create_token_response(
             token_uri,
             body='client_id=me&redirect_uri=http://back.to/me&grant_type=authorization_code&code=%s' % code
         )
@@ -100,7 +100,7 @@ class TestClaimsHandling(TestCase):
     def test_invalid_claims(self):
         uri = 'http://example.com/path?client_id=abc&scope=openid+test_scope&response_type=code&claims=this-is-not-json'
 
-        h, b, s = self.server.create_authorization_response(uri, scopes='openid test_scope')
+        h, _b, _s = self.server.create_authorization_response(uri, scopes='openid test_scope')
         error = get_query_credentials(h['Location'])['error'][0]
         error_desc = get_query_credentials(h['Location'])['error_description'][0]
         self.assertEqual(error, 'invalid_request')

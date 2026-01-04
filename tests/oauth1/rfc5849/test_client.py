@@ -13,20 +13,20 @@ class ClientRealmTests(TestCase):
 
     def test_client_no_realm(self):
         client = Client("client-key")
-        uri, header, body = client.sign("http://example-uri")
+        _uri, header, _body = client.sign("http://example-uri")
         self.assertTrue(
             header["Authorization"].startswith('OAuth oauth_nonce='))
 
     def test_client_realm_sign_with_default_realm(self):
         client = Client("client-key", realm="moo-realm")
         self.assertEqual(client.realm, "moo-realm")
-        uri, header, body = client.sign("http://example-uri")
+        _uri, header, _body = client.sign("http://example-uri")
         self.assertTrue(
             header["Authorization"].startswith('OAuth realm="moo-realm",'))
 
     def test_client_realm_sign_with_additional_realm(self):
         client = Client("client-key", realm="moo-realm")
-        uri, header, body = client.sign("http://example-uri", realm="baa-realm")
+        _uri, header, _body = client.sign("http://example-uri", realm="baa-realm")
         self.assertTrue(
             header["Authorization"].startswith('OAuth realm="baa-realm",'))
         # make sure sign() does not override the default realm
@@ -87,7 +87,7 @@ class SignatureMethodTest(TestCase):
 
     def test_hmac_sha1_method(self):
         client = Client('client_key', timestamp='1234567890', nonce='abc')
-        u, h, b = client.sign('http://example.com')
+        _u, h, _b = client.sign('http://example.com')
         correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
                    'oauth_version="1.0", oauth_signature_method="HMAC-SHA1", '
                    'oauth_consumer_key="client_key", '
@@ -97,7 +97,7 @@ class SignatureMethodTest(TestCase):
     def test_hmac_sha256_method(self):
         client = Client('client_key', signature_method=SIGNATURE_HMAC_SHA256,
                         timestamp='1234567890', nonce='abc')
-        u, h, b = client.sign('http://example.com')
+        _u, h, _b = client.sign('http://example.com')
         correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
                    'oauth_version="1.0", oauth_signature_method="HMAC-SHA256", '
                    'oauth_consumer_key="client_key", '
@@ -126,7 +126,7 @@ class SignatureMethodTest(TestCase):
         )
         client = Client('client_key', signature_method=SIGNATURE_RSA,
             rsa_key=private_key, timestamp='1234567890', nonce='abc')
-        u, h, b = client.sign('http://example.com')
+        _u, h, _b = client.sign('http://example.com')
         correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
                    'oauth_version="1.0", oauth_signature_method="RSA-SHA1", '
                    'oauth_consumer_key="client_key", '
@@ -143,7 +143,7 @@ class SignatureMethodTest(TestCase):
                         nonce='abc',
                         client_secret='foo',
                         resource_owner_secret='bar')
-        u, h, b = client.sign('http://example.com')
+        _u, h, _b = client.sign('http://example.com')
         correct = ('OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
                    'oauth_version="1.0", oauth_signature_method="PLAINTEXT", '
                    'oauth_consumer_key="client_key", '
@@ -167,7 +167,7 @@ class SignatureMethodTest(TestCase):
         client = Client('client_key', signature_method='PIZZA',
             timestamp='1234567890', nonce='abc')
 
-        u, h, b = client.sign('http://example.com')
+        _u, h, _b = client.sign('http://example.com')
 
         self.assertEqual(h['Authorization'], (
             'OAuth oauth_nonce="abc", oauth_timestamp="1234567890", '
@@ -242,7 +242,7 @@ class SigningTest(TestCase):
 
     def test_sign_body(self):
         client = Client('client_key')
-        _, h, b = client.sign('http://i.b/path', http_method='POST', body='',
+        _, h, _b = client.sign('http://i.b/path', http_method='POST', body='',
                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertEqual(h['Content-Type'], 'application/x-www-form-urlencoded')
 

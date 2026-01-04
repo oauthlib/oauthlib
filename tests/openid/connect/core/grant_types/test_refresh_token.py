@@ -48,7 +48,7 @@ class OpenIDRefreshTokenTest(TestCase):
         ]
         bearer = BearerToken(self.mock_validator)
 
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, _status_code = self.auth.create_token_response(
             self.request, bearer
         )
 
@@ -71,7 +71,7 @@ class OpenIDRefreshTokenTest(TestCase):
         ]
         bearer = BearerToken(self.mock_validator)
 
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, _status_code = self.auth.create_token_response(
             self.request, bearer
         )
 
@@ -91,7 +91,7 @@ class OpenIDRefreshTokenTest(TestCase):
         self.request.scope = "hello"
         bearer = BearerToken(self.mock_validator)
 
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, _status_code = self.auth.create_token_response(
             self.request, bearer
         )
 

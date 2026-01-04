@@ -72,7 +72,7 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_create_authorization_grant(self):
         bearer = BearerToken(self.mock_validator)
         self.request.response_mode = 'query'
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         grant = dict(Request(h['Location']).uri_query_params)
         self.assertIn('code', grant)
         self.assertTrue(self.mock_validator.validate_redirect_uri.called)
@@ -91,7 +91,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.request.response_mode = 'query'
         self.mock_validator.get_default_redirect_uri.return_value = 'https://a.b/cb'
         bearer = BearerToken(self.mock_validator)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         grant = dict(Request(h['Location']).uri_query_params)
         self.assertIn('code', grant)
         self.assertIn('state', grant)
@@ -105,16 +105,16 @@ class AuthorizationCodeGrantTest(TestCase):
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
         self.request.response_mode = 'query'
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], 'https://a.b/cb?code=abc')
         self.request.response_mode = 'fragment'
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], 'https://a.b/cb#code=abc')
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
 
-        h, token, s = self.auth.create_token_response(self.request, bearer)
+        _h, token, _s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
@@ -132,7 +132,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.auth.refresh_token = False  # Not to issue refresh token.
 
         bearer = BearerToken(self.mock_validator)
-        h, token, s = self.auth.create_token_response(self.request, bearer)
+        _h, token, _s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
