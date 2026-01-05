@@ -6,6 +6,11 @@
 
 *.py[co]
 
+# Downstream deps
+bottle-oauthlib
+django-oauth-toolkit
+flask-dance
+
 # Packages
 *.egg
 *.egg-info

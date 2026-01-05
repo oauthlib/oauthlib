@@ -4,6 +4,9 @@ OAuthLib - Python Framework for OAuth1 & OAuth2
 *A generic, spec-compliant, thorough implementation of the OAuth request-signing
 logic for Python 3.8+*
 
+.. image:: https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue
+  :target: https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/oauthlib/oauthlib
+  :alt: Open DevContainer in VSCode
 .. image:: https://github.com/oauthlib/oauthlib/actions/workflows/python-build.yml/badge.svg
   :target: https://github.com/oauthlib/oauthlib/actions
   :alt: GitHub Actions
