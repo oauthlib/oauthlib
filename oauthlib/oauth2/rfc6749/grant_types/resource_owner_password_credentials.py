@@ -85,14 +85,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         """
         headers = self._get_default_headers()
         try:
-            if self.request_validator.client_authentication_required(request):
-                log.debug('Authenticating client, %r.', request)
-                if not self.request_validator.authenticate_client(request):
-                    log.debug('Client authentication failed, %r.', request)
-                    raise errors.InvalidClientError(request=request)
-            elif not self.request_validator.authenticate_client_id(request.client_id, request):
-                log.debug('Client authentication failed, %r.', request)
-                raise errors.InvalidClientError(request=request)
+            self.validate_client_authentication(request)
             log.debug('Validating access token request, %r.', request)
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
