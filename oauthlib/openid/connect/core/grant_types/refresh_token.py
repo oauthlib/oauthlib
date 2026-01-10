@@ -20,7 +20,7 @@ class RefreshTokenGrant(GrantTypeBase):
             request_validator=request_validator, **kwargs)
         self.register_token_modifier(self.add_id_token)
 
-    def add_id_token(self, token, token_handler, request):
+    def add_id_token(self, token_dict, token_handler, request):
         """
         Construct an initial version of id_token, and let the
         request_validator sign or encrypt it.
@@ -31,4 +31,4 @@ class RefreshTokenGrant(GrantTypeBase):
         if not self.request_validator.refresh_id_token(request):
             return token
 
-        return super().add_id_token(token, token_handler, request)
+        return super().add_id_token(token_dict, token_handler, request)

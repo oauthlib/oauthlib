@@ -39,7 +39,7 @@ You can switch to jwcrypto library if you want to return JWE instead.
 
         super().__init__(self, **kwargs)
 
-    def finalize_id_token(self, id_token, token, token_handler, request):
+    def finalize_id_token(self, id_token, token_dict, token_handler, request):
         import jwt
 
         id_token["iss"] = "https://my.cool.app.com"

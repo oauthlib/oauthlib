@@ -134,9 +134,9 @@ class GrantTypeBase:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def add_token(self, token, token_handler, request):
+    def add_token(self, token_dict, token_handler, request):
         """
-        :param token:
+        :param token_dict: A token Dict
         :param token_handler: A token handler instance, for example of type
                               oauthlib.oauth2.BearerToken.
         :param request: OAuthlib request.
@@ -144,10 +144,10 @@ class GrantTypeBase:
         """
         # Only add a hybrid access token on auth step if asked for
         if request.response_type not in ["token", "code token", "id_token token", "code id_token token"]:
-            return token
+            return token_dict
 
-        token.update(token_handler.create_token(request, refresh_token=False))
-        return token
+        token_dict.update(token_handler.create_token(request, refresh_token=False))
+        return token_dict
 
     def validate_grant_type(self, request):
         """
@@ -175,7 +175,7 @@ class GrantTypeBase:
                                                       request.scopes, request.client, request):
             raise errors.InvalidScopeError(request=request)
 
-    def prepare_authorization_response(self, request, token, headers, body, status):
+    def prepare_authorization_response(self, request, token_dict, headers, body, status):
         """Place token according to response mode.
 
         Base classes can define a default response mode for their authorization
@@ -183,7 +183,7 @@ class GrantTypeBase:
 
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
-        :param token:
+        :param token_dict:
         :param headers:
         :param body:
         :param status:
@@ -195,10 +195,10 @@ class GrantTypeBase:
                       request.response_mode, self.default_response_mode)
             request.response_mode = self.default_response_mode
 
-        token_items = token.items()
+        token_items = token_dict.items()
 
         if request.response_type == 'none':
-            state = token.get('state', None)
+            state = token_dict.get('state', None)
             token_items = [('state', state)] if state else []
 
         if request.response_mode == 'query':
