@@ -6,7 +6,7 @@ from oauthlib.oauth1 import (
 )
 from oauthlib.oauth1.rfc5849 import Client
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class ClientRealmTests(TestCase):

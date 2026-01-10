@@ -10,7 +10,7 @@ from oauthlib.oauth2 import (
 )
 from oauthlib.oauth2.rfc6749 import errors
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class ErrorResponseTest(TestCase):
