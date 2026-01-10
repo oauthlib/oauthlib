@@ -276,8 +276,9 @@ def parse_authorization_code_response(uri, state=None):
     if state and params.get('state') != state:
         raise MismatchingStateError()
 
-    if 'error' in params:
-        raise_from_error(params.get('error'), params)
+    for key in params.keys():
+        if 'error' in key.lower():
+            raise_from_error(params.get(key), params)
 
     if 'code' not in params:
         raise MissingCodeError("Missing code parameter in response.")
@@ -447,8 +448,9 @@ def parse_token_response(body, scope=None):
 
 def validate_token_parameters(params):
     """Ensures token presence, token type, expiration and scope in params."""
-    if 'error' in params:
-        raise_from_error(params.get('error'), params)
+    for key in params.keys():
+        if 'error' in key.lower():
+            raise_from_error(params.get(key), params)
 
     if 'access_token' not in params:
         raise MissingTokenError(description="Missing access token parameter.")
