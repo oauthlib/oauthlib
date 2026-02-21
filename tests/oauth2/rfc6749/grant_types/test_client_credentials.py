@@ -49,7 +49,7 @@ class ClientCredentialsGrantTest(TestCase):
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        headers, body, _status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -62,7 +62,7 @@ class ClientCredentialsGrantTest(TestCase):
     def test_error_response(self):
         bearer = BearerToken(self.mock_validator)
         self.mock_validator.authenticate_client.return_value = False
-        headers, body, status_code = self.auth.create_token_response(
+        headers, body, _status_code = self.auth.create_token_response(
             self.request, bearer)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
         error_msg = json.loads(body)

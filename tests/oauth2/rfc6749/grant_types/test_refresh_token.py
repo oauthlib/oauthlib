@@ -28,7 +28,7 @@ class RefreshTokenGrantTest(TestCase):
     def test_create_token_response(self):
         self.mock_validator.get_original_scopes.return_value = ['foo', 'bar']
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, _status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -66,7 +66,7 @@ class RefreshTokenGrantTest(TestCase):
         self.request.scope = None
         self.mock_validator.get_original_scopes.return_value = ['foo', 'bar']
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, _status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -79,7 +79,7 @@ class RefreshTokenGrantTest(TestCase):
         self.mock_validator.get_original_scopes.return_value = ['baz']
         self.mock_validator.is_within_original_scope.return_value = True
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, _status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -92,7 +92,7 @@ class RefreshTokenGrantTest(TestCase):
         self.mock_validator.get_original_scopes.return_value = ['baz']
         self.mock_validator.is_within_original_scope.return_value = False
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
@@ -102,7 +102,7 @@ class RefreshTokenGrantTest(TestCase):
     def test_invalid_token(self):
         self.mock_validator.validate_refresh_token.return_value = False
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
@@ -112,7 +112,7 @@ class RefreshTokenGrantTest(TestCase):
     def test_invalid_client(self):
         self.mock_validator.authenticate_client.return_value = False
         bearer = BearerToken(self.mock_validator)
-        headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)

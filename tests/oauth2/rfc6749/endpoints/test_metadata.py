@@ -45,7 +45,7 @@ class MetadataEndpointTest(TestCase):
             "issuer": 'https://foo.bar',
             "token_endpoint": "https://foo.bar/token"
         })
-        headers, body, status = metadata.create_metadata_response('/', 'GET')
+        headers, body, _status = metadata.create_metadata_response('/', 'GET')
         assert headers == {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
