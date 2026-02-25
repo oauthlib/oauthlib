@@ -150,8 +150,8 @@ class ClientTest(TestCase):
         orig_generate_timestamp = common.generate_timestamp
         orig_generate_nonce = common.generate_nonce
         orig_generate_age = utils.generate_age
-        self.addCleanup(setattr, common, 'generage_timestamp', orig_generate_timestamp)
-        self.addCleanup(setattr, common, 'generage_nonce', orig_generate_nonce)
+        self.addCleanup(setattr, common, 'generate_timestamp', orig_generate_timestamp)
+        self.addCleanup(setattr, common, 'generate_nonce', orig_generate_nonce)
         self.addCleanup(setattr, utils, 'generate_age', orig_generate_age)
         common.generate_timestamp = lambda: '123456789'
         common.generate_nonce = lambda: 'abc123'

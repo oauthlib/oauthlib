@@ -413,7 +413,7 @@ Draft revocation endpoint features and numerous fixes including:
 
 * (OAuth 2 Provider) returned JSON headers no longer include charset.
 
-* (OAuth 2 Provider) validate_authorizatoin_request now also includes the
+* (OAuth 2 Provider) validate_authorization_request now also includes the
   internal request object in the returned dictionary. Note that this is
   not meant to be relied upon heavily and its interface might change.
 
