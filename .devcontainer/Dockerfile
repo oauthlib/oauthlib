@@ -9,6 +9,7 @@ RUN sudo apt update && \
 
 # Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN rm -f ./install.sh
 ENV PATH="$PATH:/home/vscode/.local/bin"
 
 # Install Python versions using uv
