@@ -183,7 +183,7 @@ class AccessTokenEndpoint(BaseEndpoint):
         # .. _`Section 3.2`: https://tools.ietf.org/html/rfc5849#section-3.2
         #
         # Note that early exit would enable resource owner authorization
-        # verifier enumertion.
+        # verifier enumeration.
         valid_verifier = self.request_validator.validate_verifier(
             request.client_key,
             request.resource_owner_key,

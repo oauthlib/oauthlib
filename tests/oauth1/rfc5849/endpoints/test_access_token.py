@@ -33,7 +33,7 @@ class AccessTokenEndpointTest(TestCase):
                 client_secret='bar',
                 resource_owner_key='token',
                 resource_owner_secret='secret',
-                verifier='verfier')
+                verifier='verifier')
         self.uri, self.headers, self.body = self.client.sign(
                 'https://i.b/access_token')
 
@@ -73,7 +73,7 @@ class AccessTokenEndpointTest(TestCase):
         client = Client('foo',
                 resource_owner_key='token',
                 resource_owner_secret='secret',
-                verifier='verfier')
+                verifier='verifier')
         _, headers, _ = client.sign(self.uri + '/extra')
         _h, _b, s = self.endpoint.create_access_token_response(
                 self.uri, headers=headers)
