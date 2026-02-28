@@ -1,0 +1,13 @@
+{
+    "name": "OAuthLib full Development Container",
+    "context": "..",
+    "dockerFile": "Dockerfile",
+    "postCreateCommand": "uvx pre-commit install && ln -sf /workspaces/oauthlib/.devcontainer/motd.sh ~/.oh-my-zsh/custom/motd.zsh",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh"
+            }
+        }
+    }
+}
