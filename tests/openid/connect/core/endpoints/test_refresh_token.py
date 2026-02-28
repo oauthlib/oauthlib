@@ -23,10 +23,10 @@ class TestRefreshToken(TestCase):
 
     def test_refresh_token_with_openid(self):
         request_body = 'scope=openid+test_scope&grant_type=refresh_token&refresh_token=abc'
-        headers, body, status = self.server.create_token_response('', body=request_body)
+        _headers, body, _status = self.server.create_token_response('', body=request_body)
         self.assertIn('id_token', json.loads(body))
 
     def test_refresh_token_no_openid(self):
         request_body = 'scope=test_scope&grant_type=refresh_token&refresh_token=abc'
-        headers, body, status = self.server.create_token_response('', body=request_body)
+        _headers, body, _status = self.server.create_token_response('', body=request_body)
         self.assertNotIn('id_token', json.loads(body))

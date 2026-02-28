@@ -339,7 +339,7 @@ def parse_implicit_response(uri, state=None, scope=None):
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
 
-    vin, vat, v_at = parse_expires(params)
+    vin, vat, _v_at = parse_expires(params)
     if vin:
         params['expires_in'] = vin
     elif 'expires_in' in params:
@@ -430,7 +430,7 @@ def parse_token_response(body, scope=None):
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
 
-    vin, vat, v_at = parse_expires(params)
+    vin, vat, _v_at = parse_expires(params)
     if vin:
         params['expires_in'] = vin
     elif 'expires_in' in params:

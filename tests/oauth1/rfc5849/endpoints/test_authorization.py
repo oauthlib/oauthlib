@@ -19,7 +19,7 @@ class AuthorizationEndpointTest(TestCase):
         self.uri = 'https://i.b/authorize?oauth_token=foo'
 
     def test_get_realms_and_credentials(self):
-        realms, credentials = self.endpoint.get_realms_and_credentials(self.uri)
+        realms, _credentials = self.endpoint.get_realms_and_credentials(self.uri)
         self.assertEqual(realms, ['test'])
 
     def test_verify_token(self):
@@ -38,7 +38,7 @@ class AuthorizationEndpointTest(TestCase):
 
     def test_create_authorization_response(self):
         self.validator.get_redirect_uri.return_value = 'https://c.b/cb'
-        h, b, s = self.endpoint.create_authorization_response(self.uri)
+        h, _b, s = self.endpoint.create_authorization_response(self.uri)
         self.assertEqual(s, 302)
         self.assertIn('Location', h)
         location = h['Location']
