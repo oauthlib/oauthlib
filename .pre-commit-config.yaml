@@ -6,7 +6,7 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -47,6 +47,6 @@ repos:
           - --ignore-words-list=implementor,mimiced,provicers,re-use,THIRDPARTY,assertIn
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.5
+    rev: v0.15.2
     hooks:
       - id: ruff-check
