@@ -33,7 +33,7 @@ setup(
     platforms='any',
     license='BSD-3-Clause',
     packages=find_packages(exclude=('docs', 'examples', 'tests', 'tests.*')),
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     extras_require={
         'rsa': rsa_require,
         'signedtoken': signedtoken_require,
@@ -57,7 +57,6 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
