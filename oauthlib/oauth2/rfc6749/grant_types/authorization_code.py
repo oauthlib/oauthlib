@@ -452,21 +452,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param,
                                                  request=request)
 
-        if self.request_validator.client_authentication_required(request):
-            # If the client type is confidential or the client was issued client
-            # credentials (or assigned other authentication requirements), the
-            # client MUST authenticate with the authorization server as described
-            # in Section 3.2.1.
-            # https://tools.ietf.org/html/rfc6749#section-3.2.1
-            if not self.request_validator.authenticate_client(request):
-                log.debug('Client authentication failed, %r.', request)
-                raise errors.InvalidClientError(request=request)
-        elif not self.request_validator.authenticate_client_id(request.client_id, request):
-            # REQUIRED, if the client is not authenticating with the
-            # authorization server as described in Section 3.2.1.
-            # https://tools.ietf.org/html/rfc6749#section-3.2.1
-            log.debug('Client authentication failed, %r.', request)
-            raise errors.InvalidClientError(request=request)
+        self.validate_client_authentication(request)
 
         if not hasattr(request.client, 'client_id'):
             raise NotImplementedError('Authenticate client must set the '
