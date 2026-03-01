@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from oauthlib.common import urlencode
 from oauthlib.oauth2 import RequestValidator, RevocationEndpoint
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class RevocationEndpointTest(TestCase):

@@ -8,7 +8,7 @@ from oauthlib.oauth2 import (
     RequestValidator, WebApplicationServer,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 from .test_utils import get_fragment_credentials, get_query_credentials
 
