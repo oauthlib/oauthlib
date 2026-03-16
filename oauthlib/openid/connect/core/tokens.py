@@ -54,7 +54,9 @@ class JWTToken(TokenBase):
 def is_jwt_access_token(token):
     try:
         header_b64 = token.split('.')[0]
-        header_b64 += '=' * (-len(header_b64) % 4)  # add missing padding
+        rem = len(header_b64) % 4
+        if rem > 0:
+            header_b64 += "=" * (4 - rem)
         header = json.loads(base64.urlsafe_b64decode(header_b64))
         if header.get('typ', '').lower() in ('at+jwt', 'application/at+jwt',):
             return True
