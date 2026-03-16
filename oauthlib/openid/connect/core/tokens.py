@@ -4,6 +4,9 @@ authlib.openid.connect.core.tokens
 
 This module contains methods for adding JWT tokens to requests.
 """
+import base64
+import json
+
 from oauthlib.oauth2.rfc6749.tokens import (
     TokenBase, get_token_from_header, random_token_generator,
 )
@@ -41,5 +44,20 @@ class JWTToken(TokenBase):
     def estimate_type(self, request):
         token = get_token_from_header(request)
         if token and token.startswith('ey') and token.count('.') in (2, 4):
+            if is_jwt_access_token(token):
+                # Let BearerToken handle it
+                return 0
             return 10
         return 0
+
+
+def is_jwt_access_token(token):
+    try:
+        header_b64 = token.split('.')[0]
+        header_b64 += '=' * (-len(header_b64) % 4)  # add missing padding
+        header = json.loads(base64.urlsafe_b64decode(header_b64))
+        if header.get('typ', '').lower() in ('at+jwt', 'application/at+jwt',):
+            return True
+    except (ValueError, KeyError):
+        return False
+    return False
