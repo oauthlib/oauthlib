@@ -42,6 +42,8 @@ class JWTToken(TokenBase):
             token, request.scopes, request)
 
     def estimate_type(self, request):
+        """Determine if a given token should be handled by JWTToken or BearerToken"""
+
         token = get_token_from_header(request)
         if token and token.startswith('ey') and token.count('.') in (2, 4):
             if is_jwt_access_token(token):
@@ -52,6 +54,7 @@ class JWTToken(TokenBase):
 
 
 def is_jwt_access_token(token):
+    """Determine if a given token is a JWT access token or ID token"""
     try:
         header_b64 = token.split('.')[0]
         rem = len(header_b64) % 4
