@@ -187,8 +187,9 @@ class RequestValidator:
         """Introspect an access or refresh token.
 
         Called once the introspect request is validated. This method should
-        verify the *token* and either return a dictionary with the list of
-        claims associated, or `None` in case the token is unknown.
+        validate the *token*. If the token is currently active, this should return
+        a dictionary with the claims associated. If the token is for any reason
+        not active (expired, unknown, etc.), this should return `None`.
 
         Below the list of registered claims you should be interested in:
 
