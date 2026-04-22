@@ -219,7 +219,7 @@ class ParameterTests(TestCase):
                 self.error_nocode)
         self.assertRaises(AccessDeniedError, parse_authorization_code_response,
                 self.error_denied)
-        self.assertRaises(InvalidRequestFatalError, parse_authorization_code_response,
+        self.assertRaises(InvalidRequestError, parse_authorization_code_response,
                 self.error_invalid)
         self.assertRaises(MismatchingStateError, parse_authorization_code_response,
                 self.error_nostate, state=self.state)
@@ -329,3 +329,12 @@ class ParameterTests(TestCase):
                     "expires_at": arg[1]
                 }
                 self.assertEqual(expected, parse_expires(params))
+
+    def test_raise_from_error_base_class_only(self):
+        # raise_from_error should raise the base class for the given error
+        # code, not a random subclass that happens to inherit it.
+        # InvalidClientIdError(InvalidRequestFatalError) was being raised
+        # for 'invalid_request' because it sorts first alphabetically.
+        self.assertRaises(InvalidRequestError, raise_from_error, 'invalid_request', {})
+        self.assertRaises(AccessDeniedError, raise_from_error, 'access_denied', {})
+        self.assertRaises(InvalidClientError, raise_from_error, 'invalid_client', {})

@@ -394,6 +394,6 @@ def raise_from_error(error, params=None):
         'state': params.get('state')
     }
     for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
-        if cls.error == error:
+        if cls.__dict__.get('error') == error:
             raise cls(**kwargs)
     raise CustomOAuth2Error(error=error, **kwargs)
