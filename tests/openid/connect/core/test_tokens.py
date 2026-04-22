@@ -164,7 +164,7 @@ class JWTTokenTestCase(TestCase):
         """
         def test_token(token, expected_result):
             encoded_header = base64.urlsafe_b64encode(
-                json.dumps(token_header).encode()
+                json.dumps(token).encode()
             ).rstrip(b"=").decode()
             encoded_token = f'{encoded_header}.payload.signature'
 
