@@ -309,6 +309,12 @@ class UnauthorizedClientError(OAuth2Error):
     """
     error = 'unauthorized_client'
 
+class UnsupportedContentTypeError(OAuth2Error):
+    """
+    The authorization server does not support the
+    media type transmitted in the request.
+    """
+    error = 'unsupported_content_type'
 
 class UnsupportedGrantTypeError(OAuth2Error):
     """
