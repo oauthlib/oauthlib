@@ -64,7 +64,7 @@ class OAuth2Token(dict):
         return list(self._new_scope - self._old_scope)
 
 
-def prepare_mac_header(token, uri, key, http_method,
+def prepare_mac_header(token_str, uri, key, http_method,
                        nonce=None,
                        headers=None,
                        body=None,
@@ -91,7 +91,7 @@ def prepare_mac_header(token, uri, key, http_method,
     .. _`MAC Access Authentication`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
     .. _`extension algorithms`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-7.1
 
-    :param token:
+    :param token_str: Token as string.
     :param uri: Request URI.
     :param key: MAC given provided by token endpoint.
     :param http_method: HTTP Request method.
@@ -155,7 +155,7 @@ def prepare_mac_header(token, uri, key, http_method,
     sign = b2a_base64(sign.digest())[:-1].decode('utf-8')
 
     header = []
-    header.append('MAC id="%s"' % token)
+    header.append('MAC id="%s"' % token_str)
     if draft != 0:
         header.append('ts="%s"' % ts)
     header.append('nonce="%s"' % nonce)
@@ -170,7 +170,7 @@ def prepare_mac_header(token, uri, key, http_method,
     return headers
 
 
-def prepare_bearer_uri(token, uri):
+def prepare_bearer_uri(token_str, uri):
     """Add a `Bearer Token`_ to the request URI.
     Not recommended, use only if client can't use authorization header or body.
 
@@ -178,13 +178,13 @@ def prepare_bearer_uri(token, uri):
 
     .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
 
-    :param token:
+    :param token_str:
     :param uri:
     """
-    return add_params_to_uri(uri, [(('access_token', token))])
+    return add_params_to_uri(uri, [(('access_token', token_str))])
 
 
-def prepare_bearer_headers(token, headers=None):
+def prepare_bearer_headers(token_str, headers=None):
     """Add a `Bearer Token`_ to the request URI.
     Recommended method of passing bearer tokens.
 
@@ -192,25 +192,25 @@ def prepare_bearer_headers(token, headers=None):
 
     .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
 
-    :param token:
+    :param token_str:
     :param headers:
     """
     headers = headers or {}
-    headers['Authorization'] = 'Bearer %s' % token
+    headers['Authorization'] = 'Bearer %s' % token_str
     return headers
 
 
-def prepare_bearer_body(token, body=''):
+def prepare_bearer_body(token_str, body=''):
     """Add a `Bearer Token`_ to the request body.
 
     access_token=h480djs93hd8
 
     .. _`Bearer Token`: https://tools.ietf.org/html/rfc6750
 
-    :param token:
+    :param token_str:
     :param body:
     """
-    return add_params_to_qs(body, [(('access_token', token))])
+    return add_params_to_qs(body, [(('access_token', token_str))])
 
 
 def random_token_generator(request, refresh_token=False):
@@ -241,16 +241,16 @@ def get_token_from_header(request):
     :type request: oauthlib.common.Request
     :return: Return the token or None if the Authorization header is malformed.
     """
-    token = None
+    token_str = None
 
     if 'Authorization' in request.headers:
         split_header = request.headers.get('Authorization').split()
         if len(split_header) == 2 and split_header[0].lower() == 'bearer':
-            token = split_header[1]
+            token_str = split_header[1]
     else:
-        token = request.access_token
+        token_str = request.access_token
 
-    return token
+    return token_str
 
 
 class TokenBase:
@@ -333,9 +333,9 @@ class BearerToken(TokenBase):
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
-        token = get_token_from_header(request)
+        token_str = get_token_from_header(request)
         return self.request_validator.validate_bearer_token(
-            token, request.scopes, request)
+            token_str, request.scopes, request)
 
     def estimate_type(self, request):
         """
