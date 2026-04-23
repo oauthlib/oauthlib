@@ -55,14 +55,12 @@ class DeviceCodeGrant(GrantTypeBase):
                     description=f"Duplicate {param} parameter.", request=request
                 )
 
-        if not self.request_validator.authenticate_client(request):
-            raise rfc6749_errors.InvalidClientError(request=request)
-        elif not hasattr(request.client, "client_id"):
-            raise NotImplementedError(
-                "Authenticate client must set the "
-                "request.client.client_id attribute "
-                "in authenticate_client."
-            )
+        self.validate_client_authentication(request)
+
+        if not hasattr(request.client, 'client_id'):
+            raise NotImplementedError('Authenticate client must set the '
+                                      'request.client.client_id attribute '
+                                      'in authenticate_client.')
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
@@ -93,13 +91,7 @@ class DeviceCodeGrant(GrantTypeBase):
         """
         headers = self._get_default_headers()
         try:
-            if self.request_validator.client_authentication_required(
-                request
-            ) and not self.request_validator.authenticate_client(request):
-                raise rfc6749_errors.InvalidClientError(request=request)
-
             self.validate_token_request(request)
-
         except rfc6749_errors.OAuth2Error as e:
             headers.update(e.headers)
             return headers, e.json, e.status_code
