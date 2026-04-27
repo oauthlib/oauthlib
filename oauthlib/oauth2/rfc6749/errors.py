@@ -398,8 +398,9 @@ def raise_from_error(error, params=None):
         if cls.error == error
     ]
     # When multiple classes share the same error code (e.g. invalid_request),
-    # prefer leaf classes over base classes to avoid raising a misleading
-    # exception like InvalidClientIdError for an unrelated invalid_request.
+    # filter out base classes if more specific subclasses also match. If
+    # multiple leaf classes still match, the later selection remains dependent
+    # on inspect.getmembers ordering.
     if len(matching) > 1:
         matching_names = {cls.__name__ for cls in matching}
         matching = [
