@@ -8,7 +8,7 @@ from oauthlib.oauth2.rfc6749.endpoints.authorization import (
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types import AuthorizationCodeGrant
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class OpenIDConnectEndpointTest(TestCase):

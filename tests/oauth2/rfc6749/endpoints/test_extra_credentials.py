@@ -7,7 +7,7 @@ from oauthlib.oauth2 import (
     RequestValidator, WebApplicationServer,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class ExtraCredentialsTest(TestCase):

@@ -3,7 +3,7 @@ import json
 
 from oauthlib.oauth2 import MetadataEndpoint, Server, TokenEndpoint
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class MetadataEndpointTest(TestCase):
