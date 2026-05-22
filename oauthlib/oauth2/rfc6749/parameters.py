@@ -172,7 +172,7 @@ def prepare_token_request(grant_type, body='', include_client_id=True, code_veri
 
 
 def prepare_token_revocation_request(url, token, token_type_hint="access_token",
-        callback=None, body='', **kwargs):
+        body='', **kwargs):
     """Prepare a token revocation request.
 
     The client constructs the request by including the following parameters
@@ -222,11 +222,7 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-    if callback:
-        params.append(('callback', callback))
-        return add_params_to_uri(url, params), headers, body
-    else:
-        return url, headers, add_params_to_qs(body, params)
+    return url, headers, add_params_to_qs(body, params)
 
 
 def parse_authorization_code_response(uri, state=None):
