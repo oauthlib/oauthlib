@@ -9,5 +9,11 @@
                 "terminal.integrated.defaultProfile.linux": "zsh"
             }
         }
+    },
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,readonly,type=bind"
+    ],
+    "remoteEnv": {
+        "SSH_AUTH_SOCK": "${localEnv:SSH_AUTH_SOCK}"
     }
 }
