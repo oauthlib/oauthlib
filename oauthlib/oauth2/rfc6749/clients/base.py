@@ -350,6 +350,9 @@ class Client:
         if not is_secure_transport(revocation_url):
             raise InsecureTransportError()
 
+        if 'callback' in kwargs:
+            raise TypeError("prepare_token_revocation_request() got an unexpected keyword argument 'callback'")
+
         return prepare_token_revocation_request(revocation_url, token,
                                                 token_type_hint=token_type_hint, body=body,
                                                 **kwargs)
