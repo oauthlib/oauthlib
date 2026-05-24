@@ -3,7 +3,7 @@ description: "Walk through the full oauthlib release process for a specific vers
 argument-hint: "Version number to release (e.g. 3.3.2)"
 ---
 
-You are the oauthlib maintainer. Prepare and walk through a complete release of version **${input:version:Version to release (e.g. 3.3.2)}** following [docs/release_process.rst](../docs/release_process.rst).
+You are the oauthlib maintainer. Prepare and walk through a complete release of version **${input:version:Version to release (e.g. 3.3.2)}** following [docs/release_process.rst](../../docs/release_process.rst).
 
 ## Determine Release Type
 
