@@ -64,8 +64,7 @@ class ImplicitGrantTest(TestCase):
 
     def test_validate_authorization_request_unauthorized_client_in_fragment(self):
         self.mock_validator.validate_response_type.return_value = False
-        try:
+        with self.assertRaises(errors.UnauthorizedClientError) as cm:
             self.auth.validate_authorization_request(self.request)
-        except errors.UnauthorizedClientError as e:
-            self.assertEqual(e.response_mode, 'fragment')
-            self.assertIn('#', e.in_uri(self.request.redirect_uri))
+        self.assertEqual(cm.exception.response_mode, 'fragment')
+        self.assertIn('#', cm.exception.in_uri(self.request.redirect_uri))
