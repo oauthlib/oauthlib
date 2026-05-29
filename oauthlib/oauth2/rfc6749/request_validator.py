@@ -60,6 +60,11 @@ class RequestValidator:
         class must contain the 'client_id' attribute and the 'client_id' must have
         a value.
 
+        This method MUST NOT be used to authenticate public clients. Public
+        clients do not authenticate through means outside the OAuth 2 spec and
+        are instead validated by :meth:`authenticate_client_id`. If the client
+        is public, this method must return False.
+
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :rtype: True or False
@@ -69,6 +74,7 @@ class RequestValidator:
             - Resource Owner Password Credentials Grant (may be disabled)
             - Client Credentials Grant
             - Refresh Token Grant
+            - Device Code Grant
 
         .. _`HTTP Basic Authentication Scheme`: https://tools.ietf.org/html/rfc1945#section-11.1
         """
@@ -91,6 +97,9 @@ class RequestValidator:
 
         Method is used by:
             - Authorization Code Grant
+            - Resource Owner Password Credentials Grant
+            - Refresh Token Grant
+            - Device Code Grant
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
