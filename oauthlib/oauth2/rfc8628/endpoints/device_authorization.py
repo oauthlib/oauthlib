@@ -10,7 +10,6 @@ import logging
 from typing import Callable
 
 from oauthlib.common import Request, generate_token
-from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.endpoints.base import (
     BaseEndpoint,
     catch_errors_and_unavailability,
@@ -103,48 +102,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         .. _`Section 3.2.1. of [RFC6749]`: https://www.rfc-editor.org/rfc/rfc6749#section-3.2.1
         .. _`Section 2.2 of [RFC6749]`: https://www.rfc-editor.org/rfc/rfc6749#section-2.2
         """
-
-        # First check duplicate parameters
-        for param in ("client_id", "scope"):
-            try:
-                duplicate_params = request.duplicate_params
-            except ValueError:
-                raise errors.InvalidRequestFatalError(
-                    description="Unable to parse query string", request=request
-                )
-            if param in duplicate_params:
-                raise errors.InvalidRequestFatalError(
-                    description="Duplicate %s parameter." % param, request=request
-                )
-
-        # the "application/x-www-form-urlencoded" format, per Appendix B of [RFC6749]
-        # https://www.rfc-editor.org/rfc/rfc6749#appendix-B
-        if request.headers["Content-Type"] != "application/x-www-form-urlencoded":
-            raise errors.InvalidRequestError(
-                "Content-Type must be application/x-www-form-urlencoded",
-                request=request,
-            )
-
-        # REQUIRED. The client identifier as described in Section 2.2.
-        # https://tools.ietf.org/html/rfc6749#section-2.2
-        # TODO: extract client_id an helper validation function.
-        if not request.client_id:
-            raise errors.MissingClientIdError(request=request)
-
-        if not self.request_validator.validate_client_id(request.client_id, request):
-            raise errors.InvalidClientIdError(request=request)
-
-        # The client authentication requirements of Section 3.2.1 of [RFC6749]
-        # apply to requests on this endpoint, which means that confidential
-        # clients (those that have established client credentials) authenticate
-        # in the same manner as when making requests to the token endpoint, and
-        # public clients provide the "client_id" parameter to identify
-        # themselves.
-        self._raise_on_invalid_client(request)
-
-        # OPTIONAL. The scope of the access request as defined by Section 3.3
-        # of [RFC6749]. https://www.rfc-editor.org/rfc/rfc8628#section-3.1
-        self.device_code_grant.validate_scopes(request)
+        self.device_code_grant.validate_device_authorization_request(request)
 
     @catch_errors_and_unavailability
     def create_device_authorization_response(

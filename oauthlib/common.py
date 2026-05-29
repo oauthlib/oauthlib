@@ -366,6 +366,7 @@ class Request:
             "code_challenge": None,
             "code_challenge_method": None,
             "code_verifier": None,
+            "device_code": None,
             "extra_credentials": None,
             "grant_type": None,
             "redirect_uri": None,
