@@ -65,6 +65,9 @@ class DeviceCodeGrant(GrantTypeBase):
         authorization server as described in `Section 3.2.1. of [RFC6749]`_.
         The client identifier as described in `Section 2.2 of [RFC6749]`_.
 
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+
         .. _`Section 3.2.1. of [RFC6749]`: https://www.rfc-editor.org/rfc/rfc6749#section-3.2.1
         .. _`Section 2.2 of [RFC6749]`: https://www.rfc-editor.org/rfc/rfc6749#section-2.2
         """
@@ -160,6 +163,9 @@ class DeviceCodeGrant(GrantTypeBase):
         Delegates to :meth:`RequestValidator.validate_device_code`, which
         returns one of the ``DEVICE_CODE_*`` statuses, and maps it to the
         appropriate RFC 8628 Section 3.5 error.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
         """
         if not request.device_code:
             raise rfc6749_errors.InvalidRequestError(
