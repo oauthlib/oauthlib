@@ -93,3 +93,9 @@ class ErrorResponseTest(TestCase):
         # Device code grant
         self.validator.validate_client_id.return_value = False
         self.assert_request_raises(errors.InvalidRequestFatalError, request)
+
+    def test_invalid_scope(self):
+        request = self.build_request()
+        request.body = "client_id=foo&scope=foo"
+        self.validator.validate_scopes.return_value = False
+        self.assert_request_raises(errors.InvalidScopeError, request)

@@ -15,6 +15,7 @@ from oauthlib.oauth2.rfc6749.endpoints.base import (
     BaseEndpoint,
     catch_errors_and_unavailability,
 )
+from oauthlib.oauth2.rfc8628.grant_types import DeviceCodeGrant
 
 log = logging.getLogger(__name__)
 
@@ -52,6 +53,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         :param user_code_generator: a callable that returns a configurable user code
         """
         self.request_validator = request_validator
+        self.device_code_grant = DeviceCodeGrant(request_validator)
         self._expires_in = expires_in
         self._interval = interval
         self._verification_uri = verification_uri
@@ -139,6 +141,10 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         # public clients provide the "client_id" parameter to identify
         # themselves.
         self._raise_on_invalid_client(request)
+
+        # OPTIONAL. The scope of the access request as defined by Section 3.3
+        # of [RFC6749]. https://www.rfc-editor.org/rfc/rfc8628#section-3.1
+        self.device_code_grant.validate_scopes(request)
 
     @catch_errors_and_unavailability
     def create_device_authorization_response(
