@@ -304,6 +304,24 @@ class ClientTest(TestCase):
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertFormBodyEqual(b, 'grant_type=refresh_token&scope={}&refresh_token={}'.format(scope, token))
 
+    def test_prepare_request_headers_are_not_shared(self):
+        # Regression test for #873: mutating the headers dict returned by a
+        # prepare_*_request method must not affect the headers returned by
+        # later calls (the methods used to return a shared module-level dict).
+        client = Client(self.client_id)
+        url = 'https://example.com/token'
+        token = 'foobar'
+
+        _, first_headers, _ = client.prepare_refresh_token_request(url, token)
+        first_headers['Content-Length'] = '0'
+
+        _, second_headers, _ = client.prepare_refresh_token_request(url, token)
+        self.assertEqual(
+            second_headers,
+            {'Content-Type': 'application/x-www-form-urlencoded'})
+        self.assertNotIn('Content-Length', second_headers)
+        self.assertIsNot(first_headers, second_headers)
+
     def test_create_code_verifier_min_length(self):
         client = Client(self.client_id)
         length = 43

@@ -32,6 +32,16 @@ FORM_ENC_HEADERS = {
 }
 
 
+def _form_enc_headers():
+    """Return a fresh copy of the form-encoded headers.
+
+    A new dict is returned on every call so that callers mutating the
+    headers they receive from ``prepare_*_request`` do not corrupt the
+    shared module-level constant or leak into later calls (see #873).
+    """
+    return dict(FORM_ENC_HEADERS)
+
+
 class Client:
     """Base OAuth2 client responsible for access token management.
 
@@ -254,7 +264,7 @@ class Client:
         auth_url = self.prepare_request_uri(
             authorization_url, redirect_uri=self.redirect_url,
             scope=scope, state=self.state, **kwargs)
-        return auth_url, FORM_ENC_HEADERS, ''
+        return auth_url, _form_enc_headers(), ''
 
     def prepare_token_request(self, token_url, authorization_response=None,
                               redirect_url=None, state=None, body='', **kwargs):
@@ -288,7 +298,7 @@ class Client:
         body = self.prepare_request_body(body=body,
                                          redirect_uri=self.redirect_url, **kwargs)
 
-        return token_url, FORM_ENC_HEADERS, body
+        return token_url, _form_enc_headers(), body
 
     def prepare_refresh_token_request(self, token_url, refresh_token=None,
                                       body='', scope=None, **kwargs):
@@ -317,7 +327,7 @@ class Client:
         scope = self.scope if scope is None else scope
         body = self.prepare_refresh_body(body=body,
                                          refresh_token=refresh_token, scope=scope, **kwargs)
-        return token_url, FORM_ENC_HEADERS, body
+        return token_url, _form_enc_headers(), body
 
     def prepare_token_revocation_request(self, revocation_url, token,
                                          token_type_hint="access_token", body='', callback=None, **kwargs):
