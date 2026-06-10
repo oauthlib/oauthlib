@@ -1,8 +1,8 @@
 Changelog
 =========
 
-3.4.0 (TBD)
------------
+3.4.0 (unreleased):
+------------------
 Misc:
 * #930: Add devcontainer, Add Python3.14, Python3.14t.
 * Add OAuthLib Maintainer agent for automated issue/PR triage and release management.
