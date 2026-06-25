@@ -319,13 +319,20 @@ class CaseInsensitiveDict(dict):
         return self[k] if k in self else default  # noqa: SIM401
 
     def __setitem__(self, k, v):
+        # Remove stale entry for a different-cased key that maps to the same
+        # lowercase key, so the underlying dict never holds duplicates.
+        if k.lower() in self.proxy:
+            old_key = self.proxy[k.lower()]
+            if old_key != k:
+                super().__delitem__(old_key)
         super().__setitem__(k, v)
         self.proxy[k.lower()] = k
 
     def update(self, *args, **kwargs):
-        super().update(*args, **kwargs)
-        for k in dict(*args, **kwargs):
-            self.proxy[k.lower()] = k
+        # Route through __setitem__ so different-cased overwrites are handled
+        # correctly (super().update() bypasses __setitem__ in CPython).
+        for k, v in dict(*args, **kwargs).items():
+            self[k] = v
 
 
 class Request:
