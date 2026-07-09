@@ -3,6 +3,9 @@ Changelog
 
 WIP
 ---
+OAuth2.0 Common:
+* #959: RFC8707: expose repeated ``resource`` parameters as a list instead of collapsing to the last value.
+
 Misc:
 * #930: Add devcontainer, Add Python3.14, Python3.14t.
 
