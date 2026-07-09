@@ -395,6 +395,17 @@ class Request:
         self._params.update(dict(urldecode(self.uri_query)))
         self._params.update(dict(self.decoded_body or []))
 
+        # RFC 8707 §2 permits the ``resource`` parameter to appear multiple
+        # times. Collapsing it through ``dict`` above would silently keep only
+        # the last value, so surface the full set as a list when it is
+        # repeated. A single (or absent) value keeps its scalar/None shape for
+        # backwards compatibility.
+        resources = [value for key, value in
+                     urldecode(self.uri_query) + (self.decoded_body or [])
+                     if key == "resource"]
+        if len(resources) > 1:
+            self._params["resource"] = resources
+
     def __getattr__(self, name):
         if name in self._params:
             return self._params[name]
