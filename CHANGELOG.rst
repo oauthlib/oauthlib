@@ -3,6 +3,9 @@ Changelog
 
 3.4.0 (unreleased):
 ------------------
+OAuth2.0 Common:
+* #959: RFC8707: expose repeated ``resource`` parameters as a list instead of collapsing to the last value.
+
 OAuth2.0 Provider:
 * **Breaking**: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
 * Improved PKCE Nonce comparison
