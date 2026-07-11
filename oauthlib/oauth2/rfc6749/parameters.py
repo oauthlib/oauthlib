@@ -216,6 +216,9 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
     if token_type_hint:
         params.append(('token_type_hint', token_type_hint))
 
+    if 'callback' in kwargs:
+        raise TypeError("prepare_token_revocation_request() got an unexpected keyword argument 'callback'")
+
     for k in kwargs:
         if kwargs[k]:
             params.append((str(k), kwargs[k]))
