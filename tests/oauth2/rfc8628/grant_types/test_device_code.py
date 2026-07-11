@@ -53,6 +53,7 @@ def test_custom_pre_and_post_token_validators():
 
     request: common.Request = create_request()
     request.client = client
+    client.client_id = request.client_id
 
     auth = DeviceCodeGrant(validator)
 
@@ -70,6 +71,7 @@ def test_create_token_response():
     validator = mock.MagicMock()
     request: common.Request = create_request()
     request.client = mock.Mock()
+    request.client.client_id = request.client_id
 
     auth = DeviceCodeGrant(validator)
 

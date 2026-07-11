@@ -54,7 +54,7 @@ class OpenIDAuthCodeTest(TestCase):
 
     def set_client(self, request):
         request.client = mock.MagicMock()
-        request.client.client_id = 'mocked'
+        request.client.client_id = request.client_id
         return True
 
     @mock.patch('oauthlib.common.generate_token')

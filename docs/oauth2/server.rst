@@ -300,7 +300,8 @@ can be seen below.
 
         def validate_client_id(self, client_id, request):
             try:
-                Client.objects.get(client_id=client_id)
+                client = Client.objects.get(client_id=client_id)
+                request.client = client
                 return True
             except Client.DoesNotExist:
                 return False

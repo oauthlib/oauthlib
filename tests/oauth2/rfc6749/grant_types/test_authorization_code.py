@@ -34,7 +34,7 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def set_client(self, request):
         request.client = mock.MagicMock()
-        request.client.client_id = 'mocked'
+        request.client.client_id = request.client_id
         return True
 
     def setup_validators(self):
@@ -196,6 +196,36 @@ class AuthorizationCodeGrantTest(TestCase):
         self.mock_validator.authenticate_client_id.return_value = False
         self.request.state = 'abc'
         self.assertRaises(errors.InvalidClientError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_client_id_discrepancy(self):
+        """ServerError raised when authenticate_client sets a different client_id."""
+        def set_mismatched_client(request):
+            request.client = mock.MagicMock()
+            request.client.client_id = 'different_from_abcdef'
+            return True
+        self.mock_validator.authenticate_client.side_effect = set_mismatched_client
+        self.assertRaises(errors.ServerError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_public_client_id_missing(self):
+        """NotImplementedError raised when authenticate_client_id does not set request.client."""
+        self.mock_validator.client_authentication_required.return_value = False
+        self.mock_validator.authenticate_client_id.return_value = True
+        self.request.client = mock.MagicMock()
+        del self.request.client.client_id
+        self.assertRaises(NotImplementedError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_public_client_id_discrepancy(self):
+        """ServerError raised when authenticate_client_id sets a different client_id."""
+        def set_mismatched_client(client_id, request):
+            request.client = mock.MagicMock()
+            request.client.client_id = 'different_from_abcdef'
+            return True
+        self.mock_validator.client_authentication_required.return_value = False
+        self.mock_validator.authenticate_client_id.side_effect = set_mismatched_client
+        self.assertRaises(errors.ServerError,
                           self.auth.validate_token_request, self.request)
 
     def test_invalid_redirect_uri(self):
