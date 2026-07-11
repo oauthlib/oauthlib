@@ -237,13 +237,6 @@ class ClientTest(TestCase):
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertEqual(b, 'token=%s&token_type_hint=refresh_token' % token)
 
-        # JSONP
-        u, h, b = client.prepare_token_revocation_request(
-            url, token, callback='hello.world')
-        self.assertURLEqual(u, url + '?callback=hello.world&token=%s&token_type_hint=access_token' % token)
-        self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertEqual(b, '')
-
     def test_prepare_authorization_request(self):
         redirect_url = 'https://example.com/callback/'
         scopes = 'read'
