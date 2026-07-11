@@ -208,6 +208,14 @@ class ParameterTests(TestCase):
         self.assertFormBodyEqual(prepare_token_request(**self.cred_grant), self.cred_body)
         self.assertFormBodyEqual(prepare_token_request(**self.grant_body_pkce), self.auth_grant_body_pkce)
 
+    def test_prepare_token_revocation_request_rejects_callback(self):
+        with self.assertRaisesRegex(
+                TypeError,
+                "prepare_token_revocation_request\\(\\) got an unexpected keyword argument 'callback'"):
+            prepare_token_revocation_request(
+                "https://server.example.com/revoke", "token", callback="jsonp"
+            )
+
     def test_grant_response(self):
         """Verify correct parameter parsing and validation for auth code responses."""
         params = parse_authorization_code_response(self.grant_response)
