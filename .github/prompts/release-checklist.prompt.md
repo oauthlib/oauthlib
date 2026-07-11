@@ -39,9 +39,9 @@ python -c "import oauthlib; print(oauthlib.__version__)"
 
 ## Step 4 — Update CHANGELOG.rst
 
-- Move all unreleased entries under a new section heading `${input:version} (YYYY-MM-DD)` with today's date.
-- Ensure the section follows the existing format.
-- Leave the `Unreleased` section empty (or remove it if convention dictates).
+- Move all unreleased entries from the top `Unreleased` section into a new dated section `${input:version} (YYYY-MM-DD)` when cutting the release.
+- Keep `Unreleased` at the top of the file for future work and leave it empty.
+- Ensure the release section follows the existing format.
 
 ## Step 5 — Milestone Hygiene
 
