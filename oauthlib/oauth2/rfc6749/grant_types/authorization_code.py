@@ -4,6 +4,7 @@ oauthlib.oauth2.rfc6749.grant_types
 """
 import base64
 import hashlib
+import hmac
 import json
 import logging
 
@@ -44,9 +45,10 @@ def code_challenge_method_s256(verifier, challenge):
 
     .. _`Section 4.3`: https://tools.ietf.org/html/rfc7636#section-4.3
     """
-    return base64.urlsafe_b64encode(
+    expected = base64.urlsafe_b64encode(
         hashlib.sha256(verifier.encode()).digest()
-    ).decode().rstrip('=') == challenge
+    ).decode().rstrip('=')
+    return hmac.compare_digest(expected, challenge)
 
 
 def code_challenge_method_plain(verifier, challenge):
@@ -58,7 +60,7 @@ def code_challenge_method_plain(verifier, challenge):
 
     .. _`Section 4.3`: https://tools.ietf.org/html/rfc7636#section-4.3
     """
-    return verifier == challenge
+    return hmac.compare_digest(verifier, challenge)
 
 
 class AuthorizationCodeGrant(GrantTypeBase):
