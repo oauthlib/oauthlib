@@ -86,10 +86,11 @@ class DeviceCodeGrant(GrantTypeBase):
 
         # the "application/x-www-form-urlencoded" format, per Appendix B of [RFC6749]
         # https://www.rfc-editor.org/rfc/rfc6749#appendix-B
-        if request.headers["Content-Type"] != "application/x-www-form-urlencoded":
+        content_type = request.headers.get("Content-Type", "")
+        content_type = content_type.split(";", 1)[0].strip().lower()
+        if content_type != "application/x-www-form-urlencoded":
             raise rfc6749_errors.InvalidRequestError(
-                "Content-Type must be application/x-www-form-urlencoded",
-                request=request,
+                "Content-Type must be application/x-www-form-urlencoded", request=request
             )
 
         # REQUIRED. The client identifier as described in Section 2.2.
