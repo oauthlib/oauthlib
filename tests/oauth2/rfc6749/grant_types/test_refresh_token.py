@@ -15,6 +15,7 @@ class RefreshTokenGrantTest(TestCase):
     def setUp(self):
         mock_client = mock.MagicMock()
         mock_client.user.return_value = 'mocked user'
+        mock_client.client_id = 'abcdef'
         self.request = Request('http://a.b/path')
         self.request.grant_type = 'refresh_token'
         self.request.refresh_token = 'lsdkfhj230'
@@ -145,6 +146,16 @@ class RefreshTokenGrantTest(TestCase):
         self.request.client.client_id = 'foobar'
         self.auth.validate_token_request(self.request)
         self.request.client_id = 'foobar'
+
+    def test_client_id_discrepancy(self):
+        """ServerError raised when authenticate_client sets a different client_id."""
+        def set_mismatched_client(request):
+            request.client = mock.MagicMock()
+            request.client.client_id = 'different_from_abcdef'
+            return True
+        self.mock_validator.authenticate_client.side_effect = set_mismatched_client
+        self.assertRaises(errors.ServerError,
+                          self.auth.validate_token_request, self.request)
 
     def test_invalid_grant_type(self):
         self.request.grant_type = 'wrong_type'

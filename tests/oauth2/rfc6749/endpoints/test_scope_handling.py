@@ -30,12 +30,12 @@ class TestScopeHandling(TestCase):
         request.user = 'foo'
         request.client_id = 'bar'
         request.client = mock.MagicMock()
-        request.client.client_id = 'mocked'
+        request.client.client_id = request.client_id
         return True
 
     def set_client(self, request):
         request.client = mock.MagicMock()
-        request.client.client_id = 'mocked'
+        request.client.client_id = request.client_id
         return True
 
     def setUp(self):

@@ -53,6 +53,7 @@ def test_custom_pre_and_post_token_validators():
 
     request: common.Request = create_request()
     request.client = client
+    client.client_id = request.client_id
 
     auth = DeviceCodeGrant(validator)
 
@@ -70,6 +71,7 @@ def test_create_token_response():
     validator = mock.MagicMock()
     request: common.Request = create_request()
     request.client = mock.Mock()
+    request.client.client_id = request.client_id
 
     auth = DeviceCodeGrant(validator)
 
@@ -99,7 +101,7 @@ def test_create_token_response():
     validator.save_token.assert_called_once()
 
 
-def test_invalid_client_error():
+def test_invalid_client_authentication_error_confidential_client():
     validator = mock.MagicMock()
     request: common.Request = create_request()
     request.client = mock.Mock()
@@ -107,7 +109,36 @@ def test_invalid_client_error():
     auth = DeviceCodeGrant(validator)
     bearer = BearerToken(validator)
 
+    # Simulate a confidential client that requires authentication
+    validator.client_authentication_required.return_value = True
     validator.authenticate_client.return_value = False
+
+    headers, body, status_code = auth.create_token_response(request, bearer)
+    body = json.loads(body)
+
+    assert headers == {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+        "Pragma": "no-cache",
+        "WWW-Authenticate": 'Bearer error="invalid_client"',
+    }
+    assert body == {"error": "invalid_client"}
+    assert status_code == 401
+
+    validator.save_token.assert_not_called()
+
+
+def test_invalid_client_authentication_error_public_client():
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+    request.client = mock.Mock()
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+
+    # Simulate a public client that does not require authentication
+    validator.client_authentication_required.return_value = False
+    validator.authenticate_client_id.return_value = False
 
     headers, body, status_code = auth.create_token_response(request, bearer)
     body = json.loads(body)

@@ -19,6 +19,13 @@ class TestRefreshToken(TestCase):
         self.validator = mock.MagicMock(spec=RequestValidator)
         self.validator.get_id_token.return_value='id_token'
 
+        def set_client(request):
+            request.client = mock.MagicMock()
+            request.client.client_id = request.client_id
+            return True
+
+        self.validator.authenticate_client.side_effect = set_client
+
         self.server = Server(self.validator)
 
     def test_refresh_token_with_openid(self):

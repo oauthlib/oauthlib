@@ -400,7 +400,7 @@ class ErrorResponseTest(TestCase):
         self.assertEqual('invalid_client', json.loads(body)['error'])
 
         # Client credentials grant
-        _, body, _ = self.legacy.create_token_response('https://i.b/token',
+        _, body, _ = self.backend.create_token_response('https://i.b/token',
                 body='grant_type=client_credentials')
         self.assertEqual('invalid_client', json.loads(body)['error'])
 

@@ -112,7 +112,7 @@ class TokenEndpointTest(TestCase):
         def set_user(request):
             request.user = mock.MagicMock()
             request.client = mock.MagicMock()
-            request.client.client_id = 'mocked_client_id'
+            request.client.client_id = request.client_id
             return True
 
         self.mock_validator = mock.MagicMock()
@@ -219,7 +219,7 @@ class SignedTokenEndpointTest(TestCase):
         def set_user(request):
             request.user = mock.MagicMock()
             request.client = mock.MagicMock()
-            request.client.client_id = 'mocked_client_id'
+            request.client.client_id = request.client_id
             return True
 
         self.mock_validator = mock.MagicMock()
