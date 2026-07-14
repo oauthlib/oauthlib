@@ -137,15 +137,8 @@ class DeviceCodeGrant(GrantTypeBase):
 
         self.validate_client_authentication(request)
 
-        if not hasattr(request.client, 'client_id'):
-            raise NotImplementedError('Authenticate client must set the '
-                                      'request.client.client_id attribute '
-                                      'in authenticate_client.')
-
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
-
-        request.client_id = request.client_id or request.client.client_id
 
         # Validate the device_code first: per RFC 8628 Section 3.4 the token
         # request carries no scope, so the validator must populate

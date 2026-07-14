@@ -7,18 +7,20 @@ jobs:
       FORCE_COLOR: 1
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - name: Install prereq
         run: pip install tox coveralls
       - name: Run python tests
@@ -53,21 +55,52 @@ jobs:
     steps:
       - run: sudo apt install -y graphviz
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - name: Install prereq
         run: pip install tox
       - name: Run python tests
         run: tox -e ${{ matrix.toxenv }}
-  pypi-publish:
+  build:
+    name: Build oauthlib distribution
     needs:
       - tests
       - docs
       - coveralls
-    if: ${{ success() }} && github.repository == 'oauthlib/oauthlib' && startsWith(github.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Check out repository code
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Install pypa/build
+        run: >-
+          python3 -m
+          pip install
+          build
+          --user
+      - name: Build wheel and tarball
+        run: python3 -m build
+      - name: Store the package's artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: python-package-distributions
+          path: dist/
+  pypi-publish:
+    if: success() && github.repository == 'oauthlib/oauthlib' && github.ref_type == 'tag'
+    needs:
+      - build
     name: Upload release to PyPI
     runs-on: ubuntu-latest
     environment:
@@ -76,16 +109,10 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-    - name: Check out repository code
-      uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - name: Download all the dists
+      uses: actions/download-artifact@v6
       with:
-        python-version: '3.10'
-    - name: Install prereq
-      run: pip install build twine
-    - name: Build python package
-      run: python -m build
-    - name: Check python package
-      run: twine check dist/*
+        name: python-package-distributions
+        path: dist/
     - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1

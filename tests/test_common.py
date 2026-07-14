@@ -212,6 +212,22 @@ class RequestTest(TestCase):
         self.assertEqual(r.headers['token'], 'foobar')
         self.assertEqual(r.token, 'banana')
 
+    def test_resource_param_from_body(self):
+        """RFC 8707: resource parameter should be accessible via request.resource."""
+        r = Request(URI, http_method='POST',
+                    body='grant_type=authorization_code&resource=https%3A%2F%2Fapi.example.com')
+        self.assertEqual(r.resource, 'https://api.example.com')
+
+    def test_resource_param_from_query(self):
+        """RFC 8707: resource parameter in query string should be accessible."""
+        r = Request(URI + '?resource=https%3A%2F%2Fapi.example.com')
+        self.assertEqual(r.resource, 'https://api.example.com')
+
+    def test_resource_param_defaults_to_none(self):
+        """RFC 8707: resource should be None when not provided."""
+        r = Request(URI, body='grant_type=authorization_code')
+        self.assertIsNone(r.resource)
+
     def test_sanitized_request_non_debug_mode(self):
         """make sure requests are sanitized when in non debug mode.
         For the debug mode, the other tests checking sanitization should prove

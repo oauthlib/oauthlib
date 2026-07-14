@@ -400,7 +400,7 @@ class ErrorResponseTest(TestCase):
         self.assertEqual('invalid_client', json.loads(body)['error'])
 
         # Client credentials grant
-        _, body, _ = self.legacy.create_token_response('https://i.b/token',
+        _, body, _ = self.backend.create_token_response('https://i.b/token',
                 body='grant_type=client_credentials')
         self.assertEqual('invalid_client', json.loads(body)['error'])
 
@@ -445,21 +445,21 @@ class ErrorResponseTest(TestCase):
 
             uri = "http://i/b/token/"
             try:
-                _, body, s = self.web.create_token_response(uri,
+                _, _body, _s = self.web.create_token_response(uri,
                         body='grant_type=access_token&code=123', http_method=method)
                 self.fail('This should have failed with InvalidRequestError')
             except errors.InvalidRequestError as ire:
                 self.assertIn('Unsupported request method', ire.description)
 
             try:
-                _, body, s = self.legacy.create_token_response(uri,
+                _, _body, _s = self.legacy.create_token_response(uri,
                         body='grant_type=access_token&code=123', http_method=method)
                 self.fail('This should have failed with InvalidRequestError')
             except errors.InvalidRequestError as ire:
                 self.assertIn('Unsupported request method', ire.description)
 
             try:
-                _, body, s = self.backend.create_token_response(uri,
+                _, _body, _s = self.backend.create_token_response(uri,
                         body='grant_type=access_token&code=123', http_method=method)
                 self.fail('This should have failed with InvalidRequestError')
             except errors.InvalidRequestError as ire:
@@ -470,21 +470,21 @@ class ErrorResponseTest(TestCase):
         for param in ['token', 'secret', 'code', 'foo']:
             uri = 'https://i/b/token?' + urlencode([(param, 'secret')])
             try:
-                _, body, s = self.web.create_token_response(uri,
+                _, _body, _s = self.web.create_token_response(uri,
                         body='grant_type=access_token&code=123')
                 self.fail('This should have failed with InvalidRequestError')
             except errors.InvalidRequestError as ire:
                 self.assertIn('URL query parameters are not allowed', ire.description)
 
             try:
-                _, body, s = self.legacy.create_token_response(uri,
+                _, _body, _s = self.legacy.create_token_response(uri,
                         body='grant_type=access_token&code=123')
                 self.fail('This should have failed with InvalidRequestError')
             except errors.InvalidRequestError as ire:
                 self.assertIn('URL query parameters are not allowed', ire.description)
 
             try:
-                _, body, s = self.backend.create_token_response(uri,
+                _, _body, _s = self.backend.create_token_response(uri,
                         body='grant_type=access_token&code=123')
                 self.fail('This should have failed with InvalidRequestError')
             except errors.InvalidRequestError as ire:

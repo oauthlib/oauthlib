@@ -14,7 +14,7 @@ digraph oauthlib {
     {
         node [ shape=hexagon ];
         edge [ style=normal ];
-        
+
         webapi_request [ label="WebFramework\nHTTP request" ];
         webapi_request:s ->
                 endpoint_authorize:top:n,
@@ -200,7 +200,7 @@ digraph oauthlib {
         f_save_authorization_code -> webapi_response;
     }
 
-    /* Implicit */ 
+    /* Implicit */
     {
         edge [ color=orange ];
 

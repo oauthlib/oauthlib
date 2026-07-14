@@ -63,7 +63,7 @@ Sample response's output:
       ]
     }
 
-        
+
 .. autoclass:: oauthlib.oauth2.MetadataEndpoint
     :members:
 

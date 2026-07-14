@@ -99,7 +99,7 @@ class DeviceAuthorizationEndpoint:
         return server.create_device_authorization_response(request)
 
     def post(self, request):
-        headers, data, status = self.create_device_authorization_response(request)
+        _headers, _data, _status = self.create_device_authorization_response(request)
         device_response = ...
 
         # Create an instance of examples.device_flow.Device` using `request` and `data`that encapsulates
@@ -215,7 +215,7 @@ class ServerSetupForTokenEndpoint:
 # You should already have the /token endpoint implemented in your provider.
 class TokenEndpoint(ServerSetupForTokenEndpoint):
     def default_flow_token_response(self, request):
-        url, headers, body, status = self.server.create_token_response(request)
+        _url, _headers, body, _status = self.server.create_token_response(request)
         access_token = json.loads(body).get("access_token")
 
         # return access_token in a http response
@@ -242,7 +242,7 @@ class TokenEndpoint(ServerSetupForTokenEndpoint):
         if device.status == device.DeviceFlowStatus.DENIED:
             raise AccessDenied()
 
-        url, headers, body, status = self.server.create_token_response(request)
+        _url, _headers, body, _status = self.server.create_token_response(request)
 
         access_token = json.loads(body).get("access_token")
 

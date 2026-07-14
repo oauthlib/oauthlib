@@ -42,7 +42,7 @@ class OpenIDImplicitTest(TestCase):
 
     @mock.patch('oauthlib.common.generate_token')
     def test_authorization(self, generate_token):
-        scope, info = self.auth.validate_authorization_request(self.request)
+        _scope, _info = self.auth.validate_authorization_request(self.request)
 
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
@@ -112,28 +112,28 @@ class OpenIDImplicitTest(TestCase):
         self.assertRaises(errors.InvalidRequestError,
                           self.auth.validate_authorization_request,
                           self.request)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
 
         self.request.prompt = 'none consent'
         self.assertRaises(errors.InvalidRequestError,
                           self.auth.validate_authorization_request,
                           self.request)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
 
         self.request.prompt = 'none select_account'
         self.assertRaises(errors.InvalidRequestError,
                           self.auth.validate_authorization_request,
                           self.request)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
 
         self.request.prompt = 'consent none login'
         self.assertRaises(errors.InvalidRequestError,
                           self.auth.validate_authorization_request,
                           self.request)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertIn('error=invalid_request', h['Location'])
 
     @mock.patch('oauthlib.common.generate_token')

@@ -58,13 +58,13 @@ Using the Client
     * a dictionary
     * an iterable of 2-tuples
     * a properly-formatted x-www-url-formencoded string
-    
+
     If you are sending some other kind of data in the body, an additional
     `oauth_body_hash` parameter will be included with the request. This parameter
     provides an integrity check on non-formencoded request bodies.
-    
-    *IMPORTANT* This extension is forward compatible: Service Providers that 
-    have not implemented this extension can verify requests sent by Consumers 
+
+    *IMPORTANT* This extension is forward compatible: Service Providers that
+    have not implemented this extension can verify requests sent by Consumers
     that have implemented this extension.  If the Service Provider implements
     this specification the integrity of the body is guaranteed.  If the
     Service Provider does not check body signatures, the remainder of the

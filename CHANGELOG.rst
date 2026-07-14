@@ -1,6 +1,16 @@
 Changelog
 =========
 
+3.4.0 (unreleased):
+------------------
+OAuth2.0 Provider:
+* **Breaking**: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
+* Improved PKCE Nonce comparison
+
+Misc:
+* #930: Add devcontainer, Add Python3.14, Python3.14t, Remove Python3.8.
+* Add OAuthLib Maintainer agent for automated issue/PR triage and release management.
+
 3.3.1 (2025-06-19):
 ------------------
 OAuth2.0 Client:
@@ -101,7 +111,7 @@ General
   * #727: build isort integration
   * #734: python2 code removal
   * #735, #750: add python3.8 support
-  * #749: bump minimum versions of pyjwt and cryptography 
+  * #749: bump minimum versions of pyjwt and cryptography
 
 3.1.0 (2019-08-06)
 ------------------
@@ -413,7 +423,7 @@ Draft revocation endpoint features and numerous fixes including:
 
 * (OAuth 2 Provider) returned JSON headers no longer include charset.
 
-* (OAuth 2 Provider) validate_authorizatoin_request now also includes the
+* (OAuth 2 Provider) validate_authorization_request now also includes the
   internal request object in the returned dictionary. Note that this is
   not meant to be relied upon heavily and its interface might change.
 

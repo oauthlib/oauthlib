@@ -23,7 +23,7 @@ they lock the oauthlib version in ``setup.py`` and release anyway.
 Unittests might not be enough and as an extra measure we will create an
 OAuthLib release issue on Github at least 2 days prior to release detailing the
 changes and pings the primary contacts for each downstream project.  Please
-respond within those 2 days if you have major concerns. 
+respond within those 2 days if you have major concerns.
 
 How to get on the notifications list
 ------------------------------------
@@ -38,7 +38,7 @@ When is the next release?
 -------------------------
 
 Releases have been sporadic at best and I don't think that will change soon.
-However, if you think it's time for a new release don't hesitate to open a 
+However, if you think it's time for a new release don't hesitate to open a
 new issue asking about it.
 
 A note on versioning

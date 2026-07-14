@@ -86,9 +86,10 @@ class RequestValidator:
         A non-confidential client is one that is not required to authenticate
         through other means, such as using HTTP Basic.
 
-        Note, while not strictly necessary it can often be very convenient
-        to set request.client to the client object associated with the
-        given client_id.
+        After the client identification succeeds, this method needs to set the
+        client on the request, i.e. request.client = client. A client object's
+        class must contain the 'client_id' attribute and the 'client_id' must have
+        a value.
 
         :param client_id: Unicode client identifier.
         :param request: OAuthlib request.
@@ -428,9 +429,10 @@ class RequestValidator:
     def validate_client_id(self, client_id, request, *args, **kwargs):
         """Ensure client_id belong to a valid and active client.
 
-        Note, while not strictly necessary it can often be very convenient
-        to set request.client to the client object associated with the
-        given client_id.
+        After the client identification succeeds, this method needs to set the
+        client on the request, i.e. request.client = client. A client object's
+        class must contain the 'client_id' attribute and the 'client_id' must have
+        a value.
 
         :param client_id: Unicode client identifier.
         :param request: OAuthlib request.

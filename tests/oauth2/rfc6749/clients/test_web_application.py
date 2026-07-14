@@ -186,7 +186,7 @@ class WebApplicationClientTest(TestCase):
             signals.scope_changed.disconnect(record_scope_change)
         del os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']
 
-    def test_prepare_authorization_requeset(self):
+    def test_prepare_authorization_request(self):
         client = WebApplicationClient(self.client_id)
 
         url, header, body = client.prepare_authorization_request(

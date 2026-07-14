@@ -72,7 +72,7 @@ class OpenIDConnectEndpointTest(TestCase):
         """
         Test that the nonce parameter is passed through.
         """
-        scopes, creds = self.endpoint.validate_authorization_request(self.url)
+        _scopes, creds = self.endpoint.validate_authorization_request(self.url)
 
         self.assertEqual(creds['prompt'], {'consent'})
         self.assertEqual(creds['nonce'], 'abcd')

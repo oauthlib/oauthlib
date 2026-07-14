@@ -150,8 +150,8 @@ class ClientTest(TestCase):
         orig_generate_timestamp = common.generate_timestamp
         orig_generate_nonce = common.generate_nonce
         orig_generate_age = utils.generate_age
-        self.addCleanup(setattr, common, 'generage_timestamp', orig_generate_timestamp)
-        self.addCleanup(setattr, common, 'generage_nonce', orig_generate_nonce)
+        self.addCleanup(setattr, common, 'generate_timestamp', orig_generate_timestamp)
+        self.addCleanup(setattr, common, 'generate_nonce', orig_generate_nonce)
         self.addCleanup(setattr, utils, 'generate_age', orig_generate_age)
         common.generate_timestamp = lambda: '123456789'
         common.generate_nonce = lambda: 'abc123'
@@ -236,13 +236,6 @@ class ClientTest(TestCase):
         self.assertEqual(u, url)
         self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
         self.assertEqual(b, 'token=%s&token_type_hint=refresh_token' % token)
-
-        # JSONP
-        u, h, b = client.prepare_token_revocation_request(
-            url, token, callback='hello.world')
-        self.assertURLEqual(u, url + '?callback=hello.world&token=%s&token_type_hint=access_token' % token)
-        self.assertEqual(h, {'Content-Type': 'application/x-www-form-urlencoded'})
-        self.assertEqual(b, '')
 
     def test_prepare_authorization_request(self):
         redirect_url = 'https://example.com/callback/'

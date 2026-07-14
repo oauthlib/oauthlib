@@ -34,13 +34,13 @@ class ResourceEndpointTest(TestCase):
 
     def test_missing_parameters(self):
         self.validator.check_access_token.return_value = False
-        v, r = self.endpoint.validate_protected_resource_request(
+        v, _r = self.endpoint.validate_protected_resource_request(
                 self.uri)
         self.assertFalse(v)
 
     def test_check_access_token(self):
         self.validator.check_access_token.return_value = False
-        v, r = self.endpoint.validate_protected_resource_request(
+        v, _r = self.endpoint.validate_protected_resource_request(
                 self.uri, headers=self.headers)
         self.assertFalse(v)
 

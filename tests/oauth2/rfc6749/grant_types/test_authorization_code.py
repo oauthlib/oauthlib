@@ -34,7 +34,7 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def set_client(self, request):
         request.client = mock.MagicMock()
-        request.client.client_id = 'mocked'
+        request.client.client_id = request.client_id
         return True
 
     def setup_validators(self):
@@ -72,7 +72,7 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_create_authorization_grant(self):
         bearer = BearerToken(self.mock_validator)
         self.request.response_mode = 'query'
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         grant = dict(Request(h['Location']).uri_query_params)
         self.assertIn('code', grant)
         self.assertTrue(self.mock_validator.validate_redirect_uri.called)
@@ -91,7 +91,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.request.response_mode = 'query'
         self.mock_validator.get_default_redirect_uri.return_value = 'https://a.b/cb'
         bearer = BearerToken(self.mock_validator)
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         grant = dict(Request(h['Location']).uri_query_params)
         self.assertIn('code', grant)
         self.assertIn('state', grant)
@@ -105,16 +105,16 @@ class AuthorizationCodeGrantTest(TestCase):
         generate_token.return_value = 'abc'
         bearer = BearerToken(self.mock_validator)
         self.request.response_mode = 'query'
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], 'https://a.b/cb?code=abc')
         self.request.response_mode = 'fragment'
-        h, b, s = self.auth.create_authorization_response(self.request, bearer)
+        h, _b, _s = self.auth.create_authorization_response(self.request, bearer)
         self.assertURLEqual(h['Location'], 'https://a.b/cb#code=abc')
 
     def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
 
-        h, token, s = self.auth.create_token_response(self.request, bearer)
+        _h, token, _s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
@@ -132,7 +132,7 @@ class AuthorizationCodeGrantTest(TestCase):
         self.auth.refresh_token = False  # Not to issue refresh token.
 
         bearer = BearerToken(self.mock_validator)
-        h, token, s = self.auth.create_token_response(self.request, bearer)
+        _h, token, _s = self.auth.create_token_response(self.request, bearer)
         token = json.loads(token)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
         self.assertIn('access_token', token)
@@ -196,6 +196,36 @@ class AuthorizationCodeGrantTest(TestCase):
         self.mock_validator.authenticate_client_id.return_value = False
         self.request.state = 'abc'
         self.assertRaises(errors.InvalidClientError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_client_id_discrepancy(self):
+        """ServerError raised when authenticate_client sets a different client_id."""
+        def set_mismatched_client(request):
+            request.client = mock.MagicMock()
+            request.client.client_id = 'different_from_abcdef'
+            return True
+        self.mock_validator.authenticate_client.side_effect = set_mismatched_client
+        self.assertRaises(errors.ServerError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_public_client_id_missing(self):
+        """NotImplementedError raised when authenticate_client_id does not set request.client."""
+        self.mock_validator.client_authentication_required.return_value = False
+        self.mock_validator.authenticate_client_id.return_value = True
+        self.request.client = mock.MagicMock()
+        del self.request.client.client_id
+        self.assertRaises(NotImplementedError,
+                          self.auth.validate_token_request, self.request)
+
+    def test_public_client_id_discrepancy(self):
+        """ServerError raised when authenticate_client_id sets a different client_id."""
+        def set_mismatched_client(client_id, request):
+            request.client = mock.MagicMock()
+            request.client.client_id = 'different_from_abcdef'
+            return True
+        self.mock_validator.client_authentication_required.return_value = False
+        self.mock_validator.authenticate_client_id.side_effect = set_mismatched_client
+        self.assertRaises(errors.ServerError,
                           self.auth.validate_token_request, self.request)
 
     def test_invalid_redirect_uri(self):
