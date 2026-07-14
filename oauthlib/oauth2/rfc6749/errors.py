@@ -393,7 +393,21 @@ def raise_from_error(error, params=None):
         'uri': params.get('error_uri'),
         'state': params.get('state')
     }
-    for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
-        if cls.error == error:
-            raise cls(**kwargs)
+    matching = [
+        cls for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass)
+        if cls.error == error
+    ]
+    # When multiple classes share the same error code (e.g. invalid_request),
+    # filter out base classes if more specific subclasses also match. If
+    # multiple leaf classes still match, the later selection remains dependent
+    # on inspect.getmembers ordering.
+    if len(matching) > 1:
+        matching_names = {cls.__name__ for cls in matching}
+        matching = [
+            cls for cls in matching
+            if not any(issubclass(sub, cls) and sub.__name__ in matching_names and sub is not cls
+                       for sub in matching)
+        ]
+    for cls in matching:
+        raise cls(**kwargs)
     raise CustomOAuth2Error(error=error, **kwargs)
