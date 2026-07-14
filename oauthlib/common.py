@@ -200,7 +200,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 def generate_signed_token(private_pem, request):
     import jwt  # noqa: PLC0415
 
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc)
 
     claims = {
         'scope': request.scope,
