@@ -117,3 +117,7 @@ class TokenEndpoint(BaseEndpoint):
     def validate_token_request(self, request):
         self._raise_on_bad_method(request)
         self._raise_on_bad_post_request(request)
+        self._raise_on_bad_content_type(
+            request,
+            allowed_type='application/x-www-form-urlencoded',
+        )

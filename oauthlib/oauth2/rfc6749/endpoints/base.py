@@ -10,7 +10,7 @@ import logging
 
 from ..errors import (
     FatalClientError, InvalidClientError, InvalidRequestError, OAuth2Error,
-    ServerError, TemporarilyUnavailableError, UnsupportedTokenTypeError,
+    ServerError, TemporarilyUnavailableError, UnsupportedTokenTypeError, UnsupportedContentTypeError,
 )
 
 log = logging.getLogger(__name__)
@@ -87,6 +87,26 @@ class BaseEndpoint:
             if query_params:
                 raise InvalidRequestError(request=request,
                                           description=('URL query parameters are not allowed'))
+
+    def _raise_on_bad_content_type(self, request, allowed_type):
+        """
+        Raise `UnsupportedContentTypeError` if the request ``Content-Type`` header
+        does not match the expected value.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param allowed_type: Expected Content-Type header value.
+        :type allowed_type: str
+        """
+        content_type_header = request.headers.get("Content-Type", "")
+        content_type = content_type_header.split(';')[0].strip().lower()
+        expected_type = allowed_type.strip().lower()
+
+        if content_type and content_type != expected_type:
+            raise UnsupportedContentTypeError(
+                request=request,
+                description=f"Invalid Content-Type. Must be: {allowed_type}"
+            )
 
 def catch_errors_and_unavailability(f):
     @functools.wraps(f)
