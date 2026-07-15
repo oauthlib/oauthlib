@@ -257,3 +257,20 @@ class CaseInsensitiveDictTest(TestCase):
         cid = CaseInsensitiveDict({})
         cid.update({'KeY': 'value'})
         self.assertEqual(cid['kEy'], 'value')
+
+    def test_setitem_different_case_no_duplicate(self):
+        # Overwriting a key with different casing must not leave a stale entry
+        # in the underlying dict (which would corrupt len/iteration).
+        cid = CaseInsensitiveDict({'Content-Type': 'text/plain'})
+        cid['content-type'] = 'application/json'
+        self.assertEqual(len(cid), 1)
+        self.assertEqual(list(cid.keys()), ['content-type'])
+        self.assertEqual(cid['Content-Type'], 'application/json')
+
+    def test_update_different_case_no_duplicate(self):
+        # Same contract for update().
+        cid = CaseInsensitiveDict({'Content-Type': 'text/plain'})
+        cid.update({'content-type': 'application/json'})
+        self.assertEqual(len(cid), 1)
+        self.assertEqual(list(cid.keys()), ['content-type'])
+        self.assertEqual(cid['Content-Type'], 'application/json')
