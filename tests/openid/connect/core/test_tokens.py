@@ -1,3 +1,5 @@
+import base64
+import json
 from unittest import mock
 
 from oauthlib.openid.connect.core.tokens import JWTToken
@@ -155,3 +157,38 @@ class JWTTokenTestCase(TestCase):
 
         for token, expected_result in test_items:
             test_token(token, expected_result)
+
+    def test_jwt_access_token(self):
+        """
+        JWT access tokens should be estimated 0, so they get handled by BearerToken
+        """
+        def test_token(token, expected_result):
+            encoded_header = base64.urlsafe_b64encode(
+                json.dumps(token).encode()
+            ).rstrip(b"=").decode()
+            encoded_token = f'{encoded_header}.payload.signature'
+
+            with mock.patch('oauthlib.common.Request', autospec=True) as RequestMock:
+                jwt_token = JWTToken()
+
+                request = RequestMock('/uri')
+                # Scopes is retrieved using the __call__ method which is not picked up correctly by mock.patch
+                # with autospec=True
+                request.headers = {
+                    'Authorization': 'Bearer {}'.format(encoded_token)
+                }
+
+                result = jwt_token.estimate_type(request=request)
+
+                self.assertEqual(result, expected_result, token)
+
+        test_items = (
+            ({"alg": "RS256", "kid": "12345", "typ": "application/at+jwt"}, 0),
+            ({"alg": "RS256", "kid": "12345", "typ": "at+jwt"}, 0),
+            ({"alg": "RS256", "kid": "12345", "typ": "jwt"}, 10),
+            ({"alg": "RS256", "kid": "12345"}, 10),
+        )
+
+        for token_header, expected_result in test_items:
+            # base64 encoding without padding
+            test_token(token_header, expected_result)
