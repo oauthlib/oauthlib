@@ -103,7 +103,7 @@ class MobileApplicationClientTest(TestCase):
             client.parse_request_uri_response(self.response_uri, scope="invalid")
             self.assertEqual(len(scope_changes_recorded), 1)
             message, old, new = scope_changes_recorded[0]
-            self.assertEqual(message, 'Scope has changed from "invalid" to "/profile".')
+            self.assertEqual(message, 'Scope has changed. Difference:\n- invalid\n+ /profile')
             self.assertEqual(old, ['invalid'])
             self.assertEqual(new, ['/profile'])
         finally:
