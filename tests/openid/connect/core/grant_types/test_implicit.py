@@ -7,7 +7,7 @@ from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
 
 from tests.oauth2.rfc6749.grant_types.test_implicit import ImplicitGrantTest
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 from .test_authorization_code import get_id_token_mock
 

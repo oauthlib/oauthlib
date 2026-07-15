@@ -5,7 +5,7 @@ from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class ImplicitGrantTest(TestCase):

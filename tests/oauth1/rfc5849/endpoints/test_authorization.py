@@ -4,7 +4,7 @@ from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import errors
 from oauthlib.oauth1.rfc5849.endpoints import AuthorizationEndpoint
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class AuthorizationEndpointTest(TestCase):

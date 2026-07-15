@@ -7,7 +7,7 @@ from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types import RefreshTokenGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class RefreshTokenGrantTest(TestCase):

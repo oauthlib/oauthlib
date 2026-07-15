@@ -3,7 +3,7 @@ import unittest
 
 from oauthlib.uri_validate import is_absolute_uri
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class UriValidateTest(TestCase):

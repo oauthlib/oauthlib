@@ -10,7 +10,7 @@ from unittest import mock
 from oauthlib.openid import RequestValidator
 from oauthlib.openid.connect.core.endpoints.pre_configured import Server
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class TestRefreshToken(TestCase):

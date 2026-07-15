@@ -12,7 +12,7 @@ from oauthlib.oauth2 import (
 from oauthlib.oauth2.rfc6749 import errors, utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 @patch('time.time', new=lambda: 1000)

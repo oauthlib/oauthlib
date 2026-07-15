@@ -14,7 +14,7 @@ from oauthlib.openid.connect.core.grant_types.authorization_code import (
 from tests.oauth2.rfc6749.grant_types.test_authorization_code import (
     AuthorizationCodeGrantTest,
 )
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 def get_id_token_mock(token, token_handler, request):

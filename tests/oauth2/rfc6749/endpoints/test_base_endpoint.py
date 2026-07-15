@@ -6,7 +6,7 @@ from oauthlib.oauth2.rfc6749 import (
     BaseEndpoint, catch_errors_and_unavailability,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class BaseEndpointTest(TestCase):

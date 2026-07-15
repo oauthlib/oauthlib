@@ -4,7 +4,7 @@ from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import Client
 from oauthlib.oauth1.rfc5849.endpoints import RequestTokenEndpoint
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class RequestTokenEndpointTest(TestCase):

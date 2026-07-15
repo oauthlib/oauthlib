@@ -10,7 +10,7 @@ from oauthlib.oauth1.rfc5849.endpoints import (
     BaseEndpoint, RequestTokenEndpoint,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 URLENCODED = {"Content-Type": "application/x-www-form-urlencoded"}
 
