@@ -47,7 +47,7 @@ This example shows how to add a simple extension to the `Token endpoint`:
 
 * creation of a new class ``MyCustomGrant``, and implement ``create_token_response``.
 * do basics and custom request validations, then call a custom method
-  of `Request Validator` to extend the interface for the implementor.
+  of `Request Validator` to extend the interface for the implementer.
 * instantiate the new grant, and bind it with an existing ``Server``.
 
 .. code-block:: python

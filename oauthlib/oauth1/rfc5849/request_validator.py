@@ -472,7 +472,7 @@ class RequestValidator:
         Note that if the dummy client is supplied it should validate in same
         or nearly the same amount of time as a valid one.
 
-        Ensure latency inducing tasks are mimiced even for dummy clients.
+        Ensure latency inducing tasks are mimicked even for dummy clients.
         For example, use::
 
             from your_datastore import Client
@@ -510,7 +510,7 @@ class RequestValidator:
         Note that if the dummy request_token is supplied it should validate in
         the same nearly the same amount of time as a valid one.
 
-        Ensure latency inducing tasks are mimiced even for dummy clients.
+        Ensure latency inducing tasks are mimicked even for dummy clients.
         For example, use::
 
             from your_datastore import RequestToken
@@ -545,7 +545,7 @@ class RequestValidator:
         Note that if the dummy access token is supplied it should validate in
         the same or nearly the same amount of time as a valid one.
 
-        Ensure latency inducing tasks are mimiced even for dummy clients.
+        Ensure latency inducing tasks are mimicked even for dummy clients.
         For example, use::
 
             from your_datastore import AccessToken
