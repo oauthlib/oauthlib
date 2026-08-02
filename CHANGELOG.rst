@@ -6,6 +6,7 @@ Changelog
 OAuth2.0 Provider:
 * **Breaking**: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
 * Improved PKCE Nonce comparison
+* #949: Device Authorization Grant now resolves default scopes when omitted and validates requested scopes against the client, per RFC 8628 Section 3.1 (RFC 6749 Section 3.3 semantics).
 
 Misc:
 * #930: Add devcontainer, Add Python3.14, Python3.14t, Remove Python3.8.

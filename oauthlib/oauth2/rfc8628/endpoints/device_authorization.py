@@ -10,7 +10,7 @@ import logging
 from typing import Callable
 
 from oauthlib.common import Request, generate_token
-from oauthlib.oauth2.rfc6749 import errors
+from oauthlib.oauth2.rfc6749 import errors, utils
 from oauthlib.oauth2.rfc6749.endpoints.base import (
     BaseEndpoint,
     catch_errors_and_unavailability,
@@ -140,6 +140,20 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         # themselves.
         self._raise_on_invalid_client(request)
 
+        # The scope parameter carries the same semantics as Section 3.3 of
+        # [RFC6749], per Section 3.1 of [RFC8628].  Resolve the default scopes
+        # when the request omits `scope` and validate the result against the
+        # client, mirroring GrantTypeBase.validate_scopes() used by the other
+        # authorization endpoints.
+        if not request.scopes:
+            request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                self.request_validator.get_default_scopes(request.client_id, request)
+            )
+        if not self.request_validator.validate_scopes(
+            request.client_id, request.scopes, request.client, request
+        ):
+            raise errors.InvalidScopeError(request=request)
+
     @catch_errors_and_unavailability
     def create_device_authorization_response(
         self, uri, http_method="POST", body=None, headers=None
@@ -221,6 +235,8 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
             "user_code": user_code,
             "device_code": generate_token(),
         }
+        if request.scopes:
+            data["scope"] = " ".join(request.scopes)
         if self.interval is not None:
             data["interval"] = self.interval
 

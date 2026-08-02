@@ -12,7 +12,7 @@ class DeviceAuthorizationEndpointTest(TestCase):
         self, interval=None, verification_uri_complete=None, user_code_generator=None
     ):
         self.endpoint = DeviceAuthorizationEndpoint(
-            request_validator=mock.MagicMock(spec=RequestValidator),
+            request_validator=self.request_validator,
             verification_uri=self.verification_uri,
             interval=interval,
             verification_uri_complete=verification_uri_complete,
@@ -21,6 +21,11 @@ class DeviceAuthorizationEndpointTest(TestCase):
 
     def setUp(self):
         self.request_validator = mock.MagicMock(spec=RequestValidator)
+        # The device authorization endpoint validates scopes like every other
+        # oauthlib endpoint, so the mock validator must provide defaults and
+        # accept them.
+        self.request_validator.get_default_scopes.return_value = None
+        self.request_validator.validate_scopes.return_value = True
         self.verification_uri = "http://i.b/l/verify"
         self.uri = "http://i.b/l"
         self.http_method = "POST"
