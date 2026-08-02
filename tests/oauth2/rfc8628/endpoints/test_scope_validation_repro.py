@@ -1,14 +1,10 @@
-"""Reproducer for oauthlib#949: Device Authorization Grant skips scope validation.
+"""Regression tests for oauthlib#949: ensure Device Authorization Grant scopes are resolved and validated.
 
-``DeviceAuthorizationEndpoint.validate_device_authorization_request`` never
-calls ``get_default_scopes`` / ``validate_scopes`` on the request validator,
-unlike every other oauthlib authorization endpoint.  The two consequences:
+The device authorization endpoint should:
 
-1. When the request omits ``scope``, the default scopes are never resolved
-   and are missing from the response returned by
-   ``create_device_authorization_response``.
-2. When the request provides ``scope``, the requested scopes are never
-   validated against the client.
+1. Resolve default scopes via ``get_default_scopes`` when ``scope`` is omitted.
+2. Validate requested/resolved scopes via ``validate_scopes`` and raise ``InvalidScopeError`` on failure.
+3. Echo the granted scope in the device authorization response data.
 """
 
 import pytest
