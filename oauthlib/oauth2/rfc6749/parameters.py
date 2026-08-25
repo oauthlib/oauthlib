@@ -8,6 +8,7 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 """
 import json
 import os
+import re
 import time
 import urllib.parse as urlparse
 
@@ -525,3 +526,46 @@ def parse_expires(params):
         expires_at = round(time.time()) + expires_in
         _expires_at = expires_at
     return expires_in, expires_at, _expires_at
+
+
+# auth-param    = token BWS "=" BWS ( token / quoted-string )
+# https://tools.ietf.org/html/rfc7235#section-2.1
+_authparam_re = re.compile(
+    r"""([!#$%&'*+\-.^_`|~0-9A-Za-z]+)   # auth-param name (a token)
+        \s*=\s*
+        (?:"([^"]*)"|([^\s,]+))          # quoted-string or bare token value
+    """,
+    re.VERBOSE,
+)
+
+
+def parse_www_authenticate(header):
+    """Parse the auth-params of a Bearer ``WWW-Authenticate`` challenge.
+
+    A resource server signals a failed request by returning a ``401
+    Unauthorized`` response with a ``WWW-Authenticate`` header, for example::
+
+        WWW-Authenticate: Bearer realm="example",
+                          error="invalid_token",
+                          error_description="The access token expired"
+
+    :param header: The value of the ``WWW-Authenticate`` header.
+    :return: A dict of the Bearer auth-params (``error``, ``error_description``,
+        ``error_uri``, ``realm``, ``scope``, ...). Param names are lower cased.
+        An empty dict is returned when the header is missing or does not carry a
+        Bearer challenge.
+
+    .. _`Section 3`: https://tools.ietf.org/html/rfc6750#section-3
+    """
+    if not header:
+        return {}
+
+    # Only the Bearer scheme is defined by RFC 6750; ignore anything else.
+    scheme = re.search(r'(?:^|[\s,])[Bb]earer(?:[\s,]|$)', header)
+    if scheme is None:
+        return {}
+
+    params = {}
+    for name, quoted, bare in _authparam_re.findall(header[scheme.end():]):
+        params[name.lower()] = quoted if bare == '' else bare
+    return params

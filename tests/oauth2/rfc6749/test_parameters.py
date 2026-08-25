@@ -337,3 +337,26 @@ class ParameterTests(TestCase):
                     "expires_at": arg[1]
                 }
                 self.assertEqual(expected, parse_expires(params))
+
+    def test_parse_www_authenticate(self):
+        for title, header, expected in [
+                ('none', None, {}),
+                ('empty', '', {}),
+                ('other scheme', 'Basic realm="example"', {}),
+                ('realm only', 'Bearer realm="example"', {'realm': 'example'}),
+                ('lowercase scheme, bare value', 'bearer error=invalid_token',
+                 {'error': 'invalid_token'}),
+                ('full challenge',
+                 ('Bearer realm="example", error="invalid_token", '
+                  'error_description="The access token expired", '
+                  'error_uri="https://example.com/e"'),
+                 {'realm': 'example', 'error': 'invalid_token',
+                  'error_description': 'The access token expired',
+                  'error_uri': 'https://example.com/e'}),
+                ('scope with spaces', 'Bearer error="insufficient_scope", scope="read write"',
+                 {'error': 'insufficient_scope', 'scope': 'read write'}),
+                ('another scheme follows', 'Bearer error="invalid_token", Basic',
+                 {'error': 'invalid_token'}),
+        ]:
+            with self.subTest(msg=title):
+                self.assertEqual(expected, parse_www_authenticate(header))
