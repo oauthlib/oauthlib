@@ -27,7 +27,7 @@ class DeviceCodeGrant(GrantTypeBase):
         token = token_handler.create_token(request, refresh_token=False)
 
         for modifier in self._token_modifiers:
-            token = modifier(token)
+            token = modifier(token, token_handler, request)
 
         self.request_validator.save_token(token, request)
 
@@ -91,6 +91,9 @@ class DeviceCodeGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, self.refresh_token)
+
+        for modifier in self._token_modifiers:
+            token = modifier(token, token_handler, request)
 
         self.request_validator.save_token(token, request)
 
