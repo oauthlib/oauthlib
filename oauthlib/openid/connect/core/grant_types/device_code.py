@@ -29,9 +29,13 @@ class DeviceCodeGrant(GrantTypeBase):
             return token
         # GrantTypeBase.add_id_token bails if response_type is set and does
         # not include id_token. Device code never uses that parameter.
-        saved = getattr(request, "response_type", None)
+        _sentinel = object()
+        saved = getattr(request, "response_type", _sentinel)
         request.response_type = None
         try:
             return super().add_id_token(token, token_handler, request)
         finally:
-            request.response_type = saved
+            if saved is _sentinel:
+                delattr(request, "response_type")
+            else:
+                request.response_type = saved
