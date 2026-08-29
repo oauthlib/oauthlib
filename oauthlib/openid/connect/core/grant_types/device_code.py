@@ -29,6 +29,8 @@ class DeviceCodeGrant(GrantTypeBase):
             return token
         # GrantTypeBase.add_id_token bails if response_type is set and does
         # not include id_token. Device code never uses that parameter.
+        # Request.__getattr__ always finds response_type via _params, so a
+        # getattr sentinel never fires — look at the instance dict instead.
         had_attr = "response_type" in vars(request)
         saved = getattr(request, "response_type", None)
         request.response_type = None
