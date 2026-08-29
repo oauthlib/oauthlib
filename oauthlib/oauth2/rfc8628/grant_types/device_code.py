@@ -17,20 +17,6 @@ class DeviceCodeGrant(GrantTypeBase):
         Validate the device flow request -> create the access token
         -> persist the token -> return the token.
         """
-        headers = self._get_default_headers()
-        try:
-            self.validate_token_request(request)
-        except rfc6749_errors.OAuth2Error as e:
-            headers.update(e.headers)
-            return headers, e.json, e.status_code
-
-        token = token_handler.create_token(request, refresh_token=False)
-
-        for modifier in self._token_modifiers:
-            token = modifier(token, token_handler, request)
-
-        self.request_validator.save_token(token, request)
-
         return self.create_token_response(request, token_handler)
 
     def validate_token_request(self, request: common.Request) -> None:

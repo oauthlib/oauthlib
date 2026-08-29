@@ -53,3 +53,12 @@ class OpenIDDeviceCodeGrantTest(TestCase):
         token = json.loads(body)
         self.assertIn("access_token", token)
         self.assertNotIn("id_token", token)
+
+    def test_add_id_token_does_not_leave_response_type_on_request(self):
+        request = Request("http://a.b/path")
+        request.grant_type = "urn:ietf:params:oauth:grant-type:device_code"
+        request.scopes = ("openid",)
+        self.assertNotIn("response_type", vars(request))
+        bearer = BearerToken(self.mock_validator)
+        self.auth.add_id_token({"access_token": "a"}, bearer, request)
+        self.assertNotIn("response_type", vars(request))

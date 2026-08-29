@@ -29,9 +29,13 @@ class DeviceCodeGrant(GrantTypeBase):
             return token
         # GrantTypeBase.add_id_token bails if response_type is set and does
         # not include id_token. Device code never uses that parameter.
+        had_attr = "response_type" in vars(request)
         saved = getattr(request, "response_type", None)
         request.response_type = None
         try:
             return super().add_id_token(token, token_handler, request)
         finally:
-            request.response_type = saved
+            if had_attr:
+                request.response_type = saved
+            else:
+                del request.response_type
