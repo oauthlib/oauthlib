@@ -407,7 +407,7 @@ class Request:
         body = self.body
         headers = self.headers.copy()
         if body:
-            body = SANITIZE_PATTERN.sub('\1<SANITIZED>', str(body))
+            body = SANITIZE_PATTERN.sub(r'\1<SANITIZED>', str(body))
         if 'Authorization' in headers:
             headers['Authorization'] = '<SANITIZED>'
         return '<oauthlib.Request url="{}", http_method="{}", headers="{}", body="{}">'.format(
