@@ -274,3 +274,12 @@ class CaseInsensitiveDictTest(TestCase):
         self.assertEqual(len(cid), 1)
         self.assertEqual(list(cid.keys()), ['content-type'])
         self.assertEqual(cid['Content-Type'], 'application/json')
+
+    def test_init_different_case_no_duplicate(self):
+        cid = CaseInsensitiveDict({
+            'Content-Type': 'text/plain',
+            'content-type': 'application/json',
+        })
+        self.assertEqual(len(cid), 1)
+        self.assertEqual(list(cid.keys()), ['content-type'])
+        self.assertEqual(cid['Content-Type'], 'application/json')

@@ -299,7 +299,7 @@ class CaseInsensitiveDict(dict):
     proxy = {}
 
     def __init__(self, data):
-        self.proxy = {k.lower(): k for k in data}
+        self.proxy = {}
         for k in data:
             self[k] = data[k]
 
