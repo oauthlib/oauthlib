@@ -221,6 +221,7 @@ class RequestTest(TestCase):
         r = Request(URI, body='username=foo&password=bar')
         self.assertIn('username=foo', repr(r))
         self.assertIn('password=<SANITIZED>', repr(r))
+        self.assertNotIn('bar', repr(r))
 
     def test_sanitizing_emits_no_control_character(self):
         """The repr must stay printable, with no stray control characters."""
