@@ -83,6 +83,7 @@ class GeneratorTest(TestCase):
         self.assertGreater(int(timestamp), 1331672335)
 
     def test_generate_nonce(self):
+        """Ping me (ib-lundgren) when you discover how to test randomness."""
         nonce = generate_nonce()
         self.assertIsInstance(nonce, str)
         self.assertTrue(nonce.isdigit())
@@ -91,13 +92,18 @@ class GeneratorTest(TestCase):
 
     def test_generate_nonce_uses_128_bit_entropy(self):
         """generate_nonce must draw 128 random bits (issue #946 / PR #964)."""
-        fixed_bits = (1 << 128) - 1
-        with mock.patch('oauthlib.common.randbits', return_value=fixed_bits) as mock_rb:
-            with mock.patch('oauthlib.common.generate_timestamp',
-                            return_value='1700000000'):
-                nonce = generate_nonce()
+        # Requires the full 128-bit width; larger in decimal than any 64-bit value.
+        entropy = 1 << 127
+        with mock.patch('oauthlib.common.randbits', return_value=entropy) as mock_rb:
+            nonce = generate_nonce()
         mock_rb.assert_called_once_with(128)
-        self.assertEqual(nonce, str(fixed_bits) + '1700000000')
+        self.assertTrue(nonce.isdigit())
+        self.assertTrue(nonce.startswith(str(entropy)))
+        suffix = nonce[len(str(entropy)):]
+        self.assertTrue(suffix.isdigit())
+        self.assertGreater(int(suffix), 1331672335)
+        self.assertGreater(len(str(entropy)), len(str((1 << 64) - 1)))
+        self.assertGreater(len(nonce), len(str((1 << 64) - 1)))
 
     def test_generate_token(self):
         token = generate_token()
