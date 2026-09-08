@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from unittest import mock
+
 import oauthlib
 from oauthlib.common import (
     CaseInsensitiveDict, Request, add_params_to_uri, extract_params,
@@ -81,10 +83,21 @@ class GeneratorTest(TestCase):
         self.assertGreater(int(timestamp), 1331672335)
 
     def test_generate_nonce(self):
-        """Ping me (ib-lundgren) when you discover how to test randomness."""
         nonce = generate_nonce()
+        self.assertIsInstance(nonce, str)
+        self.assertTrue(nonce.isdigit())
         for i in range(50):
             self.assertNotEqual(nonce, generate_nonce())
+
+    def test_generate_nonce_uses_128_bit_entropy(self):
+        """generate_nonce must draw 128 random bits (issue #946 / PR #964)."""
+        fixed_bits = (1 << 128) - 1
+        with mock.patch('oauthlib.common.randbits', return_value=fixed_bits) as mock_rb:
+            with mock.patch('oauthlib.common.generate_timestamp',
+                            return_value='1700000000'):
+                nonce = generate_nonce()
+        mock_rb.assert_called_once_with(128)
+        self.assertEqual(nonce, str(fixed_bits) + '1700000000')
 
     def test_generate_token(self):
         token = generate_token()
