@@ -110,7 +110,7 @@ def test_create_authorization_response_saves_token_once():
     auth = DeviceCodeGrant(validator)
     bearer = BearerToken(validator)
 
-    headers, body, status_code = auth.create_authorization_response(request, bearer)
+    _headers, body, status_code = auth.create_authorization_response(request, bearer)
     token = json.loads(body)
 
     assert status_code == 200
