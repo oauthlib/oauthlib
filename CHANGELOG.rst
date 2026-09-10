@@ -10,6 +10,7 @@ OAuth2.0 Provider:
 Misc:
 * #930: Add devcontainer, Add Python3.14, Python3.14t, Remove Python3.8.
 * Add OAuthLib Maintainer agent for automated issue/PR triage and release management.
+* #794: Recommend Authorization Code + PKCE instead of Implicit Grant for public clients.
 
 3.3.1 (2025-06-19):
 ------------------
