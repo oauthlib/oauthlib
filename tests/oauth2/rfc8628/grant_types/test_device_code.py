@@ -101,6 +101,23 @@ def test_create_token_response():
     validator.save_token.assert_called_once()
 
 
+def test_create_authorization_response_saves_token_once():
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+    request.client = mock.Mock()
+    request.client.client_id = request.client_id
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+
+    _headers, body, status_code = auth.create_authorization_response(request, bearer)
+    token = json.loads(body)
+
+    assert status_code == 200
+    assert "access_token" in token
+    validator.save_token.assert_called_once()
+
+
 def test_invalid_client_authentication_error_confidential_client():
     validator = mock.MagicMock()
     request: common.Request = create_request()
