@@ -6,6 +6,7 @@ Changelog
 OAuth2.0 Provider:
 * **Breaking**: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
 * Improved PKCE Nonce comparison
+* #814: Implicit (and OIDC hybrid) authorization errors now default to the fragment ``response_mode`` so ``OAuth2Error.in_uri()`` matches RFC 6749 §4.2.2.1.
 
 Misc:
 * #930: Add devcontainer, Add Python3.14, Python3.14t, Remove Python3.8.

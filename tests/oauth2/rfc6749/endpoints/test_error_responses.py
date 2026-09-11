@@ -237,9 +237,17 @@ class ErrorResponseTest(TestCase):
         self.assertEqual('unauthorized_client', json.loads(body)['error'])
 
         # Implicit grant
-        self.assertRaises(errors.UnauthorizedClientError,
-                self.mobile.validate_authorization_request,
+        try:
+            self.mobile.validate_authorization_request(
                 'https://i.b/auth?response_type=token&client_id=foo')
+            self.fail('expected UnauthorizedClientError')
+        except errors.UnauthorizedClientError as e:
+            # Tutorial providers catch this and redirect with e.in_uri().
+            # RFC 6749 §4.2.2.1 requires the error in the fragment, not the query.
+            self.assertEqual(e.response_mode, 'fragment')
+            error_uri = e.in_uri(e.redirect_uri)
+            self.assertIn('#error=unauthorized_client', error_uri)
+            self.assertNotIn('?error=', error_uri)
 
         # Password credentials grant
         _, body, _ = self.legacy.create_token_response(token_uri,
