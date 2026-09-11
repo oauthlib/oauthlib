@@ -63,7 +63,8 @@ class OpenIDHybridCodeIdTokenTest(OpenIDAuthCodeTest):
 
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
-        self.assertIn('error=invalid_request', h['Location'])
+        self.assertIn('#error=invalid_request', h['Location'])
+        self.assertNotIn('?error=', h['Location'])
         self.assertIsNone(b)
         self.assertEqual(s, 302)
 
@@ -97,6 +98,7 @@ class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
 
         bearer = BearerToken(self.mock_validator)
         h, b, s = self.auth.create_authorization_response(self.request, bearer)
-        self.assertIn('error=invalid_request', h['Location'])
+        self.assertIn('#error=invalid_request', h['Location'])
+        self.assertNotIn('?error=', h['Location'])
         self.assertIsNone(b)
         self.assertEqual(s, 302)

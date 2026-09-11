@@ -239,12 +239,7 @@ class GrantTypeBase:
         :param body:
         :param status:
         """
-        request.response_mode = request.response_mode or self.default_response_mode
-
-        if request.response_mode not in ('query', 'fragment'):
-            log.debug('Overriding invalid response mode %s with %s',
-                      request.response_mode, self.default_response_mode)
-            request.response_mode = self.default_response_mode
+        self._set_response_mode(request)
 
         token_items = token.items()
 
@@ -264,6 +259,13 @@ class GrantTypeBase:
 
         raise NotImplementedError(
             'Subclasses must set a valid default_response_mode')
+
+    def _set_response_mode(self, request):
+        request.response_mode = request.response_mode or self.default_response_mode
+        if request.response_mode not in ('query', 'fragment'):
+            log.debug('Overriding invalid response mode %s with %s',
+                      request.response_mode, self.default_response_mode)
+            request.response_mode = self.default_response_mode
 
     def _get_default_headers(self):
         """Create default headers for grant responses."""

@@ -112,6 +112,7 @@ class ImplicitGrant(GrantTypeBase):
     .. _`Section 10.16`: https://tools.ietf.org/html/rfc6749#section-10.16
     """
 
+    default_response_mode = 'fragment'
     response_types = ['token']
     grant_allows_refresh_token = False
 
@@ -227,8 +228,9 @@ class ImplicitGrant(GrantTypeBase):
         # https://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
-            return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
-                                                         fragment=True)}, None, 302
+            return {'Location': common.add_params_to_uri(
+                request.redirect_uri, e.twotuples,
+                fragment=request.response_mode == "fragment")}, None, 302
 
         # In OIDC implicit flow it is possible to have a request_type that does not include the access_token!
         # "id_token token" - return the access token and the id token
@@ -306,6 +308,11 @@ class ImplicitGrant(GrantTypeBase):
         self._handle_redirects(request)
 
         # Then check for normal errors.
+
+        # RFC 6749 §4.2.2.1: redirectable errors are returned in the fragment.
+        # Set this before raising so OAuth2Error.in_uri() (used by providers
+        # that call validate_authorization_request) matches create_token_response.
+        self._set_response_mode(request)
 
         request_info = self._run_custom_validators(request,
                                                    self.custom_validators.all_pre)
