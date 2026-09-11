@@ -380,6 +380,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # Note that the correct parameters to be added are automatically
         # populated through the use of specific exceptions.
 
+        # Apply this grant's default (query, or fragment for OIDC hybrid)
+        # before raising so OAuth2Error.in_uri() matches create_authorization_response.
+        self._set_response_mode(request)
+
         request_info = {}
         for validator in self.custom_validators.pre_auth:
             request_info.update(validator(request))
