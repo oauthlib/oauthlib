@@ -10,7 +10,7 @@ import logging
 from typing import Callable
 
 from oauthlib.common import Request, generate_token
-from oauthlib.oauth2.rfc6749 import errors
+from oauthlib.oauth2.rfc6749 import errors, utils
 from oauthlib.oauth2.rfc6749.endpoints.base import (
     BaseEndpoint,
     catch_errors_and_unavailability,
@@ -140,6 +140,23 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         # themselves.
         self._raise_on_invalid_client(request)
 
+        # The "scope" parameter has the same meaning as in the authorization
+        # code flow (RFC 8628, Section 3.1): fall back to the default scopes
+        # when the device did not request any, then validate the result.
+        if not request.scopes:
+            request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                self.request_validator.get_default_scopes(request.client_id, request)
+            )
+        log.debug(
+            "Validating access to scopes %r for client %r.",
+            request.scopes,
+            request.client_id,
+        )
+        if not self.request_validator.validate_scopes(
+            request.client_id, request.scopes, request.client, request
+        ):
+            raise errors.InvalidScopeError(request=request)
+
     @catch_errors_and_unavailability
     def create_device_authorization_response(
         self, uri, http_method="POST", body=None, headers=None
@@ -224,6 +241,8 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         if self.interval is not None:
             data["interval"] = self.interval
 
+        if request.scopes:
+            data["scope"] = utils.list_to_scope(request.scopes)
 
         verification_uri_complete = self.verification_uri_complete(user_code)
         if verification_uri_complete:

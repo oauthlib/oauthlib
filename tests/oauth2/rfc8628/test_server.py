@@ -1,6 +1,7 @@
 import json
 from unittest import mock
 
+from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc8628.endpoints import DeviceAuthorizationEndpoint
 from oauthlib.oauth2.rfc8628.request_validator import RequestValidator
 
@@ -11,8 +12,10 @@ class DeviceAuthorizationEndpointTest(TestCase):
     def _configure_endpoint(
         self, interval=None, verification_uri_complete=None, user_code_generator=None
     ):
+        validator = mock.MagicMock(spec=RequestValidator)
+        validator.get_default_scopes.return_value = []
         self.endpoint = DeviceAuthorizationEndpoint(
-            request_validator=mock.MagicMock(spec=RequestValidator),
+            request_validator=validator,
             verification_uri=self.verification_uri,
             interval=interval,
             verification_uri_complete=verification_uri_complete,
@@ -21,6 +24,7 @@ class DeviceAuthorizationEndpointTest(TestCase):
 
     def setUp(self):
         self.request_validator = mock.MagicMock(spec=RequestValidator)
+        self.request_validator.get_default_scopes.return_value = []
         self.verification_uri = "http://i.b/l/verify"
         self.uri = "http://i.b/l"
         self.http_method = "POST"
@@ -111,3 +115,64 @@ class DeviceAuthorizationEndpointTest(TestCase):
             "http://i.l/v?user_code=123456",
             body["verification_uri_complete"],
         )
+
+
+class DeviceAuthorizationScopesTest(TestCase):
+    """Regression tests for https://github.com/oauthlib/oauthlib/issues/949.
+
+    The device authorization endpoint must resolve default scopes when the
+    device requests none and validate any requested scopes, mirroring the
+    authorization code flow.
+    """
+
+    class StubValidator(RequestValidator):
+        def __init__(self):
+            self.default_scopes = ["read", "write"]
+            self.validated = None
+
+        def validate_client_id(self, client_id, request, *args, **kwargs):
+            return True
+
+        def client_authentication_required(self, request, *args, **kwargs):
+            return False
+
+        def authenticate_client_id(self, client_id, request, *args, **kwargs):
+            return True
+
+        def get_default_scopes(self, client_id, request, *args, **kwargs):
+            return self.default_scopes
+
+        def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
+            self.validated = (client_id, list(scopes))
+            return set(scopes) <= {"read", "write"}
+
+    def setUp(self):
+        self.validator = self.StubValidator()
+        self.endpoint = DeviceAuthorizationEndpoint(
+            request_validator=self.validator,
+            verification_uri="http://i.b/l/verify",
+        )
+        self.uri = "http://i.b/l"
+        self.headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    def test_default_scopes_resolved_when_scope_missing(self):
+        _, body, status_code = self.endpoint.create_device_authorization_response(
+            self.uri, "POST", "client_id=abc", self.headers
+        )
+        self.assertEqual(200, status_code)
+        self.assertEqual("read write", body["scope"])
+        self.assertEqual(("abc", ["read", "write"]), self.validator.validated)
+
+    def test_requested_scopes_are_validated(self):
+        _, body, status_code = self.endpoint.create_device_authorization_response(
+            self.uri, "POST", "client_id=abc&scope=read", self.headers
+        )
+        self.assertEqual(200, status_code)
+        self.assertEqual("read", body["scope"])
+        self.assertEqual(("abc", ["read"]), self.validator.validated)
+
+    def test_invalid_scope_is_rejected(self):
+        with self.assertRaises(errors.InvalidScopeError):
+            self.endpoint.create_device_authorization_response(
+                self.uri, "POST", "client_id=abc&scope=admin", self.headers
+            )

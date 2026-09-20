@@ -13,6 +13,7 @@ def test_server_set_up_device_endpoint_instance_attributes_correctly():
     and asserts the important attributes are present
     """
     validator = mock.MagicMock(spec=RequestValidator)
+    validator.get_default_scopes.return_value = []
     validator.get_default_redirect_uri.return_value = None
     validator.get_code_challenge.return_value = None
 

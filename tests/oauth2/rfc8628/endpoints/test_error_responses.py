@@ -42,6 +42,7 @@ class ErrorResponseTest(TestCase):
 
     def setUp(self):
         self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator.get_default_scopes.return_value = []
         self.validator.get_default_redirect_uri.return_value = None
         self.validator.get_code_challenge.return_value = None
         self.device = DeviceApplicationServer(self.validator, "https://example.com/verify")
