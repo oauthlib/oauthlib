@@ -8,7 +8,7 @@ to use should be able to get some help too.
 
 Before choosing it is important to understand a fundamental issue with
 client - server security. **It is technically impossible to store secrets
-on machines out of your control, such as a users desktop or phone.**
+on machines out of your control, such as a user's desktop or phone.**
 Without the ability to secure a secret the ability to authenticate is lost.
 Because of this the provider has no way of knowing whether a request from
 such a client is legitimate or from a malicious party. Great care should be
