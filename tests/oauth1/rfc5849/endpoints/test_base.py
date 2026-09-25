@@ -10,7 +10,7 @@ from oauthlib.oauth1.rfc5849.endpoints import (
     BaseEndpoint, RequestTokenEndpoint,
 )
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 URLENCODED = {"Content-Type": "application/x-www-form-urlencoded"}
 
@@ -18,7 +18,7 @@ URLENCODED = {"Content-Type": "application/x-www-form-urlencoded"}
 class BaseEndpointTest(TestCase):
 
     def setUp(self):
-        self.validator = MagicMock(spec=RequestValidator)
+        self.validator = validator_mock(spec=RequestValidator)
         self.validator.allowed_signature_methods = ['HMAC-SHA1']
         self.validator.timestamp_lifetime = 600
         self.endpoint = RequestTokenEndpoint(self.validator)
@@ -26,57 +26,57 @@ class BaseEndpointTest(TestCase):
         self.uri, self.headers, self.body = self.client.sign(
                 'https://i.b/request_token')
 
-    def test_ssl_enforcement(self):
+    async def test_ssl_enforcement(self):
         uri, headers, _ = self.client.sign('http://i.b/request_token')
-        _h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = await self.endpoint.create_request_token_response(
                 uri, headers=headers)
         self.assertEqual(s, 400)
         self.assertIn('insecure_transport_protocol', b)
 
-    def test_missing_parameters(self):
-        _h, b, s = self.endpoint.create_request_token_response(self.uri)
+    async def test_missing_parameters(self):
+        _h, b, s = await self.endpoint.create_request_token_response(self.uri)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
-    def test_signature_methods(self):
+    async def test_signature_methods(self):
         headers = {}
         headers['Authorization'] = self.headers['Authorization'].replace(
                 'HMAC', 'RSA')
-        _h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_signature_method', b)
 
-    def test_invalid_version(self):
+    async def test_invalid_version(self):
         headers = {}
         headers['Authorization'] = self.headers['Authorization'].replace(
                 '1.0', '2.0')
-        _h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
-    def test_expired_timestamp(self):
+    async def test_expired_timestamp(self):
         headers = {}
         for pattern in ('12345678901', '4567890123', '123456789K'):
             headers['Authorization'] = sub(r'timestamp="\d*k?"',
                     'timestamp="%s"' % pattern,
                      self.headers['Authorization'])
-            _h, b, s = self.endpoint.create_request_token_response(
+            _h, b, s = await self.endpoint.create_request_token_response(
                     self.uri, headers=headers)
             self.assertEqual(s, 400)
             self.assertIn('invalid_request', b)
 
-    def test_client_key_check(self):
+    async def test_client_key_check(self):
         self.validator.check_client_key.return_value = False
-        _h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
-    def test_noncecheck(self):
+    async def test_noncecheck(self):
         self.validator.check_nonce.return_value = False
-        _h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
@@ -301,19 +301,19 @@ class ClientValidator(RequestValidator):
         def dummy_access_token(self):
             return 'dumbo'
 
-        def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+        async def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
                 request, request_token=None, access_token=None):
             resource_owner_key = request_token if request_token else access_token
             return (client_key, nonce, timestamp, resource_owner_key) not in self.nonces
 
-        def validate_client_key(self, client_key):
+        async def validate_client_key(self, client_key):
             return client_key in self.clients
 
-        def validate_access_token(self, client_key, access_token, request):
+        async def validate_access_token(self, client_key, access_token, request):
             return (self.owners.get(client_key) and
                     access_token in self.owners.get(client_key))
 
-        def validate_request_token(self, client_key, request_token, request):
+        async def validate_request_token(self, client_key, request_token, request):
             return (self.owners.get(client_key) and
                     request_token in self.owners.get(client_key))
 
@@ -324,25 +324,25 @@ class ClientValidator(RequestValidator):
                 required_realm=None):
             return (client_key, access_token) in self.assigned_realms
 
-        def validate_verifier(self, client_key, request_token, verifier,
+        async def validate_verifier(self, client_key, request_token, verifier,
                 request):
             return ((client_key, request_token) in self.verifiers and
                      safe_string_equals(verifier, self.verifiers.get(
                         (client_key, request_token))))
 
-        def validate_redirect_uri(self, client_key, redirect_uri, request):
+        async def validate_redirect_uri(self, client_key, redirect_uri, request):
             return redirect_uri.startswith('http://client.example.com/')
 
-        def get_client_secret(self, client_key, request):
+        async def get_client_secret(self, client_key, request):
             return 'super secret'
 
-        def get_access_token_secret(self, client_key, access_token, request):
+        async def get_access_token_secret(self, client_key, access_token, request):
             return 'even more secret'
 
-        def get_request_token_secret(self, client_key, request_token, request):
+        async def get_request_token_secret(self, client_key, request_token, request):
             return 'even more secret'
 
-        def get_rsa_key(self, client_key, request):
+        async def get_rsa_key(self, client_key, request):
             return ("-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNA"
                     "DCBiQKBgQDVLQCATX8iK+aZuGVdkGb6uiar\nLi/jqFwL1dYj0JLIsdQc"
                     "KaMWtPC06K0+vI+RRZcjKc6sNB9/7kJcKN9Ekc9BUxyT\n/D09Cz47cmC"
@@ -365,7 +365,7 @@ class SignatureVerificationTest(TestCase):
                     'oauth_token=abcdefghijklmnopqrstuvxyz&'
                     'oauth_consumer_key=foo')
 
-    def test_signature_too_short(self):
+    async def test_signature_too_short(self):
         short_sig = ('oauth_signature=fmrXnTF4lO4o%2BD0%2FlZaJHP%2FXqEY&'
               'oauth_timestamp=1234567890&'
               'oauth_nonce=abcdefghijklmnopqrstuvwxyz&'
@@ -373,7 +373,7 @@ class SignatureVerificationTest(TestCase):
               'oauth_token=abcdefghijklmnopqrstuvxyz&'
               'oauth_consumer_key=foo')
         r = self.e._create_request(self.uri, 'GET', short_sig, URLENCODED)
-        self.assertFalse(self.e._check_signature(r))
+        self.assertFalse(await self.e._check_signature(r))
 
         plain = ('oauth_signature=correctlengthbutthewrongcontent1111&'
               'oauth_timestamp=1234567890&'
@@ -382,25 +382,25 @@ class SignatureVerificationTest(TestCase):
               'oauth_token=abcdefghijklmnopqrstuvxyz&'
               'oauth_consumer_key=foo')
         r = self.e._create_request(self.uri, 'GET', plain, URLENCODED)
-        self.assertFalse(self.e._check_signature(r))
+        self.assertFalse(await self.e._check_signature(r))
 
-    def test_hmac_signature(self):
+    async def test_hmac_signature(self):
         hmac_sig = "fmrXnTF4lO4o%2BD0%2FlZaJHP%2FXqEY%3D"
         sig = self.sig % (hmac_sig, "HMAC-SHA1")
         r = self.e._create_request(self.uri, 'GET', sig, URLENCODED)
-        self.assertTrue(self.e._check_signature(r))
+        self.assertTrue(await self.e._check_signature(r))
 
-    def test_rsa_signature(self):
+    async def test_rsa_signature(self):
         rsa_sig = ("fxFvCx33oKlR9wDquJ%2FPsndFzJphyBa3RFPPIKi3flqK%2BJ7yIrMVbH"
                    "YTM%2FLHPc7NChWz4F4%2FzRA%2BDN1k08xgYGSBoWJUOW6VvOQ6fbYhMA"
                    "FkOGYbuGDbje487XMzsAcv6ZjqZHCROSCk5vofgLk2SN7RZ3OrgrFzf4in"
                    "xetClqA%3D")
         sig = self.sig % (rsa_sig, "RSA-SHA1")
         r = self.e._create_request(self.uri, 'GET', sig, URLENCODED)
-        self.assertTrue(self.e._check_signature(r))
+        self.assertTrue(await self.e._check_signature(r))
 
-    def test_plaintext_signature(self):
+    async def test_plaintext_signature(self):
         plain_sig = "super%252520secret%26even%252520more%252520secret"
         sig = self.sig % (plain_sig, "PLAINTEXT")
         r = self.e._create_request(self.uri, 'GET', sig, URLENCODED)
-        self.assertTrue(self.e._check_signature(r))
+        self.assertTrue(await self.e._check_signature(r))

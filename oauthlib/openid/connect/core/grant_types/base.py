@@ -26,12 +26,12 @@ class GrantTypeBase:
         else:
             super(OpenIDConnectBase, self).__setattr__(attr, value)
 
-    def validate_authorization_request(self, request):
+    async def validate_authorization_request(self, request):
         """Validates the OpenID Connect authorization request parameters.
 
         :returns: (list of scopes, dict of request info)
         """
-        return self.proxy_target.validate_authorization_request(request)
+        return await self.proxy_target.validate_authorization_request(request)
 
     def _inflate_claims(self, request):
         # this may be called multiple times in a single request so make sure we only de-serialize the claims once
@@ -71,7 +71,7 @@ class GrantTypeBase:
         left_most = len(digest) // 2
         return base64.urlsafe_b64encode(digest[:left_most]).decode().rstrip("=")
 
-    def add_id_token(self, token, token_handler, request, nonce=None):
+    async def add_id_token(self, token, token_handler, request, nonce=None):
         """
         Construct an initial version of id_token, and let the
         request_validator sign or encrypt it.
@@ -93,7 +93,7 @@ class GrantTypeBase:
             return token
 
         # Implementation mint its own id_token without help.
-        id_token = self.request_validator.get_id_token(token, token_handler, request)
+        id_token = await self.request_validator.get_id_token(token, token_handler, request)
         if id_token:
             token['id_token'] = id_token
             return token
@@ -139,11 +139,11 @@ class GrantTypeBase:
             id_token["c_hash"] = self.id_token_hash(token["code"])
 
         # Call request_validator to complete/sign/encrypt id_token
-        token['id_token'] = self.request_validator.finalize_id_token(id_token, token, token_handler, request)
+        token['id_token'] = await self.request_validator.finalize_id_token(id_token, token, token_handler, request)
 
         return token
 
-    def openid_authorization_validator(self, request):
+    async def openid_authorization_validator(self, request):
         """Perform OpenID Connect specific authorization request validation.
 
         nonce
@@ -297,15 +297,15 @@ class GrantTypeBase:
                 msg = "Prompt none is mutually exclusive with other values."
                 raise InvalidRequestError(request=request, description=msg)
 
-            if not self.request_validator.validate_silent_login(request):
+            if not await self.request_validator.validate_silent_login(request):
                 raise LoginRequired(request=request)
 
-            if not self.request_validator.validate_silent_authorization(request):
+            if not await self.request_validator.validate_silent_authorization(request):
                 raise ConsentRequired(request=request)
 
         self._inflate_claims(request)
 
-        if not self.request_validator.validate_user_match(
+        if not await self.request_validator.validate_user_match(
                 request.id_token_hint, request.scopes, request.claims, request):
             msg = "Session user does not match client supplied user."
             raise LoginRequired(request=request, description=msg)

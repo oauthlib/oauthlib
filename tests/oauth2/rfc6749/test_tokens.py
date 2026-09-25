@@ -6,7 +6,7 @@ from oauthlib.oauth2.rfc6749.tokens import (
     prepare_bearer_uri, prepare_mac_header,
 )
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class TokenTest(TestCase):
@@ -75,7 +75,7 @@ class TokenTest(TestCase):
     bearer_body = 'access_token=vF9dft4qmT'
     bearer_uri = 'http://server.example.com/resource?access_token=vF9dft4qmT'
 
-    def _mocked_validate_bearer_token(self, token, scopes, request):
+    async def _mocked_validate_bearer_token(self, token, scopes, request):
         if not token:  # noqa: SIM103
             return False
         return True
@@ -99,58 +99,58 @@ class TokenTest(TestCase):
         self.assertEqual(prepare_bearer_body(self.token), self.bearer_body)
         self.assertEqual(prepare_bearer_uri(self.token, uri=self.uri), self.bearer_uri)
 
-    def test_valid_bearer_is_validated(self):
-        request_validator = mock.MagicMock()
+    async def test_valid_bearer_is_validated(self):
+        request_validator = validator_mock()
         request_validator.validate_bearer_token = self._mocked_validate_bearer_token
 
         request = Request("/", headers=self.bearer_headers)
-        result = BearerToken(request_validator=request_validator).validate_request(
+        result = await BearerToken(request_validator=request_validator).validate_request(
             request
         )
         self.assertTrue(result)
 
-    def test_lowercase_bearer_is_validated(self):
-        request_validator = mock.MagicMock()
+    async def test_lowercase_bearer_is_validated(self):
+        request_validator = validator_mock()
         request_validator.validate_bearer_token = self._mocked_validate_bearer_token
 
         request = Request("/", headers=self.valid_bearer_header_lowercase)
-        result = BearerToken(request_validator=request_validator).validate_request(
+        result = await BearerToken(request_validator=request_validator).validate_request(
             request
         )
         self.assertTrue(result)
 
-    def test_fake_bearer_is_not_validated(self):
-        request_validator = mock.MagicMock()
+    async def test_fake_bearer_is_not_validated(self):
+        request_validator = validator_mock()
         request_validator.validate_bearer_token = self._mocked_validate_bearer_token
 
         for fake_header in self.fake_bearer_headers:
             request = Request("/", headers=fake_header)
-            result = BearerToken(request_validator=request_validator).validate_request(
+            result = await BearerToken(request_validator=request_validator).validate_request(
                 request
             )
 
             self.assertFalse(result)
 
-    def test_header_with_multispaces_is_validated(self):
-        request_validator = mock.MagicMock()
+    async def test_header_with_multispaces_is_validated(self):
+        request_validator = validator_mock()
         request_validator.validate_bearer_token = self._mocked_validate_bearer_token
 
         request = Request("/", headers=self.valid_header_with_multiple_spaces)
-        result = BearerToken(request_validator=request_validator).validate_request(
+        result = await BearerToken(request_validator=request_validator).validate_request(
             request
         )
 
         self.assertTrue(result)
 
     def test_estimate_type(self):
-        request_validator = mock.MagicMock()
+        request_validator = validator_mock()
         request_validator.validate_bearer_token = self._mocked_validate_bearer_token
         request = Request("/", headers=self.bearer_headers)
         result = BearerToken(request_validator=request_validator).estimate_type(request)
         self.assertEqual(result, 9)
 
     def test_estimate_type_with_fake_header_returns_type_0(self):
-        request_validator = mock.MagicMock()
+        request_validator = validator_mock()
         request_validator.validate_bearer_token = self._mocked_validate_bearer_token
 
         for fake_header in self.fake_bearer_headers:

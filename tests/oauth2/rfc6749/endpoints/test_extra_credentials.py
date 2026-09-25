@@ -7,7 +7,7 @@ from oauthlib.oauth2 import (
     RequestValidator, WebApplicationServer,
 )
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class ExtraCredentialsTest(TestCase):
@@ -18,14 +18,14 @@ class ExtraCredentialsTest(TestCase):
         return True
 
     def setUp(self):
-        self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator = validator_mock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
         self.web = WebApplicationServer(self.validator)
         self.mobile = MobileApplicationServer(self.validator)
         self.legacy = LegacyApplicationServer(self.validator)
         self.backend = BackendApplicationServer(self.validator)
 
-    def test_post_authorization_request(self):
+    async def test_post_authorization_request(self):
         def save_code(client_id, token, request):
             self.assertEqual('creds', request.extra)
 
@@ -34,19 +34,19 @@ class ExtraCredentialsTest(TestCase):
 
         # Authorization code grant
         self.validator.save_authorization_code.side_effect = save_code
-        self.web.create_authorization_response(
+        await self.web.create_authorization_response(
                 'https://i.b/auth?client_id=foo&response_type=code',
                 scopes=['foo'],
                 credentials={'extra': 'creds'})
 
         # Implicit grant
         self.validator.save_bearer_token.side_effect = save_token
-        self.mobile.create_authorization_response(
+        await self.mobile.create_authorization_response(
                 'https://i.b/auth?client_id=foo&response_type=token',
                 scopes=['foo'],
                 credentials={'extra': 'creds'})
 
-    def test_token_request(self):
+    async def test_token_request(self):
         def save_token(token, request):
             self.assertIn('extra', token)
 
@@ -54,16 +54,16 @@ class ExtraCredentialsTest(TestCase):
         self.validator.authenticate_client.side_effect = self.set_client
 
         # Authorization code grant
-        self.web.create_token_response('https://i.b/token',
+        await self.web.create_token_response('https://i.b/token',
                 body='grant_type=authorization_code&code=foo',
                 credentials={'extra': 'creds'})
 
         # Password credentials grant
-        self.legacy.create_token_response('https://i.b/token',
+        await self.legacy.create_token_response('https://i.b/token',
                 body='grant_type=password&username=foo&password=bar',
                 credentials={'extra': 'creds'})
 
         # Client credentials grant
-        self.backend.create_token_response('https://i.b/token',
+        await self.backend.create_token_response('https://i.b/token',
                 body='grant_type=client_credentials',
                 credentials={'extra': 'creds'})

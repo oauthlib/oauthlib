@@ -4,7 +4,7 @@ from unittest import mock
 from oauthlib.oauth2.rfc8628.endpoints import DeviceAuthorizationEndpoint
 from oauthlib.oauth2.rfc8628.request_validator import RequestValidator
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class DeviceAuthorizationEndpointTest(TestCase):
@@ -12,7 +12,7 @@ class DeviceAuthorizationEndpointTest(TestCase):
         self, interval=None, verification_uri_complete=None, user_code_generator=None
     ):
         self.endpoint = DeviceAuthorizationEndpoint(
-            request_validator=mock.MagicMock(spec=RequestValidator),
+            request_validator=validator_mock(spec=RequestValidator),
             verification_uri=self.verification_uri,
             interval=interval,
             verification_uri_complete=verification_uri_complete,
@@ -20,7 +20,7 @@ class DeviceAuthorizationEndpointTest(TestCase):
         )
 
     def setUp(self):
-        self.request_validator = mock.MagicMock(spec=RequestValidator)
+        self.request_validator = validator_mock(spec=RequestValidator)
         self.verification_uri = "http://i.b/l/verify"
         self.uri = "http://i.b/l"
         self.http_method = "POST"
@@ -32,9 +32,9 @@ class DeviceAuthorizationEndpointTest(TestCase):
         return self.uri, self.http_method, self.body, self.headers
 
     @mock.patch("oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token")
-    def test_device_authorization_grant(self, generate_token):
+    async def test_device_authorization_grant(self, generate_token):
         generate_token.side_effect = ["abc", "def"]
-        _, body, status_code = self.endpoint.create_device_authorization_response(
+        _, body, status_code = await self.endpoint.create_device_authorization_response(
             *self.response_payload()
         )
         expected_payload = {
@@ -50,27 +50,27 @@ class DeviceAuthorizationEndpointTest(TestCase):
         "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
         lambda: "abc",
     )
-    def test_device_authorization_grant_interval(self):
+    async def test_device_authorization_grant_interval(self):
         self._configure_endpoint(interval=5)
-        _, body, _ = self.endpoint.create_device_authorization_response(*self.response_payload())
+        _, body, _ = await self.endpoint.create_device_authorization_response(*self.response_payload())
         self.assertEqual(5, body["interval"])
 
     @mock.patch(
         "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
         lambda: "abc",
     )
-    def test_device_authorization_grant_interval_with_zero(self):
+    async def test_device_authorization_grant_interval_with_zero(self):
         self._configure_endpoint(interval=0)
-        _, body, _ = self.endpoint.create_device_authorization_response(*self.response_payload())
+        _, body, _ = await self.endpoint.create_device_authorization_response(*self.response_payload())
         self.assertEqual(0, body["interval"])
 
     @mock.patch(
         "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
         lambda: "abc",
     )
-    def test_device_authorization_grant_verify_url_complete_string(self):
+    async def test_device_authorization_grant_verify_url_complete_string(self):
         self._configure_endpoint(verification_uri_complete="http://i.l/v?user_code={user_code}")
-        _, body, _ = self.endpoint.create_device_authorization_response(*self.response_payload())
+        _, body, _ = await self.endpoint.create_device_authorization_response(*self.response_payload())
         self.assertEqual(
             "http://i.l/v?user_code=abc",
             body["verification_uri_complete"],
@@ -80,9 +80,9 @@ class DeviceAuthorizationEndpointTest(TestCase):
         "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
         lambda: "abc",
     )
-    def test_device_authorization_grant_verify_url_complete_callable(self):
+    async def test_device_authorization_grant_verify_url_complete_callable(self):
         self._configure_endpoint(verification_uri_complete=lambda u: f"http://i.l/v?user_code={u}")
-        _, body, _ = self.endpoint.create_device_authorization_response(*self.response_payload())
+        _, body, _ = await self.endpoint.create_device_authorization_response(*self.response_payload())
         self.assertEqual(
             "http://i.l/v?user_code=abc",
             body["verification_uri_complete"],
@@ -92,7 +92,7 @@ class DeviceAuthorizationEndpointTest(TestCase):
         "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
         lambda: "abc",
     )
-    def test_device_authorization_grant_user_gode_generator(self):
+    async def test_device_authorization_grant_user_gode_generator(self):
         def user_code():
             """
             A friendly user code the device can display and the user
@@ -106,7 +106,7 @@ class DeviceAuthorizationEndpointTest(TestCase):
             user_code_generator=user_code,
         )
 
-        _, body, _ = self.endpoint.create_device_authorization_response(*self.response_payload())
+        _, body, _ = await self.endpoint.create_device_authorization_response(*self.response_payload())
         self.assertEqual(
             "http://i.l/v?user_code=123456",
             body["verification_uri_complete"],

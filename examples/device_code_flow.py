@@ -94,12 +94,12 @@ class Device:
 
 class DeviceAuthorizationEndpoint:
     @staticmethod
-    def create_device_authorization_response(request):
+    async def create_device_authorization_response(request):
         server = DeviceApplicationServer(interval=5, verification_uri="https://example.com/device")
-        return server.create_device_authorization_response(request)
+        return await server.create_device_authorization_response(request)
 
-    def post(self, request):
-        _headers, _data, _status = self.create_device_authorization_response(request)
+    async def post(self, request):
+        _headers, _data, _status = await self.create_device_authorization_response(request)
         device_response = ...
 
         # Create an instance of examples.device_flow.Device` using `request` and `data`that encapsulates
@@ -170,7 +170,7 @@ class DeviceAuthorizationEndpoint:
 # It is up to as the provider to decide how you want
 # to rate limit the device during polling.
 def rate_limit(func, rate="1/5s"):
-    def wrapper():
+    async def wrapper(*args, **kwargs):
         # some logic to ensure client device is rate limited by a minimum
         # of 1 request every 5 seconds during device polling
         # https://datatracker.ietf.org/doc/html/rfc8628#section-3.2
@@ -191,7 +191,7 @@ def rate_limit(func, rate="1/5s"):
         if total_seconds_since_last_device_poll < rate:
             raise device_flow_errors.SlowDownError()
 
-        result = func()
+        result = await func(*args, **kwargs)
         return result
 
     return wrapper
@@ -214,15 +214,15 @@ class ServerSetupForTokenEndpoint:
 
 # You should already have the /token endpoint implemented in your provider.
 class TokenEndpoint(ServerSetupForTokenEndpoint):
-    def default_flow_token_response(self, request):
-        _url, _headers, body, _status = self.server.create_token_response(request)
+    async def default_flow_token_response(self, request):
+        _url, _headers, body, _status = await self.server.create_token_response(request)
         access_token = json.loads(body).get("access_token")
 
         # return access_token in a http response
         return access_token
 
     @rate_limit  # this will raise the SlowDownError
-    def device_flow_token_response(self, request, device_code):
+    async def device_flow_token_response(self, request, device_code):
         """
         Following the rfc, this will route the device request accordingly and raise
         required errors.
@@ -242,7 +242,7 @@ class TokenEndpoint(ServerSetupForTokenEndpoint):
         if device.status == device.DeviceFlowStatus.DENIED:
             raise AccessDenied()
 
-        _url, _headers, body, _status = self.server.create_token_response(request)
+        _url, _headers, body, _status = await self.server.create_token_response(request)
 
         access_token = json.loads(body).get("access_token")
 
@@ -253,8 +253,8 @@ class TokenEndpoint(ServerSetupForTokenEndpoint):
 
     # Example of how token endpoint could handle the token creation depending on
     # the grant type during a POST to /token.
-    def post(self, request):
+    async def post(self, request):
         params = request.POST
         if params.get("grant_type") == "urn:ietf:params:oauth:grant-type:device_code":
-            return self.device_flow_token_response(request, params["device_code"])
-        return self.default_flow_token_response(request)
+            return await self.device_flow_token_response(request, params["device_code"])
+        return await self.default_flow_token_response(request)

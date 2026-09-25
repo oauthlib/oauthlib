@@ -8,6 +8,7 @@ for signing and checking OAuth 1.0 RFC 5849 requests.
 """
 from urllib.parse import urlencode
 
+from oauthlib.aio import maybe_await
 from oauthlib.common import add_params_to_uri
 
 from .. import errors
@@ -34,7 +35,7 @@ class AuthorizationEndpoint(BaseEndpoint):
     for this endpoint.
     """
 
-    def create_verifier(self, request, credentials):
+    async def create_verifier(self, request, credentials):
         """Create and save a new request token.
 
         :param request: OAuthlib request.
@@ -44,14 +45,14 @@ class AuthorizationEndpoint(BaseEndpoint):
         """
         verifier = {
             'oauth_token': request.resource_owner_key,
-            'oauth_verifier': self.token_generator(),
+            'oauth_verifier': await maybe_await(self.token_generator()),
         }
         verifier.update(credentials)
-        self.request_validator.save_verifier(
+        await self.request_validator.save_verifier(
             request.resource_owner_key, verifier, request)
         return verifier
 
-    def create_authorization_response(self, uri, http_method='GET', body=None,
+    async def create_authorization_response(self, uri, http_method='GET', body=None,
                                       headers=None, realms=None, credentials=None):
         """Create an authorization response, with a new request token if valid.
 
@@ -74,7 +75,7 @@ class AuthorizationEndpoint(BaseEndpoint):
             >>> from your_validator import your_validator
             >>> from oauthlib.oauth1 import AuthorizationEndpoint
             >>> endpoint = AuthorizationEndpoint(your_validator)
-            >>> h, b, s = endpoint.create_authorization_response(
+            >>> h, b, s = await endpoint.create_authorization_response(
             ...     'https://your.provider/authorize?oauth_token=...',
             ...     credentials={
             ...         'extra': 'argument',
@@ -91,7 +92,7 @@ class AuthorizationEndpoint(BaseEndpoint):
             >>> from your_validator import your_validator
             >>> from oauthlib.oauth1 import AuthorizationEndpoint
             >>> endpoint = AuthorizationEndpoint(your_validator)
-            >>> h, b, s = endpoint.create_authorization_response(
+            >>> h, b, s = await endpoint.create_authorization_response(
             ...     'https://your.provider/authorize?foo=bar',
             ...     credentials={
             ...         'extra': 'argument',
@@ -109,19 +110,19 @@ class AuthorizationEndpoint(BaseEndpoint):
         if not request.resource_owner_key:
             raise errors.InvalidRequestError(
                 'Missing mandatory parameter oauth_token.')
-        if not self.request_validator.verify_request_token(
+        if not await self.request_validator.verify_request_token(
                 request.resource_owner_key, request):
             raise errors.InvalidClientError()
 
         request.realms = realms
-        if (request.realms and not self.request_validator.verify_realms(
+        if (request.realms and not await self.request_validator.verify_realms(
                 request.resource_owner_key, request.realms, request)):
             raise errors.InvalidRequestError(
                 description=('User granted access to realms outside of '
                              'what the client may request.'))
 
-        verifier = self.create_verifier(request, credentials or {})
-        redirect_uri = self.request_validator.get_redirect_uri(
+        verifier = await self.create_verifier(request, credentials or {})
+        redirect_uri = await self.request_validator.get_redirect_uri(
             request.resource_owner_key, request)
         if redirect_uri == 'oob':
             response_headers = {
@@ -133,7 +134,7 @@ class AuthorizationEndpoint(BaseEndpoint):
                 redirect_uri, verifier.items())
             return {'Location': populated_redirect}, None, 302
 
-    def get_realms_and_credentials(self, uri, http_method='GET', body=None,
+    async def get_realms_and_credentials(self, uri, http_method='GET', body=None,
                                    headers=None):
         """Fetch realms and credentials for the presented request token.
 
@@ -149,10 +150,10 @@ class AuthorizationEndpoint(BaseEndpoint):
         request = self._create_request(uri, http_method=http_method, body=body,
                                        headers=headers)
 
-        if not self.request_validator.verify_request_token(
+        if not await self.request_validator.verify_request_token(
                 request.resource_owner_key, request):
             raise errors.InvalidClientError()
 
-        realms = self.request_validator.get_realms(
+        realms = await self.request_validator.get_realms(
             request.resource_owner_key, request)
         return realms, {'resource_owner_key': request.resource_owner_key}

@@ -1,53 +1,54 @@
+from unittest import mock
 from unittest.mock import MagicMock
 
 from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import errors
 from oauthlib.oauth1.rfc5849.endpoints import AuthorizationEndpoint
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, oauth1_validator_mock
 
 
 class AuthorizationEndpointTest(TestCase):
 
     def setUp(self):
-        self.validator = MagicMock(wraps=RequestValidator())
+        self.validator = oauth1_validator_mock(wraps=RequestValidator())
         self.validator.verify_request_token.return_value = True
         self.validator.verify_realms.return_value = True
         self.validator.get_realms.return_value = ['test']
-        self.validator.save_verifier = MagicMock()
+        self.validator.save_verifier = mock.AsyncMock()
         self.endpoint = AuthorizationEndpoint(self.validator)
         self.uri = 'https://i.b/authorize?oauth_token=foo'
 
-    def test_get_realms_and_credentials(self):
-        realms, _credentials = self.endpoint.get_realms_and_credentials(self.uri)
+    async def test_get_realms_and_credentials(self):
+        realms, _credentials = await self.endpoint.get_realms_and_credentials(self.uri)
         self.assertEqual(realms, ['test'])
 
-    def test_verify_token(self):
+    async def test_verify_token(self):
         self.validator.verify_request_token.return_value = False
-        self.assertRaises(errors.InvalidClientError,
+        await self.assertRaisesAsync(errors.InvalidClientError,
                 self.endpoint.get_realms_and_credentials, self.uri)
-        self.assertRaises(errors.InvalidClientError,
+        await self.assertRaisesAsync(errors.InvalidClientError,
                 self.endpoint.create_authorization_response, self.uri)
 
-    def test_verify_realms(self):
+    async def test_verify_realms(self):
         self.validator.verify_realms.return_value = False
-        self.assertRaises(errors.InvalidRequestError,
+        await self.assertRaisesAsync(errors.InvalidRequestError,
                 self.endpoint.create_authorization_response,
                 self.uri,
                 realms=['bar'])
 
-    def test_create_authorization_response(self):
+    async def test_create_authorization_response(self):
         self.validator.get_redirect_uri.return_value = 'https://c.b/cb'
-        h, _b, s = self.endpoint.create_authorization_response(self.uri)
+        h, _b, s = await self.endpoint.create_authorization_response(self.uri)
         self.assertEqual(s, 302)
         self.assertIn('Location', h)
         location = h['Location']
         self.assertTrue(location.startswith('https://c.b/cb'))
         self.assertIn('oauth_verifier', location)
 
-    def test_create_authorization_response_oob(self):
+    async def test_create_authorization_response_oob(self):
         self.validator.get_redirect_uri.return_value = 'oob'
-        h, b, s = self.endpoint.create_authorization_response(self.uri)
+        h, b, s = await self.endpoint.create_authorization_response(self.uri)
         self.assertEqual(s, 200)
         self.assertNotIn('Location', h)
         self.assertIn('oauth_verifier', b)

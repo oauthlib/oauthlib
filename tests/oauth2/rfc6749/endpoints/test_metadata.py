@@ -39,13 +39,13 @@ class MetadataEndpointTest(TestCase):
         self.maxDiff = None
         self.assertEqual(openid_claims, oauth2_claims)
 
-    def test_create_metadata_response(self):
+    async def test_create_metadata_response(self):
         endpoint = TokenEndpoint(None, None, grant_types={"password": None})
         metadata = MetadataEndpoint([endpoint], {
             "issuer": 'https://foo.bar',
             "token_endpoint": "https://foo.bar/token"
         })
-        headers, body, _status = metadata.create_metadata_response('/', 'GET')
+        headers, body, _status = await metadata.create_metadata_response('/', 'GET')
         assert headers == {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',

@@ -2,7 +2,7 @@ from oauthlib.oauth2 import RequestValidator as OAuth2RequestValidator
 
 
 class RequestValidator(OAuth2RequestValidator):
-    def client_authentication_required(self, request, *args, **kwargs):
+    async def client_authentication_required(self, request, *args, **kwargs):
         """Determine if client authentication is required for current request.
 
         According to the rfc8628, client authentication is required in the following cases:

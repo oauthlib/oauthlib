@@ -10,6 +10,7 @@ returned to the client.
 """
 import logging
 
+from oauthlib.aio import maybe_await
 from oauthlib.common import urlencode
 
 from .. import errors
@@ -29,7 +30,7 @@ class RequestTokenEndpoint(BaseEndpoint):
     validator methods to implement for this endpoint.
     """
 
-    def create_request_token(self, request, credentials):
+    async def create_request_token(self, request, credentials):
         """Create and save a new request token.
 
         :param request: OAuthlib request.
@@ -38,15 +39,15 @@ class RequestTokenEndpoint(BaseEndpoint):
         :returns: The token as an urlencoded string.
         """
         token = {
-            'oauth_token': self.token_generator(),
-            'oauth_token_secret': self.token_generator(),
+            'oauth_token': await maybe_await(self.token_generator()),
+            'oauth_token_secret': await maybe_await(self.token_generator()),
             'oauth_callback_confirmed': 'true'
         }
         token.update(credentials)
-        self.request_validator.save_request_token(token, request)
+        await self.request_validator.save_request_token(token, request)
         return urlencode(token.items())
 
-    def create_request_token_response(self, uri, http_method='GET', body=None,
+    async def create_request_token_response(self, uri, http_method='GET', body=None,
                                       headers=None, credentials=None):
         """Create a request token response, with a new request token if valid.
 
@@ -65,7 +66,7 @@ class RequestTokenEndpoint(BaseEndpoint):
             >>> from your_validator import your_validator
             >>> from oauthlib.oauth1 import RequestTokenEndpoint
             >>> endpoint = RequestTokenEndpoint(your_validator)
-            >>> h, b, s = endpoint.create_request_token_response(
+            >>> h, b, s = await endpoint.create_request_token_response(
             ...     'https://your.provider/request_token?foo=bar',
             ...     headers={
             ...         'Authorization': 'OAuth realm=movies user, oauth_....'
@@ -97,17 +98,17 @@ class RequestTokenEndpoint(BaseEndpoint):
         resp_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         try:
             request = self._create_request(uri, http_method, body, headers)
-            valid, _processed_request = self.validate_request_token_request(
+            valid, _processed_request = await self.validate_request_token_request(
                 request)
             if valid:
-                token = self.create_request_token(request, credentials or {})
+                token = await self.create_request_token(request, credentials or {})
                 return resp_headers, token, 200
             else:
                 return {}, None, 401
         except errors.OAuth1Error as e:
             return resp_headers, e.urlencoded, e.status_code
 
-    def validate_request_token_request(self, request):
+    async def validate_request_token_request(self, request):
         """Validate a request token request.
 
         :param request: OAuthlib request.
@@ -123,7 +124,7 @@ class RequestTokenEndpoint(BaseEndpoint):
         if request.realm:
             request.realms = request.realm.split(' ')
         else:
-            request.realms = self.request_validator.get_default_realms(
+            request.realms = await self.request_validator.get_default_realms(
                 request.client_key, request)
         if not self.request_validator.check_realms(request.realms):
             raise errors.InvalidRequestError(
@@ -134,7 +135,7 @@ class RequestTokenEndpoint(BaseEndpoint):
             raise errors.InvalidRequestError(
                 description='Missing callback URI.')
 
-        if not self.request_validator.validate_timestamp_and_nonce(
+        if not await self.request_validator.validate_timestamp_and_nonce(
                 request.client_key, request.timestamp, request.nonce, request,
                 request_token=request.resource_owner_key):
             return False, request
@@ -146,7 +147,7 @@ class RequestTokenEndpoint(BaseEndpoint):
         # time request verification.
         #
         # Note that early exit would enable client enumeration
-        valid_client = self.request_validator.validate_client_key(
+        valid_client = await self.request_validator.validate_client_key(
             request.client_key, request)
         if not valid_client:
             request.client_key = self.request_validator.dummy_client
@@ -173,19 +174,19 @@ class RequestTokenEndpoint(BaseEndpoint):
         # Access to protected resources will always validate the realm but note
         # that the realm is now tied to the access token and not provided by
         # the client.
-        valid_realm = self.request_validator.validate_requested_realms(
+        valid_realm = await self.request_validator.validate_requested_realms(
             request.client_key, request.realms, request)
 
         # Callback is normally never required, except for requests for
         # a Temporary Credential as described in `Section 2.1`_
         # .._`Section 2.1`: https://tools.ietf.org/html/rfc5849#section-2.1
-        valid_redirect = self.request_validator.validate_redirect_uri(
+        valid_redirect = await self.request_validator.validate_redirect_uri(
             request.client_key, request.redirect_uri, request)
         if not request.redirect_uri:
             raise NotImplementedError('Redirect URI must either be provided '
                                       'or set to a default during validation.')
 
-        valid_signature = self._check_signature(request)
+        valid_signature = await self._check_signature(request)
 
         # log the results to the validator_log
         # this lets us handle internal reporting and analysis

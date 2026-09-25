@@ -6,6 +6,7 @@ This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
 import functools
+import inspect
 import logging
 
 from ..errors import (
@@ -55,13 +56,13 @@ class BaseEndpoint:
         if not request.token:
             raise InvalidRequestError(request=request,
                                       description='Missing token parameter.')
-    def _raise_on_invalid_client(self, request):
+    async def _raise_on_invalid_client(self, request):
         """Raise on failed client authentication."""
-        if self.request_validator.client_authentication_required(request):
-            if not self.request_validator.authenticate_client(request):
+        if await self.request_validator.client_authentication_required(request):
+            if not await self.request_validator.authenticate_client(request):
                 log.debug('Client authentication failed, %r.', request)
                 raise InvalidClientError(request=request)
-        elif not self.request_validator.authenticate_client_id(request.client_id, request):
+        elif not await self.request_validator.authenticate_client_id(request.client_id, request):
             log.debug('Client authentication failed, %r.', request)
             raise InvalidClientError(request=request)
 
@@ -89,8 +90,18 @@ class BaseEndpoint:
                                           description=('URL query parameters are not allowed'))
 
 def catch_errors_and_unavailability(f):
+    """Decorate an async endpoint method with availability/error handling.
+
+    The wrapped method must be a coroutine function; the error handling has
+    to live inside the coroutine so that exceptions raised while it is being
+    awaited are caught.
+    """
+    if not inspect.iscoroutinefunction(f):
+        raise TypeError('catch_errors_and_unavailability requires an async '
+                        'function, got %r' % f)
+
     @functools.wraps(f)
-    def wrapper(endpoint, uri, *args, **kwargs):
+    async def wrapper(endpoint, uri, *args, **kwargs):
         if not endpoint.available:
             e = TemporarilyUnavailableError()
             log.info('Endpoint unavailable, ignoring request %s.' % uri)
@@ -98,7 +109,7 @@ def catch_errors_and_unavailability(f):
 
         if endpoint.catch_errors:
             try:
-                return f(endpoint, uri, *args, **kwargs)
+                return await f(endpoint, uri, *args, **kwargs)
             except OAuth2Error:
                 raise
             except FatalClientError:
@@ -109,5 +120,5 @@ def catch_errors_and_unavailability(f):
                     'Exception caught while processing request, %s.' % e)
                 return {}, error.json, 500
         else:
-            return f(endpoint, uri, *args, **kwargs)
+            return await f(endpoint, uri, *args, **kwargs)
     return wrapper

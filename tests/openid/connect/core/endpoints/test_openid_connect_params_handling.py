@@ -8,13 +8,13 @@ from oauthlib.oauth2.rfc6749.endpoints.authorization import (
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.openid.connect.core.grant_types import AuthorizationCodeGrant
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class OpenIDConnectEndpointTest(TestCase):
 
     def setUp(self):
-        self.mock_validator = mock.MagicMock()
+        self.mock_validator = validator_mock()
         self.mock_validator.authenticate_client.side_effect = self.set_client
         grant = AuthorizationCodeGrant(request_validator=self.mock_validator)
         bearer = BearerToken(self.mock_validator)
@@ -39,20 +39,20 @@ class OpenIDConnectEndpointTest(TestCase):
         return True
 
     @mock.patch('oauthlib.common.generate_token')
-    def test_authorization_endpoint_handles_prompt(self, generate_token):
+    async def test_authorization_endpoint_handles_prompt(self, generate_token):
         generate_token.return_value = "MOCK_CODE"
         # In the GET view:
-        scopes, creds = self.endpoint.validate_authorization_request(self.url)
+        scopes, creds = await self.endpoint.validate_authorization_request(self.url)
         # In the POST view:
         creds['scopes'] = scopes
-        h, b, s = self.endpoint.create_authorization_response(self.url,
+        h, b, s = await self.endpoint.create_authorization_response(self.url,
                                                         credentials=creds)
         expected = 'https://a.b/cb?state=abc&code=MOCK_CODE'
         self.assertURLEqual(h['Location'], expected)
         self.assertIsNone(b)
         self.assertEqual(s, 302)
 
-    def test_prompt_none_exclusiveness(self):
+    async def test_prompt_none_exclusiveness(self):
         """
         Test that prompt=none can't be used with another prompt value.
         """
@@ -66,13 +66,13 @@ class OpenIDConnectEndpointTest(TestCase):
         }
         url = 'http://a.b/path?' + urlencode(params)
         with self.assertRaises(InvalidRequestError):
-            self.endpoint.validate_authorization_request(url)
+            await self.endpoint.validate_authorization_request(url)
 
-    def test_oidc_params_preservation(self):
+    async def test_oidc_params_preservation(self):
         """
         Test that the nonce parameter is passed through.
         """
-        _scopes, creds = self.endpoint.validate_authorization_request(self.url)
+        _scopes, creds = await self.endpoint.validate_authorization_request(self.url)
 
         self.assertEqual(creds['prompt'], {'consent'})
         self.assertEqual(creds['nonce'], 'abcd')

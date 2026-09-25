@@ -4,6 +4,7 @@ oauthlib.oauth2.rfc6749.grant_types
 """
 import logging
 
+from oauthlib.aio import maybe_await
 from oauthlib import common
 
 from .. import errors
@@ -115,7 +116,7 @@ class ImplicitGrant(GrantTypeBase):
     response_types = ['token']
     grant_allows_refresh_token = False
 
-    def create_authorization_response(self, request, token_handler):
+    async def create_authorization_response(self, request, token_handler):
         """Create an authorization response.
 
         :param request: OAuthlib request.
@@ -160,9 +161,9 @@ class ImplicitGrant(GrantTypeBase):
         .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B
         """
-        return self.create_token_response(request, token_handler)
+        return await self.create_token_response(request, token_handler)
 
-    def create_token_response(self, request, token_handler):
+    async def create_token_response(self, request, token_handler):
         """Return token or error embedded in the URI fragment.
 
         :param request: OAuthlib request.
@@ -207,7 +208,7 @@ class ImplicitGrant(GrantTypeBase):
         .. _`Section 7.1`: https://tools.ietf.org/html/rfc6749#section-7.1
         """
         try:
-            self.validate_token_request(request)
+            await self.validate_token_request(request)
 
         # If the request fails due to a missing, invalid, or mismatching
         # redirection URI, or if the client identifier is missing or invalid,
@@ -233,30 +234,30 @@ class ImplicitGrant(GrantTypeBase):
         # In OIDC implicit flow it is possible to have a request_type that does not include the access_token!
         # "id_token token" - return the access token and the id token
         # "id_token" - don't return the access token
-        token = token_handler.create_token(request, refresh_token=False) if 'token' in request.response_type.split() else {}
+        token = await token_handler.create_token(request, refresh_token=False) if 'token' in request.response_type.split() else {}
 
         if request.state is not None:
             token['state'] = request.state
 
         for modifier in self._token_modifiers:
-            token = modifier(token, token_handler, request)
+            token = await maybe_await(modifier(token, token_handler, request))
 
         # In OIDC implicit flow it is possible to have a request_type that does
         # not include the access_token! In this case there is no need to save a token.
         if "token" in request.response_type.split():
-            self.request_validator.save_token(token, request)
+            await self.request_validator.save_token(token, request)
 
         return self.prepare_authorization_response(
             request, token, {}, None, 302)
 
-    def validate_authorization_request(self, request):
+    async def validate_authorization_request(self, request):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
-        return self.validate_token_request(request)
+        return await self.validate_token_request(request)
 
-    def validate_token_request(self, request):
+    async def validate_token_request(self, request):
         """Check the token request for normal and fatal errors.
 
         :param request: OAuthlib request.
@@ -298,16 +299,16 @@ class ImplicitGrant(GrantTypeBase):
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
 
-        if not self.request_validator.validate_client_id(request.client_id, request):
+        if not await self.request_validator.validate_client_id(request.client_id, request):
             raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
         # https://tools.ietf.org/html/rfc6749#section-3.1.2
-        self._handle_redirects(request)
+        await self._handle_redirects(request)
 
         # Then check for normal errors.
 
-        request_info = self._run_custom_validators(request,
+        request_info = await self._run_custom_validators(request,
                                                    self.custom_validators.all_pre)
 
         # If the resource owner denies the access request or if the request
@@ -329,7 +330,7 @@ class ImplicitGrant(GrantTypeBase):
 
         log.debug('Validating use of response_type token for client %r (%r).',
                   request.client_id, request.client)
-        if not self.request_validator.validate_response_type(request.client_id,
+        if not await self.request_validator.validate_response_type(request.client_id,
                                                              request.response_type,
                                                              request.client, request):
 
@@ -339,7 +340,7 @@ class ImplicitGrant(GrantTypeBase):
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # https://tools.ietf.org/html/rfc6749#section-3.3
-        self.validate_scopes(request)
+        await self.validate_scopes(request)
 
         request_info.update({
             'client_id': request.client_id,
@@ -349,7 +350,7 @@ class ImplicitGrant(GrantTypeBase):
             'request': request,
         })
 
-        request_info = self._run_custom_validators(
+        request_info = await self._run_custom_validators(
             request,
             self.custom_validators.all_post,
             request_info
@@ -357,7 +358,7 @@ class ImplicitGrant(GrantTypeBase):
 
         return request.scopes, request_info
 
-    def _run_custom_validators(self,
+    async def _run_custom_validators(self,
                                request,
                                validations,
                                request_info=None):
@@ -367,7 +368,7 @@ class ImplicitGrant(GrantTypeBase):
         # basically equivalent since the token is returned from the
         # authorization endpoint.
         for validator in validations:
-            result = validator(request)
+            result = await maybe_await(validator(request))
             if result is not None:
                 request_info.update(result)
         return request_info

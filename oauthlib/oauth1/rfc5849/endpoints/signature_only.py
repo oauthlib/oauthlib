@@ -18,7 +18,7 @@ class SignatureOnlyEndpoint(BaseEndpoint):
 
     """An endpoint only responsible for verifying an oauth signature."""
 
-    def validate_request(self, uri, http_method='GET',
+    async def validate_request(self, uri, http_method='GET',
                          body=None, headers=None):
         """Validate a signed OAuth request.
 
@@ -45,7 +45,7 @@ class SignatureOnlyEndpoint(BaseEndpoint):
                 'Exception caught while validating request, %s.' % err)
             return False, request
 
-        if not self.request_validator.validate_timestamp_and_nonce(
+        if not await self.request_validator.validate_timestamp_and_nonce(
                 request.client_key, request.timestamp, request.nonce, request):
             log.debug('[Failure] verification failed: timestamp/nonce')
             return False, request
@@ -57,12 +57,12 @@ class SignatureOnlyEndpoint(BaseEndpoint):
         # time request verification.
         #
         # Note that early exit would enable client enumeration
-        valid_client = self.request_validator.validate_client_key(
+        valid_client = await self.request_validator.validate_client_key(
             request.client_key, request)
         if not valid_client:
             request.client_key = self.request_validator.dummy_client
 
-        valid_signature = self._check_signature(request)
+        valid_signature = await self._check_signature(request)
 
         # log the results to the validator_log
         # this lets us handle internal reporting and analysis

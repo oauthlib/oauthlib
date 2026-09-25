@@ -28,6 +28,11 @@ class ValidatorsContainer:
     Token validators must be callables that take a request object and
     return None.
 
+    Validators may be plain functions or coroutine functions (``async def``);
+    the result is awaited when it is awaitable, so a validator can perform
+    async I/O. The same applies to code and token modifiers registered with
+    ``register_code_modifier`` / ``register_token_modifier``.
+
     Both authorization validators and token validators may raise OAuth2
     exceptions if validation conditions fail.
 
@@ -116,7 +121,7 @@ class GrantTypeBase:
     def register_token_modifier(self, modifier):
         self._token_modifiers.append(modifier)
 
-    def create_authorization_response(self, request, token_handler):
+    async def create_authorization_response(self, request, token_handler):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -125,7 +130,7 @@ class GrantTypeBase:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def create_token_response(self, request, token_handler):
+    async def create_token_response(self, request, token_handler):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -134,7 +139,7 @@ class GrantTypeBase:
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def add_token(self, token, token_handler, request):
+    async def add_token(self, token, token_handler, request):
         """
         :param token:
         :param token_handler: A token handler instance, for example of type
@@ -146,43 +151,43 @@ class GrantTypeBase:
         if request.response_type not in ["token", "code token", "id_token token", "code id_token token"]:
             return token
 
-        token.update(token_handler.create_token(request, refresh_token=False))
+        token.update(await token_handler.create_token(request, refresh_token=False))
         return token
 
-    def validate_grant_type(self, request):
+    async def validate_grant_type(self, request):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
         client_id = getattr(request, 'client_id', None)
-        if not self.request_validator.validate_grant_type(client_id,
+        if not await self.request_validator.validate_grant_type(client_id,
                                                           request.grant_type, request.client, request):
             log.debug('Unauthorized from %r (%r) access to grant type %s.',
                       request.client_id, request.client, request.grant_type)
             raise errors.UnauthorizedClientError(request=request)
 
-    def validate_scopes(self, request):
+    async def validate_scopes(self, request):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
         if not request.scopes:
             request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
-                self.request_validator.get_default_scopes(request.client_id, request))
+                await self.request_validator.get_default_scopes(request.client_id, request))
         log.debug('Validating access to scopes %r for client %r (%r).',
                   request.scopes, request.client_id, request.client)
-        if not self.request_validator.validate_scopes(request.client_id,
+        if not await self.request_validator.validate_scopes(request.client_id,
                                                       request.scopes, request.client, request):
             raise errors.InvalidScopeError(request=request)
 
-    def validate_client_confidential(self, request):
+    async def validate_client_confidential(self, request):
         # If the client type is confidential or the client was issued client
         # credentials (or assigned other authentication requirements), the
         # client MUST authenticate with the authorization server as described
         # in Section 3.2.1.
         # https://tools.ietf.org/html/rfc6749#section-3.2.1
         log.debug('Authenticating confidential client, %r.', request)
-        if not self.request_validator.authenticate_client(request):
+        if not await self.request_validator.authenticate_client(request):
             log.debug('Client authentication failed, %r.', request)
             raise errors.InvalidClientError(request=request)
 
@@ -197,12 +202,12 @@ class GrantTypeBase:
         elif request.client_id != request.client.client_id:
             raise errors.ServerError('Discrepency found between client identifier')
 
-    def validate_client_public(self, request):
+    async def validate_client_public(self, request):
         # REQUIRED, if the client is not authenticating with the
         # authorization server as described in Section 3.2.1.
         # https://tools.ietf.org/html/rfc6749#section-3.2.1
         log.debug('Authenticating public client, %r.', request)
-        if not self.request_validator.authenticate_client_id(request.client_id, request):
+        if not await self.request_validator.authenticate_client_id(request.client_id, request):
             log.debug('Client authentication failed, %r.', request)
             raise errors.InvalidClientError(request=request)
 
@@ -217,14 +222,14 @@ class GrantTypeBase:
         elif request.client_id != request.client.client_id:
             raise errors.ServerError('Discrepency found between client identifier')
 
-    def validate_client_authentication(self, request):
+    async def validate_client_authentication(self, request):
         """Raise on failed client authentication."""
         # Handles confidential clients
-        if self.request_validator.client_authentication_required(request):
-            self.validate_client_confidential(request)
+        if await self.request_validator.client_authentication_required(request):
+            await self.validate_client_confidential(request)
         # Handles public clients
         else:
-            self.validate_client_public(request)
+            await self.validate_client_public(request)
 
     def prepare_authorization_response(self, request, token, headers, body, status):
         """Place token according to response mode.
@@ -273,7 +278,7 @@ class GrantTypeBase:
             'Pragma': 'no-cache',
         }
 
-    def _handle_redirects(self, request):
+    async def _handle_redirects(self, request):
         if request.redirect_uri is not None:
             request.using_default_redirect_uri = False
             log.debug('Using provided redirect_uri %s', request.redirect_uri)
@@ -285,11 +290,11 @@ class GrantTypeBase:
             # redirection URI registered by the client as described in
             # Section 3.1.2.
             # https://tools.ietf.org/html/rfc6749#section-3.1.2
-            if not self.request_validator.validate_redirect_uri(
+            if not await self.request_validator.validate_redirect_uri(
                     request.client_id, request.redirect_uri, request):
                 raise errors.MismatchingRedirectURIError(request=request)
         else:
-            request.redirect_uri = self.request_validator.get_default_redirect_uri(
+            request.redirect_uri = await self.request_validator.get_default_redirect_uri(
                 request.client_id, request)
             request.using_default_redirect_uri = True
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
@@ -298,7 +303,7 @@ class GrantTypeBase:
             if not is_absolute_uri(request.redirect_uri):
                 raise errors.InvalidRedirectURIError(request=request)
 
-    def _create_cors_headers(self, request):
+    async def _create_cors_headers(self, request):
         """If CORS is allowed, create the appropriate headers."""
         if 'origin' not in request.headers:
             return {}
@@ -307,7 +312,7 @@ class GrantTypeBase:
         if not is_secure_transport(origin):
             log.debug('Origin "%s" is not HTTPS, CORS not allowed.', origin)
             return {}
-        elif not self.request_validator.is_origin_allowed(
+        elif not await self.request_validator.is_origin_allowed(
             request.client_id, origin, request):
             log.debug('Invalid origin "%s", CORS not allowed.', origin)
             return {}

@@ -25,15 +25,15 @@ class ImplicitGrant(GrantTypeBase):
             self.openid_authorization_validator)
         self.register_token_modifier(self.add_id_token)
 
-    def add_id_token(self, token, token_handler, request):
+    async def add_id_token(self, token, token_handler, request):
         if 'state' not in token and request.state:
             token['state'] = request.state
-        return super().add_id_token(token, token_handler, request, nonce=request.nonce)
+        return await super().add_id_token(token, token_handler, request, nonce=request.nonce)
 
-    def openid_authorization_validator(self, request):
+    async def openid_authorization_validator(self, request):
         """Additional validation when following the implicit flow.
         """
-        request_info = super().openid_authorization_validator(request)
+        request_info = await super().openid_authorization_validator(request)
         if not request_info:  # returns immediately if OAuth2.0
             return request_info
 

@@ -2,6 +2,7 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
+from oauthlib.aio import maybe_await
 import json
 import logging
 
@@ -66,7 +67,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     .. _`Resource Owner Password Credentials Grant`: https://tools.ietf.org/html/rfc6749#section-4.3
     """
 
-    def create_token_response(self, request, token_handler):
+    async def create_token_response(self, request, token_handler):
         """Return token or error in json format.
 
         :param request: OAuthlib request.
@@ -86,24 +87,24 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         headers = self._get_default_headers()
         try:
             log.debug('Validating access token request, %r.', request)
-            self.validate_token_request(request)
+            await self.validate_token_request(request)
         except errors.OAuth2Error as e:
             log.debug('Client error in token request, %s.', e)
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, self.refresh_token)
+        token = await token_handler.create_token(request, self.refresh_token)
 
         for modifier in self._token_modifiers:
-            token = modifier(token)
+            token = await maybe_await(modifier(token))
 
-        self.request_validator.save_token(token, request)
+        await self.request_validator.save_token(token, request)
 
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
                   token, request.client_id, request.client, request.username)
         return headers, json.dumps(token), 200
 
-    def validate_token_request(self, request):
+    async def validate_token_request(self, request):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -151,7 +152,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc6749#section-3.2.1
         """
         for validator in self.custom_validators.pre_token:
-            validator(request)
+            await maybe_await(validator(request))
 
         for param in ('grant_type', 'username', 'password'):
             if not getattr(request, param, None):
@@ -167,19 +168,19 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         if not request.grant_type == 'password':
             raise errors.UnsupportedGrantTypeError(request=request)
 
-        self.validate_client_authentication(request)
+        await self.validate_client_authentication(request)
 
         log.debug('Validating username %s.', request.username)
-        if not self.request_validator.validate_user(request.username,
+        if not await self.request_validator.validate_user(request.username,
                                                     request.password, request.client, request):
             raise errors.InvalidGrantError(
                 'Invalid credentials given.', request=request)
         log.debug('Authorizing access to user %r.', request.user)
 
         # Ensure client is authorized use of this grant type
-        self.validate_grant_type(request)
+        await self.validate_grant_type(request)
 
-        self.validate_scopes(request)
+        await self.validate_scopes(request)
 
         for validator in self.custom_validators.post_token:
-            validator(request)
+            await maybe_await(validator(request))

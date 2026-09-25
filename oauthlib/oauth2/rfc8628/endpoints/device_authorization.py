@@ -9,6 +9,7 @@ for consuming and providing OAuth 2.0 RFC8628.
 import logging
 from typing import Callable
 
+from oauthlib.aio import maybe_await
 from oauthlib.common import Request, generate_token
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.endpoints.base import (
@@ -91,7 +92,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         return None
 
     @catch_errors_and_unavailability
-    def validate_device_authorization_request(self, request):
+    async def validate_device_authorization_request(self, request):
         """Validate the device authorization request.
 
         The client_id is required if the client is not authenticating with the
@@ -129,7 +130,7 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
 
-        if not self.request_validator.validate_client_id(request.client_id, request):
+        if not await self.request_validator.validate_client_id(request.client_id, request):
             raise errors.InvalidClientIdError(request=request)
 
         # The client authentication requirements of Section 3.2.1 of [RFC6749]
@@ -138,10 +139,10 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         # in the same manner as when making requests to the token endpoint, and
         # public clients provide the "client_id" parameter to identify
         # themselves.
-        self._raise_on_invalid_client(request)
+        await self._raise_on_invalid_client(request)
 
     @catch_errors_and_unavailability
-    def create_device_authorization_response(
+    async def create_device_authorization_response(
         self, uri, http_method="POST", body=None, headers=None
     ):
         """
@@ -210,11 +211,12 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
            .. _`Section-3.2`: https://www.rfc-editor.org/rfc/rfc8628#section-3.2
            """
         request = Request(uri, http_method, body, headers)
-        self.validate_device_authorization_request(request)
+        await self.validate_device_authorization_request(request)
         log.debug("Pre resource owner authorization validation ok for %r.", request)
 
         headers = {}
-        user_code = self.user_code_generator() if self.user_code_generator else generate_token()
+        user_code = (await maybe_await(self.user_code_generator())
+                     if self.user_code_generator else generate_token())
         data = {
             "verification_uri": self.verification_uri,
             "expires_in": self.expires_in,

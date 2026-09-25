@@ -4,13 +4,13 @@ from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import Client
 from oauthlib.oauth1.rfc5849.endpoints import ResourceEndpoint
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, oauth1_validator_mock
 
 
 class ResourceEndpointTest(TestCase):
 
     def setUp(self):
-        self.validator = MagicMock(wraps=RequestValidator())
+        self.validator = oauth1_validator_mock(wraps=RequestValidator())
         self.validator.check_client_key.return_value = True
         self.validator.check_access_token.return_value = True
         self.validator.allowed_signature_methods = ['HMAC-SHA1']
@@ -32,21 +32,21 @@ class ResourceEndpointTest(TestCase):
         self.uri, self.headers, self.body = self.client.sign(
                 'https://i.b/protected_resource')
 
-    def test_missing_parameters(self):
+    async def test_missing_parameters(self):
         self.validator.check_access_token.return_value = False
-        v, _r = self.endpoint.validate_protected_resource_request(
+        v, _r = await self.endpoint.validate_protected_resource_request(
                 self.uri)
         self.assertFalse(v)
 
-    def test_check_access_token(self):
+    async def test_check_access_token(self):
         self.validator.check_access_token.return_value = False
-        v, _r = self.endpoint.validate_protected_resource_request(
+        v, _r = await self.endpoint.validate_protected_resource_request(
                 self.uri, headers=self.headers)
         self.assertFalse(v)
 
-    def test_validate_client_key(self):
+    async def test_validate_client_key(self):
         self.validator.validate_client_key.return_value = False
-        v, r = self.endpoint.validate_protected_resource_request(
+        v, r = await self.endpoint.validate_protected_resource_request(
                 self.uri, headers=self.headers)
         self.assertFalse(v)
         # the validator log should have `False` values
@@ -55,9 +55,9 @@ class ResourceEndpointTest(TestCase):
         self.assertTrue(r.validator_log['resource_owner'])
         self.assertTrue(r.validator_log['signature'])
 
-    def test_validate_access_token(self):
+    async def test_validate_access_token(self):
         self.validator.validate_access_token.return_value = False
-        v, r = self.endpoint.validate_protected_resource_request(
+        v, r = await self.endpoint.validate_protected_resource_request(
                 self.uri, headers=self.headers)
         self.assertFalse(v)
         # the validator log should have `False` values
@@ -66,9 +66,9 @@ class ResourceEndpointTest(TestCase):
         self.assertFalse(r.validator_log['resource_owner'])
         self.assertTrue(r.validator_log['signature'])
 
-    def test_validate_realms(self):
+    async def test_validate_realms(self):
         self.validator.validate_realms.return_value = False
-        v, r = self.endpoint.validate_protected_resource_request(
+        v, r = await self.endpoint.validate_protected_resource_request(
                 self.uri, headers=self.headers)
         self.assertFalse(v)
         # the validator log should have `False` values
@@ -77,12 +77,12 @@ class ResourceEndpointTest(TestCase):
         self.assertTrue(r.validator_log['resource_owner'])
         self.assertTrue(r.validator_log['signature'])
 
-    def test_validate_signature(self):
+    async def test_validate_signature(self):
         client = Client('foo',
                 resource_owner_key='token',
                 resource_owner_secret='secret')
         _, headers, _ = client.sign(self.uri + '/extra')
-        v, r = self.endpoint.validate_protected_resource_request(
+        v, r = await self.endpoint.validate_protected_resource_request(
                 self.uri, headers=headers)
         self.assertFalse(v)
         # the validator log should have `False` values
@@ -91,8 +91,8 @@ class ResourceEndpointTest(TestCase):
         self.assertTrue(r.validator_log['resource_owner'])
         self.assertFalse(r.validator_log['signature'])
 
-    def test_valid_request(self):
-        v, r = self.endpoint.validate_protected_resource_request(
+    async def test_valid_request(self):
+        v, r = await self.endpoint.validate_protected_resource_request(
                 self.uri, headers=self.headers)
         self.assertTrue(v)
         self.validator.validate_timestamp_and_nonce.assert_called_once_with(

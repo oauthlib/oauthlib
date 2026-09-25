@@ -14,6 +14,7 @@ from binascii import b2a_base64
 from urllib.parse import urlparse
 
 from oauthlib import common
+from oauthlib.aio import maybe_await
 from oauthlib.common import add_params_to_qs, add_params_to_uri
 
 from . import utils
@@ -259,7 +260,7 @@ class TokenBase:
     def __call__(self, request, refresh_token=False):
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_request(self, request):
+    async def validate_request(self, request):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -289,7 +290,7 @@ class BearerToken(TokenBase):
         )
         self.expires_in = expires_in or 3600
 
-    def create_token(self, request, refresh_token=False, **kwargs):
+    async def create_token(self, request, refresh_token=False, **kwargs):
         """
         Create a BearerToken, by default without refresh token.
 
@@ -302,12 +303,13 @@ class BearerToken(TokenBase):
                           "If you do, call `request_validator.save_token()` instead.",
                           DeprecationWarning)
 
-        expires_in = self.expires_in(request) if callable(self.expires_in) else self.expires_in
+        expires_in = (await maybe_await(self.expires_in(request))
+                      if callable(self.expires_in) else self.expires_in)
 
         request.expires_in = expires_in
 
         token = {
-            'access_token': self.token_generator(request),
+            'access_token': await maybe_await(self.token_generator(request)),
             'expires_in': expires_in,
             'token_type': 'Bearer',
         }
@@ -320,21 +322,21 @@ class BearerToken(TokenBase):
 
         if refresh_token:
             if (request.refresh_token and
-                    not self.request_validator.rotate_refresh_token(request)):
+                    not await self.request_validator.rotate_refresh_token(request)):
                 token['refresh_token'] = request.refresh_token
             else:
-                token['refresh_token'] = self.refresh_token_generator(request)
+                token['refresh_token'] = await maybe_await(self.refresh_token_generator(request))
 
         token.update(request.extra_credentials or {})
         return OAuth2Token(token)
 
-    def validate_request(self, request):
+    async def validate_request(self, request):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
         token = get_token_from_header(request)
-        return self.request_validator.validate_bearer_token(
+        return await self.request_validator.validate_bearer_token(
             token, request.scopes, request)
 
     def estimate_type(self, request):

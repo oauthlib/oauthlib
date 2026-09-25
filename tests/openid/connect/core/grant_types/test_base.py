@@ -5,7 +5,7 @@ from unittest import mock
 from oauthlib.common import Request
 from oauthlib.openid.connect.core.grant_types.base import GrantTypeBase
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class GrantBase(GrantTypeBase):
@@ -28,7 +28,7 @@ class IDTokenTest(TestCase):
         self.request.state = 'abc'
         self.request.nonce = None
 
-        self.mock_validator = mock.MagicMock()
+        self.mock_validator = validator_mock()
         self.mock_validator.get_id_token.return_value = None
         self.mock_validator.finalize_id_token.return_value = "eyJ.body.signature"
         self.token = {}
@@ -43,60 +43,60 @@ class IDTokenTest(TestCase):
             "Qcb0Orv1zh30vL1MPRsbm-diHiMwcLyZvn1arpZv-Jxf_11jnpEX3Tgfvk",
         ), "LDktKdoQak3Pk0cnXxCltA", "hash differs from RFC")
 
-    def test_get_id_token_no_openid(self):
+    async def test_get_id_token_no_openid(self):
         self.request.scopes = ('hello')
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request)
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request)
         self.assertNotIn("id_token", token)
 
         self.request.scopes = None
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request)
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request)
         self.assertNotIn("id_token", token)
 
         self.request.scopes = ()
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request)
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request)
         self.assertNotIn("id_token", token)
 
-    def test_get_id_token(self):
+    async def test_get_id_token(self):
         self.mock_validator.get_id_token.return_value = "toto"
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request)
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request)
         self.assertIn("id_token", token)
         self.assertEqual(token["id_token"], "toto")
 
-    def test_finalize_id_token(self):
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request)
+    async def test_finalize_id_token(self):
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request)
         self.assertIn("id_token", token)
         self.assertEqual(token["id_token"], "eyJ.body.signature")
         id_token = self.mock_validator.finalize_id_token.call_args[0][0]
         self.assertEqual(id_token['aud'], 'abcdef')
         self.assertGreaterEqual(int(time.time()), id_token['iat'])
 
-    def test_finalize_id_token_with_nonce(self):
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request, "my_nonce")
+    async def test_finalize_id_token_with_nonce(self):
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request, "my_nonce")
         self.assertIn("id_token", token)
         self.assertEqual(token["id_token"], "eyJ.body.signature")
         id_token = self.mock_validator.finalize_id_token.call_args[0][0]
         self.assertEqual(id_token['nonce'], 'my_nonce')
 
-    def test_finalize_id_token_with_at_hash(self):
+    async def test_finalize_id_token_with_at_hash(self):
         self.token["access_token"] = "Qcb0Orv1zh30vL1MPRsbm-diHiMwcLyZvn1arpZv-Jxf_11jnpEX3Tgfvk"
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request)
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request)
         self.assertIn("id_token", token)
         self.assertEqual(token["id_token"], "eyJ.body.signature")
         id_token = self.mock_validator.finalize_id_token.call_args[0][0]
         self.assertEqual(id_token['at_hash'], 'LDktKdoQak3Pk0cnXxCltA')
 
-    def test_finalize_id_token_with_c_hash(self):
+    async def test_finalize_id_token_with_c_hash(self):
         self.token["code"] = "Qcb0Orv1zh30vL1MPRsbm-diHiMwcLyZvn1arpZv-Jxf_11jnpEX3Tgfvk"
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request)
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request)
         self.assertIn("id_token", token)
         self.assertEqual(token["id_token"], "eyJ.body.signature")
         id_token = self.mock_validator.finalize_id_token.call_args[0][0]
         self.assertEqual(id_token['c_hash'], 'LDktKdoQak3Pk0cnXxCltA')
 
-    def test_finalize_id_token_with_c_and_at_hash(self):
+    async def test_finalize_id_token_with_c_and_at_hash(self):
         self.token["code"] = "Qcb0Orv1zh30vL1MPRsbm-diHiMwcLyZvn1arpZv-Jxf_11jnpEX3Tgfvk"
         self.token["access_token"] = "Qcb0Orv1zh30vL1MPRsbm-diHiMwcLyZvn1arpZv-Jxf_11jnpEX3Tgfvk"
-        token = self.grant.add_id_token(self.token, "token_handler_mock", self.request)
+        token = await self.grant.add_id_token(self.token, "token_handler_mock", self.request)
         self.assertIn("id_token", token)
         self.assertEqual(token["id_token"], "eyJ.body.signature")
         id_token = self.mock_validator.finalize_id_token.call_args[0][0]

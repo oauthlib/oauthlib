@@ -11,7 +11,7 @@ from oauthlib.oauth2 import (
     RequestValidator, Server, WebApplicationServer,
 )
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 from .test_utils import get_fragment_credentials, get_query_credentials
 
@@ -39,7 +39,7 @@ class TestScopeHandling(TestCase):
         return True
 
     def setUp(self):
-        self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator = validator_mock(spec=RequestValidator)
         self.validator.get_default_redirect_uri.return_value = TestScopeHandling.DEFAULT_REDIRECT_URI
         self.validator.get_code_challenge.return_value = None
         self.validator.authenticate_client.side_effect = self.set_client
@@ -49,7 +49,7 @@ class TestScopeHandling(TestCase):
         self.legacy = LegacyApplicationServer(self.validator)
         self.backend = BackendApplicationServer(self.validator)
 
-    def test_scope_extraction(self):
+    async def test_scope_extraction(self):
         scopes = (
             ('images', ['images']),
             ('images+videos', ['images', 'videos']),
@@ -62,17 +62,17 @@ class TestScopeHandling(TestCase):
 
         uri = 'http://example.com/path?client_id=abc&scope=%s&response_type=%s'
         for scope, correct_scopes in scopes:
-            scopes, _ = self.web.validate_authorization_request(
+            scopes, _ = await self.web.validate_authorization_request(
                     uri % (scope, 'code'))
             self.assertCountEqual(scopes, correct_scopes)
-            scopes, _ = self.mobile.validate_authorization_request(
+            scopes, _ = await self.mobile.validate_authorization_request(
                     uri % (scope, 'token'))
             self.assertCountEqual(scopes, correct_scopes)
-            scopes, _ = self.server.validate_authorization_request(
+            scopes, _ = await self.server.validate_authorization_request(
                 uri % (scope, 'code'))
             self.assertCountEqual(scopes, correct_scopes)
 
-    def test_scope_preservation(self):
+    async def test_scope_preservation(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
         decoded_scope = 'pics http://a.b/videos'
         auth_uri = 'http://example.com/path?client_id=abc&response_type='
@@ -80,19 +80,19 @@ class TestScopeHandling(TestCase):
 
         # authorization grant
         for backend_server_type in ['web', 'server']:
-            h, _, s = getattr(self, backend_server_type).create_authorization_response(
+            h, _, s = await getattr(self, backend_server_type).create_authorization_response(
                     auth_uri + 'code', scopes=decoded_scope.split(' '))
             self.validator.validate_code.side_effect = self.set_scopes(decoded_scope.split(' '))
             self.assertEqual(s, 302)
             self.assertIn('Location', h)
             code = get_query_credentials(h['Location'])['code'][0]
-            _, body, _ = getattr(self, backend_server_type).create_token_response(token_uri,
+            _, body, _ = await getattr(self, backend_server_type).create_token_response(token_uri,
                     body='client_id=me&redirect_uri=http://back.to/me&grant_type=authorization_code&code=%s' % code)
             self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # implicit grant
         for backend_server_type in ['mobile', 'server']:
-            h, _, s = getattr(self, backend_server_type).create_authorization_response(
+            h, _, s = await getattr(self, backend_server_type).create_authorization_response(
                     auth_uri + 'token', scopes=decoded_scope.split(' '))
             self.assertEqual(s, 302)
             self.assertIn('Location', h)
@@ -102,7 +102,7 @@ class TestScopeHandling(TestCase):
         for backend_server_type in ['legacy', 'server']:
             body = 'grant_type=password&username=abc&password=secret&scope=%s'
 
-            _, body, _ = getattr(self, backend_server_type).create_token_response(token_uri,
+            _, body, _ = await getattr(self, backend_server_type).create_token_response(token_uri,
                     body=body % scope)
             self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
@@ -110,11 +110,11 @@ class TestScopeHandling(TestCase):
         for backend_server_type in ['backend', 'server']:
             body = 'grant_type=client_credentials&scope=%s'
             self.validator.authenticate_client.side_effect = self.set_user
-            _, body, _ = getattr(self, backend_server_type).create_token_response(token_uri,
+            _, body, _ = await getattr(self, backend_server_type).create_token_response(token_uri,
                     body=body % scope)
             self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
-    def test_scope_changed(self):
+    async def test_scope_changed(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
         scopes = ['images', 'http://a.b/videos']
         decoded_scope = 'images http://a.b/videos'
@@ -122,19 +122,19 @@ class TestScopeHandling(TestCase):
         token_uri = 'http://example.com/path'
 
         # authorization grant
-        h, _, s = self.web.create_authorization_response(
+        h, _, s = await self.web.create_authorization_response(
                 auth_uri + 'code', scopes=scopes)
         self.assertEqual(s, 302)
         self.assertIn('Location', h)
         code = get_query_credentials(h['Location'])['code'][0]
         self.validator.validate_code.side_effect = self.set_scopes(scopes)
-        _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = await self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=%s' % code)
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
         # implicit grant
         self.validator.validate_scopes.side_effect = self.set_scopes(scopes)
-        h, _, s = self.mobile.create_authorization_response(
+        h, _, s = await self.mobile.create_authorization_response(
                 auth_uri + 'token', scopes=scopes)
         self.assertEqual(s, 302)
         self.assertIn('Location', h)
@@ -143,7 +143,7 @@ class TestScopeHandling(TestCase):
         # resource owner password credentials grant
         self.validator.validate_scopes.side_effect = self.set_scopes(scopes)
         body = 'grant_type=password&username=abc&password=secret&scope=%s'
-        _, body, _ = self.legacy.create_token_response(token_uri,
+        _, body, _ = await self.legacy.create_token_response(token_uri,
                 body=body % scope)
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
@@ -151,12 +151,12 @@ class TestScopeHandling(TestCase):
         self.validator.validate_scopes.side_effect = self.set_scopes(scopes)
         self.validator.authenticate_client.side_effect = self.set_user
         body = 'grant_type=client_credentials&scope=%s'
-        _, body, _ = self.backend.create_token_response(token_uri,
+        _, body, _ = await self.backend.create_token_response(token_uri,
                 body=body % scope)
 
         self.assertEqual(json.loads(body)['scope'], decoded_scope)
 
-    def test_invalid_scope(self):
+    async def test_invalid_scope(self):
         scope = 'pics+http%3A%2f%2fa.b%2fvideos'
         auth_uri = 'http://example.com/path?client_id=abc&response_type='
         token_uri = 'http://example.com/path'
@@ -164,7 +164,7 @@ class TestScopeHandling(TestCase):
         self.validator.validate_scopes.return_value = False
 
         # authorization grant
-        h, _, s = self.web.create_authorization_response(
+        h, _, s = await self.web.create_authorization_response(
                 auth_uri + 'code', scopes=['invalid'])
         self.assertEqual(s, 302)
         self.assertIn('Location', h)
@@ -172,7 +172,7 @@ class TestScopeHandling(TestCase):
         self.assertEqual(error, 'invalid_scope')
 
         # implicit grant
-        h, _, s = self.mobile.create_authorization_response(
+        h, _, s = await self.mobile.create_authorization_response(
                 auth_uri + 'token', scopes=['invalid'])
         self.assertEqual(s, 302)
         self.assertIn('Location', h)
@@ -181,13 +181,13 @@ class TestScopeHandling(TestCase):
 
         # resource owner password credentials grant
         body = 'grant_type=password&username=abc&password=secret&scope=%s'
-        _, body, _ = self.legacy.create_token_response(token_uri,
+        _, body, _ = await self.legacy.create_token_response(token_uri,
                 body=body % scope)
         self.assertEqual(json.loads(body)['error'], 'invalid_scope')
 
         # client credentials grant
         self.validator.authenticate_client.side_effect = self.set_user
         body = 'grant_type=client_credentials&scope=%s'
-        _, body, _ = self.backend.create_token_response(token_uri,
+        _, body, _ = await self.backend.create_token_response(token_uri,
                 body=body % scope)
         self.assertEqual(json.loads(body)['error'], 'invalid_scope')

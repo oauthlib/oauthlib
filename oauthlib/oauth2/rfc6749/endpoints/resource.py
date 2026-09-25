@@ -59,7 +59,7 @@ class ResourceEndpoint(BaseEndpoint):
         return self._tokens
 
     @catch_errors_and_unavailability
-    def verify_request(self, uri, http_method='GET', body=None, headers=None,
+    async def verify_request(self, uri, http_method='GET', body=None, headers=None,
                        scopes=None):
         """Validate client, code etc, return body + headers"""
         request = Request(uri, http_method, body, headers)
@@ -69,7 +69,7 @@ class ResourceEndpoint(BaseEndpoint):
                                              self.default_token_type_handler)
         log.debug('Dispatching token_type %s request to %r.',
                   request.token_type, token_type_handler)
-        return token_type_handler.validate_request(request), request
+        return await token_type_handler.validate_request(request), request
 
     def find_token_type(self, request):
         """Token type identification.

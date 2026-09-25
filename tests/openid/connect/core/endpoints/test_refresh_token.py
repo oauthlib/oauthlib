@@ -10,13 +10,13 @@ from unittest import mock
 from oauthlib.openid import RequestValidator
 from oauthlib.openid.connect.core.endpoints.pre_configured import Server
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class TestRefreshToken(TestCase):
 
     def setUp(self):
-        self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator = validator_mock(spec=RequestValidator)
         self.validator.get_id_token.return_value='id_token'
 
         def set_client(request):
@@ -28,12 +28,12 @@ class TestRefreshToken(TestCase):
 
         self.server = Server(self.validator)
 
-    def test_refresh_token_with_openid(self):
+    async def test_refresh_token_with_openid(self):
         request_body = 'scope=openid+test_scope&grant_type=refresh_token&refresh_token=abc'
-        _headers, body, _status = self.server.create_token_response('', body=request_body)
+        _headers, body, _status = await self.server.create_token_response('', body=request_body)
         self.assertIn('id_token', json.loads(body))
 
-    def test_refresh_token_no_openid(self):
+    async def test_refresh_token_no_openid(self):
         request_body = 'scope=test_scope&grant_type=refresh_token&refresh_token=abc'
-        _headers, body, _status = self.server.create_token_response('', body=request_body)
+        _headers, body, _status = await self.server.create_token_response('', body=request_body)
         self.assertNotIn('id_token', json.loads(body))

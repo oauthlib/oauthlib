@@ -28,13 +28,13 @@ class AuthorizationCodeGrantDispatcher(Dispatcher):
         log.debug('Selecting handler for request %r.', handler)
         return handler
 
-    def create_authorization_response(self, request, token_handler):
+    async def create_authorization_response(self, request, token_handler):
         """Read scope and route to the designated handler."""
-        return self._handler_for_request(request).create_authorization_response(request, token_handler)
+        return await self._handler_for_request(request).create_authorization_response(request, token_handler)
 
-    def validate_authorization_request(self, request):
+    async def validate_authorization_request(self, request):
         """Read scope and route to the designated handler."""
-        return self._handler_for_request(request).validate_authorization_request(request)
+        return await self._handler_for_request(request).validate_authorization_request(request)
 
 
 class ImplicitTokenGrantDispatcher(Dispatcher):
@@ -57,13 +57,13 @@ class ImplicitTokenGrantDispatcher(Dispatcher):
         log.debug('Selecting handler for request %r.', handler)
         return handler
 
-    def create_authorization_response(self, request, token_handler):
+    async def create_authorization_response(self, request, token_handler):
         """Read scope and route to the designated handler."""
-        return self._handler_for_request(request).create_authorization_response(request, token_handler)
+        return await self._handler_for_request(request).create_authorization_response(request, token_handler)
 
-    def validate_authorization_request(self, request):
+    async def validate_authorization_request(self, request):
         """Read scope and route to the designated handler."""
-        return self._handler_for_request(request).validate_authorization_request(request)
+        return await self._handler_for_request(request).validate_authorization_request(request)
 
 
 class AuthorizationTokenGrantDispatcher(Dispatcher):
@@ -76,7 +76,7 @@ class AuthorizationTokenGrantDispatcher(Dispatcher):
         self.oidc_grant = oidc_grant
         self.request_validator = request_validator
 
-    def _handler_for_request(self, request):
+    async def _handler_for_request(self, request):
         handler = self.default_grant
         scopes = ()
         parameters = dict(request.decoded_body)
@@ -87,7 +87,7 @@ class AuthorizationTokenGrantDispatcher(Dispatcher):
         # If code is not present fallback to `default_grant` which will
         # raise an error for the missing `code` in `create_token_response` step.
         if code:
-            scopes = self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri, request)
+            scopes = await self.request_validator.get_authorization_code_scopes(client_id, code, redirect_uri, request)
 
         if 'openid' in scopes:
             handler = self.oidc_grant
@@ -95,7 +95,7 @@ class AuthorizationTokenGrantDispatcher(Dispatcher):
         log.debug('Selecting handler for request %r.', handler)
         return handler
 
-    def create_token_response(self, request, token_handler):
+    async def create_token_response(self, request, token_handler):
         """Read scope and route to the designated handler."""
-        handler = self._handler_for_request(request)
-        return handler.create_token_response(request, token_handler)
+        handler = await self._handler_for_request(request)
+        return await handler.create_token_response(request, token_handler)

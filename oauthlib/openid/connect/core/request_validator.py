@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 class RequestValidator(OAuth2RequestValidator):
 
-    def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
+    async def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
         """ Extracts scopes from saved authorization code.
 
         The scopes returned by this method is used to route token requests
@@ -37,7 +37,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_authorization_code_nonce(self, client_id, code, redirect_uri, request):
+    async def get_authorization_code_nonce(self, client_id, code, redirect_uri, request):
         """ Extracts nonce from saved authorization code.
 
         If present in the Authentication Request, Authorization
@@ -61,7 +61,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_jwt_bearer_token(self, token, token_handler, request):
+    async def get_jwt_bearer_token(self, token, token_handler, request):
         """Get JWT Bearer token or OpenID Connect ID token
 
         If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
@@ -77,7 +77,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_id_token(self, token, token_handler, request):
+    async def get_id_token(self, token, token_handler, request):
         """Get OpenID Connect ID token
 
         This method is OPTIONAL and is NOT RECOMMENDED.
@@ -116,7 +116,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         return None
 
-    def finalize_id_token(self, id_token, token, token_handler, request):
+    async def finalize_id_token(self, id_token, token, token_handler, request):
         """Finalize OpenID Connect ID token & Sign or Encrypt.
 
         In the OpenID Connect workflows when an ID Token is requested
@@ -159,7 +159,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_jwt_bearer_token(self, token, scopes, request):
+    async def validate_jwt_bearer_token(self, token, scopes, request):
         """Ensure the JWT Bearer token or OpenID Connect ID token are valids and authorized access to scopes.
 
         If using OpenID Connect this SHOULD call `oauthlib.oauth2.RequestValidator.get_id_token`
@@ -185,7 +185,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_id_token(self, token, scopes, request):
+    async def validate_id_token(self, token, scopes, request):
         """Ensure the id token is valid and authorized access to scopes.
 
         OpenID connect core 1.0 describe how to validate an id_token:
@@ -207,7 +207,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_silent_authorization(self, request):
+    async def validate_silent_authorization(self, request):
         """Ensure the logged in user has authorized silent OpenID authorization.
 
         Silent OpenID authorization allows access tokens and id tokens to be
@@ -224,7 +224,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_silent_login(self, request):
+    async def validate_silent_login(self, request):
         """Ensure session user has authorized silent OpenID login.
 
         If no user is logged in or has not authorized silent login, this
@@ -245,7 +245,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def validate_user_match(self, id_token_hint, scopes, claims, request):
+    async def validate_user_match(self, id_token_hint, scopes, claims, request):
         """Ensure client supplied user id hint matches session user.
 
         If the sub claim or id_token_hint is supplied then the session
@@ -265,7 +265,7 @@ class RequestValidator(OAuth2RequestValidator):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    def get_userinfo_claims(self, request):
+    async def get_userinfo_claims(self, request):
         """Return the UserInfo claims in JSON or Signed or Encrypted.
 
         The UserInfo Claims MUST be returned as the members of a JSON object
@@ -307,7 +307,7 @@ class RequestValidator(OAuth2RequestValidator):
             UserInfoEndpoint
         """
 
-    def refresh_id_token(self, request):
+    async def refresh_id_token(self, request):
         """Whether the id token should be refreshed. Default, True
 
         :param request: OAuthlib request.

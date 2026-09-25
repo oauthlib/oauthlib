@@ -14,13 +14,13 @@ from oauthlib.openid.connect.core.grant_types.dispatchers import (
 )
 from oauthlib.openid.connect.core.grant_types.implicit import ImplicitGrant
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class ImplicitTokenGrantDispatcherTest(TestCase):
     def setUp(self):
         self.request = Request('http://a.b/path')
-        request_validator = mock.MagicMock()
+        request_validator = validator_mock()
         implicit_grant = OAuth2ImplicitGrant(request_validator)
         openid_connect_implicit = ImplicitGrant(request_validator)
 
@@ -61,7 +61,7 @@ class DispatcherTest(TestCase):
             ("redirect_url", "https://a.b/cb"),
         )
 
-        self.request_validator = mock.MagicMock()
+        self.request_validator = validator_mock()
         self.auth_grant = OAuth2AuthorizationCodeGrant(self.request_validator)
         self.openid_connect_auth = AuthorizationCodeGrant(self.request_validator)
 
@@ -77,8 +77,8 @@ class AuthTokenGrantDispatcherOpenIdTest(DispatcherTest):
             oidc_grant=self.openid_connect_auth
         )
 
-    def test_create_token_response_openid(self):
-        handler = self.dispatcher._handler_for_request(self.request)
+    async def test_create_token_response_openid(self):
+        handler = await self.dispatcher._handler_for_request(self.request)
         self.assertIsInstance(handler, AuthorizationCodeGrant)
         self.assertTrue(self.dispatcher.request_validator.get_authorization_code_scopes.called)
 
@@ -99,8 +99,8 @@ class AuthTokenGrantDispatcherOpenIdWithoutCodeTest(DispatcherTest):
             oidc_grant=self.openid_connect_auth
         )
 
-    def test_create_token_response_openid_without_code(self):
-        handler = self.dispatcher._handler_for_request(self.request)
+    async def test_create_token_response_openid_without_code(self):
+        handler = await self.dispatcher._handler_for_request(self.request)
         self.assertIsInstance(handler, OAuth2AuthorizationCodeGrant)
         self.assertFalse(self.dispatcher.request_validator.get_authorization_code_scopes.called)
 
@@ -116,7 +116,7 @@ class AuthTokenGrantDispatcherOAuthTest(DispatcherTest):
             oidc_grant=self.openid_connect_auth
         )
 
-    def test_create_token_response_oauth(self):
-        handler = self.dispatcher._handler_for_request(self.request)
+    async def test_create_token_response_oauth(self):
+        handler = await self.dispatcher._handler_for_request(self.request)
         self.assertIsInstance(handler, OAuth2AuthorizationCodeGrant)
         self.assertTrue(self.dispatcher.request_validator.get_authorization_code_scopes.called)

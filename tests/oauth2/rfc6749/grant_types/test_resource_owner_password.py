@@ -9,7 +9,7 @@ from oauthlib.oauth2.rfc6749.grant_types import (
 )
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
@@ -23,7 +23,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         self.request.password = 'doe'
         self.request.client = mock_client
         self.request.scopes = ('mocked', 'scopes')
-        self.mock_validator = mock.MagicMock()
+        self.mock_validator = validator_mock()
         self.auth = ResourceOwnerPasswordCredentialsGrant(
                 request_validator=self.mock_validator)
 
@@ -32,9 +32,9 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         request.client.client_id = 'mocked'
         return True
 
-    def test_create_token_response(self):
+    async def test_create_token_response(self):
         bearer = BearerToken(self.mock_validator)
-        _headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = await self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -48,7 +48,7 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         self.mock_validator.reset_mock()
         self.mock_validator.validate_user.return_value = True
         self.mock_validator.authenticate_client.return_value = False
-        status_code = self.auth.create_token_response(self.request, bearer)[2]
+        status_code = (await self.auth.create_token_response(self.request, bearer))[2]
         self.assertEqual(status_code, 401)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
 
@@ -56,16 +56,16 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         self.mock_validator.reset_mock()
         self.mock_validator.client_authentication_required.return_value = False
         self.mock_validator.authenticate_client_id.return_value = False
-        status_code = self.auth.create_token_response(self.request, bearer)[2]
+        status_code = (await self.auth.create_token_response(self.request, bearer))[2]
         self.assertEqual(status_code, 401)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
 
-    def test_create_token_response_without_refresh_token(self):
+    async def test_create_token_response_without_refresh_token(self):
         # self.auth.refresh_token = False so we don't generate a refresh token
         self.auth = ResourceOwnerPasswordCredentialsGrant(
                 request_validator=self.mock_validator, refresh_token=False)
         bearer = BearerToken(self.mock_validator)
-        _headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = await self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -80,14 +80,14 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         self.mock_validator.reset_mock()
         self.mock_validator.validate_user.return_value = True
         self.mock_validator.authenticate_client.return_value = False
-        status_code = self.auth.create_token_response(self.request, bearer)[2]
+        status_code = (await self.auth.create_token_response(self.request, bearer))[2]
         self.assertEqual(status_code, 401)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
         # mock client_authentication_required() returning False then fail
         self.mock_validator.reset_mock()
         self.mock_validator.client_authentication_required.return_value = False
         self.mock_validator.authenticate_client_id.return_value = False
-        status_code = self.auth.create_token_response(self.request, bearer)[2]
+        status_code = (await self.auth.create_token_response(self.request, bearer))[2]
         self.assertEqual(status_code, 401)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
 
@@ -109,13 +109,13 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
         with self.assertRaises(AttributeError):
             self.auth.custom_validators.pre_auth.append(authval2)
 
-    def test_custom_token_validators(self):
+    async def test_custom_token_validators(self):
         tknval1, tknval2 = mock.Mock(), mock.Mock()
         self.auth.custom_validators.pre_token.append(tknval1)
         self.auth.custom_validators.post_token.append(tknval2)
 
         bearer = BearerToken(self.mock_validator)
-        self.auth.create_token_response(self.request, bearer)
+        await self.auth.create_token_response(self.request, bearer)
         self.assertTrue(tknval1.called)
         self.assertTrue(tknval2.called)
 
@@ -125,32 +125,32 @@ class ResourceOwnerPasswordCredentialsGrantTest(TestCase):
     def test_scopes(self):
         pass
 
-    def test_invalid_request_missing_params(self):
+    async def test_invalid_request_missing_params(self):
         del self.request.grant_type
-        self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
+        await self.assertRaisesAsync(errors.InvalidRequestError, self.auth.validate_token_request,
                           self.request)
 
-    def test_invalid_request_duplicates(self):
+    async def test_invalid_request_duplicates(self):
         request = mock.MagicMock(wraps=self.request)
         request.duplicate_params = ['scope']
-        self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
+        await self.assertRaisesAsync(errors.InvalidRequestError, self.auth.validate_token_request,
                           request)
 
-    def test_invalid_grant_type(self):
+    async def test_invalid_grant_type(self):
         self.request.grant_type = 'foo'
-        self.assertRaises(errors.UnsupportedGrantTypeError,
+        await self.assertRaisesAsync(errors.UnsupportedGrantTypeError,
                           self.auth.validate_token_request, self.request)
 
-    def test_invalid_user(self):
+    async def test_invalid_user(self):
         self.mock_validator.validate_user.return_value = False
-        self.assertRaises(errors.InvalidGrantError, self.auth.validate_token_request,
+        await self.assertRaisesAsync(errors.InvalidGrantError, self.auth.validate_token_request,
                           self.request)
 
-    def test_client_id_missing(self):
+    async def test_client_id_missing(self):
         del self.request.client.client_id
-        self.assertRaises(NotImplementedError, self.auth.validate_token_request,
+        await self.assertRaisesAsync(NotImplementedError, self.auth.validate_token_request,
                           self.request)
 
-    def test_valid_token_request(self):
+    async def test_valid_token_request(self):
         self.mock_validator.validate_grant_type.return_value = True
-        self.auth.validate_token_request(self.request)
+        await self.auth.validate_token_request(self.request)

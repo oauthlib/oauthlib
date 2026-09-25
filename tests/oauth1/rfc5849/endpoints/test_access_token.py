@@ -1,16 +1,17 @@
+from unittest import mock
 from unittest.mock import ANY, MagicMock
 
 from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import Client
 from oauthlib.oauth1.rfc5849.endpoints import AccessTokenEndpoint
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, oauth1_validator_mock
 
 
 class AccessTokenEndpointTest(TestCase):
 
     def setUp(self):
-        self.validator = MagicMock(wraps=RequestValidator())
+        self.validator = oauth1_validator_mock(wraps=RequestValidator())
         self.validator.check_client_key.return_value = True
         self.validator.check_request_token.return_value = True
         self.validator.check_verifier.return_value = True
@@ -27,7 +28,7 @@ class AccessTokenEndpointTest(TestCase):
         self.validator.dummy_client = 'dummy'
         self.validator.dummy_secret = 'dummy'
         self.validator.dummy_request_token = 'dummy'
-        self.validator.save_access_token = MagicMock()
+        self.validator.save_access_token = mock.AsyncMock()
         self.endpoint = AccessTokenEndpoint(self.validator)
         self.client = Client('foo',
                 client_secret='bar',
@@ -37,50 +38,50 @@ class AccessTokenEndpointTest(TestCase):
         self.uri, self.headers, self.body = self.client.sign(
                 'https://i.b/access_token')
 
-    def test_check_request_token(self):
+    async def test_check_request_token(self):
         self.validator.check_request_token.return_value = False
-        _h, b, s = self.endpoint.create_access_token_response(
+        _h, b, s = await self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
-    def test_check_verifier(self):
+    async def test_check_verifier(self):
         self.validator.check_verifier.return_value = False
-        _h, b, s = self.endpoint.create_access_token_response(
+        _h, b, s = await self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
-    def test_validate_client_key(self):
+    async def test_validate_client_key(self):
         self.validator.validate_client_key.return_value = False
-        _h, _b, s = self.endpoint.create_access_token_response(
+        _h, _b, s = await self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
-    def test_validate_request_token(self):
+    async def test_validate_request_token(self):
         self.validator.validate_request_token.return_value = False
-        _h, _b, s = self.endpoint.create_access_token_response(
+        _h, _b, s = await self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
-    def test_validate_verifier(self):
+    async def test_validate_verifier(self):
         self.validator.validate_verifier.return_value = False
-        _h, _b, s = self.endpoint.create_access_token_response(
+        _h, _b, s = await self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
-    def test_validate_signature(self):
+    async def test_validate_signature(self):
         client = Client('foo',
                 resource_owner_key='token',
                 resource_owner_secret='secret',
                 verifier='verifier')
         _, headers, _ = client.sign(self.uri + '/extra')
-        _h, _b, s = self.endpoint.create_access_token_response(
+        _h, _b, s = await self.endpoint.create_access_token_response(
                 self.uri, headers=headers)
         self.assertEqual(s, 401)
 
-    def test_valid_request(self):
-        _h, b, s = self.endpoint.create_access_token_response(
+    async def test_valid_request(self):
+        _h, b, s = await self.endpoint.create_access_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 200)
         self.assertIn('oauth_token', b)

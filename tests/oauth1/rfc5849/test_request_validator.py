@@ -6,42 +6,42 @@ from tests.unittest import TestCase
 
 class RequestValidatorTests(TestCase):
 
-    def test_not_implemented(self):
+    async def test_not_implemented(self):
         v = RequestValidator()
-        self.assertRaises(NotImplementedError, v.get_client_secret, None, None)
-        self.assertRaises(NotImplementedError, v.get_request_token_secret,
+        await self.assertRaisesAsync(NotImplementedError, v.get_client_secret, None, None)
+        await self.assertRaisesAsync(NotImplementedError, v.get_request_token_secret,
                 None, None, None)
-        self.assertRaises(NotImplementedError, v.get_access_token_secret,
+        await self.assertRaisesAsync(NotImplementedError, v.get_access_token_secret,
                 None, None, None)
         self.assertRaises(NotImplementedError, lambda: v.dummy_client)
         self.assertRaises(NotImplementedError, lambda: v.dummy_request_token)
         self.assertRaises(NotImplementedError, lambda: v.dummy_access_token)
-        self.assertRaises(NotImplementedError, v.get_rsa_key, None, None)
-        self.assertRaises(NotImplementedError, v.get_default_realms, None, None)
-        self.assertRaises(NotImplementedError, v.get_realms, None, None)
-        self.assertRaises(NotImplementedError, v.get_redirect_uri, None, None)
-        self.assertRaises(NotImplementedError, v.validate_client_key, None, None)
-        self.assertRaises(NotImplementedError, v.validate_access_token,
+        await self.assertRaisesAsync(NotImplementedError, v.get_rsa_key, None, None)
+        await self.assertRaisesAsync(NotImplementedError, v.get_default_realms, None, None)
+        await self.assertRaisesAsync(NotImplementedError, v.get_realms, None, None)
+        await self.assertRaisesAsync(NotImplementedError, v.get_redirect_uri, None, None)
+        await self.assertRaisesAsync(NotImplementedError, v.validate_client_key, None, None)
+        await self.assertRaisesAsync(NotImplementedError, v.validate_access_token,
                 None, None, None)
-        self.assertRaises(NotImplementedError, v.validate_request_token,
+        await self.assertRaisesAsync(NotImplementedError, v.validate_request_token,
                 None, None, None)
-        self.assertRaises(NotImplementedError, v.verify_request_token,
+        await self.assertRaisesAsync(NotImplementedError, v.verify_request_token,
                 None, None)
-        self.assertRaises(NotImplementedError, v.verify_realms,
+        await self.assertRaisesAsync(NotImplementedError, v.verify_realms,
                 None, None, None)
-        self.assertRaises(NotImplementedError, v.validate_timestamp_and_nonce,
+        await self.assertRaisesAsync(NotImplementedError, v.validate_timestamp_and_nonce,
             None, None, None, None)
-        self.assertRaises(NotImplementedError, v.validate_redirect_uri,
+        await self.assertRaisesAsync(NotImplementedError, v.validate_redirect_uri,
                 None, None, None)
-        self.assertRaises(NotImplementedError, v.validate_realms,
+        await self.assertRaisesAsync(NotImplementedError, v.validate_realms,
                 None, None, None, None, None)
-        self.assertRaises(NotImplementedError, v.validate_requested_realms,
+        await self.assertRaisesAsync(NotImplementedError, v.validate_requested_realms,
                 None, None, None)
-        self.assertRaises(NotImplementedError, v.validate_verifier,
+        await self.assertRaisesAsync(NotImplementedError, v.validate_verifier,
                 None, None, None, None)
-        self.assertRaises(NotImplementedError, v.save_access_token, None, None)
-        self.assertRaises(NotImplementedError, v.save_request_token, None, None)
-        self.assertRaises(NotImplementedError, v.save_verifier,
+        await self.assertRaisesAsync(NotImplementedError, v.save_access_token, None, None)
+        await self.assertRaisesAsync(NotImplementedError, v.save_request_token, None, None)
+        await self.assertRaisesAsync(NotImplementedError, v.save_verifier,
                 None, None, None)
 
     def test_check_length(self):

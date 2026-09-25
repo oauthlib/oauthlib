@@ -7,6 +7,9 @@ from oauthlib import common
 from oauthlib.oauth2.rfc8628.grant_types import DeviceCodeGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
+from tests.unittest import validator_mock
+
+
 def create_request(body: str = "") -> common.Request:
     request = common.Request("http://a.b/path", body=body or None)
     request.scopes = ("hello", "world")
@@ -26,7 +29,7 @@ def create_device_code_grant(mock_validator: mock.MagicMock) -> DeviceCodeGrant:
 
 def test_custom_auth_validators_unsupported():
     custom_validator = mock.Mock()
-    validator = mock.MagicMock()
+    validator = validator_mock()
 
     expected = (
         "DeviceCodeGrant does not "
@@ -44,10 +47,10 @@ def test_custom_auth_validators_unsupported():
         auth.custom_validators.pre_auth.append(custom_validator)
 
 
-def test_custom_pre_and_post_token_validators():
+async def test_custom_pre_and_post_token_validators():
     client = mock.MagicMock()
 
-    validator = mock.MagicMock()
+    validator = validator_mock()
     pre_token_validator = mock.Mock()
     post_token_validator = mock.Mock()
 
@@ -61,14 +64,14 @@ def test_custom_pre_and_post_token_validators():
     auth.custom_validators.post_token.append(post_token_validator)
 
     bearer = BearerToken(validator)
-    auth.create_token_response(request, bearer)
+    await auth.create_token_response(request, bearer)
 
     pre_token_validator.assert_called()
     post_token_validator.assert_called()
 
 
-def test_create_token_response():
-    validator = mock.MagicMock()
+async def test_create_token_response():
+    validator = validator_mock()
     request: common.Request = create_request()
     request.client = mock.Mock()
     request.client.client_id = request.client_id
@@ -77,7 +80,7 @@ def test_create_token_response():
 
     bearer = BearerToken(validator)
 
-    headers, body, status_code = auth.create_token_response(request, bearer)
+    headers, body, status_code = await auth.create_token_response(request, bearer)
     token = json.loads(body)
 
     assert headers == {
@@ -101,8 +104,8 @@ def test_create_token_response():
     validator.save_token.assert_called_once()
 
 
-def test_invalid_client_authentication_error_confidential_client():
-    validator = mock.MagicMock()
+async def test_invalid_client_authentication_error_confidential_client():
+    validator = validator_mock()
     request: common.Request = create_request()
     request.client = mock.Mock()
 
@@ -113,7 +116,7 @@ def test_invalid_client_authentication_error_confidential_client():
     validator.client_authentication_required.return_value = True
     validator.authenticate_client.return_value = False
 
-    headers, body, status_code = auth.create_token_response(request, bearer)
+    headers, body, status_code = await auth.create_token_response(request, bearer)
     body = json.loads(body)
 
     assert headers == {
@@ -128,8 +131,8 @@ def test_invalid_client_authentication_error_confidential_client():
     validator.save_token.assert_not_called()
 
 
-def test_invalid_client_authentication_error_public_client():
-    validator = mock.MagicMock()
+async def test_invalid_client_authentication_error_public_client():
+    validator = validator_mock()
     request: common.Request = create_request()
     request.client = mock.Mock()
 
@@ -140,7 +143,7 @@ def test_invalid_client_authentication_error_public_client():
     validator.client_authentication_required.return_value = False
     validator.authenticate_client_id.return_value = False
 
-    headers, body, status_code = auth.create_token_response(request, bearer)
+    headers, body, status_code = await auth.create_token_response(request, bearer)
     body = json.loads(body)
 
     assert headers == {
@@ -155,8 +158,8 @@ def test_invalid_client_authentication_error_public_client():
     validator.save_token.assert_not_called()
 
 
-def test_invalid_grant_type_error():
-    validator = mock.MagicMock()
+async def test_invalid_grant_type_error():
+    validator = validator_mock()
     request: common.Request = create_request()
     request.client = mock.Mock()
 
@@ -165,7 +168,7 @@ def test_invalid_grant_type_error():
     auth = DeviceCodeGrant(validator)
     bearer = BearerToken(validator)
 
-    headers, body, status_code = auth.create_token_response(request, bearer)
+    headers, body, status_code = await auth.create_token_response(request, bearer)
     body = json.loads(body)
 
     assert headers == {
@@ -179,8 +182,8 @@ def test_invalid_grant_type_error():
     validator.save_token.assert_not_called()
 
 
-def test_duplicate_params_error():
-    validator = mock.MagicMock()
+async def test_duplicate_params_error():
+    validator = validator_mock()
     request: common.Request = create_request(
         "client_id=123&scope=openid&scope=openid"
     )
@@ -189,7 +192,7 @@ def test_duplicate_params_error():
     auth = DeviceCodeGrant(validator)
     bearer = BearerToken(validator)
 
-    headers, body, status_code = auth.create_token_response(request, bearer)
+    headers, body, status_code = await auth.create_token_response(request, bearer)
     body = json.loads(body)
 
     assert headers == {

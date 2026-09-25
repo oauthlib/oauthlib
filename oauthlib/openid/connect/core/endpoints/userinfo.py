@@ -26,7 +26,7 @@ class UserInfoEndpoint(BaseEndpoint):
         BaseEndpoint.__init__(self)
 
     @catch_errors_and_unavailability
-    def create_userinfo_response(self, uri, http_method='GET', body=None, headers=None):
+    async def create_userinfo_response(self, uri, http_method='GET', body=None, headers=None):
         """Validate BearerToken and return userinfo from RequestValidator
 
         The UserInfo Endpoint MUST return a
@@ -37,9 +37,9 @@ class UserInfoEndpoint(BaseEndpoint):
         """
         request = Request(uri, http_method, body, headers)
         request.scopes = ["openid"]
-        self.validate_userinfo_request(request)
+        await self.validate_userinfo_request(request)
 
-        claims = self.request_validator.get_userinfo_claims(request)
+        claims = await self.request_validator.get_userinfo_claims(request)
         if claims is None:
             log.error('Userinfo MUST have claims for %r.', request)
             raise errors.ServerError(status_code=500)
@@ -63,7 +63,7 @@ class UserInfoEndpoint(BaseEndpoint):
         log.debug('Userinfo access valid for %r.', request)
         return resp_headers, body, 200
 
-    def validate_userinfo_request(self, request):
+    async def validate_userinfo_request(self, request):
         """Ensure the request is valid.
 
         5.3.1.  UserInfo Request
@@ -100,7 +100,7 @@ class UserInfoEndpoint(BaseEndpoint):
         .. _`Section 2`: https://datatracker.ietf.org/doc/html/rfc6750#section-2
         .. _`Section 3`: https://datatracker.ietf.org/doc/html/rfc6750#section-3
         """
-        if not self.bearer.validate_request(request):
+        if not await self.bearer.validate_request(request):
             raise errors.InvalidTokenError()
         if "openid" not in request.scopes:
             raise errors.InsufficientScopeError()

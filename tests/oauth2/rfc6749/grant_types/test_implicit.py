@@ -5,7 +5,7 @@ from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class ImplicitGrantTest(TestCase):
@@ -21,14 +21,14 @@ class ImplicitGrantTest(TestCase):
         self.request.state = 'xyz'
         self.request.redirect_uri = 'https://b.c/p'
 
-        self.mock_validator = mock.MagicMock()
+        self.mock_validator = validator_mock()
         self.auth = ImplicitGrant(request_validator=self.mock_validator)
 
     @mock.patch('oauthlib.common.generate_token')
-    def test_create_token_response(self, generate_token):
+    async def test_create_token_response(self, generate_token):
         generate_token.return_value = '1234'
         bearer = BearerToken(self.mock_validator, expires_in=1800)
-        h, _b, s = self.auth.create_token_response(self.request, bearer)
+        h, _b, s = await self.auth.create_token_response(self.request, bearer)
         correct_uri = 'https://b.c/p#access_token=1234&token_type=Bearer&expires_in=1800&state=xyz&scope=hello+world'
         self.assertEqual(s, 302)
         self.assertURLEqual(h['Location'], correct_uri, parse_fragment=True)
@@ -36,10 +36,10 @@ class ImplicitGrantTest(TestCase):
 
         correct_uri = 'https://b.c/p?access_token=1234&token_type=Bearer&expires_in=1800&state=xyz&scope=hello+world'
         self.request.response_mode = 'query'
-        h, _b, s = self.auth.create_token_response(self.request, bearer)
+        h, _b, s = await self.auth.create_token_response(self.request, bearer)
         self.assertURLEqual(h['Location'], correct_uri)
 
-    def test_custom_validators(self):
+    async def test_custom_validators(self):
         self.authval1, self.authval2 = mock.Mock(), mock.Mock()
         self.tknval1, self.tknval2 = mock.Mock(), mock.Mock()
         for val in (self.authval1, self.authval2):
@@ -52,7 +52,7 @@ class ImplicitGrantTest(TestCase):
         self.auth.custom_validators.post_auth.append(self.authval2)
 
         bearer = BearerToken(self.mock_validator)
-        self.auth.create_token_response(self.request, bearer)
+        await self.auth.create_token_response(self.request, bearer)
         self.assertTrue(self.tknval1.called)
         self.assertTrue(self.tknval2.called)
         self.assertTrue(self.authval1.called)

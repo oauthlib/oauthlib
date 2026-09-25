@@ -5,10 +5,12 @@ oauthlib.oauth1.rfc5849
 This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
 """
+from oauthlib.aio import AsyncInterfaceMixin
+
 from . import SIGNATURE_METHODS, utils
 
 
-class RequestValidator:
+class RequestValidator(AsyncInterfaceMixin):
 
     """A validator/datastore interaction base class for OAuth 1 providers.
 
@@ -258,7 +260,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("dummy_access_token")
 
-    def get_client_secret(self, client_key, request):
+    async def get_client_secret(self, client_key, request):
         """Retrieves the client secret associated with the client key.
 
         :param client_key: The client/consumer key.
@@ -294,7 +296,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement('get_client_secret')
 
-    def get_request_token_secret(self, client_key, token, request):
+    async def get_request_token_secret(self, client_key, token, request):
         """Retrieves the shared secret associated with the request token.
 
         :param client_key: The client/consumer key.
@@ -327,7 +329,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement('get_request_token_secret')
 
-    def get_access_token_secret(self, client_key, token, request):
+    async def get_access_token_secret(self, client_key, token, request):
         """Retrieves the shared secret associated with the access token.
 
         :param client_key: The client/consumer key.
@@ -360,7 +362,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("get_access_token_secret")
 
-    def get_default_realms(self, client_key, request):
+    async def get_default_realms(self, client_key, request):
         """Get the default realms for a client.
 
         :param client_key: The client/consumer key.
@@ -377,7 +379,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("get_default_realms")
 
-    def get_realms(self, token, request):
+    async def get_realms(self, token, request):
         """Get realms associated with a request token.
 
         :param token: The request token string.
@@ -392,7 +394,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("get_realms")
 
-    def get_redirect_uri(self, token, request):
+    async def get_redirect_uri(self, token, request):
         """Get the redirect URI associated with a request token.
 
         :param token: The request token string.
@@ -410,7 +412,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("get_redirect_uri")
 
-    def get_rsa_key(self, client_key, request):
+    async def get_rsa_key(self, client_key, request):
         """Retrieves a previously stored client provided RSA key.
 
         :param client_key: The client/consumer key.
@@ -434,7 +436,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("get_rsa_key")
 
-    def invalidate_request_token(self, client_key, request_token, request):
+    async def invalidate_request_token(self, client_key, request_token, request):
         """Invalidates a used request token.
 
         :param client_key: The client/consumer key.
@@ -461,7 +463,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("invalidate_request_token")
 
-    def validate_client_key(self, client_key, request):
+    async def validate_client_key(self, client_key, request):
         """Validates that supplied client key is a registered and valid client.
 
         :param client_key: The client/consumer key.
@@ -498,7 +500,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_client_key")
 
-    def validate_request_token(self, client_key, token, request):
+    async def validate_request_token(self, client_key, token, request):
         """Validates that supplied request token is registered and valid.
 
         :param client_key: The client/consumer key.
@@ -533,7 +535,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_request_token")
 
-    def validate_access_token(self, client_key, token, request):
+    async def validate_access_token(self, client_key, token, request):
         """Validates that supplied access token is registered and valid.
 
         :param client_key: The client/consumer key.
@@ -568,7 +570,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_access_token")
 
-    def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+    async def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
                                      request, request_token=None, access_token=None):
         """Validates that the nonce has not been used before.
 
@@ -604,7 +606,7 @@ class RequestValidator:
               (u'foo', 1234567890, u'rannoMstrInghere', u'bar')
            ]
 
-           def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+           async def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
               request_token=None, access_token=None):
 
               return ((client_key, timestamp, nonce, request_token or access_token)
@@ -619,7 +621,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_timestamp_and_nonce")
 
-    def validate_redirect_uri(self, client_key, redirect_uri, request):
+    async def validate_redirect_uri(self, client_key, redirect_uri, request):
         """Validates the client supplied redirection URI.
 
         :param client_key: The client/consumer key.
@@ -653,7 +655,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_redirect_uri")
 
-    def validate_requested_realms(self, client_key, realms, request):
+    async def validate_requested_realms(self, client_key, realms, request):
         """Validates that the client may request access to the realm.
 
         :param client_key: The client/consumer key.
@@ -672,7 +674,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_requested_realms")
 
-    def validate_realms(self, client_key, token, request, uri=None,
+    async def validate_realms(self, client_key, token, request, uri=None,
                         realms=None):
         """Validates access to the request realm.
 
@@ -707,7 +709,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_realms")
 
-    def validate_verifier(self, client_key, token, verifier, request):
+    async def validate_verifier(self, client_key, token, verifier, request):
         """Validates a verification code.
 
         :param client_key: The client/consumer key.
@@ -739,7 +741,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("validate_verifier")
 
-    def verify_request_token(self, token, request):
+    async def verify_request_token(self, token, request):
         """Verify that the given OAuth1 request token is valid.
 
         :param token: A request token string.
@@ -758,7 +760,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("verify_request_token")
 
-    def verify_realms(self, token, realms, request):
+    async def verify_realms(self, token, realms, request):
         """Verify authorized realms to see if they match those given to token.
 
         :param token: An access token string.
@@ -782,7 +784,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("verify_realms")
 
-    def save_access_token(self, token, request):
+    async def save_access_token(self, token, request):
         """Save an OAuth1 access token.
 
         :param token: A dict with token credentials.
@@ -806,7 +808,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("save_access_token")
 
-    def save_request_token(self, token, request):
+    async def save_request_token(self, token, request):
         """Save an OAuth1 request token.
 
         :param token: A dict with token credentials.
@@ -827,7 +829,7 @@ class RequestValidator:
         """
         raise self._subclass_must_implement("save_request_token")
 
-    def save_verifier(self, token, verifier, request):
+    async def save_verifier(self, token, verifier, request):
         """Associate an authorization verifier with a request token.
 
         :param token: A request token string.

@@ -8,6 +8,7 @@ import hmac
 import json
 import logging
 
+from oauthlib.aio import maybe_await
 from oauthlib import common
 
 from .. import errors
@@ -173,7 +174,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                   grant, request)
         return grant
 
-    def create_authorization_response(self, request, token_handler):
+    async def create_authorization_response(self, request, token_handler):
         """
         The client constructs the request URI by adding the following
         parameters to the query component of the authorization endpoint URI
@@ -219,20 +220,20 @@ class AuthorizationCodeGrant(GrantTypeBase):
             >>> token = BearerToken(your_validator)
             >>> grant = AuthorizationCodeGrant(your_validator)
             >>> request.scopes = ['authorized', 'in', 'some', 'form']
-            >>> grant.create_authorization_response(request, token)
+            >>> await grant.create_authorization_response(request, token)
             (u'http://client.com/?error=invalid_request&error_description=Missing+response_type+parameter.', None, None, 400)
             >>> request = Request('https://example.com/authorize?client_id=valid'
             ...                   '&redirect_uri=http%3A%2F%2Fclient.com%2F'
             ...                   '&response_type=code')
             >>> request.scopes = ['authorized', 'in', 'some', 'form']
-            >>> grant.create_authorization_response(request, token)
+            >>> await grant.create_authorization_response(request, token)
             (u'http://client.com/?code=u3F05aEObJuP2k7DordviIgW5wl52N', None, None, 200)
             >>> # If the client id or redirect uri fails validation
-            >>> grant.create_authorization_response(request, token)
+            >>> await grant.create_authorization_response(request, token)
             Traceback (most recent call last):
                 File "<stdin>", line 1, in <module>
                 File "oauthlib/oauth2/rfc6749/grant_types.py", line 515, in create_authorization_response
-                    >>> grant.create_authorization_response(request, token)
+                    >>> await grant.create_authorization_response(request, token)
                 File "oauthlib/oauth2/rfc6749/grant_types.py", line 591, in validate_authorization_request
             oauthlib.oauth2.rfc6749.errors.InvalidClientIdError
 
@@ -243,7 +244,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
         """
         try:
-            self.validate_authorization_request(request)
+            await self.validate_authorization_request(request)
             log.debug('Pre resource owner authorization validation ok for %r.',
                       request)
 
@@ -273,16 +274,16 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         grant = self.create_authorization_code(request)
         for modifier in self._code_modifiers:
-            grant = modifier(grant, token_handler, request)
+            grant = await maybe_await(modifier(grant, token_handler, request))
         if 'access_token' in grant:
-            self.request_validator.save_token(grant, request)
+            await self.request_validator.save_token(grant, request)
         log.debug('Saving grant %r for %r.', grant, request)
-        self.request_validator.save_authorization_code(
+        await self.request_validator.save_authorization_code(
             request.client_id, grant, request)
         return self.prepare_authorization_response(
             request, grant, {}, None, 302)
 
-    def create_token_response(self, request, token_handler):
+    async def create_token_response(self, request, token_handler):
         """Validate the authorization code.
 
         The client MUST NOT use the authorization code more than once. If an
@@ -299,25 +300,25 @@ class AuthorizationCodeGrant(GrantTypeBase):
         """
         headers = self._get_default_headers()
         try:
-            self.validate_token_request(request)
+            await self.validate_token_request(request)
             log.debug('Token request validation ok for %r.', request)
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=self.refresh_token)
+        token = await token_handler.create_token(request, refresh_token=self.refresh_token)
 
         for modifier in self._token_modifiers:
-            token = modifier(token, token_handler, request)
+            token = await maybe_await(modifier(token, token_handler, request))
 
-        self.request_validator.save_token(token, request)
-        self.request_validator.invalidate_authorization_code(
+        await self.request_validator.save_token(token, request)
+        await self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
-        headers.update(self._create_cors_headers(request))
+        headers.update(await self._create_cors_headers(request))
         return headers, json.dumps(token), 200
 
-    def validate_authorization_request(self, request):
+    async def validate_authorization_request(self, request):
         """Check the authorization request for normal and fatal errors.
 
         A normal error could be a missing response_type parameter or the client
@@ -356,7 +357,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
 
-        if not self.request_validator.validate_client_id(request.client_id, request):
+        if not await self.request_validator.validate_client_id(request.client_id, request):
             raise errors.InvalidClientIdError(request=request)
 
         # OPTIONAL. As described in Section 3.1.2.
@@ -366,7 +367,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # OPTIONAL. As described in Section 3.1.2.
         # https://tools.ietf.org/html/rfc6749#section-3.1.2
-        self._handle_redirects(request)
+        await self._handle_redirects(request)
 
         # Then check for normal errors.
 
@@ -382,7 +383,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         request_info = {}
         for validator in self.custom_validators.pre_auth:
-            request_info.update(validator(request))
+            request_info.update(await maybe_await(validator(request)))
 
         # REQUIRED.
         if request.response_type is None:
@@ -392,7 +393,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         elif 'code' not in request.response_type and request.response_type != 'none':
             raise errors.UnsupportedResponseTypeError(request=request)
 
-        if not self.request_validator.validate_response_type(request.client_id,
+        if not await self.request_validator.validate_response_type(request.client_id,
                                                              request.response_type,
                                                              request.client, request):
 
@@ -402,7 +403,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # OPTIONAL. Validate PKCE request or reply with "error"/"invalid_request"
         # https://tools.ietf.org/html/rfc6749#section-4.4.1
-        if self.request_validator.is_pkce_required(request.client_id, request) is True and request.code_challenge is None:
+        if await self.request_validator.is_pkce_required(request.client_id, request) is True and request.code_challenge is None:
             raise errors.MissingCodeChallengeError(request=request)
 
         if request.code_challenge is not None:
@@ -418,7 +419,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # https://tools.ietf.org/html/rfc6749#section-3.3
-        self.validate_scopes(request)
+        await self.validate_scopes(request)
 
         request_info.update({
             'client_id': request.client_id,
@@ -429,11 +430,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
         })
 
         for validator in self.custom_validators.post_auth:
-            request_info.update(validator(request))
+            request_info.update(await maybe_await(validator(request)))
 
         return request.scopes, request_info
 
-    def validate_token_request(self, request):
+    async def validate_token_request(self, request):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -443,7 +444,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.UnsupportedGrantTypeError(request=request)
 
         for validator in self.custom_validators.pre_token:
-            validator(request)
+            await maybe_await(validator(request))
 
         if request.code is None:
             raise errors.InvalidRequestError(
@@ -454,27 +455,27 @@ class AuthorizationCodeGrant(GrantTypeBase):
                 raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param,
                                                  request=request)
 
-        self.validate_client_authentication(request)
+        await self.validate_client_authentication(request)
 
         # Ensure client is authorized use of this grant type
-        self.validate_grant_type(request)
+        await self.validate_grant_type(request)
 
         # REQUIRED. The authorization code received from the
         # authorization server.
-        if not self.request_validator.validate_code(request.client_id,
+        if not await self.request_validator.validate_code(request.client_id,
                                                     request.code, request.client, request):
             log.debug('Client, %r (%r), is not allowed access to scopes %r.',
                       request.client_id, request.client, request.scopes)
             raise errors.InvalidGrantError(request=request)
 
         # OPTIONAL. Validate PKCE code_verifier
-        challenge = self.request_validator.get_code_challenge(request.code, request)
+        challenge = await self.request_validator.get_code_challenge(request.code, request)
 
         if challenge is not None:
             if request.code_verifier is None:
                 raise errors.MissingCodeVerifierError(request=request)
 
-            challenge_method = self.request_validator.get_code_challenge_method(request.code, request)
+            challenge_method = await self.request_validator.get_code_challenge_method(request.code, request)
             if challenge_method is None:
                 raise errors.InvalidGrantError(request=request, description="Challenge method not found")
 
@@ -489,7 +490,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
                                                 request.code_verifier):
                 log.debug('request provided a invalid code_verifier.')
                 raise errors.InvalidGrantError(request=request)
-        elif self.request_validator.is_pkce_required(request.client_id, request) is True:
+        elif await self.request_validator.is_pkce_required(request.client_id, request) is True:
             if request.code_verifier is None:
                 raise errors.MissingCodeVerifierError(request=request)
             raise errors.InvalidGrantError(request=request, description="Challenge not found")
@@ -503,7 +504,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # values MUST be identical.
         if request.redirect_uri is None:
             request.using_default_redirect_uri = True
-            request.redirect_uri = self.request_validator.get_default_redirect_uri(
+            request.redirect_uri = await self.request_validator.get_default_redirect_uri(
                 request.client_id, request)
             log.debug('Using default redirect_uri %s.', request.redirect_uri)
             if not request.redirect_uri:
@@ -512,7 +513,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             request.using_default_redirect_uri = False
             log.debug('Using provided redirect_uri %s', request.redirect_uri)
 
-        if not self.request_validator.confirm_redirect_uri(request.client_id, request.code,
+        if not await self.request_validator.confirm_redirect_uri(request.client_id, request.code,
                                                            request.redirect_uri, request.client,
                                                            request):
             log.debug('Redirect_uri (%r) invalid for client %r (%r).',
@@ -520,7 +521,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.MismatchingRedirectURIError(request=request)
 
         for validator in self.custom_validators.post_token:
-            validator(request)
+            await maybe_await(validator(request))
 
     def validate_code_challenge(self, challenge, challenge_method, verifier):
         if challenge_method in self._code_challenge_methods:

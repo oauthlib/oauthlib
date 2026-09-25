@@ -2,6 +2,7 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
+from oauthlib.aio import maybe_await
 import json
 import logging
 
@@ -26,7 +27,7 @@ class RefreshTokenGrant(GrantTypeBase):
             issue_new_refresh_tokens=issue_new_refresh_tokens,
             **kwargs)
 
-    def create_token_response(self, request, token_handler):
+    async def create_token_response(self, request, token_handler):
         """Create a new access token from a refresh_token.
 
         :param request: OAuthlib request.
@@ -53,26 +54,26 @@ class RefreshTokenGrant(GrantTypeBase):
         headers = self._get_default_headers()
         try:
             log.debug('Validating refresh token request, %r.', request)
-            self.validate_token_request(request)
+            await self.validate_token_request(request)
         except errors.OAuth2Error as e:
             log.debug('Client error in token request, %s.', e)
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request,
+        token = await token_handler.create_token(request,
                                            refresh_token=self.issue_new_refresh_tokens)
 
         for modifier in self._token_modifiers:
-            token = modifier(token, token_handler, request)
+            token = await maybe_await(modifier(token, token_handler, request))
 
-        self.request_validator.save_token(token, request)
+        await self.request_validator.save_token(token, request)
 
         log.debug('Issuing new token to client id %r (%r), %r.',
                   request.client_id, request.client, token)
-        headers.update(self._create_cors_headers(request))
+        headers.update(await self._create_cors_headers(request))
         return headers, json.dumps(token), 200
 
-    def validate_token_request(self, request):
+    async def validate_token_request(self, request):
         """
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -82,7 +83,7 @@ class RefreshTokenGrant(GrantTypeBase):
             raise errors.UnsupportedGrantTypeError(request=request)
 
         for validator in self.custom_validators.pre_token:
-            validator(request)
+            await maybe_await(validator(request))
 
         if request.refresh_token is None:
             raise errors.InvalidRequestError(
@@ -92,28 +93,28 @@ class RefreshTokenGrant(GrantTypeBase):
         # Because refresh tokens are typically long-lasting credentials used to
         # request additional access tokens, the refresh token is bound to the
         # client to which it was issued
-        self.validate_client_authentication(request)
+        await self.validate_client_authentication(request)
 
         # Ensure client is authorized use of this grant type
-        self.validate_grant_type(request)
+        await self.validate_grant_type(request)
 
         # REQUIRED. The refresh token issued to the client.
         log.debug('Validating refresh token %s for client %r.',
                   request.refresh_token, request.client)
-        if not self.request_validator.validate_refresh_token(
+        if not await self.request_validator.validate_refresh_token(
                 request.refresh_token, request.client, request):
             log.debug('Invalid refresh token, %s, for client %r.',
                       request.refresh_token, request.client)
             raise errors.InvalidGrantError(request=request)
 
         original_scopes = utils.scope_to_list(
-            self.request_validator.get_original_scopes(
+            await self.request_validator.get_original_scopes(
                 request.refresh_token, request))
 
         if request.scope:
             request.scopes = utils.scope_to_list(request.scope)
             if (not all(s in original_scopes for s in request.scopes)
-                and not self.request_validator.is_within_original_scope(
+                and not await self.request_validator.is_within_original_scope(
                     request.scopes, request.refresh_token, request)):
                 log.debug('Refresh token %s lack requested scopes, %r.',
                           request.refresh_token, request.scopes)
@@ -122,4 +123,4 @@ class RefreshTokenGrant(GrantTypeBase):
             request.scopes = original_scopes
 
         for validator in self.custom_validators.post_token:
-            validator(request)
+            await maybe_await(validator(request))

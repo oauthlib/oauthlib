@@ -175,7 +175,7 @@ class BaseEndpoint:
             raise errors.InvalidRequestError(
                 description='Invalid nonce format.')
 
-    def _check_signature(self, request, is_token_request=False):
+    async def _check_signature(self, request, is_token_request=False):
         # ---- RSA Signature verification ----
         if request.signature_method in {SIGNATURE_RSA_SHA1, SIGNATURE_RSA_SHA256, SIGNATURE_RSA_SHA512}:
             # RSA-based signature method
@@ -183,7 +183,7 @@ class BaseEndpoint:
             # The server verifies the signature per `[RFC3447] section 8.2.2`_
             # .. _`[RFC3447] section 8.2.2`: https://tools.ietf.org/html/rfc3447#section-8.2.1
 
-            rsa_key = self.request_validator.get_rsa_key(
+            rsa_key = await self.request_validator.get_rsa_key(
                 request.client_key, request)
 
             if request.signature_method == SIGNATURE_RSA_SHA1:
@@ -205,19 +205,19 @@ class BaseEndpoint:
             #   client via the "oauth_signature" parameter.
             # .. _`Section 3.4`: https://tools.ietf.org/html/rfc5849#section-3.4
 
-            client_secret = self.request_validator.get_client_secret(
+            client_secret = await self.request_validator.get_client_secret(
                 request.client_key, request)
 
             resource_owner_secret = None
             if request.resource_owner_key:
                 if is_token_request:
                     resource_owner_secret = \
-                        self.request_validator.get_request_token_secret(
+                        await self.request_validator.get_request_token_secret(
                             request.client_key, request.resource_owner_key,
                             request)
                 else:
                     resource_owner_secret = \
-                        self.request_validator.get_access_token_secret(
+                        await self.request_validator.get_access_token_secret(
                             request.client_key, request.resource_owner_key,
                             request)
 

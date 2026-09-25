@@ -3,6 +3,7 @@ import json
 
 from typing import Callable
 
+from oauthlib.aio import maybe_await
 from oauthlib import common # noqa: TC001
 
 from oauthlib.oauth2.rfc6749 import errors as rfc6749_errors
@@ -10,7 +11,7 @@ from oauthlib.oauth2.rfc6749.grant_types.base import GrantTypeBase
 
 
 class DeviceCodeGrant(GrantTypeBase):
-    def create_authorization_response(
+    async def create_authorization_response(
         self, request: common.Request, token_handler: Callable
     ) -> tuple[dict, str, int]:
         """
@@ -19,27 +20,27 @@ class DeviceCodeGrant(GrantTypeBase):
         """
         headers = self._get_default_headers()
         try:
-            self.validate_token_request(request)
+            await self.validate_token_request(request)
         except rfc6749_errors.OAuth2Error as e:
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=False)
+        token = await token_handler.create_token(request, refresh_token=False)
 
         for modifier in self._token_modifiers:
-            token = modifier(token)
+            token = await maybe_await(modifier(token))
 
-        self.request_validator.save_token(token, request)
+        await self.request_validator.save_token(token, request)
 
-        return self.create_token_response(request, token_handler)
+        return await self.create_token_response(request, token_handler)
 
-    def validate_token_request(self, request: common.Request) -> None:
+    async def validate_token_request(self, request: common.Request) -> None:
         """
         Performs the necessary check against the request to ensure
         it's allowed to retrieve a token.
         """
         for validator in self.custom_validators.pre_token:
-            validator(request)
+            await maybe_await(validator(request))
 
         if not getattr(request, "grant_type", None):
             raise rfc6749_errors.InvalidRequestError(
@@ -55,17 +56,17 @@ class DeviceCodeGrant(GrantTypeBase):
                     description=f"Duplicate {param} parameter.", request=request
                 )
 
-        self.validate_client_authentication(request)
+        await self.validate_client_authentication(request)
 
         # Ensure client is authorized use of this grant type
-        self.validate_grant_type(request)
+        await self.validate_grant_type(request)
 
-        self.validate_scopes(request)
+        await self.validate_scopes(request)
 
         for validator in self.custom_validators.post_token:
-            validator(request)
+            await maybe_await(validator(request))
 
-    def create_token_response(
+    async def create_token_response(
         self, request: common.Request, token_handler: Callable
     ) -> tuple[dict, str, int]:
         """Return token or error in json format.
@@ -85,13 +86,13 @@ class DeviceCodeGrant(GrantTypeBase):
         """
         headers = self._get_default_headers()
         try:
-            self.validate_token_request(request)
+            await self.validate_token_request(request)
         except rfc6749_errors.OAuth2Error as e:
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, self.refresh_token)
+        token = await token_handler.create_token(request, self.refresh_token)
 
-        self.request_validator.save_token(token, request)
+        await self.request_validator.save_token(token, request)
 
         return headers, json.dumps(token), 200

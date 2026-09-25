@@ -20,7 +20,7 @@ class RefreshTokenGrant(GrantTypeBase):
             request_validator=request_validator, **kwargs)
         self.register_token_modifier(self.add_id_token)
 
-    def add_id_token(self, token, token_handler, request):
+    async def add_id_token(self, token, token_handler, request):
         """
         Construct an initial version of id_token, and let the
         request_validator sign or encrypt it.
@@ -28,7 +28,7 @@ class RefreshTokenGrant(GrantTypeBase):
         The authorization_code version of this method is used to
         retrieve the nonce accordingly to the code storage.
         """
-        if not self.request_validator.refresh_id_token(request):
+        if not await self.request_validator.refresh_id_token(request):
             return token
 
-        return super().add_id_token(token, token_handler, request)
+        return await super().add_id_token(token, token_handler, request)

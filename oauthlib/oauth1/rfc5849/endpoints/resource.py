@@ -37,20 +37,20 @@ class ResourceEndpoint(BaseEndpoint):
         def require_oauth(realms=None):
             def decorator(f):
                 @wraps(f)
-                def wrapper(request, *args, **kwargs):
-                    v, r = provider.validate_protected_resource_request(
-                            request.url,
+                async def wrapper(request, *args, **kwargs):
+                    v, r = await endpoint.validate_protected_resource_request(
+                            str(request.url),
                             http_method=request.method,
-                            body=request.data,
-                            headers=request.headers,
+                            body=await request.body(),
+                            headers=dict(request.headers),
                             realms=realms or [])
                     if v:
-                        return f(*args, **kwargs)
+                        return await f(*args, **kwargs)
                     else:
                         return abort(403)
     """
 
-    def validate_protected_resource_request(self, uri, http_method='GET',
+    async def validate_protected_resource_request(self, uri, http_method='GET',
                                             body=None, headers=None, realms=None):
         """Create a request token response, with a new request token if valid.
 
@@ -83,7 +83,7 @@ class ResourceEndpoint(BaseEndpoint):
                 request.resource_owner_key):
             return False, request
 
-        if not self.request_validator.validate_timestamp_and_nonce(
+        if not await self.request_validator.validate_timestamp_and_nonce(
                 request.client_key, request.timestamp, request.nonce, request,
                 access_token=request.resource_owner_key):
             return False, request
@@ -95,7 +95,7 @@ class ResourceEndpoint(BaseEndpoint):
         # time request verification.
         #
         # Note that early exit would enable client enumeration
-        valid_client = self.request_validator.validate_client_key(
+        valid_client = await self.request_validator.validate_client_key(
             request.client_key, request)
         if not valid_client:
             request.client_key = self.request_validator.dummy_client
@@ -107,7 +107,7 @@ class ResourceEndpoint(BaseEndpoint):
         # time request verification.
         #
         # Note that early exit would enable resource owner enumeration
-        valid_resource_owner = self.request_validator.validate_access_token(
+        valid_resource_owner = await self.request_validator.validate_access_token(
             request.client_key, request.resource_owner_key, request)
         if not valid_resource_owner:
             request.resource_owner_key = self.request_validator.dummy_access_token
@@ -134,11 +134,11 @@ class ResourceEndpoint(BaseEndpoint):
         # Access to protected resources will always validate the realm but note
         # that the realm is now tied to the access token and not provided by
         # the client.
-        valid_realm = self.request_validator.validate_realms(request.client_key,
+        valid_realm = await self.request_validator.validate_realms(request.client_key,
                                                              request.resource_owner_key, request, uri=request.uri,
                                                              realms=realms)
 
-        valid_signature = self._check_signature(request)
+        valid_signature = await self._check_signature(request)
 
         # log the results to the validator_log
         # this lets us handle internal reporting and analysis

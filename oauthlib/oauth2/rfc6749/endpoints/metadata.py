@@ -49,7 +49,7 @@ class MetadataEndpoint(BaseEndpoint):
         self.claims = self.validate_metadata_server()
 
     @catch_errors_and_unavailability
-    def create_metadata_response(self, uri, http_method='GET', body=None,
+    async def create_metadata_response(self, uri, http_method='GET', body=None,
                                  headers=None):
         """Create metadata response
         """

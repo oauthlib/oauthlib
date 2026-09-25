@@ -35,13 +35,13 @@ class HybridGrant(GrantTypeBase):
         self.register_code_modifier(self.add_id_token)
         self.register_token_modifier(self.add_id_token)
 
-    def add_id_token(self, token, token_handler, request):
-        return super().add_id_token(token, token_handler, request, nonce=request.nonce)
+    async def add_id_token(self, token, token_handler, request):
+        return await super().add_id_token(token, token_handler, request, nonce=request.nonce)
 
-    def openid_authorization_validator(self, request):
+    async def openid_authorization_validator(self, request):
         """Additional validation when following the Authorization Code flow.
         """
-        request_info = super().openid_authorization_validator(request)
+        request_info = await super().openid_authorization_validator(request)
         if not request_info:  # returns immediately if OAuth2.0
             return request_info
 

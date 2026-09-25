@@ -7,7 +7,7 @@ from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types import RefreshTokenGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 
 class RefreshTokenGrantTest(TestCase):
@@ -22,14 +22,14 @@ class RefreshTokenGrantTest(TestCase):
         self.request.client_id = 'abcdef'
         self.request.client = mock_client
         self.request.scope = 'foo'
-        self.mock_validator = mock.MagicMock()
+        self.mock_validator = validator_mock()
         self.auth = RefreshTokenGrant(
                 request_validator=self.mock_validator)
 
-    def test_create_token_response(self):
+    async def test_create_token_response(self):
         self.mock_validator.get_original_scopes.return_value = ['foo', 'bar']
         bearer = BearerToken(self.mock_validator)
-        _headers, body, _status_code = self.auth.create_token_response(
+        _headers, body, _status_code = await self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -53,21 +53,21 @@ class RefreshTokenGrantTest(TestCase):
         with self.assertRaises(AttributeError):
             self.auth.custom_validators.pre_auth.append(authval2)
 
-    def test_custom_token_validators(self):
+    async def test_custom_token_validators(self):
         tknval1, tknval2 = mock.Mock(), mock.Mock()
         self.auth.custom_validators.pre_token.append(tknval1)
         self.auth.custom_validators.post_token.append(tknval2)
 
         bearer = BearerToken(self.mock_validator)
-        self.auth.create_token_response(self.request, bearer)
+        await self.auth.create_token_response(self.request, bearer)
         self.assertTrue(tknval1.called)
         self.assertTrue(tknval2.called)
 
-    def test_create_token_inherit_scope(self):
+    async def test_create_token_inherit_scope(self):
         self.request.scope = None
         self.mock_validator.get_original_scopes.return_value = ['foo', 'bar']
         bearer = BearerToken(self.mock_validator)
-        _headers, body, _status_code = self.auth.create_token_response(
+        _headers, body, _status_code = await self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -76,11 +76,11 @@ class RefreshTokenGrantTest(TestCase):
         self.assertIn('expires_in', token)
         self.assertEqual(token['scope'], 'foo bar')
 
-    def test_create_token_within_original_scope(self):
+    async def test_create_token_within_original_scope(self):
         self.mock_validator.get_original_scopes.return_value = ['baz']
         self.mock_validator.is_within_original_scope.return_value = True
         bearer = BearerToken(self.mock_validator)
-        _headers, body, _status_code = self.auth.create_token_response(
+        _headers, body, _status_code = await self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 1)
@@ -89,50 +89,50 @@ class RefreshTokenGrantTest(TestCase):
         self.assertIn('expires_in', token)
         self.assertEqual(token['scope'], 'foo')
 
-    def test_invalid_scope(self):
+    async def test_invalid_scope(self):
         self.mock_validator.get_original_scopes.return_value = ['baz']
         self.mock_validator.is_within_original_scope.return_value = False
         bearer = BearerToken(self.mock_validator)
-        _headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = await self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
         self.assertEqual(token['error'], 'invalid_scope')
         self.assertEqual(status_code, 400)
 
-    def test_invalid_token(self):
+    async def test_invalid_token(self):
         self.mock_validator.validate_refresh_token.return_value = False
         bearer = BearerToken(self.mock_validator)
-        _headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = await self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
         self.assertEqual(token['error'], 'invalid_grant')
         self.assertEqual(status_code, 400)
 
-    def test_invalid_client(self):
+    async def test_invalid_client(self):
         self.mock_validator.authenticate_client.return_value = False
         bearer = BearerToken(self.mock_validator)
-        _headers, body, status_code = self.auth.create_token_response(
+        _headers, body, status_code = await self.auth.create_token_response(
                 self.request, bearer)
         token = json.loads(body)
         self.assertEqual(self.mock_validator.save_token.call_count, 0)
         self.assertEqual(token['error'], 'invalid_client')
         self.assertEqual(status_code, 401)
 
-    def test_authentication_required(self):
+    async def test_authentication_required(self):
         """
         ensure client_authentication_required() is properly called
         """
         self.mock_validator.authenticate_client.return_value = False
         self.mock_validator.authenticate_client_id.return_value = False
         self.request.code = 'waffles'
-        self.assertRaises(errors.InvalidClientError, self.auth.validate_token_request,
+        await self.assertRaisesAsync(errors.InvalidClientError, self.auth.validate_token_request,
                           self.request)
         self.mock_validator.client_authentication_required.assert_called_once_with(self.request)
 
 
-    def test_authentication_required_populate_client_id(self):
+    async def test_authentication_required_populate_client_id(self):
         """
         Make sure that request.client_id is populated from
         request.client.client_id if None.
@@ -144,67 +144,67 @@ class RefreshTokenGrantTest(TestCase):
         # self.request.code = 'waffles'
         self.request.client_id = None
         self.request.client.client_id = 'foobar'
-        self.auth.validate_token_request(self.request)
+        await self.auth.validate_token_request(self.request)
         self.request.client_id = 'foobar'
 
-    def test_client_id_discrepancy(self):
+    async def test_client_id_discrepancy(self):
         """ServerError raised when authenticate_client sets a different client_id."""
         def set_mismatched_client(request):
             request.client = mock.MagicMock()
             request.client.client_id = 'different_from_abcdef'
             return True
         self.mock_validator.authenticate_client.side_effect = set_mismatched_client
-        self.assertRaises(errors.ServerError,
+        await self.assertRaisesAsync(errors.ServerError,
                           self.auth.validate_token_request, self.request)
 
-    def test_invalid_grant_type(self):
+    async def test_invalid_grant_type(self):
         self.request.grant_type = 'wrong_type'
-        self.assertRaises(errors.UnsupportedGrantTypeError,
+        await self.assertRaisesAsync(errors.UnsupportedGrantTypeError,
                           self.auth.validate_token_request, self.request)
 
-    def test_authenticate_client_id(self):
+    async def test_authenticate_client_id(self):
         self.mock_validator.client_authentication_required.return_value = False
         self.request.refresh_token = mock.MagicMock()
         self.mock_validator.authenticate_client_id.return_value = False
-        self.assertRaises(errors.InvalidClientError,
+        await self.assertRaisesAsync(errors.InvalidClientError,
                           self.auth.validate_token_request, self.request)
 
-    def test_invalid_refresh_token(self):
+    async def test_invalid_refresh_token(self):
         # invalid refresh token
         self.mock_validator.authenticate_client_id.return_value = True
         self.mock_validator.validate_refresh_token.return_value = False
-        self.assertRaises(errors.InvalidGrantError,
+        await self.assertRaisesAsync(errors.InvalidGrantError,
                           self.auth.validate_token_request, self.request)
         # no token provided
         del self.request.refresh_token
-        self.assertRaises(errors.InvalidRequestError,
+        await self.assertRaisesAsync(errors.InvalidRequestError,
                           self.auth.validate_token_request, self.request)
 
-    def test_invalid_scope_original_scopes_empty(self):
+    async def test_invalid_scope_original_scopes_empty(self):
         self.mock_validator.validate_refresh_token.return_value = True
         self.mock_validator.is_within_original_scope.return_value = False
-        self.assertRaises(errors.InvalidScopeError,
+        await self.assertRaisesAsync(errors.InvalidScopeError,
                           self.auth.validate_token_request, self.request)
 
-    def test_valid_token_request(self):
+    async def test_valid_token_request(self):
         self.request.scope = 'foo bar'
-        self.mock_validator.get_original_scopes = mock.Mock()
+        self.mock_validator.get_original_scopes = mock.AsyncMock()
         self.mock_validator.get_original_scopes.return_value = 'foo bar baz'
-        self.auth.validate_token_request(self.request)
+        await self.auth.validate_token_request(self.request)
         self.assertEqual(self.request.scopes, self.request.scope.split())
         # all ok but without request.scope
         del self.request.scope
-        self.auth.validate_token_request(self.request)
+        await self.auth.validate_token_request(self.request)
         self.assertEqual(self.request.scopes, ['foo', 'bar', 'baz'])
 
     # CORS
 
-    def test_create_cors_headers(self):
+    async def test_create_cors_headers(self):
         bearer = BearerToken(self.mock_validator)
         self.request.headers['origin'] = 'https://foo.bar'
         self.mock_validator.is_origin_allowed.return_value = True
 
-        headers = self.auth.create_token_response(self.request, bearer)[0]
+        headers = (await self.auth.create_token_response(self.request, bearer))[0]
         self.assertEqual(
             headers['Access-Control-Allow-Origin'], 'https://foo.bar'
         )
@@ -212,26 +212,26 @@ class RefreshTokenGrantTest(TestCase):
             'abcdef', 'https://foo.bar', self.request
         )
 
-    def test_create_cors_headers_no_origin(self):
+    async def test_create_cors_headers_no_origin(self):
         bearer = BearerToken(self.mock_validator)
-        headers = self.auth.create_token_response(self.request, bearer)[0]
+        headers = (await self.auth.create_token_response(self.request, bearer))[0]
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.mock_validator.is_origin_allowed.assert_not_called()
 
-    def test_create_cors_headers_insecure_origin(self):
+    async def test_create_cors_headers_insecure_origin(self):
         bearer = BearerToken(self.mock_validator)
         self.request.headers['origin'] = 'http://foo.bar'
 
-        headers = self.auth.create_token_response(self.request, bearer)[0]
+        headers = (await self.auth.create_token_response(self.request, bearer))[0]
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.mock_validator.is_origin_allowed.assert_not_called()
 
-    def test_create_cors_headers_invalid_origin(self):
+    async def test_create_cors_headers_invalid_origin(self):
         bearer = BearerToken(self.mock_validator)
         self.request.headers['origin'] = 'https://foo.bar'
         self.mock_validator.is_origin_allowed.return_value = False
 
-        headers = self.auth.create_token_response(self.request, bearer)[0]
+        headers = (await self.auth.create_token_response(self.request, bearer))[0]
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.mock_validator.is_origin_allowed.assert_called_once_with(
             'abcdef', 'https://foo.bar', self.request

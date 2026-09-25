@@ -1,16 +1,17 @@
+from unittest import mock
 from unittest.mock import ANY, MagicMock
 
 from oauthlib.oauth1 import RequestValidator
 from oauthlib.oauth1.rfc5849 import Client
 from oauthlib.oauth1.rfc5849.endpoints import RequestTokenEndpoint
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, oauth1_validator_mock
 
 
 class RequestTokenEndpointTest(TestCase):
 
     def setUp(self):
-        self.validator = MagicMock(wraps=RequestValidator())
+        self.validator = oauth1_validator_mock(wraps=RequestValidator())
         self.validator.check_client_key.return_value = True
         self.validator.allowed_signature_methods = ['HMAC-SHA1']
         self.validator.get_client_secret.return_value = 'bar'
@@ -23,55 +24,55 @@ class RequestTokenEndpointTest(TestCase):
         self.validator.validate_timestamp_and_nonce.return_value = True
         self.validator.dummy_client = 'dummy'
         self.validator.dummy_secret = 'dummy'
-        self.validator.save_request_token = MagicMock()
+        self.validator.save_request_token = mock.AsyncMock()
         self.endpoint = RequestTokenEndpoint(self.validator)
         self.client = Client('foo', client_secret='bar', realm='foo',
                 callback_uri='https://c.b/cb')
         self.uri, self.headers, self.body = self.client.sign(
                 'https://i.b/request_token')
 
-    def test_check_redirect_uri(self):
+    async def test_check_redirect_uri(self):
         client = Client('foo')
         uri, headers, _ = client.sign(self.uri)
-        _h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = await self.endpoint.create_request_token_response(
                 uri, headers=headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
-    def test_check_realms(self):
+    async def test_check_realms(self):
         self.validator.check_realms.return_value = False
-        _h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 400)
         self.assertIn('invalid_request', b)
 
-    def test_validate_client_key(self):
+    async def test_validate_client_key(self):
         self.validator.validate_client_key.return_value = False
-        _h, _b, s = self.endpoint.create_request_token_response(
+        _h, _b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
-    def test_validate_realms(self):
+    async def test_validate_realms(self):
         self.validator.validate_requested_realms.return_value = False
-        _h, _b, s = self.endpoint.create_request_token_response(
+        _h, _b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
-    def test_validate_redirect_uri(self):
+    async def test_validate_redirect_uri(self):
         self.validator.validate_redirect_uri.return_value = False
-        _h, _b, s = self.endpoint.create_request_token_response(
+        _h, _b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 401)
 
-    def test_validate_signature(self):
+    async def test_validate_signature(self):
         client = Client('foo', callback_uri='https://c.b/cb')
         _, headers, _ = client.sign(self.uri + '/extra')
-        _h, _b, s = self.endpoint.create_request_token_response(
+        _h, _b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=headers)
         self.assertEqual(s, 401)
 
-    def test_valid_request(self):
-        _h, b, s = self.endpoint.create_request_token_response(
+    async def test_valid_request(self):
+        _h, b, s = await self.endpoint.create_request_token_response(
                 self.uri, headers=self.headers)
         self.assertEqual(s, 200)
         self.assertIn('oauth_token', b)
@@ -79,12 +80,12 @@ class RequestTokenEndpointTest(TestCase):
              self.client.client_key, ANY, ANY, ANY,
              request_token=self.client.resource_owner_key)
 
-    def test_uri_provided_realm(self):
+    async def test_uri_provided_realm(self):
         client = Client('foo', callback_uri='https://c.b/cb',
                 client_secret='bar')
         uri = self.uri + '?realm=foo'
         _, headers, _ = client.sign(uri)
-        _h, b, s = self.endpoint.create_request_token_response(
+        _h, b, s = await self.endpoint.create_request_token_response(
                 uri, headers=headers)
         self.assertEqual(s, 200)
         self.assertIn('oauth_token', b)

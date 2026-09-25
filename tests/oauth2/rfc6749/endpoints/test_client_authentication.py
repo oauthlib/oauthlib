@@ -17,7 +17,7 @@ from oauthlib.oauth2 import (
     RequestValidator, WebApplicationServer,
 )
 
-from tests.unittest import TestCase
+from tests.unittest import TestCase, validator_mock
 
 from .test_utils import get_fragment_credentials
 
@@ -30,7 +30,7 @@ class ClientAuthenticationTest(TestCase):
         return 'abc'
 
     def setUp(self):
-        self.validator = mock.MagicMock(spec=RequestValidator)
+        self.validator = validator_mock(spec=RequestValidator)
         self.validator.is_pkce_required.return_value = False
         self.validator.get_code_challenge.return_value = None
         self.validator.get_default_redirect_uri.return_value = 'http://i.b./path'
@@ -65,98 +65,98 @@ class ClientAuthenticationTest(TestCase):
         request.client.client_id = 'mocked'
         return True
 
-    def test_client_id_authentication(self):
+    async def test_client_id_authentication(self):
         token_uri = 'http://example.com/path'
 
         # authorization code grant
         self.validator.authenticate_client.return_value = False
         self.validator.authenticate_client_id.return_value = False
-        _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = await self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=mock')
         self.assertEqual(json.loads(body)['error'], 'invalid_client')
 
         self.validator.authenticate_client_id.return_value = True
         self.validator.authenticate_client.side_effect = self.set_client
-        _, body, _ = self.web.create_token_response(token_uri,
+        _, body, _ = await self.web.create_token_response(token_uri,
                 body='grant_type=authorization_code&code=mock')
         self.assertIn('access_token', json.loads(body))
 
         # implicit grant
         auth_uri = 'http://example.com/path?client_id=abc&response_type=token'
-        self.assertRaises(ValueError, self.mobile.create_authorization_response,
+        await self.assertRaisesAsync(ValueError, self.mobile.create_authorization_response,
                 auth_uri, scopes=['random'])
 
         self.validator.validate_client_id.side_effect = self.set_client_id
-        h, _, s = self.mobile.create_authorization_response(auth_uri, scopes=['random'])
+        h, _, s = await self.mobile.create_authorization_response(auth_uri, scopes=['random'])
         self.assertEqual(302, s)
         self.assertIn('Location', h)
         self.assertIn('access_token', get_fragment_credentials(h['Location']))
 
-    def test_basicauth_web(self):
+    async def test_basicauth_web(self):
         self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
-        _, body, _ = self.web.create_token_response(
+        _, body, _ = await self.web.create_token_response(
             self.token_uri,
             body='grant_type=authorization_code&code=mock',
             headers=self.basicauth_client_creds
         )
         self.assertIn('access_token', json.loads(body))
 
-    def test_basicauth_legacy(self):
+    async def test_basicauth_legacy(self):
         self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
-        _, body, _ = self.legacy.create_token_response(
+        _, body, _ = await self.legacy.create_token_response(
             self.token_uri,
             body='grant_type=password&username=abc&password=secret',
             headers=self.basicauth_client_creds
         )
         self.assertIn('access_token', json.loads(body))
 
-    def test_basicauth_backend(self):
+    async def test_basicauth_backend(self):
         self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
-        _, body, _ = self.backend.create_token_response(
+        _, body, _ = await self.backend.create_token_response(
             self.token_uri,
             body='grant_type=client_credentials',
             headers=self.basicauth_client_creds
         )
         self.assertIn('access_token', json.loads(body))
 
-    def test_basicauth_revoke(self):
+    async def test_basicauth_revoke(self):
         self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
 
         # legacy or any other uses the same RevocationEndpoint
-        _, body, status = self.legacy.create_revocation_response(
+        _, body, status = await self.legacy.create_revocation_response(
             self.token_uri,
             body='token=foobar',
             headers=self.basicauth_client_creds
         )
         self.assertEqual(status, 200, body)
 
-    def test_basicauth_introspect(self):
+    async def test_basicauth_introspect(self):
         self.validator.authenticate_client.side_effect = self.basicauth_authenticate_client
 
         # legacy or any other uses the same IntrospectEndpoint
-        _, body, status = self.legacy.create_introspect_response(
+        _, body, status = await self.legacy.create_introspect_response(
             self.token_uri,
             body='token=foobar',
             headers=self.basicauth_client_creds
         )
         self.assertEqual(status, 200, body)
 
-    def test_custom_authentication(self):
+    async def test_custom_authentication(self):
         token_uri = 'http://example.com/path'
 
         # authorization code grant
-        self.assertRaises(NotImplementedError,
+        await self.assertRaisesAsync(NotImplementedError,
                 self.web.create_token_response, token_uri,
                 body='grant_type=authorization_code&code=mock')
 
         # password grant
         self.validator.authenticate_client.return_value = True
-        self.assertRaises(NotImplementedError,
+        await self.assertRaisesAsync(NotImplementedError,
                 self.legacy.create_token_response, token_uri,
                 body='grant_type=password&username=abc&password=secret')
 
         # client credentials grant
         self.validator.authenticate_client.return_value = True
-        self.assertRaises(NotImplementedError,
+        await self.assertRaisesAsync(NotImplementedError,
                 self.backend.create_token_response, token_uri,
                 body='grant_type=client_credentials')
