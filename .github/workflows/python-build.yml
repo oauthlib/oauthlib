@@ -48,7 +48,7 @@ jobs:
   docs:
     strategy:
       matrix:
-        toxenv: ["docs", "readme"]
+        toxenv: ["docs", "readme", "example"]
     runs-on: ubuntu-latest
     permissions:
       contents: read

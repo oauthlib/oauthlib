@@ -46,3 +46,6 @@ htmlcov*
 # Sphinx
 docs/_build
 docs/_static
+
+# examples/fastapi_async_sqlalchemy.py default database
+oauth_example.db

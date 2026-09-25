@@ -1,0 +1,6 @@
+# Dependencies of examples/fastapi_async_sqlalchemy.py (and its test)
+fastapi>=0.110
+python-multipart>=0.0.9
+httpx>=0.27
+sqlalchemy[asyncio]>=2.0
+aiosqlite>=0.19
