@@ -36,48 +36,49 @@ tokens which unless you are certain you need them, are a bad idea.
         from your_validator import your_validator
         server = WebApplicationServer(your_validator)
 
-        # Validate request
-        uri = 'https://example.com/token'
-        http_method = 'POST'
-        body = 'code=somerandomstring&'
-               'grant_type=authorization_code&'
-        # Clients authenticate through a method of your choosing, for example
-        # using HTTP Basic Authentication
-        headers = { 'Authorization': 'Basic ksjdhf923sf' }
+        async def token():
+            # Validate request
+            uri = 'https://example.com/token'
+            http_method = 'POST'
+            body = ('code=somerandomstring&'
+                    'grant_type=authorization_code&')
+            # Clients authenticate through a method of your choosing, for example
+            # using HTTP Basic Authentication
+            headers = { 'Authorization': 'Basic ksjdhf923sf' }
 
-        # Extra credentials you wish to include
-        credentials = {'client_ip': '1.2.3.4'}
+            # Extra credentials you wish to include
+            credentials = {'client_ip': '1.2.3.4'}
 
-        headers, body, status = server.create_token_response(
-            uri, http_method, body, headers, credentials)
+            headers, body, status = await server.create_token_response(
+                uri, http_method, body, headers, credentials)
 
-        # headers will contain some suggested headers to add to your response
-        {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-            'Pragma': 'no-cache',
-        }
-        # body will contain the token in json format and expiration from now
-        # in seconds.
-        {
-            'access_token': 'sldafh309sdf',
-            'refresh_token': 'alsounguessablerandomstring',
-            'expires_in': 3600,
-            'scope': 'https://example.com/userProfile https://example.com/pictures',
-            'token_type': 'Bearer'
-        }
-        # body will contain an error code and possibly an error description if
-        # the request failed, also in json format.
-        {
-            'error': 'invalid_grant_type',
-            'description': 'athorizatoin_coed is not a valid grant type'
-        }
-        # status will be a suggested status code, 200 on ok, 400 on bad request
-        # and 401 if client is trying to use an invalid authorization code,
-        # fail to authenticate etc.
+            # headers will contain some suggested headers to add to your response
+            {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store',
+                'Pragma': 'no-cache',
+            }
+            # body will contain the token in json format and expiration from now
+            # in seconds.
+            {
+                'access_token': 'sldafh309sdf',
+                'refresh_token': 'alsounguessablerandomstring',
+                'expires_in': 3600,
+                'scope': 'https://example.com/userProfile https://example.com/pictures',
+                'token_type': 'Bearer'
+            }
+            # body will contain an error code and possibly an error description if
+            # the request failed, also in json format.
+            {
+                'error': 'invalid_grant_type',
+                'description': 'athorizatoin_coed is not a valid grant type'
+            }
+            # status will be a suggested status code, 200 on ok, 400 on bad request
+            # and 401 if client is trying to use an invalid authorization code,
+            # fail to authenticate etc.
 
-        from your_framework import http_response
-        http_response(body, status=status, headers=headers)
+            from your_framework import http_response
+            return http_response(body, status=status, headers=headers)
 
 .. autoclass:: oauthlib.oauth2.TokenEndpoint
     :members:

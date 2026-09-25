@@ -26,6 +26,9 @@ the device authorization endpoint.
     # or a string (e.g verification_uri_complete = "https://example.com/device=1234")
     verification_uri_complete = lambda user_code: f"https://example.com/device={user_code}"
 
+    # The user code generator may be a plain function or a coroutine function
+    # (e.g. ``async def``) if it needs to await something; oauthlib awaits it
+    # when it returns an awaitable.
     def user_code():
        # some logic to generate a random string...
        return "123-456"
@@ -35,14 +38,16 @@ the device authorization endpoint.
         request_validator=your_validator,
         verification_uri=verification_uri,
         verification_uri_complete=verification_uri_complete,
-        user_code=user_code
+        user_code_generator=user_code
     )
 
-    headers, data, status = server.create_device_authorization_response(request)
+    async def device_authorization(uri, http_method, body, headers):
+        headers, data, status = await server.create_device_authorization_response(
+            uri, http_method, body, headers)
 
-     # response from /device_authorization endpoint on your server
-    from your_framework import http_response
-    http_response(data, status=status, headers=headers)
+        # response from /device_authorization endpoint on your server
+        from your_framework import http_response
+        return http_response(data, status=status, headers=headers)
 
 
 

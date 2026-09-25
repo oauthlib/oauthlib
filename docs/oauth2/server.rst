@@ -41,18 +41,32 @@ OAuthLib interface between web framework and provider implementation are not alw
 These models will represent various OAuth specific concepts. There are a few
 important links between them that the security of OAuth is based on. Below
 is a suggestion for models and why you need certain properties. There is
-also example Django model fields which should be straightforward to
-translate to other ORMs such as SQLAlchemy and the Appengine Datastore.
+also example SQLAlchemy 2.0 model fields (``Mapped`` / ``mapped_column``,
+usable with SQLAlchemy's ``AsyncSession``) which should be straightforward to
+translate to other ORMs such as Django and the Appengine Datastore.
 
 User (or Resource Owner)
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The user of your site which resources might be accessed by clients upon
-authorization from the user. In our example we will re-use the User
-model provided in django.contrib.auth.models. How the user authenticates
-is orthogonal from OAuth and may be any way you prefer::
+authorization from the user. In our example we will use a minimal User
+model. How the user authenticates is orthogonal from OAuth and may be any
+way you prefer::
 
-    from django.contrib.auth.models import User
+    import datetime
+    from typing import Optional
+
+    from sqlalchemy import DateTime, ForeignKey, String, Text
+    from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+    class Base(DeclarativeBase):
+        pass
+
+    class User(Base):
+        __tablename__ = 'users'
+
+        id: Mapped[int] = mapped_column(primary_key=True)
+        username: Mapped[str] = mapped_column(String(150), unique=True)
 
 Client (or Consumer)
 ^^^^^^^^^^^^^^^^^^^^
@@ -66,7 +80,7 @@ The client interested in accessing protected resources.
 
     .. code-block:: python
 
-        client_id = django.db.models.CharField(max_length=100, unique=True)
+        client_id: Mapped[str] = mapped_column(String(100), unique=True)
 
 **User**:
 
@@ -77,7 +91,7 @@ The client interested in accessing protected resources.
 
     .. code-block:: python
 
-        user = django.db.models.ForeignKey(User)
+        user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
 **Grant Type**:
 
@@ -88,8 +102,8 @@ The client interested in accessing protected resources.
     .. code-block:: python
 
         # max_length and choices depend on which response types you support
-        grant_type = django.db.models.CharField(max_length=18,
-        choices=[('authorization_code', 'Authorization code')])
+        # e.g. 'authorization_code'
+        grant_type: Mapped[str] = mapped_column(String(18))
 
 **Response Type**:
 
@@ -100,8 +114,8 @@ The client interested in accessing protected resources.
     .. code-block:: python
 
         # max_length and choices depend on which response types you support
-        response_type = django.db.models.CharField(max_length=4,
-        choices=[('code', 'Authorization code')])
+        # e.g. 'code'
+        response_type: Mapped[str] = mapped_column(String(4))
 
 **Scopes**:
 
@@ -115,11 +129,11 @@ The client interested in accessing protected resources.
 
         # You could represent it either as a list of keys or by serializing
         # the scopes into a string.
-        scopes = django.db.models.TextField()
+        scopes: Mapped[str] = mapped_column(Text)
 
         # You might also want to mark a certain set of scopes as default
         # scopes in case the client does not specify any in the authorization
-        default_scopes = django.db.models.TextField()
+        default_scopes: Mapped[str] = mapped_column(Text)
 
 **Redirect URIs**:
 
@@ -131,11 +145,11 @@ The client interested in accessing protected resources.
 
         # You could represent the URIs either as a list of keys or by
         # serializing them into a string.
-        redirect_uris = django.db.models.TextField()
+        redirect_uris: Mapped[str] = mapped_column(Text)
 
         # You might also want to mark a certain URI as default in case the
         # client does not specify any in the authorization
-        default_redirect_uri = django.db.models.TextField()
+        default_redirect_uri: Mapped[Optional[str]] = mapped_column(Text)
 
 Bearer Token (OAuth 2 Standard Token)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -152,7 +166,7 @@ tokens as text.
 
     .. code-block:: python
 
-        client = django.db.models.ForeignKey(Client)
+        client_id: Mapped[str] = mapped_column(ForeignKey('clients.client_id'))
 
 **User**:
 
@@ -161,7 +175,7 @@ tokens as text.
 
     .. code-block:: python
 
-        user = django.db.models.ForeignKey(User)
+        user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
 **Scopes**:
 
@@ -172,7 +186,7 @@ tokens as text.
 
         # You could represent it either as a list of keys or by serializing
         # the scopes into a string.
-        scopes = django.db.models.TextField()
+        scopes: Mapped[str] = mapped_column(Text)
 
 **Access Token**:
 
@@ -180,7 +194,7 @@ tokens as text.
 
     .. code-block:: python
 
-        access_token = django.db.models.CharField(max_length=100, unique=True)
+        access_token: Mapped[str] = mapped_column(String(100), unique=True)
 
 **Refresh Token**:
 
@@ -190,7 +204,7 @@ tokens as text.
 
     .. code-block:: python
 
-        refresh_token = django.db.models.CharField(max_length=100, unique=True)
+        refresh_token: Mapped[Optional[str]] = mapped_column(String(100), unique=True)
 
 **Expiration time**:
 
@@ -198,7 +212,7 @@ tokens as text.
 
     .. code-block:: python
 
-        expires_at = django.db.models.DateTimeField()
+        expires_at: Mapped[datetime.datetime] = mapped_column(DateTime)
 
 Authorization Code
 ^^^^^^^^^^^^^^^^^^
@@ -217,7 +231,7 @@ the token.
 
     .. code-block:: python
 
-        client = django.db.models.ForeignKey(Client)
+        client_id: Mapped[str] = mapped_column(ForeignKey('clients.client_id'))
 
 **User**:
 
@@ -226,7 +240,7 @@ the token.
 
     .. code-block:: python
 
-        user = django.db.models.ForeignKey(User)
+        user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
 **Scopes**:
 
@@ -237,7 +251,7 @@ the token.
 
         # You could represent it either as a list of keys or by serializing
         # the scopes into a string.
-        scopes = django.db.models.TextField()
+        scopes: Mapped[str] = mapped_column(Text)
 
 **Redirect URI**:
 
@@ -248,7 +262,7 @@ the token.
 
     .. code-block:: python
 
-        redirect_uri = django.db.models.TextField()
+        redirect_uri: Mapped[str] = mapped_column(Text)
 
 **Authorization Code**:
 
@@ -256,7 +270,7 @@ the token.
 
     .. code-block:: python
 
-        code = django.db.models.CharField(max_length=100, unique=True)
+        code: Mapped[str] = mapped_column(String(100), unique=True)
 
 **Expiration time**:
 
@@ -265,7 +279,7 @@ the token.
 
     .. code-block:: python
 
-        expires_at = django.db.models.DateTimeField()
+        expires_at: Mapped[datetime.datetime] = mapped_column(DateTime)
 
 **PKCE Challenge (optional)**
 
@@ -274,8 +288,8 @@ the token.
 
     .. code-block:: python
 
-        challenge = django.db.models.CharField(max_length=128)
-        challenge_method = django.db.models.CharField(max_length=6)
+        challenge: Mapped[Optional[str]] = mapped_column(String(128))
+        challenge_method: Mapped[Optional[str]] = mapped_column(String(6))
 
 
 3. Implement a validator
@@ -286,10 +300,26 @@ relates to mapping various validation and persistence methods to a storage
 backend. The not very accurately named interface you will need to implement
 is called a :doc:`RequestValidator <validator>` (name suggestions welcome).
 
+.. note::
+
+    Validator methods are coroutines and must be declared with ``async def``.
+    OAuthLib awaits every one of them, so they can use an async database
+    driver such as SQLAlchemy's ``AsyncSession`` without blocking the event
+    loop. Overriding one with a plain ``def`` raises ``TypeError`` as soon as
+    your subclass is defined. This applies to the OpenID Connect and Device
+    Authorization (RFC 8628) validators as well.
+
+    A complete, runnable application built on FastAPI and an async SQLAlchemy
+    session is available as ``examples/fastapi_async_sqlalchemy.py`` in the
+    repository.
+
 An example of a very basic implementation of the validate_client_id method
 can be seen below.
 
 .. code-block:: python
+
+    from sqlalchemy import select
+    from sqlalchemy.ext.asyncio import AsyncSession
 
     from oauthlib.oauth2 import RequestValidator
 
@@ -298,13 +328,17 @@ can be seen below.
 
     class MyRequestValidator(RequestValidator):
 
-        def validate_client_id(self, client_id, request):
-            try:
-                client = Client.objects.get(client_id=client_id)
-                request.client = client
-                return True
-            except Client.DoesNotExist:
+        def __init__(self, session: AsyncSession):
+            super().__init__()
+            self.session = session
+
+        async def validate_client_id(self, client_id, request):
+            client = await self.session.scalar(
+                select(Client).where(Client.client_id == client_id))
+            if client is None:
                 return False
+            request.client = client
+            return True
 
 The full API you will need to implement is available in the
 :doc:`RequestValidator <validator>` section. You might not need to implement
@@ -329,16 +363,31 @@ Relevant sections include:
 Each of the endpoints can function independently from each other, however
 for this example it is easier to consider them as one unit. An example of a
 pre-configured all-in-one Authorization Code Grant endpoint is given below.
+The validator is bound to a database session, so a new server is built for
+every request around that request's session (construction does no I/O, so
+this is cheap).
 
 .. code-block:: python
+
+    from fastapi import Depends
+    from sqlalchemy.ext.asyncio import (
+        AsyncSession, async_sessionmaker, create_async_engine,
+    )
 
     # From the previous section on validators
     from my_validator import MyRequestValidator
 
     from oauthlib.oauth2 import WebApplicationServer
 
-    validator = MyRequestValidator()
-    server = WebApplicationServer(validator)
+    engine = create_async_engine('postgresql+asyncpg://user:pass@host/db')
+    SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def get_session():
+        async with SessionLocal() as session:
+            yield session  # uncommitted work is rolled back on close
+
+    def get_server(session: AsyncSession = Depends(get_session)):
+        return WebApplicationServer(MyRequestValidator(session))
 
 Relevant sections include:
 
@@ -357,143 +406,143 @@ together with the token view. We also include an error page to redirect
 users to if the client supplied invalid credentials in their redirection,
 for example an invalid redirect URI.
 
-The example using Django but should be transferable to any framework.
+The example uses FastAPI but should be transferable to any async framework.
+All endpoint methods are coroutines and must be awaited. Commit the session
+before returning a response, so a client never receives a code or token that
+failed to persist.
 
 .. code-block:: python
 
-    # Handles GET and POST requests to /authorize
-    class AuthorizationView(View):
+    from fastapi import Depends, FastAPI, Request
+    from fastapi.responses import HTMLResponse, RedirectResponse, Response
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from oauthlib.oauth2 import FatalClientError, OAuth2Error, WebApplicationServer
 
-        def __init__(self):
-            # Using the server from previous section
-            self._authorization_endpoint = server
+    app = FastAPI()
 
-        def get(self, request):
-            # You need to define extract_params and make sure it does not
-            # include file like objects waiting for input. In Django this
-            # is request.META['wsgi.input'] and request.META['wsgi.errors']
-            uri, http_method, body, headers = extract_params(request)
+    async def extract_params(request: Request):
+        # Starlette request -> oauthlib's (uri, http_method, body, headers)
+        body = await request.body()
+        return (str(request.url), request.method,
+                body.decode('utf-8') or None, dict(request.headers))
 
-            try:
-                scopes, credentials = self._authorization_endpoint.validate_authorization_request(
-                    uri, http_method, body, headers)
+    # Handles GET requests to /authorize
+    @app.get('/authorize')
+    async def authorize_get(request: Request,
+                            server: WebApplicationServer = Depends(get_server)):
+        uri, http_method, body, headers = await extract_params(request)
 
-                # Not necessarily in session but they need to be
-                # accessible in the POST view after form submit.
-                request.session['oauth2_credentials'] = credentials
+        try:
+            scopes, credentials = await server.validate_authorization_request(
+                uri, http_method, body, headers)
 
-                # You probably want to render a template instead.
-                response = HttpResponse()
-                response.write('<h1> Authorize access to %s </h1>' % client_id)
-                response.write('<form method="POST" action="/authorize">')
-                for scope in scopes or []:
-                    response.write('<input type="checkbox" name="scopes" ' +
-                    'value="%s"/> %s' % (scope, scope))
-                    response.write('<input type="submit" value="Authorize"/>')
-                return response
+            # Not necessarily in session but they need to be
+            # accessible in the POST view after form submit.
+            # (request.session requires Starlette's SessionMiddleware)
+            request.session['oauth2_credentials'] = credentials
 
-            # Errors that should be shown to the user on the provider website
-            except errors.FatalClientError as e:
-                return response_from_error(e)
+            # You probably want to render a template instead.
+            response = '<h1> Authorize access to %s </h1>' % credentials['client_id']
+            response += '<form method="POST" action="/authorize">'
+            for scope in scopes or []:
+                response += ('<input type="checkbox" name="scopes" ' +
+                             'value="%s"/> %s' % (scope, scope))
+            response += '<input type="submit" value="Authorize"/>'
+            return HTMLResponse(response)
 
-            # Errors embedded in the redirect URI back to the client
-            except errors.OAuth2Error as e:
-                return HttpResponseRedirect(e.in_uri(e.redirect_uri))
+        # Errors that should be shown to the user on the provider website
+        except FatalClientError as e:
+            return response_from_error(e)
 
-        @csrf_exempt
-        def post(self, request):
-            uri, http_method, body, headers = extract_params(request)
+        # Errors embedded in the redirect URI back to the client
+        except OAuth2Error as e:
+            return RedirectResponse(e.in_uri(e.redirect_uri))
 
-            # The scopes the user actually authorized, i.e. checkboxes
-            # that were selected.
-            scopes = request.POST.getlist(['scopes'])
+    # Handles POST requests to /authorize
+    @app.post('/authorize')
+    async def authorize_post(request: Request,
+                             session: AsyncSession = Depends(get_session),
+                             server: WebApplicationServer = Depends(get_server)):
+        uri, http_method, body, headers = await extract_params(request)
 
-            # Extra credentials we need in the validator
-            credentials = {'user': request.user}
+        # The scopes the user actually authorized, i.e. checkboxes
+        # that were selected.
+        scopes = (await request.form()).getlist('scopes')
 
-            # The previously stored (in authorization GET view) credentials
-            credentials.update(request.session.get('oauth2_credentials', {}))
+        # Extra credentials we need in the validator
+        # (request.user requires Starlette's AuthenticationMiddleware)
+        credentials = {'user': request.user}
 
-            try:
-                headers, body, status = self._authorization_endpoint.create_authorization_response(
+        # The previously stored (in authorization GET view) credentials
+        credentials.update(request.session.get('oauth2_credentials', {}))
+
+        try:
+            headers, body, status = await server.create_authorization_response(
                 uri, http_method, body, headers, scopes, credentials)
-                return response_from_return(headers, body, status)
-
-            except errors.FatalClientError as e:
-                return response_from_error(e)
-
-    # Handles requests to /token
-    class TokenView(View):
-
-        def __init__(self):
-            # Using the server from previous section
-            self._token_endpoint = server
-
-        def post(self, request):
-            uri, http_method, body, headers = extract_params(request)
-
-            # If you wish to include request specific extra credentials for
-            # use in the validator, do so here.
-            credentials = {'foo': 'bar'}
-
-            headers, body, status = self._token_endpoint.create_token_response(
-                    uri, http_method, body, headers, credentials)
-
-            # All requests to /token will return a json response, no redirection.
+            await session.commit()
             return response_from_return(headers, body, status)
 
+        except FatalClientError as e:
+            return response_from_error(e)
+
+    # Handles requests to /token
+    @app.post('/token')
+    async def token(request: Request,
+                    session: AsyncSession = Depends(get_session),
+                    server: WebApplicationServer = Depends(get_server)):
+        uri, http_method, body, headers = await extract_params(request)
+
+        # If you wish to include request specific extra credentials for
+        # use in the validator, do so here.
+        credentials = {'foo': 'bar'}
+
+        headers, body, status = await server.create_token_response(
+                uri, http_method, body, headers, credentials)
+        if status == 200:
+            await session.commit()
+
+        # All requests to /token will return a json response, no redirection.
+        return response_from_return(headers, body, status)
+
     def response_from_return(headers, body, status):
-        response = HttpResponse(content=body, status=status)
-        for k, v in headers.items():
-            response[k] = v
-        return response
+        return Response(content=body or '', status_code=status, headers=headers)
 
     def response_from_error(e):
-        return HttpResponseBadRequest('Evil client is unable to send a proper request. Error is: ' + e.description)
+        return Response('Evil client is unable to send a proper request. Error is: ' + e.description,
+                        status_code=400)
 
 
 6. Protect your APIs using scopes
 ---------------------------------
 
-Let's define a decorator we can use to protect the views.
+Let's define a dependency we can use to protect the views.
 
 .. code-block:: python
 
-    class OAuth2ProviderDecorator(object):
+    from fastapi import HTTPException
 
-        def __init__(self, resource_endpoint):
-            self._resource_endpoint = resource_endpoint
+    def protected_resource(scopes=None):
+        async def dependency(request: Request,
+                             server: WebApplicationServer = Depends(get_server)):
+            # Get the list of scopes
+            try:
+                scopes_list = scopes(request)
+            except TypeError:
+                scopes_list = scopes
 
-        def protected_resource_view(self, scopes=None):
-            def decorator(f):
-                @functools.wraps(f)
-                def wrapper(request):
-                    # Get the list of scopes
-                    try:
-                        scopes_list = scopes(request)
-                    except TypeError:
-                        scopes_list = scopes
+            uri, http_method, body, headers = await extract_params(request)
 
-                    uri, http_method, body, headers = extract_params(request)
+            valid, r = await server.verify_request(
+                    uri, http_method, body, headers, scopes_list)
 
-                    valid, r = self._resource_endpoint.verify_request(
-                            uri, http_method, body, headers, scopes_list)
+            if not valid:
+                # Framework specific HTTP 403
+                raise HTTPException(403)
 
-                    # For convenient parameter access in the view
-                    add_params(request, {
-                        'client': r.client,
-                        'user': r.user,
-                        'scopes': r.scopes
-                    })
-                    if valid:
-                        return f(request)
-                    else:
-                        # Framework specific HTTP 403
-                        return HttpResponseForbidden()
-                return wrapper
-            return decorator
-
-    provider = OAuth2ProviderDecorator(server)
+            # For convenient parameter access in the view:
+            # r.client, r.user and r.scopes
+            return r
+        return dependency
 
 At this point you are ready to protect your API views with OAuth. Take some
 time to come up with a good set of scopes as they can be very powerful in
@@ -501,12 +550,12 @@ controlling access.
 
 .. code-block:: python
 
-    @provider.protected_resource_view(scopes=['images'])
-    def i_am_protected(request, client, resource_owner):
+    @app.get('/cats')
+    async def i_am_protected(oauth=Depends(protected_resource(scopes=['images']))):
         # One of your many OAuth 2 protected resource views
         # Returns whatever you fancy
         # May be bound to various scopes of your choosing
-        return HttpResponse('pictures of cats')
+        return 'pictures of cats'
 
 The set of scopes that protects a view may also be dynamically configured
 at runtime by a function, rather then by a list.
@@ -518,10 +567,10 @@ at runtime by a function, rather then by a list.
         # and return as a list
         return ['images']
 
-    @provider.protected_resource_view(scopes=dynamic_scopes)
-    def i_am_also_protected(request, client, resource_owner, **kwargs)
-        # A view that has its views functionally set.
-        return HttpResponse('pictures of cats')
+    @app.get('/more-cats')
+    async def i_am_also_protected(oauth=Depends(protected_resource(scopes=dynamic_scopes))):
+        # A view that has its scopes functionally set.
+        return 'pictures of cats'
 
 7. Let us know how it went!
 ---------------------------

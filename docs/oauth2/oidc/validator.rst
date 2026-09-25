@@ -36,7 +36,8 @@ and needs a new controller into your webserver.
 --------------------------
 
 A couple of methods must be implemented in your validator subclass if
-you wish to support OpenID Connect:
+you wish to support OpenID Connect. As with the OAuth 2 validator, every
+method is awaited by OAuthLib and must be declared with ``async def``:
 
 .. autoclass:: oauthlib.openid.RequestValidator
    :members:

@@ -52,6 +52,36 @@ client support onto your favorite HTTP library, or provide support onto your
 favourite web framework. If you're a maintainer of such a library, write a thin
 veneer on top of OAuthLib and get OAuth support for very little effort.
 
+Async providers
+---------------
+
+The provider (server) side is ``asyncio``-native. Request validators are
+coroutines, so they can use async database drivers such as SQLAlchemy's
+``AsyncSession``, and endpoints are awaited from async frameworks such as
+FastAPI:
+
+.. code-block:: python
+
+    from oauthlib.oauth2 import RequestValidator, WebApplicationServer
+
+    class MyValidator(RequestValidator):
+        async def validate_client_id(self, client_id, request, *args, **kwargs):
+            return await clients.exists(client_id)  # any async I/O
+        ...
+
+    server = WebApplicationServer(MyValidator())
+
+    @app.post('/token')
+    async def token(request: Request):
+        headers, body, status = await server.create_token_response(
+            str(request.url), request.method,
+            (await request.body()).decode(), dict(request.headers))
+        return Response(body, status_code=status, headers=headers)
+
+See ``examples/fastapi_async_sqlalchemy.py`` for a complete application. The
+client side (``oauthlib.oauth1.Client`` and the OAuth2 clients) is unchanged
+and synchronous.
+
 
 Documentation
 --------------

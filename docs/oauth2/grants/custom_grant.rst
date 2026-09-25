@@ -22,14 +22,15 @@ The heart of your code is done by subclassing
 endpoint, you will have to implement
 :py:meth:`create_authorization_response`, if you want to use the Token
 endpoint, implement :py:meth:`create_token_response`. You can also
-implement both.
+implement both. Both are coroutines and must be declared with ``async def``.
 
 2. Implement the grant
 ----------------------
 Inside the method's implementation, you will have to:
 
 * add validations of the request (syntax, parameters, ...)
-* call and orchestrate one or multiple Request Validators calls
+* call and orchestrate one or multiple Request Validators calls (they are
+  coroutines, so ``await`` each of them)
 * generate and return HTTP response
 
 You can define new Request Validator methods if needed, or reuse the
@@ -55,15 +56,16 @@ This example shows how to add a simple extension to the `Token endpoint`:
     grant_name = 'urn:ietf:params:oauth:grant-type:my-custom-grant'
 
     class MyCustomGrant(GrantTypeBase):
-        def create_token_response(self, request, token_handler):
+        async def create_token_response(self, request, token_handler):
             if not request.grant_type == grant_name:
                 raise errors.UnsupportedGrantTypeError(request=request)
 
             # implement your custom validation checks
             # ..
-            self.request_validator.your_custom_check(request)
+            # (define your_custom_check as ``async def`` on your validator)
+            await self.request_validator.your_custom_check(request)
 
-            token = token_handler.create_token(request)
+            token = await token_handler.create_token(request)
             return self._get_default_headers(), json.dumps(token), 200
 
     def setup_oauthlib():

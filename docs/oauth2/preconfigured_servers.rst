@@ -21,6 +21,8 @@ If you prefer to construct tokens yourself you may pass a token generator (see
     server = WebApplicationServer(your_validator, token_generator=your_token_generator)
 
 This function is passed the request object and a boolean indicating whether to generate an access token (False) or a refresh token (True).
+It may be a plain function or a coroutine function (``async def``), for example if it needs to
+query a database; OAuthLib awaits the result when it is awaitable.
 
 .. autoclass:: oauthlib.oauth2.Server
     :members:

@@ -3,6 +3,46 @@ Changelog
 
 3.4.0 (unreleased):
 ------------------
+Async server side:
+
+* **Breaking**: The provider (server) side is now ``asyncio``-native so it can
+  run inside async applications such as FastAPI, with async database drivers
+  (e.g. SQLAlchemy ``AsyncSession``) and without blocking the event loop.
+
+  - Every ``RequestValidator`` method (OAuth1, OAuth2, OpenID Connect,
+    RFC8628) is a coroutine and is awaited by the library. Overrides must be
+    declared ``async def``; a sync override raises ``TypeError`` when the
+    subclass is defined. OAuth1's configuration properties, ``dummy_*``
+    properties and ``check_*`` syntax helpers remain synchronous.
+  - Endpoint entry points are coroutines and must be awaited:
+    ``create_authorization_response``, ``validate_authorization_request``,
+    ``create_token_response``, ``verify_request``,
+    ``create_revocation_response``, ``create_introspect_response``,
+    ``create_metadata_response``, ``create_userinfo_response``,
+    ``create_device_authorization_response`` and the OAuth1
+    ``create_request_token_response``, ``get_realms_and_credentials``,
+    ``create_access_token_response``, ``validate_protected_resource_request``
+    and ``validate_request``.
+  - Grant type methods and token handlers (``BearerToken.create_token`` /
+    ``validate_request``, ``JWTToken``) are coroutines. Custom grant types
+    and token types must follow suit.
+  - ``catch_errors_and_unavailability`` only accepts coroutine functions.
+  - User hooks may be sync or async: custom validators (``pre_auth``,
+    ``post_auth``, ``pre_token``, ``post_token``), code/token modifiers,
+    token generators, ``expires_in`` callables and the device flow
+    ``user_code_generator``. New helper: ``oauthlib.aio.maybe_await``.
+  - Client side (``oauthlib.oauth1.Client``, OAuth2 clients, signatures,
+    parameter helpers) is unchanged and synchronous.
+  - New example: ``examples/fastapi_async_sqlalchemy.py`` (FastAPI +
+    SQLAlchemy 2.0 ``AsyncSession``, PKCE, refresh token rotation), tested
+    by ``tox -e example``.
+
+  Migrating: add ``async`` to every validator method you override and
+  ``await`` your storage calls; ``await`` every endpoint call and make the
+  calling view ``async``. Unit tests that mock validators should use a mock
+  with ``spec=RequestValidator`` (async methods become ``AsyncMock``) or
+  ``unittest.mock.AsyncMock``.
+
 OAuth2.0 Provider:
 * **Breaking**: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
 * Improved PKCE Nonce comparison

@@ -29,6 +29,10 @@ is a suggestion for models and why you need certain properties. There is
 also example SQLAlchemy model fields which should be straightforward to
 translate to other ORMs such as Django and the Appengine Datastore.
 
+The examples use SQLAlchemy 2.0 declarative models (``Mapped`` /
+``mapped_column``), which work with SQLAlchemy's ``AsyncSession`` used by
+the validator below.
+
 1.1 User (or Resource Owner)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -37,14 +41,21 @@ authorization from the user. Below is a crude example of a User model, yours
 is likely to differ and the structure is not important. Neither is how the user
 authenticates, as long as it does before authorizing::
 
-    Base = sqlalchemy.ext.declarative.declarative_base()
+    from typing import Optional
+
+    from sqlalchemy import ForeignKey, String
+    from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+    class Base(DeclarativeBase):
+        pass
+
     class ResourceOwner(Base):
         __tablename__ = "users"
 
-        id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-        name = sqlalchemy.Column(sqlalchemy.String)
-        email = sqlalchemy.Column(sqlalchemy.String)
-        password = sqlalchemy.Column(sqlalchemy.String)
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str] = mapped_column(String)
+        email: Mapped[str] = mapped_column(String)
+        password: Mapped[str] = mapped_column(String)
 
 1.2 Client (or Consumer)
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -55,7 +66,7 @@ The client interested in accessing protected resources.
     Required. The identifier the client will use during the OAuth
     workflow. Structure is up to you and may be a simple UID::
 
-        client_key = sqlalchemy.Column(sqlalchemy.String)
+        client_key: Mapped[str] = mapped_column(String, unique=True)
 
 **Client secret**:
     Required for HMAC-SHA1 and PLAINTEXT. The secret the client will use when
@@ -63,13 +74,13 @@ The client interested in accessing protected resources.
     plaintext (i.e. not hashed) since it is used to recreate and validate
     request signatured::
 
-        client_secret = sqlalchemy.Column(sqlalchemy.String)
+        client_secret: Mapped[str] = mapped_column(String)
 
 **Client public key**:
     Required for RSA-SHA1. The public key used to verify the signature of
     requests signed by the clients private key::
 
-        rsa_key = sqlalchemy.Column(sqlalchemy.String)
+        rsa_key: Mapped[str] = mapped_column(String)
 
 **User**:
     Recommended. It is common practice to link each client with one of
@@ -77,7 +88,7 @@ The client interested in accessing protected resources.
     not, ensure you are able to protect yourself against malicious
     clients::
 
-        user = Column(Integer, ForeignKey("users.id"))
+        user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
 **Realms**:
     Required. The list of realms the client may request access to. While realm
@@ -86,11 +97,11 @@ The client interested in accessing protected resources.
 
         # You could represent it either as a list of keys or by serializing
         # the scopes into a string.
-        realms = sqlalchemy.Column(sqlalchemy.String)
+        realms: Mapped[str] = mapped_column(String)
 
         # You might also want to mark a certain set of scopes as default
         # scopes in case the client does not specify any in the authorization
-        default_realms = sqlalchemy.Column(sqlalchemy.String)
+        default_realms: Mapped[str] = mapped_column(String)
 
 **Redirect URIs**:
     These are the absolute URIs that a client may use to redirect to after
@@ -99,11 +110,11 @@ The client interested in accessing protected resources.
 
         # You could represent the URIs either as a list of keys or by
         # serializing them into a string.
-        redirect_uris = sqlalchemy.Column(sqlalchemy.String)
+        redirect_uris: Mapped[str] = mapped_column(String)
 
         # You might also want to mark a certain URI as default in case the
         # client does not specify any in the authorization
-        default_redirect_uri = sqlalchemy.Column(sqlalchemy.String)
+        default_redirect_uri: Mapped[str] = mapped_column(String)
 
 1.3 Request Token + Verifier
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -122,13 +133,13 @@ obtain an access token.
 **Client**:
     Association with the client to whom the request token was given::
 
-        client = Column(Integer, ForeignKey("clients.id"))
+        client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
 
 **User**:
     Association with the user to which protected resources this token
     requests access::
 
-        user = Column(Integer, ForeignKey("users.id"))
+        user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
 
 **Realms**:
     Realms to which the token is bound. Attempt to access protected
@@ -136,25 +147,25 @@ obtain an access token.
 
         # You could represent it either as a list of keys or by serializing
         # the scopes into a string.
-        realms = sqlalchemy.Column(sqlalchemy.String)
+        realms: Mapped[str] = mapped_column(String)
 
 **Redirect URI**:
     The callback URI used to redirect back to the client after user
     authorization is completed::
 
-        redirect_uri = sqlalchemy.Column(sqlalchemy.String)
+        redirect_uri: Mapped[str] = mapped_column(String)
 
 **Request Token**:
     An unguessable unique string of characters::
 
-        request_token = sqlalchemy.Column(sqlalchemy.String)
+        request_token: Mapped[str] = mapped_column(String, unique=True)
 
 **Request Token Secret**:
     An unguessable unique string of characters. This is a temporary secret used
     by the HMAC-SHA1 and PLAINTEXT signature methods when obtaining an
     access token later::
 
-        request_token_secret = sqlalchemy.Column(sqlalchemy.String)
+        request_token_secret: Mapped[str] = mapped_column(String)
 
 **Authorization Verifier**:
     An unguessable unique string of characters. This code asserts that the user
@@ -162,7 +173,7 @@ obtain an access token.
     initially nil when the client obtains the request token in the first step, and
     set after user authorization is given in the second step::
 
-        verifier = sqlalchemy.Column(sqlalchemy.String)
+        verifier: Mapped[Optional[str]] = mapped_column(String)
 
 1.4 Access Token
 ^^^^^^^^^^^^^^^^
@@ -182,13 +193,13 @@ not in the OAuth 1 spec.
 **Client**:
     Association with the client to whom the access token was given::
 
-        client = Column(Integer, ForeignKey("clients.id"))
+        client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
 
 **User**:
     Association with the user to which protected resources this token
     grants access::
 
-        user = Column(Integer, ForeignKey("users.id"))
+        user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
 **Realms**:
     Realms to which the token is bound. Attempt to access protected
@@ -196,19 +207,19 @@ not in the OAuth 1 spec.
 
         # You could represent it either as a list of keys or by serializing
         # the scopes into a string.
-        realms = sqlalchemy.Column(sqlalchemy.String)
+        realms: Mapped[str] = mapped_column(String)
 
 **Access Token**:
     An unguessable unique string of characters::
 
-        access_token = sqlalchemy.Column(sqlalchemy.String)
+        access_token: Mapped[str] = mapped_column(String, unique=True)
 
 **Access Token Secret**:
     An unguessable unique string of characters. This secret is used
     by the HMAC-SHA1 and PLAINTEXT signature methods when accessing protected
     resources::
 
-        access_token_secret = sqlalchemy.Column(sqlalchemy.String)
+        access_token_secret: Mapped[str] = mapped_column(String)
 
 2. Implement a validator
 ------------------------
@@ -218,8 +229,31 @@ relates to mapping various validation and persistence methods to a storage
 backend. The not very accurately named interface you will need to implement
 is called a :doc:`RequestValidator <validator>` (name suggestions welcome).
 
+.. note::
+
+    Validator methods are coroutines and must be declared with ``async def``.
+    OAuthLib awaits every one of them, so they can use an async database
+    driver such as SQLAlchemy's ``AsyncSession`` without blocking the event
+    loop. Overriding one with a plain ``def`` raises ``TypeError`` as soon as
+    your subclass is defined.
+
+    The exceptions are the configuration properties
+    (``allowed_signature_methods``, ``safe_characters``, the ``*_length``
+    properties, ``timestamp_lifetime``, ``realms``, ``enforce_ssl``,
+    ``dummy_client``, ``dummy_request_token`` and ``dummy_access_token``) and
+    the syntax helpers ``check_client_key``, ``check_request_token``,
+    ``check_access_token``, ``check_nonce``, ``check_verifier`` and
+    ``check_realms``, which stay synchronous.
+
+    For a complete, runnable (OAuth 2) application built on FastAPI and an
+    async SQLAlchemy session, see ``examples/fastapi_async_sqlalchemy.py`` in
+    the repository.
+
 An example of a very basic implementation of the ``validate_client_key`` method
 can be seen below::
+
+    from sqlalchemy import select
+    from sqlalchemy.ext.asyncio import AsyncSession
 
     from oauthlib.oauth1 import RequestValidator
 
@@ -228,12 +262,14 @@ can be seen below::
 
     class MyRequestValidator(RequestValidator):
 
-        def validate_client_key(self, client_key, request):
-            try:
-                Client.query.filter_by(client_key=client_key).one()
-                return True
-            except NoResultFound:
-                return False
+        def __init__(self, session: AsyncSession):
+            super().__init__()
+            self.session = session
+
+        async def validate_client_key(self, client_key, request):
+            client = await self.session.scalar(
+                select(Client).where(Client.client_key == client_key))
+            return client is not None
 
 The full API you will need to implement is available in the
 :doc:`RequestValidator <validator>` section. You might not need to implement
@@ -254,15 +290,29 @@ Relevant sections include:
 Each of the endpoints can function independently from each other, however
 for this example it is easier to consider them as one unit. An example of a
 pre-configured all-in-one OAuth 1 RFC compliant [#compliant]_ endpoint is
-given below::
+given below. The validator is bound to a database session, so a new server is
+built for every request around that request's session (construction does no
+I/O, so this is cheap)::
+
+    from fastapi import Depends
+    from sqlalchemy.ext.asyncio import (
+        AsyncSession, async_sessionmaker, create_async_engine,
+    )
 
     # From the previous section on validators
     from my_validator import MyRequestValidator
 
     from oauthlib.oauth1 import WebApplicationServer
 
-    validator = MyRequestValidator()
-    server = WebApplicationServer(validator)
+    engine = create_async_engine('postgresql+asyncpg://user:pass@host/db')
+    SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def get_session():
+        async with SessionLocal() as session:
+            yield session  # uncommitted work is rolled back on close
+
+    def get_provider(session: AsyncSession = Depends(get_session)):
+        return WebApplicationServer(MyRequestValidator(session))
 
 
 Relevant sections include:
@@ -282,33 +332,52 @@ Standard 3 legged OAuth requires 4 views, request and access token together with
 pre- and post-authorization. In addition an error view should be defined
 where users can be informed of invalid/malicious authorization requests.
 
-The example uses Flask but should be transferable to any framework.
+The example uses FastAPI but should be transferable to any async framework.
+All endpoint methods are coroutines and must be awaited. Commit the session
+before returning a response, so a client never receives a token that failed
+to persist.
 
 .. code-block:: python
 
-    from flask import Flask, redirect, Response, request, url_for
-    from oauthlib.oauth1 import OAuth1Error
-    import urlparse
+    from urllib.parse import parse_qs
+
+    from fastapi import Depends, FastAPI, Request
+    from fastapi.responses import HTMLResponse, RedirectResponse, Response
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from oauthlib.oauth1 import OAuth1Error, WebApplicationServer
 
 
-    app = Flask(__name__)
+    app = FastAPI()
 
 
-    @app.route('/request_token', methods=['POST'])
-    def request_token():
-        h, b, s = provider.create_request_token_response(request.url,
-                http_method=request.method,
-                body=request.data,
-                headers=request.headers)
-        return Response(b, status=s, headers=h)
+    async def extract_params(request: Request):
+        body = await request.body()
+        return (str(request.url), request.method,
+                body.decode('utf-8') or None, dict(request.headers))
 
 
-    @app.route('/authorize', methods=['GET'])
-    def pre_authorize():
-        realms, credentials = provider.get_realms_and_credentials(request.url,
-                http_method=request.method,
-                body=request.data,
-                headers=request.headers)
+    @app.post('/request_token')
+    async def request_token(request: Request,
+                            session: AsyncSession = Depends(get_session),
+                            provider: WebApplicationServer = Depends(get_provider)):
+        uri, http_method, body, headers = await extract_params(request)
+        h, b, s = await provider.create_request_token_response(uri,
+                http_method=http_method,
+                body=body,
+                headers=headers)
+        if s == 200:
+            await session.commit()
+        return Response(b, status_code=s, headers=h)
+
+
+    @app.get('/authorize', response_class=HTMLResponse)
+    async def pre_authorize(request: Request,
+                            provider: WebApplicationServer = Depends(get_provider)):
+        uri, http_method, body, headers = await extract_params(request)
+        realms, credentials = await provider.get_realms_and_credentials(uri,
+                http_method=http_method,
+                body=body,
+                headers=headers)
         client_key = credentials.get('resource_owner_key', 'unknown')
         response = '<h1> Authorize access to %s </h1>' % client_key
         response += '<form method="POST" action="/authorize">'
@@ -319,34 +388,43 @@ The example uses Flask but should be transferable to any framework.
         return response
 
 
-    @app.route('/authorize', methods=['POST'])
-    def post_authorize():
-        realms = request.form.getlist('realms')
+    @app.post('/authorize')
+    async def post_authorize(request: Request,
+                             session: AsyncSession = Depends(get_session),
+                             provider: WebApplicationServer = Depends(get_provider)):
+        uri, http_method, body, headers = await extract_params(request)
+        realms = (await request.form()).getlist('realms')
         try:
-            h, b, s = provider.create_authorization_response(request.url,
-                    http_method=request.method,
-                    body=request.data,
-                    headers=request.headers,
+            h, b, s = await provider.create_authorization_response(uri,
+                    http_method=http_method,
+                    body=body,
+                    headers=headers,
                     realms=realms)
+            await session.commit()
             if s == 200:
-                return 'Your verifier is: ' + str(urlparse.parse_qs(b)['oauth_verifier'][0])
+                return 'Your verifier is: ' + str(parse_qs(b)['oauth_verifier'][0])
             else:
-                return Response(b, status=s, headers=h)
+                return Response(b, status_code=s, headers=h)
         except OAuth1Error as e:
-            return redirect(e.in_uri(url_for('/error')))
+            return RedirectResponse(e.in_uri(str(request.url_for('error'))))
 
 
-    @app.route('/access_token', methods=['POST'])
-    def access_token():
-        h, b, s = provider.create_access_token_response(request.url,
-                http_method=request.method,
-                body=request.data,
-                headers=request.headers)
-        return Response(b, status=s, headers=h)
+    @app.post('/access_token')
+    async def access_token(request: Request,
+                           session: AsyncSession = Depends(get_session),
+                           provider: WebApplicationServer = Depends(get_provider)):
+        uri, http_method, body, headers = await extract_params(request)
+        h, b, s = await provider.create_access_token_response(uri,
+                http_method=http_method,
+                body=body,
+                headers=headers)
+        if s == 200:
+            await session.commit()
+        return Response(b, status_code=s, headers=h)
 
 
-    @app.route('/error', methods=['GET'])
-    def error():
+    @app.get('/error')
+    async def error():
         # Invalid request token will be most likely
         # Could also be an attempt to change the authorization form to try and
         # authorize realms outside the allowed for this client.
@@ -355,28 +433,28 @@ The example uses Flask but should be transferable to any framework.
 5. Protect your APIs using realms
 ---------------------------------
 
-Let's define a decorator we can use to protect the views.
+Let's define a dependency we can use to protect the views.
 
 .. code-block:: python
 
+    from fastapi import HTTPException
+    from oauthlib.oauth1 import ResourceEndpoint
+
 
     def oauth_protected(realms=None):
-        def wrapper(f):
-            @functools.wraps(f)
-            def verify_oauth(*args, **kwargs):
-                validator = OAuthValidator()  # your validator class
-                provider = ResourceEndpoint(validator)
-                v, r = provider.validate_protected_resource_request(request.url,
-                        http_method=request.method,
-                        body=request.data,
-                        headers=request.headers,
-                        realms=realms or [])
-                if v:
-                    return f(*args, **kwargs)
-                else:
-                    return abort(403)
-            return verify_oauth
-        return wrapper
+        async def verify_oauth(request: Request,
+                               session: AsyncSession = Depends(get_session)):
+            provider = ResourceEndpoint(MyRequestValidator(session))
+            uri, http_method, body, headers = await extract_params(request)
+            v, r = await provider.validate_protected_resource_request(uri,
+                    http_method=http_method,
+                    body=body,
+                    headers=headers,
+                    realms=realms or [])
+            if not v:
+                raise HTTPException(403)
+            return r
+        return verify_oauth
 
 At this point you are ready to protect your API views with OAuth. Take some
 time to come up with a good set of realms as they can be very powerful in
@@ -384,16 +462,15 @@ controlling access.
 
 .. code-block:: python
 
-    @app.route('/secret', methods=['GET'])
-    @oauth_protected(realms=['secret'])
-    def protected_resource():
+    @app.get('/secret')
+    async def protected_resource(oauth=Depends(oauth_protected(realms=['secret']))):
         return 'highly confidential'
 
 6. Try your provider with a quick CLI client
 --------------------------------------------
 
 This example assumes you use the client key `key` and client secret `secret`
-shown below as well as run your flask server locally on port `5000`.
+shown below as well as run your server locally on port `5000`.
 
 .. code-block:: bash
 

@@ -26,8 +26,9 @@ There are three main endpoints, the authorization endpoint which mainly
 handles user authorization, the token endpoint which provides tokens and the
 resource endpoint which provides access to protected resources. It is to the
 endpoints you will feed requests and get back an almost complete response. This
-process is simplified for you using a decorator such as the django one described
-later (but it's applicable to all other web frameworks libraries).
+process is simplified for you using a helper such as the FastAPI dependency
+described in :doc:`/oauth2/server` (but it's applicable to all other async web
+frameworks). Every endpoint method is a coroutine and must be awaited.
 
 The main purpose of the endpoint in OAuthLib is to figure out which grant type
 or token to dispatch the request to.

@@ -11,15 +11,16 @@ request. Also known as tokeninfo.
     from your_validator import your_validator
     server = WebApplicationServer(your_validator)
 
-    # Token revocation
-    uri = 'https://example.com/introspect'
-    headers, body, http_method = {}, 'token=sldafh309sdf', 'POST'
+    async def introspect():
+        # Token introspection
+        uri = 'https://example.com/introspect'
+        headers, body, http_method = {}, 'token=sldafh309sdf', 'POST'
 
-    headers, body, status = server.create_introspect_response(uri,
-        headers=headers, body=body, http_method=http_method)
+        headers, body, status = await server.create_introspect_response(uri,
+            headers=headers, body=body, http_method=http_method)
 
-    from your_framework import http_response
-    http_response(body, status=status, headers=headers)
+        from your_framework import http_response
+        return http_response(body, status=status, headers=headers)
 
 
 .. autoclass:: oauthlib.oauth2.IntrospectEndpoint

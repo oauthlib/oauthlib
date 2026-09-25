@@ -43,8 +43,8 @@ Note that you can add any custom claims in `RequestValidator` methods by adding 
 
 .. code-block:: python
 
-    def validate_client_id(self, client_id, request):
-        (.. your usual checks ..)
+    async def validate_client_id(self, client_id, request):
+        ...  # your usual checks
 
         request.claims = {
             'aud': self.client_id
@@ -80,7 +80,10 @@ Sometime you may want to generate custom `access_token` with a reference from a
 database (as text) or use a HASH signature in JWT or use JWE (encrypted content).
 
 Also, note that you can declare the generate function in your instantiated
-validator to benefit of the `self` variables.
+validator to benefit of the `self` variables. Token generators may be plain
+functions or coroutine functions (``async def``); OAuthLib awaits the result
+when it is awaitable. The same applies to ``refresh_token_generator`` and to a
+callable ``expires_in``.
 
 See the example below:
 

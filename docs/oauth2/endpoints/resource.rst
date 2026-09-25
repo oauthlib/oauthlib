@@ -20,22 +20,23 @@ to the scopes associated with the resource in question.
         # Per view scopes
         required_scopes = ['https://example.com/userProfile']
 
-        # Validate request
-        uri = 'https://example.com/userProfile?access_token=sldafh309sdf'
-        headers, body, http_method = {}, '', 'GET'
+        async def user_profile():
+            # Validate request
+            uri = 'https://example.com/userProfile?access_token=sldafh309sdf'
+            headers, body, http_method = {}, '', 'GET'
 
-        valid, oauthlib_request = server.verify_request(
-            uri, http_method, body, headers, required_scopes)
+            valid, oauthlib_request = await server.verify_request(
+                uri, http_method, body, headers, required_scopes)
 
-        # oauthlib_request has a few convenient attributes set such as
-        # oauthlib_request.client = the client associated with the token
-        # oauthlib_request.user = the user associated with the token
-        # oauthlib_request.scopes = the scopes bound to this token
+            # oauthlib_request has a few convenient attributes set such as
+            # oauthlib_request.client = the client associated with the token
+            # oauthlib_request.user = the user associated with the token
+            # oauthlib_request.scopes = the scopes bound to this token
 
-        if valid:
-            # return the protected resource / view
-        else:
-            # return an http forbidden 403
+            if valid:
+                ...  # return the protected resource / view
+            else:
+                ...  # return an http forbidden 403
 
 .. autoclass:: oauthlib.oauth2.ResourceEndpoint
     :members:
