@@ -1,14 +1,20 @@
 Changelog
 =========
 
-3.4.0 (unreleased):
+4.0.0 (2026-09-27):
 ------------------
 OAuth2.0 Provider:
-* **Breaking**: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
-* Improved PKCE Nonce comparison
+* **Breaking**: #951: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
+* #963: Improved PKCE code comparison
+* #919: Fixed ``DeviceCodeGrant.validate_token_request`` trying to authenticate public clients
 
 Misc:
-* #930: Add devcontainer, Add Python3.14, Python3.14t, Remove Python3.8.
+* #930: Add devcontainer, Add Python3.14, Python3.14t.
+* #932: Dropped EOL Python 3.8 from CI.
+* #904: Stop installing ``examples`` into ``site-packages``.
+* #931: Fix ruff checks about unused variables.
+* #934: Pre-commit hooks autoupdate.
+* #938: Fix typos discovered by typos.
 * Add OAuthLib Maintainer agent for automated issue/PR triage and release management.
 
 3.3.1 (2025-06-19):
