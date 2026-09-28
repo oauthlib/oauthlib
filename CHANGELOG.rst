@@ -4,18 +4,30 @@ Changelog
 4.0.0 (2026-09-28):
 ------------------
 OAuth2.0 Provider:
-* **Breaking**: #951: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
+* **Breaking**: #951: Removed JSONP support from token revocation endpoint.
+  JSONP has been superseded by CORS for cross-origin requests.
+  The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint``
+  and the ``callback`` parameter has been removed from
+  ``prepare_token_revocation_request``.
+* **Breaking**: #919, #920: Fixed ``DeviceCodeGrant.validate_token_request``
+  trying to authenticate public clients.
+  Client authentication validation has been reorganized and is now shared
+  across ``AuthorizationCodeGrant``, ``DeviceCodeGrant``, ``RefreshTokenGrant``
+  and ``ResourceOwnerPasswordCredentialsGrant``: the ``grant_type`` parameter
+  is validated before client authentication, so requests missing
+  ``grant_type`` now return ``400 invalid_request`` instead of
+  ``401 invalid_client``.
 * #963: Improved PKCE code comparison
-* #919: Fixed ``DeviceCodeGrant.validate_token_request`` trying to authenticate public clients
 
 Misc:
-* #930: Add devcontainer, Add Python3.14, Python3.14t.
-* #932: Dropped EOL Python 3.8 from CI.
 * #904: Stop installing ``examples`` into ``site-packages``.
+* #930: Add devcontainer, Add Python3.14, Python3.14t.
 * #931: Fix ruff checks about unused variables.
+* #932: Dropped EOL Python 3.8 from CI.
 * #934: Pre-commit hooks autoupdate.
 * #938: Fix typos discovered by typos.
-* Add OAuthLib Maintainer agent for automated issue/PR triage and release management.
+* Add OAuthLib Maintainer agent for automated issue/PR triage and release
+  management.
 
 3.3.1 (2025-06-19):
 ------------------
