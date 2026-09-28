@@ -1,7 +1,7 @@
 Changelog
 =========
 
-4.0.0 (2026-09-27):
+4.0.0 (2026-09-28):
 ------------------
 OAuth2.0 Provider:
 * **Breaking**: #951: Removed JSONP support from token revocation endpoint. JSONP has been superseded by CORS for cross-origin requests. The ``enable_jsonp`` parameter has been removed from ``RevocationEndpoint`` and the ``callback`` parameter has been removed from ``prepare_token_revocation_request``.
