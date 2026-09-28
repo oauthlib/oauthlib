@@ -116,3 +116,52 @@ jobs:
         path: dist/
     - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
+  github-release:
+    if: success() && github.repository == 'oauthlib/oauthlib' && github.ref_type == 'tag'
+    needs:
+      - build
+    name: Create GitHub Release from CHANGELOG
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v5
+      with:
+        persist-credentials: false
+    - name: Extract changelog section for this version
+      run: |
+        python3 - <<'EOF'
+        import os
+        import re
+
+        tag = os.environ['GITHUB_REF_NAME']
+        version = tag.removeprefix('v')
+        changelog = open('CHANGELOG.rst', encoding='utf-8').read()
+
+        pattern = re.escape(version) + r' \(\d{4}-\d{2}-\d{2}\):\n-+\n'
+        match = re.search(pattern, changelog)
+        if not match:
+            raise SystemExit('No changelog section found for version ' + version)
+
+        rest = changelog[match.end():]
+        next_section = re.search(r'\n\d+\.\d+\.\d+ \(', rest)
+        section = rest[:next_section.start()] if next_section else rest
+
+        with open('release-notes.md', 'w', encoding='utf-8') as f:
+            f.write(section.strip())
+        EOF
+    - name: Download all the dists
+      uses: actions/download-artifact@v6
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: ${{ github.ref_name }}
+        body_path: release-notes.md
+        files: dist/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
