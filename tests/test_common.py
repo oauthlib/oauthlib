@@ -228,6 +228,33 @@ class RequestTest(TestCase):
         r = Request(URI, body='grant_type=authorization_code')
         self.assertIsNone(r.resource)
 
+    def test_repeated_resource_params_from_body(self):
+        """RFC 8707 §2: repeated resource parameters in the body must all be
+        exposed, not collapsed to the last value."""
+        r = Request(URI, http_method='POST',
+                    body='grant_type=authorization_code'
+                         '&resource=https%3A%2F%2Fapi.example.com%2Fa'
+                         '&resource=https%3A%2F%2Fapi.example.com%2Fb')
+        self.assertEqual(r.resource, ['https://api.example.com/a',
+                                      'https://api.example.com/b'])
+
+    def test_repeated_resource_params_from_query(self):
+        """RFC 8707 §2: repeated resource parameters in the query string must
+        all be exposed, not collapsed to the last value."""
+        r = Request(URI + '?resource=https%3A%2F%2Fapi.example.com%2Fa'
+                          '&resource=https%3A%2F%2Fapi.example.com%2Fb')
+        self.assertEqual(r.resource, ['https://api.example.com/a',
+                                      'https://api.example.com/b'])
+
+    def test_repeated_resource_params_across_query_and_body(self):
+        """Repeated resource values split across the query string and the body
+        must all be exposed, preserving query-then-body order."""
+        r = Request(URI + '?resource=https%3A%2F%2Fapi.example.com%2Fa',
+                    http_method='POST',
+                    body='resource=https%3A%2F%2Fapi.example.com%2Fb')
+        self.assertEqual(r.resource, ['https://api.example.com/a',
+                                      'https://api.example.com/b'])
+
     def test_sanitized_request_non_debug_mode(self):
         """make sure requests are sanitized when in non debug mode.
         For the debug mode, the other tests checking sanitization should prove

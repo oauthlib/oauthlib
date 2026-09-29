@@ -3,6 +3,9 @@ Changelog
 
 4.0.0 (2026-09-28):
 ------------------
+OAuth2.0 Common:
+* #959: RFC 8707: expose repeated ``resource`` parameters as a list instead of collapsing to the last value.
+
 OAuth2.0 Provider:
 * **Breaking**: #951: Removed JSONP support from token revocation endpoint.
   JSONP has been superseded by CORS for cross-origin requests.
