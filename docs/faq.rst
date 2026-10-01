@@ -36,7 +36,7 @@ OAuth 2 ServiceApplicationClient and OAuth 1 with RSA-SHA1 signatures say "could
 What does ValueError `Only unicode objects are escapable. Got one of type X.` mean?
 -----------------------------------------------------------------------------------
 
-   OAuthLib uses unicode everywhere and when creating a OAuth 1 signature
+   OAuthLib uses unicode everywhere and when creating an OAuth 1 signature
    a number of parameters need to be percent encoded (aka escaped). At least
    one parameter could not be encoded. Usually because `None` or a non UTF-8
    encoded string was supplied.
