@@ -84,12 +84,6 @@ class DeviceCodeGrant(GrantTypeBase):
                     description="Duplicate %s parameter." % param, request=request
                 )
 
-        # the "application/x-www-form-urlencoded" format, per Appendix B of [RFC6749]
-        # https://www.rfc-editor.org/rfc/rfc6749#appendix-B
-        self.validate_content_type(
-            request, allowed_type="application/x-www-form-urlencoded"
-        )
-
         # REQUIRED. The client identifier as described in Section 2.2.
         # https://tools.ietf.org/html/rfc6749#section-2.2
         if not request.client_id:
