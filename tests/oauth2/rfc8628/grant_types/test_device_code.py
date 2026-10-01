@@ -5,18 +5,24 @@ import pytest
 from oauthlib import common
 
 from oauthlib.oauth2.rfc8628.grant_types import DeviceCodeGrant
+from oauthlib.oauth2.rfc8628.request_validator import RequestValidator
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 def create_request(body: str = "") -> common.Request:
     request = common.Request("http://a.b/path", body=body or None)
     request.scopes = ("hello", "world")
     request.expires_in = 1800
-    request.client = "batman"
     request.client_id = "abcdef"
+    # Client authentication must leave request.client set to an object whose
+    # client_id matches request.client_id, otherwise validate_client_confidential
+    # /validate_client_public raise before the grant's own checks run.
+    request.client = mock.Mock()
+    request.client.client_id = request.client_id
     request.code = "1234"
     request.response_type = "code"
     request.grant_type = "urn:ietf:params:oauth:grant-type:device_code"
     request.redirect_uri = "https://a.b/"
+    request.device_code = "device_code_1234"
     return request
 
 
@@ -54,6 +60,7 @@ def test_custom_pre_and_post_token_validators():
     request: common.Request = create_request()
     request.client = client
     client.client_id = request.client_id
+    validator.validate_device_code.return_value = DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
 
     auth = DeviceCodeGrant(validator)
 
@@ -70,8 +77,7 @@ def test_custom_pre_and_post_token_validators():
 def test_create_token_response():
     validator = mock.MagicMock()
     request: common.Request = create_request()
-    request.client = mock.Mock()
-    request.client.client_id = request.client_id
+    validator.validate_device_code.return_value = DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
 
     auth = DeviceCodeGrant(validator)
 
@@ -104,7 +110,6 @@ def test_create_token_response():
 def test_invalid_client_authentication_error_confidential_client():
     validator = mock.MagicMock()
     request: common.Request = create_request()
-    request.client = mock.Mock()
 
     auth = DeviceCodeGrant(validator)
     bearer = BearerToken(validator)
@@ -131,7 +136,6 @@ def test_invalid_client_authentication_error_confidential_client():
 def test_invalid_client_authentication_error_public_client():
     validator = mock.MagicMock()
     request: common.Request = create_request()
-    request.client = mock.Mock()
 
     auth = DeviceCodeGrant(validator)
     bearer = BearerToken(validator)
@@ -158,7 +162,6 @@ def test_invalid_client_authentication_error_public_client():
 def test_invalid_grant_type_error():
     validator = mock.MagicMock()
     request: common.Request = create_request()
-    request.client = mock.Mock()
 
     request.grant_type = "not_device_code"
 
@@ -184,7 +187,6 @@ def test_duplicate_params_error():
     request: common.Request = create_request(
         "client_id=123&scope=openid&scope=openid"
     )
-    request.client = mock.Mock()
 
     auth = DeviceCodeGrant(validator)
     bearer = BearerToken(validator)
@@ -200,4 +202,163 @@ def test_duplicate_params_error():
     assert body == {"error": "invalid_request", "error_description": "Duplicate scope parameter."}
     assert status_code == 400
 
+    validator.save_token.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("status", "expected_error"),
+    [
+        (DeviceCodeGrant.DEVICE_CODE_PENDING, "authorization_pending"),
+        (DeviceCodeGrant.DEVICE_CODE_SLOW_DOWN, "slow_down"),
+        (DeviceCodeGrant.DEVICE_CODE_EXPIRED, "expired_token"),
+        (DeviceCodeGrant.DEVICE_CODE_DENIED, "access_denied"),
+    ],
+)
+def test_device_code_status_errors(status, expected_error):
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+    validator.validate_device_code.return_value = status
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+
+    _headers, body, status_code = auth.create_token_response(request, bearer)
+    body = json.loads(body)
+
+    assert body == {"error": expected_error}
+    assert status_code == 400
+
+    validator.validate_device_code.assert_called_once_with(
+        request.client_id, request.device_code, request
+    )
+    validator.save_token.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        None,  # documented "unknown / invalid device_code" return
+        "not_a_real_status",  # validator returned an unrecognized value
+        True,  # validator wrongly returned a bool instead of a status
+    ],
+)
+def test_invalid_device_code(status):
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+    validator.validate_device_code.return_value = status
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+
+    _headers, body, status_code = auth.create_token_response(request, bearer)
+    body = json.loads(body)
+
+    assert body == {"error": "invalid_grant"}
+    assert status_code == 400
+
+    validator.save_token.assert_not_called()
+
+
+def test_device_code_scopes_populated_before_scope_validation():
+    """Authorized scopes from the stored grant must be validated, not defaults.
+
+    Per RFC 8628 Section 3.4 the device token request carries no scope, so
+    validate_device_code must populate request.scopes from the stored
+    authorization before validate_scopes runs; otherwise validate_scopes falls
+    back to get_default_scopes and the token silently receives default scopes
+    (issue #944).
+    """
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+    # The device token request has no scope of its own.
+    request.scope = None
+    request.scopes = None
+
+    def authorize(client_id, code, req):
+        req.scopes = ["read", "write"]
+        return DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    validator.validate_device_code.side_effect = authorize
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+    auth.create_token_response(request, bearer)
+
+    validator.get_default_scopes.assert_not_called()
+    validator.validate_scopes.assert_called_once_with(
+        "abcdef", ["read", "write"], request.client, request
+    )
+
+
+def test_device_code_authorized_without_scopes_fails_loudly():
+    """An authorized device_code must not silently fall back to default scopes.
+
+    If ``validate_device_code`` returns ``DEVICE_CODE_AUTHORIZED`` without
+    populating ``request.scopes`` (and the token request itself carries no
+    ``scope``), failing loudly with a ``server_error`` is the only safe
+    option: continuing would let ``validate_scopes`` fall back to
+    ``get_default_scopes`` and reintroduce the consent-integrity bug from
+    issue #944.
+    """
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+    # The device token request has no scope of its own, and the validator
+    # forgets to set request.scopes on the authorized device_code.
+    request.scope = None
+    request.scopes = None
+    validator.validate_device_code.return_value = DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+
+    _headers, body, status_code = auth.create_token_response(request, bearer)
+    body = json.loads(body)
+
+    assert body == {
+        "error": "server_error",
+        "error_description": (
+            "validate_device_code must set request.scopes for an "
+            "authorized device_code."
+        ),
+    }
+    assert status_code == 400
+
+    validator.get_default_scopes.assert_not_called()
+    validator.validate_scopes.assert_not_called()
+    validator.save_token.assert_not_called()
+
+
+def test_validate_device_code_is_required_on_real_validator():
+    """The hook lives on the rfc8628 RequestValidator and must be implemented.
+
+    Guards against the gap mocks hide: a MagicMock auto-creates
+    ``validate_device_code``, so the behavior tests above pass even if the
+    method did not exist. A real validator subclass that has not implemented
+    it must fail loudly rather than silently.
+    """
+    request: common.Request = create_request()
+    with pytest.raises(NotImplementedError):
+        RequestValidator().validate_device_code(
+            request.client_id, request.device_code, request
+        )
+
+
+def test_missing_device_code():
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+    request.device_code = None
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+
+    _headers, body, status_code = auth.create_token_response(request, bearer)
+    body = json.loads(body)
+
+    assert body == {
+        "error": "invalid_request",
+        "error_description": "Missing device_code parameter.",
+    }
+    assert status_code == 400
+
+    validator.validate_device_code.assert_not_called()
     validator.save_token.assert_not_called()

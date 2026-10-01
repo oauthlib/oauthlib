@@ -8,11 +8,30 @@ from tests.unittest import TestCase
 
 
 class DeviceAuthorizationEndpointTest(TestCase):
+    def _set_client(self, request, *args, **kwargs):
+        """Stand in for a validator that attaches the client, as documented."""
+        request.client = mock.MagicMock()
+        request.client.client_id = request.client_id
+        return True
+
+    def _build_validator(self, scopes=None):
+        validator = mock.MagicMock(spec=RequestValidator)
+        validator.authenticate_client.side_effect = self._set_client
+        validator.authenticate_client_id.side_effect = (
+            lambda client_id, request, *a, **kw: self._set_client(request)
+        )
+        validator.get_default_scopes.return_value = scopes
+        return validator
+
     def _configure_endpoint(
-        self, interval=None, verification_uri_complete=None, user_code_generator=None
+        self,
+        interval=None,
+        verification_uri_complete=None,
+        user_code_generator=None,
+        scopes=None,
     ):
         self.endpoint = DeviceAuthorizationEndpoint(
-            request_validator=mock.MagicMock(spec=RequestValidator),
+            request_validator=self._build_validator(scopes),
             verification_uri=self.verification_uri,
             interval=interval,
             verification_uri_complete=verification_uri_complete,
@@ -20,7 +39,6 @@ class DeviceAuthorizationEndpointTest(TestCase):
         )
 
     def setUp(self):
-        self.request_validator = mock.MagicMock(spec=RequestValidator)
         self.verification_uri = "http://i.b/l/verify"
         self.uri = "http://i.b/l"
         self.http_method = "POST"
@@ -45,6 +63,25 @@ class DeviceAuthorizationEndpointTest(TestCase):
         }
         self.assertEqual(200, status_code)
         self.assertEqual(body, expected_payload)
+
+    @mock.patch(
+        "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
+        lambda: "abc",
+    )
+    def test_device_authorization_grant_echoes_requested_scope(self):
+        self.body = "client_id=abc&scope=read+write"
+        _, body, _ = self.endpoint.create_device_authorization_response(*self.response_payload())
+        self.assertEqual("read write", body["scope"])
+
+    @mock.patch(
+        "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
+        lambda: "abc",
+    )
+    def test_device_authorization_grant_echoes_default_scope(self):
+        """A device that omits scope gets the resolved defaults back (issue #949)."""
+        self._configure_endpoint(scopes=["read", "write"])
+        _, body, _ = self.endpoint.create_device_authorization_response(*self.response_payload())
+        self.assertEqual("read write", body["scope"])
 
     @mock.patch(
         "oauthlib.oauth2.rfc8628.endpoints.device_authorization.generate_token",
