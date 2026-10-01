@@ -465,6 +465,39 @@ class ErrorResponseTest(TestCase):
             except errors.InvalidRequestError as ire:
                 self.assertIn('Unsupported request method', ire.description)
 
+    def test_invalid_content_type(self):
+        """
+        Test that requests with invalid content-type raise UnsupportedContentTypeError
+        """
+        self.validator.authenticate_client.side_effect = self.set_client
+
+        uri = "http://i/b/token/"
+        expected_content_type = "application/x-www-form-urlencoded"
+        invalid_headers = {
+            'Content-Type': 'application/json'
+        }
+
+        try:
+            _, body, s = self.web.create_token_response(uri,
+                    body='grant_type=access_token&code=123', headers=invalid_headers)
+            self.fail('This should have failed with UnsupportedContentTypeError')
+        except errors.UnsupportedContentTypeError as ire:
+            self.assertIn(expected_content_type, ire.description)
+
+        try:
+            _, body, s = self.legacy.create_token_response(uri,
+                    body='grant_type=access_token&code=123', headers=invalid_headers)
+            self.fail('This should have failed with UnsupportedContentTypeError')
+        except errors.UnsupportedContentTypeError as ire:
+            self.assertIn(expected_content_type, ire.description)
+
+        try:
+            _, body, s = self.backend.create_token_response(uri,
+                    body='grant_type=access_token&code=123', headers=invalid_headers)
+            self.fail('This should have failed with UnsupportedContentTypeError')
+        except errors.UnsupportedContentTypeError as ire:
+            self.assertIn(expected_content_type, ire.description)
+
     def test_invalid_post_request(self):
         self.validator.authenticate_client.side_effect = self.set_client
         for param in ['token', 'secret', 'code', 'foo']:
