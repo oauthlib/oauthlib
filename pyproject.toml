@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oauthlib"
+dynamic = ["version"]
+description = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+requires-python = ">=3.9"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [{name = "The OAuthlib Community"}]
+maintainers = [{name = "Jonathan Huot", email = "jonathan.huot@gmail.com"}]
+dependencies = []
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.optional-dependencies]
+rsa = ["cryptography>=3.0.0"]
+signedtoken = ["cryptography>=3.0.0", "pyjwt>=2.0.0,<3"]
+signals = ["blinker>=1.4.0"]
+
+[project.urls]
+Homepage = "https://github.com/oauthlib/oauthlib"
+Changelog = "https://github.com/oauthlib/oauthlib/blob/master/CHANGELOG.rst"
+Documentation = "https://oauthlib.readthedocs.io/"
+Gitter = "https://gitter.im/oauthlib/Lobby"
+Issues = "https://github.com/oauthlib/oauthlib/issues"
+Source = "https://github.com/oauthlib/oauthlib"
+Sponsor = "https://github.com/sponsors/JonathanHuot"
+
+[tool.setuptools]
+# Preserve the legacy Platform field, which has no PEP 621 equivalent.
+platforms = ["any"]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["docs", "examples", "tests", "tests.*"]
+namespaces = false
+
+[tool.setuptools.dynamic]
+version = {attr = "oauthlib.__version__"}
