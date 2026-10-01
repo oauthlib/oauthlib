@@ -103,6 +103,10 @@ class DeviceAuthorizationEndpoint(BaseEndpoint):
         .. _`Section 3.2.1. of [RFC6749]`: https://www.rfc-editor.org/rfc/rfc6749#section-3.2.1
         .. _`Section 2.2 of [RFC6749]`: https://www.rfc-editor.org/rfc/rfc6749#section-2.2
         """
+        self._raise_on_bad_content_type(
+            request,
+            allowed_type='application/x-www-form-urlencoded',
+        )
         self.device_code_grant.validate_device_authorization_request(request)
 
     @catch_errors_and_unavailability
