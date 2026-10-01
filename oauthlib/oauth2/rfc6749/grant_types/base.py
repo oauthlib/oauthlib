@@ -217,6 +217,25 @@ class GrantTypeBase:
         elif request.client_id != request.client.client_id:
             raise errors.ServerError('Discrepency found between client identifier')
 
+    def validate_content_type(self, request, allowed_type):
+        """Raise ``UnsupportedContentTypeError`` if the request ``Content-Type``
+        header does not match the expected value.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param allowed_type: Expected Content-Type header value.
+        :type allowed_type: str
+        """
+        content_type_header = request.headers.get("Content-Type", "")
+        content_type = content_type_header.split(";", 1)[0].strip().lower()
+        expected_type = allowed_type.strip().lower()
+
+        if content_type and content_type != expected_type:
+            raise errors.UnsupportedContentTypeError(
+                request=request,
+                description=f"Invalid Content-Type. Must be: {allowed_type}",
+            )
+
     def validate_client_authentication(self, request):
         """Raise on failed client authentication."""
         # Handles confidential clients
