@@ -166,3 +166,21 @@ allow-magic-value-types = ["int", "str"]
 max-args = 16  # default is 5
 max-branches = 24  # default is 12
 max-statements = 56  # default is 50
+
+[tool.coverage.run]
+branch = true
+cover_pylib = false
+omit = ["oauthlib.tests.*"]
+
+[tool.coverage.report]
+omit = ["*/python?.?/*", "*/site-packages/*", "*/pypy/*"]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __debug__:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "noqa",
+]
