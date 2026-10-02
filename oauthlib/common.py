@@ -8,8 +8,10 @@ to all implementations of OAuth.
 import collections
 import datetime
 import hashlib
+import hmac
 import logging
 import re
+import secrets
 import time
 import urllib.parse as urlparse
 from urllib.parse import (
@@ -39,17 +41,19 @@ always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 log = logging.getLogger('oauthlib')
 
-LOG_SAFE_PREFIX_LENGTH = 4
 LOG_SAFE_HASH_LENGTH = 12
+
+_LOG_SAFE_KEY = secrets.token_bytes(32)
 
 
 def log_safe(value):
     """Return a non-reversible representation of a secret suitable for logging.
 
-    The returned string contains a short prefix (for correlation with other
-    log lines or known values) plus a truncated SHA-256 digest (for exact
-    matching of the same secret across log lines), while never exposing
-    enough of the secret to be replayed or brute-forced.
+    The returned string is a truncated HMAC-SHA256 of the value under a
+    per-process random key, so it can be correlated across log lines within
+    a single process run but cannot be used to recover, verify, or brute-force
+    the secret, even for low-entropy values. No fragment of the secret is
+    included in the output.
 
     Mappings are returned as a new dict with every value passed through
     ``log_safe``, so structured details (e.g. token field names) remain
@@ -62,9 +66,8 @@ def log_safe(value):
     if value is None:
         return None
     value = str(value)
-    digest = hashlib.sha256(value.encode('utf-8')).hexdigest()[:LOG_SAFE_HASH_LENGTH]
-    prefix = value[:LOG_SAFE_PREFIX_LENGTH] if len(value) > LOG_SAFE_PREFIX_LENGTH else value
-    return '%s..%s' % (prefix, digest)
+    digest = hmac.new(_LOG_SAFE_KEY, value.encode('utf-8'), hashlib.sha256).hexdigest()[:LOG_SAFE_HASH_LENGTH]
+    return '%s..%s' % (len(value), digest)
 
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
