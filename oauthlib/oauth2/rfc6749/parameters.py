@@ -15,8 +15,9 @@ from oauthlib.common import add_params_to_qs, add_params_to_uri
 from oauthlib.signals import scope_changed
 
 from .errors import (
-    InsecureTransportError, MismatchingStateError, MissingCodeError,
-    MissingTokenError, MissingTokenTypeError, raise_from_error,
+    InsecureTransportError, InvalidRequestError, MismatchingStateError,
+    MissingCodeError, MissingTokenError, MissingTokenTypeError,
+    raise_from_error,
 )
 from .tokens import OAuth2Token
 from .utils import is_secure_transport, list_to_scope, scope_to_list
@@ -270,7 +271,23 @@ def parse_authorization_code_response(uri, state=None):
         raise InsecureTransportError()
 
     query = urlparse.urlparse(uri).query
-    params = dict(urlparse.parse_qsl(query))
+    pairs = urlparse.parse_qsl(query)
+
+    # Security-sensitive authorization response parameters are single-valued.
+    # A redirect URI that repeats one of them (for example two ``code`` or two
+    # ``state`` values) is ambiguous: ``dict(...)`` would silently keep just one
+    # value, which can disagree with what a proxy, log, or framework upstream
+    # treated as authoritative. Reject the response instead of collapsing it.
+    single_valued = ('code', 'state', 'error', 'error_description', 'error_uri')
+    seen = set()
+    for key, _value in pairs:
+        if key in single_valued:
+            if key in seen:
+                raise InvalidRequestError(
+                    description="Duplicate %s parameter in response." % key)
+            seen.add(key)
+
+    params = dict(pairs)
 
     if state and params.get('state') != state:
         raise MismatchingStateError()
