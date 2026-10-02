@@ -7,6 +7,7 @@ import logging
 
 from .. import errors
 from .base import GrantTypeBase
+from oauthlib.common import log_safe
 
 log = logging.getLogger(__name__)
 
@@ -80,7 +81,7 @@ class ClientCredentialsGrant(GrantTypeBase):
         self.request_validator.save_token(token, request)
 
         log.debug('Issuing token to client id %r (%r), %r.',
-                  request.client_id, request.client, token)
+                  request.client_id, request.client, log_safe(token))
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):

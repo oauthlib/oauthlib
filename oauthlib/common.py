@@ -7,6 +7,7 @@ to all implementations of OAuth.
 """
 import collections
 import datetime
+import hashlib
 import logging
 import re
 import time
@@ -37,6 +38,33 @@ always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                '0123456789_.-')
 
 log = logging.getLogger('oauthlib')
+
+LOG_SAFE_PREFIX_LENGTH = 4
+LOG_SAFE_HASH_LENGTH = 12
+
+
+def log_safe(value):
+    """Return a non-reversible representation of a secret suitable for logging.
+
+    The returned string contains a short prefix (for correlation with other
+    log lines or known values) plus a truncated SHA-256 digest (for exact
+    matching of the same secret across log lines), while never exposing
+    enough of the secret to be replayed or brute-forced.
+
+    Mappings are returned as a new dict with every value passed through
+    ``log_safe``, so structured details (e.g. token field names) remain
+    visible while their values are sanitized.
+    """
+    if isinstance(value, dict):
+        return {k: log_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [log_safe(v) for v in value]
+    if value is None:
+        return None
+    value = str(value)
+    digest = hashlib.sha256(value.encode('utf-8')).hexdigest()[:LOG_SAFE_HASH_LENGTH]
+    prefix = value[:LOG_SAFE_PREFIX_LENGTH] if len(value) > LOG_SAFE_PREFIX_LENGTH else value
+    return '%s..%s' % (prefix, digest)
 
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)

@@ -7,6 +7,7 @@ import logging
 
 from .. import errors, utils
 from .base import GrantTypeBase
+from oauthlib.common import log_safe
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class RefreshTokenGrant(GrantTypeBase):
         self.request_validator.save_token(token, request)
 
         log.debug('Issuing new token to client id %r (%r), %r.',
-                  request.client_id, request.client, token)
+                  request.client_id, request.client, log_safe(token))
         headers.update(self._create_cors_headers(request))
         return headers, json.dumps(token), 200
 
@@ -99,11 +100,11 @@ class RefreshTokenGrant(GrantTypeBase):
 
         # REQUIRED. The refresh token issued to the client.
         log.debug('Validating refresh token %s for client %r.',
-                  request.refresh_token, request.client)
+                  log_safe(request.refresh_token), request.client)
         if not self.request_validator.validate_refresh_token(
                 request.refresh_token, request.client, request):
             log.debug('Invalid refresh token, %s, for client %r.',
-                      request.refresh_token, request.client)
+                      log_safe(request.refresh_token), request.client)
             raise errors.InvalidGrantError(request=request)
 
         original_scopes = utils.scope_to_list(
@@ -116,7 +117,7 @@ class RefreshTokenGrant(GrantTypeBase):
                 and not self.request_validator.is_within_original_scope(
                     request.scopes, request.refresh_token, request)):
                 log.debug('Refresh token %s lack requested scopes, %r.',
-                          request.refresh_token, request.scopes)
+                          log_safe(request.refresh_token), request.scopes)
                 raise errors.InvalidScopeError(request=request)
         else:
             request.scopes = original_scopes
