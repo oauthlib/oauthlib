@@ -1,6 +1,27 @@
 Changelog
 =========
 
+Unreleased
+----------
+OAuth2.0 Provider:
+* **Breaking**: #983: Authorization requests with an unsupported
+  ``response_mode``, such as ``form_post``, now raise the fatal
+  ``UnsupportedResponseModeError`` (HTTP 400, no redirect) instead of
+  silently falling back to the grant's default response mode, which the
+  client may not be able to parse. This also applies to a ``response_mode``
+  set by custom validators or by code and token modifiers, and is checked
+  before any code or token is saved. A grant's own ``default_response_mode``
+  is always accepted. A duplicated ``response_mode`` now raises
+  ``InvalidRequestFatalError``.
+* **Breaking**: #814: The default ``response_mode`` is now applied during
+  authorization request validation, so errors from implicit and OIDC hybrid
+  grants are now returned in the URI fragment instead of the query,
+  including through ``OAuth2Error.in_uri()`` for errors raised during
+  validation. ``request.response_mode`` is set to the grant's default after
+  validation when omitted, and implicit grant errors use the query when the
+  ``response_mode`` is ``query``, requested or the grant's default, instead
+  of always using the fragment.
+
 4.0.0 (2026-09-28):
 ------------------
 OAuth2.0 Provider:
