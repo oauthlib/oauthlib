@@ -42,7 +42,7 @@ import logging
 import urllib.parse as urlparse
 import warnings
 
-from oauthlib.common import extract_params, safe_string_equals, urldecode
+from oauthlib.common import extract_params, log_safe, safe_string_equals, urldecode
 
 from . import utils
 import contextlib
@@ -455,7 +455,7 @@ def _verify_hmac(hash_algorithm_name: str,
                            client_secret, resource_owner_secret)
     match = safe_string_equals(signature, request.signature)
     if not match:
-        log.debug('Verify HMAC failed: signature base string: %s', sig_base_str)
+        log.debug('Verify HMAC failed: signature base string: %s', log_safe(sig_base_str))
     return match
 
 
@@ -716,7 +716,7 @@ def _verify_rsa(hash_algorithm_name: str,
 
         if not verify_ok:
             log.debug('Verify failed: RSA with ' + alg.hash_alg.name +
-                      ': signature base string=%s' + sig_base_str)
+                      ': signature base string=%s', log_safe(sig_base_str))
         return verify_ok
 
     except UnicodeError:
