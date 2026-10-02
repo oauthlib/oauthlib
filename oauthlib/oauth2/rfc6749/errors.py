@@ -183,6 +183,19 @@ class MissingClientIdError(InvalidRequestFatalError):
     description = 'Missing client_id parameter.'
 
 
+class UnsupportedResponseModeError(InvalidRequestFatalError):
+    """
+    The requested response_mode is not supported.
+
+    The response cannot be returned in the format the client asked for,
+    and a response in another format may not be understood by the client,
+    so the user must not be redirected. This is consistent with OpenID
+    Connect Core 1.0, Section 3.1.2.6.
+    https://openid.net/specs/openid-connect-core-1_0.html#AuthError
+    """
+    description = 'Unsupported response_mode parameter.'
+
+
 class InvalidRequestError(OAuth2Error):
     """
     The request is missing a required parameter, includes an invalid

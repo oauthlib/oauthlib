@@ -11,7 +11,7 @@ import logging
 from oauthlib import common
 
 from .. import errors
-from .base import GrantTypeBase
+from .base import GrantTypeBase, revalidate_response_mode
 
 log = logging.getLogger(__name__)
 
@@ -265,7 +265,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # https://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
+            # Never redirect using an unsupported response mode.
+            self._validate_response_mode(request)
             request.redirect_uri = request.redirect_uri or self.error_uri
+            # Unlike the implicit grant, fall back to the query for response
+            # modes other than "query" and "fragment".
             redirect_uri = common.add_params_to_uri(
                 request.redirect_uri, e.twotuples,
                 fragment=request.response_mode == "fragment")
@@ -274,6 +278,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         grant = self.create_authorization_code(request)
         for modifier in self._code_modifiers:
             grant = modifier(grant, token_handler, request)
+        # Reject an unsupported response mode before anything is saved.
+        self._validate_response_mode(request)
         if 'access_token' in grant:
             self.request_validator.save_token(grant, request)
         log.debug('Saving grant %r for %r.', grant, request)
@@ -317,6 +323,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         headers.update(self._create_cors_headers(request))
         return headers, json.dumps(token), 200
 
+    @revalidate_response_mode
     def validate_authorization_request(self, request):
         """Check the authorization request for normal and fatal errors.
 
@@ -343,7 +350,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # invalid redirection URI.
 
         # First check duplicate parameters
-        for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
+        for param in ('client_id', 'response_type', 'response_mode', 'redirect_uri', 'scope', 'state'):
             try:
                 duplicate_params = request.duplicate_params
             except ValueError:
@@ -367,6 +374,10 @@ class AuthorizationCodeGrant(GrantTypeBase):
         # OPTIONAL. As described in Section 3.1.2.
         # https://tools.ietf.org/html/rfc6749#section-3.1.2
         self._handle_redirects(request)
+
+        # The response mode determines how normal errors are returned, so it
+        # must be validated, and defaulted, before any of them are raised.
+        self._validate_response_mode(request)
 
         # Then check for normal errors.
 
