@@ -7,8 +7,12 @@ to all implementations of OAuth.
 """
 import collections
 import datetime
+import hashlib
+import hmac
 import logging
+import os
 import re
+import secrets
 import time
 import urllib.parse as urlparse
 from urllib.parse import (
@@ -37,6 +41,50 @@ always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                '0123456789_.-')
 
 log = logging.getLogger('oauthlib')
+
+LOG_SAFE_PREFIX_LENGTH = 4
+LOG_SAFE_HASH_LENGTH = 12
+
+LOG_SAFE_KEY = os.environ.get('OAUTHLIB_LOG_SAFE_KEY') or secrets.token_bytes(32)
+
+
+def set_log_safe_key(key):
+    """Set the key used by log_safe to fingerprint secrets in log output.
+
+    Set a stable key to make log_safe fingerprints reproducible across
+    processes and restarts, so log lines can be correlated against known
+    values. By default a random per-process key is used, which prevents
+    offline brute-force of low-entropy values from log output but only
+    allows correlation within a single process run.
+    """
+    global LOG_SAFE_KEY  # noqa: PLW0603
+    LOG_SAFE_KEY = key
+
+
+def log_safe(value):
+    """Return a non-reversible representation of a secret suitable for logging.
+
+    The returned string contains a short prefix (for correlation with other
+    log lines or known values) plus a truncated HMAC-SHA256 of the value
+    (for exact matching of the same secret across log lines), never exposing
+    enough of the secret to be replayed. The HMAC is keyed with LOG_SAFE_KEY:
+    with a stable key the fingerprints are reproducible, with the default
+    random per-process key they are not computable outside the process.
+
+    Mappings are returned as a new dict with every value passed through
+    ``log_safe``, so structured details (e.g. token field names) remain
+    visible while their values are sanitized.
+    """
+    if isinstance(value, dict):
+        return {k: log_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [log_safe(v) for v in value]
+    if value is None:
+        return None
+    value = str(value)
+    digest = hmac.new(LOG_SAFE_KEY, value.encode('utf-8'), hashlib.sha256).hexdigest()[:LOG_SAFE_HASH_LENGTH]
+    prefix = value[:LOG_SAFE_PREFIX_LENGTH] if len(value) > LOG_SAFE_PREFIX_LENGTH else value
+    return '%s..%s' % (prefix, digest)
 
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
