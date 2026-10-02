@@ -89,6 +89,27 @@ class TokenTest(TestCase):
         self.assertEqual(prepare_mac_header(**self.mac_body), self.auth_body)
         self.assertEqual(prepare_mac_header(**self.mac_both), self.auth_both)
 
+    def test_prepare_mac_header_rejects_unsafe_values(self):
+        for field, value in (
+            ('nonce', 'legit\r\nX-Injected: evil'),
+            ('nonce', 'legit\nX-Injected: evil'),
+            ('nonce', 'legit\0'),
+            ('nonce', 'legit"'),
+            ('nonce', 'l\u00e9git'),
+            ('ext', 'a,b\r\nSet-Cookie: pwned=1'),
+            ('ext', 'a,b\nSet-Cookie: pwned=1'),
+            ('ext', 'a\0,b'),
+            ('ext', 'a"b'),
+            ('ext', '\u00e9xt'),
+        ):
+            with self.subTest(field=field, value=repr(value)), \
+                    self.assertRaises(ValueError):
+                prepare_mac_header(
+                    **{
+                        **self.mac_plain,
+                        field: value,
+                    })
+
     def test_prepare_mac_header_rejects_crlf_in_nonce(self):
         with self.assertRaises(ValueError):
             prepare_mac_header(
