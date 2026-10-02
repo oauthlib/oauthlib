@@ -267,6 +267,40 @@ def safe_string_equals(a, b):
     return result == 0
 
 
+def check_http_header_value(name, value):
+    """Validate that a value is safe to embed in an HTTP header field value.
+
+    Prevents header injection by rejecting characters that allow the value
+    to break out of its header field, per RFC 9110 section 5.5:
+
+    - CR and LF characters, which enable header splitting/injection;
+    - other control characters (CTLs, including NUL), which may corrupt
+      or terminate parsing of the header by downstream intermediaries;
+    - double quotes, which allow a quoted-string parameter in a header
+      value (such as the MAC Authorization header) to break out and
+      inject arbitrary parameters;
+    - non-ASCII characters, which are mangled inconsistently by proxies
+      and gateways and may be re-interpreted as control characters.
+
+    :param name: Name of the parameter, used in error messages.
+    :param value: Candidate header value. ``None`` is allowed and ignored.
+    :raises ValueError: if the value contains unsafe characters.
+    """
+    if value is None:
+        return
+    if not isinstance(value, str):
+        raise ValueError('%s must be a string' % name)
+    for char in value:
+        if char in '\r\n':
+            raise ValueError('%s must not contain CR or LF characters' % name)
+        if ord(char) < 0x20 or ord(char) == 0x7f:
+            raise ValueError('%s must not contain control characters' % name)
+        if char == '"':
+            raise ValueError('%s must not contain double quotes' % name)
+        if ord(char) > 0x7e:
+            raise ValueError('%s must contain ASCII characters only' % name)
+
+
 def to_unicode(data, encoding='UTF-8'):
     """Convert a number of different types of objects to unicode."""
     if isinstance(data, str):
