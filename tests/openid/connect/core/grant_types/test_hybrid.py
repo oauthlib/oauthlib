@@ -100,3 +100,19 @@ class OpenIDHybridCodeIdTokenTokenTest(OpenIDAuthCodeTest):
         self.assertIn('error=invalid_request', h['Location'])
         self.assertIsNone(b)
         self.assertEqual(s, 302)
+
+
+class OpenIDHybridIdTokenCodeTest(OpenIDHybridCodeIdTokenTest):
+    """The order of response_type values must not matter (#986)."""
+
+    def setUp(self):
+        super().setUp()
+        self.request.response_type = 'id_token code'
+
+
+class OpenIDHybridTokenIdTokenCodeTest(OpenIDHybridCodeIdTokenTokenTest):
+    """The order of response_type values must not matter (#986)."""
+
+    def setUp(self):
+        super().setUp()
+        self.request.response_type = 'token id_token code'

@@ -82,6 +82,31 @@ class AuthorizationEndpoint(BaseEndpoint):
     def default_token_type(self):
         return self._default_token_type
 
+    def _normalize_response_type(self, request):
+        """Rewrite ``request.response_type`` to its registered spelling.
+
+        Per `Section 3.1.1`_ and `OAuth 2.0 Multiple Response Type Encoding
+        Practices`_, the order of space-delimited response_type values does
+        not matter, so ``id_token code`` is the same as ``code id_token``.
+        Values that are repeated or do not match a registered response_type
+        are left untouched so that they are rejected as before.
+
+        .. _`Section 3.1.1`: https://tools.ietf.org/html/rfc6749#section-3.1.1
+        .. _`OAuth 2.0 Multiple Response Type Encoding Practices`: https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseTypesAndModes
+        """
+        response_type = request.response_type
+        if not response_type or response_type in self.response_types:
+            return
+        values = response_type.split()
+        if len(values) != len(set(values)):
+            return
+        for canonical in self.response_types:
+            if set(canonical.split()) == set(values):
+                log.debug('Normalizing response_type %r to %r.',
+                          response_type, canonical)
+                request.response_type = canonical
+                return
+
     @catch_errors_and_unavailability
     def create_authorization_response(self, uri, http_method='GET', body=None,
                                       headers=None, scopes=None, credentials=None):
@@ -93,6 +118,7 @@ class AuthorizationEndpoint(BaseEndpoint):
         request.user = None     # TODO: explain this in docs
         for k, v in (credentials or {}).items():
             setattr(request, k, v)
+        self._normalize_response_type(request)
         response_type_handler = self.response_types.get(
             request.response_type, self.default_response_type_handler)
         log.debug('Dispatching response_type %s request to %r.',
@@ -109,6 +135,7 @@ class AuthorizationEndpoint(BaseEndpoint):
 
         request.scopes = utils.scope_to_list(request.scope)
 
+        self._normalize_response_type(request)
         response_type_handler = self.response_types.get(
             request.response_type, self.default_response_type_handler)
         return response_type_handler.validate_authorization_request(request)
