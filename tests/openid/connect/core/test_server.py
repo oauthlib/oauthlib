@@ -111,6 +111,37 @@ class AuthorizationEndpointTest(TestCase):
         self.assertIn('Location', headers)
         self.assertURLEqual(headers['Location'], 'http://back.to/me?error=unsupported_response_type')
 
+    def test_reordered_response_type_uses_registered_handler(self):
+        # RFC 6749 section 3.1.1: the order of response_type values does not matter.
+        for response_type in ('id_token+code', 'id_token+token+code', 'token+id_token'):
+            uri = 'http://i.b/l?response_type=%s&client_id=me&scope=openid' % response_type
+            uri += '&state=xyz&nonce=n&redirect_uri=http%3A%2F%2Fback.to%2Fme'
+            expected = {
+                'id_token+code': ('code id_token', HybridGrant),
+                'id_token+token+code': ('code token id_token', HybridGrant),
+                'token+id_token': ('id_token token', ImplicitGrant),
+            }[response_type]
+            with mock.patch.object(expected[1], 'validate_authorization_request',
+                                   autospec=True, return_value=([], {})) as validate:
+                self.endpoint.validate_authorization_request(uri)
+            request = validate.call_args[0][1]
+            self.assertEqual(request.response_type, expected[0])
+
+    def test_reordered_hybrid_response_type_requires_nonce(self):
+        uri = 'http://i.b/l?response_type=id_token+code&client_id=me&scope=openid'
+        uri += '&state=xyz&redirect_uri=http%3A%2F%2Fback.to%2Fme'
+        headers, _body, _status_code = self.endpoint.create_authorization_response(
+            uri, scopes=['openid'])
+        self.assertIn('Location', headers)
+        self.assertIn('error=invalid_request', headers['Location'])
+        self.assertIn('nonce', headers['Location'])
+
+    def test_response_type_with_repeated_or_empty_values_is_not_rewritten(self):
+        for response_type in ('code code', 'code  id_token', 'id_token code code', 'code bogus'):
+            request = mock.MagicMock(response_type=response_type)
+            self.endpoint._canonicalize_response_type(request)
+            self.assertEqual(request.response_type, response_type)
+
 
 class TokenEndpointTest(TestCase):
 

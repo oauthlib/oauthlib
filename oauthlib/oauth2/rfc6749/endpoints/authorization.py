@@ -82,6 +82,27 @@ class AuthorizationEndpoint(BaseEndpoint):
     def default_token_type(self):
         return self._default_token_type
 
+    def _canonicalize_response_type(self, request):
+        """Map a reordered response_type to the spelling it is registered with.
+
+        Per RFC 6749 section 3.1.1 the order of space-delimited response_type
+        values does not matter, so e.g. "id_token code" must be handled like
+        "code id_token". Values with empty or repeated tokens, or whose token
+        set is not registered, are left untouched.
+        """
+        response_type = request.response_type
+        if not response_type or response_type in self.response_types:
+            return
+        tokens = response_type.split(' ')
+        if '' in tokens or len(set(tokens)) != len(tokens):
+            return
+        for registered in self.response_types:
+            registered_tokens = registered.split(' ')
+            if (len(registered_tokens) == len(tokens)
+                    and set(registered_tokens) == set(tokens)):
+                request.response_type = registered
+                return
+
     @catch_errors_and_unavailability
     def create_authorization_response(self, uri, http_method='GET', body=None,
                                       headers=None, scopes=None, credentials=None):
@@ -93,6 +114,7 @@ class AuthorizationEndpoint(BaseEndpoint):
         request.user = None     # TODO: explain this in docs
         for k, v in (credentials or {}).items():
             setattr(request, k, v)
+        self._canonicalize_response_type(request)
         response_type_handler = self.response_types.get(
             request.response_type, self.default_response_type_handler)
         log.debug('Dispatching response_type %s request to %r.',
@@ -109,6 +131,7 @@ class AuthorizationEndpoint(BaseEndpoint):
 
         request.scopes = utils.scope_to_list(request.scope)
 
+        self._canonicalize_response_type(request)
         response_type_handler = self.response_types.get(
             request.response_type, self.default_response_type_handler)
         return response_type_handler.validate_authorization_request(request)
