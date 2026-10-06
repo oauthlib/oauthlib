@@ -6,6 +6,43 @@ from oauthlib.oauth2 import MetadataEndpoint, Server, TokenEndpoint
 from tests.unittest import TestCase
 
 
+from oauthlib import oauth2
+
+
+class ServerWithMetadata(oauth2.Server, oauth2.MetadataEndpoint):
+    """
+    A helper class for testing compatibility between MetadataEndpoint and
+    the Server class when inheriting from both.
+
+    This is used for the regression test for https://github.com/oauthlib/oauthlib/pull/808 .
+    """
+    def __init__(
+        self,
+        request_validator,
+        token_expires_in=None,
+        token_generator=None,
+        refresh_token_generator=None,
+        claims={},
+        *args,
+        **kwargs,
+    ):
+        oauth2.Server.__init__(
+            self,
+            request_validator,
+            token_expires_in=token_expires_in,
+            token_generator=token_generator,
+            refresh_token_generator=refresh_token_generator,
+            *args,
+            **kwargs,
+        )
+        oauth2.MetadataEndpoint.__init__(
+            self,
+            [self],
+            claims=claims,
+            raise_errors=True,
+        )
+
+
 class MetadataEndpointTest(TestCase):
     def setUp(self):
         self.metadata = {
@@ -147,3 +184,30 @@ class MetadataEndpointTest(TestCase):
                 "issuer": 'http://foo.bar',
                 "token_endpoint": "https://foo.bar/token",
             })
+
+    def test_inheritance_compatibility_with_server(self):
+        """
+        Test compatibility between the MetadataEndpoint and Server in subclasses
+        inheriting from both classes.
+
+        This is a regression test for https://github.com/oauthlib/oauthlib/pull/808 .
+        The bug fixed in the linked PR occured when a class inheriting from both Server
+        and MetadataEndpoint called MetadataEndpoint.__init__() and passing itself as an
+        argument.
+        The underlying cause of the bug was an attribute collision between the
+        TokenEndpoint and the MetadataEndpoint, both of which use the _grant_types
+        attribute, but using different types (list and dict).
+        """
+        # checking against a regression is rather simple in this case, as the bug happens
+        # during __init__ of the MetadataEndpoint.
+        # we can just create an instance of ServerWithMetadata. If this succeeds without
+        # a bug, then this test was successful.
+        validator = None
+        claims = {
+            "issuer": 'https://foo.bar',
+            "authorization_endpoint": "https://foo.bar/authorize",
+            "revocation_endpoint": "https://foo.bar/revoke",
+            "introspection_endpoint": "https://foo.bar/introspect",
+            "token_endpoint": "https://foo.bar/token"
+        }
+        ServerWithMetadata(validator, claims=claims)
