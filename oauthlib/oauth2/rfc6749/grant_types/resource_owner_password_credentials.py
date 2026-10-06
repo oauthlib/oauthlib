@@ -7,6 +7,7 @@ import logging
 
 from .. import errors
 from .base import GrantTypeBase
+from oauthlib.common import log_safe
 
 log = logging.getLogger(__name__)
 
@@ -99,8 +100,8 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
 
         self.request_validator.save_token(token, request)
 
-        log.debug('Issuing token %r to client id %r (%r) and username %s.',
-                  token, request.client_id, request.client, request.username)
+        log.debug('Issuing token %s to client id %r (%r) and username %s.',
+                  log_safe(token), request.client_id, request.client, log_safe(request.username))
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
@@ -169,12 +170,12 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
 
         self.validate_client_authentication(request)
 
-        log.debug('Validating username %s.', request.username)
+        log.debug('Validating username %s.', log_safe(request.username))
         if not self.request_validator.validate_user(request.username,
                                                     request.password, request.client, request):
             raise errors.InvalidGrantError(
                 'Invalid credentials given.', request=request)
-        log.debug('Authorizing access to user %r.', request.user)
+        log.debug('Authorizing access to user %r.', log_safe(request.user))
 
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
