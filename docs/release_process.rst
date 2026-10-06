@@ -18,7 +18,7 @@ failing tests we will either:
 
 Ideally, this process will allow rapid and graceful releases but in the case of
 downstream projects remaining in a broken stage for long we will simply advice
-they lock the oauthlib version in ``setup.py`` and release anyway.
+they pin their OAuthLib dependency to a compatible version and release anyway.
 
 Unittests might not be enough and as an extra measure we will create an
 OAuthLib release issue on Github at least 2 days prior to release detailing the
@@ -54,6 +54,11 @@ bug).
 
 For maintainer - Publishing a newer version
 --------------------------------------------
+
+Package metadata and optional dependencies are defined in ``pyproject.toml``.
+Setuptools reads the version from ``oauthlib.__version__`` in
+``oauthlib/__init__.py``; update that value when preparing a release.
+Build the source distribution and wheel with ``python -m build``.
 
 List of tasks to do a release from a maintainer point of view:
 
