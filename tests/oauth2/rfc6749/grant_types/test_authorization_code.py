@@ -336,8 +336,44 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_correct_code_challenge_method_plain(self):
         self.assertTrue(authorization_code.code_challenge_method_plain("foo", "foo"))
 
+    def test_plain_non_ascii_verifier_matches_non_ascii_challenge(self):
+        # Regression test: non-ASCII values previously raised TypeError
+        # from hmac.compare_digest, causing a server error instead of
+        # invalid_grant. (github issue #988)
+        self.assertTrue(
+            authorization_code.code_challenge_method_plain("verifier-\u00e9", "verifier-\u00e9"))
+        self.assertFalse(
+            authorization_code.code_challenge_method_plain("verifier-\u00e9", "verifier"))
+        self.assertFalse(
+            authorization_code.code_challenge_method_plain("verifier", "verifier-\u00e9"))
+
+    def test_plain_invalid_types_raise(self):
+        # A RequestValidator.get_code_challenge implementation returning
+        # a non-string is a server implementation error and must surface
+        # as such, not as invalid_grant.
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, None, "foo")
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, "foo", None)
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, "foo", {"a": 1})
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, 42, "foo")
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, b"foo", "foo")
+
     def test_wrong_code_challenge_method_s256(self):
         self.assertFalse(authorization_code.code_challenge_method_s256("foo", "bar"))
+
+    def test_s256_non_ascii_verifier_does_not_raise(self):
+        self.assertFalse(
+            authorization_code.code_challenge_method_s256("verifier-\u00e9", "foo"))
+
+    def test_s256_invalid_types_raise(self):
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_s256, None, "foo")
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_s256, "foo", 42)
 
     def test_correct_code_challenge_method_s256(self):
         # "abcd" as verifier gives a '+' to base64

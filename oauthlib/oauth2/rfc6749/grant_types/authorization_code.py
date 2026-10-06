@@ -48,7 +48,7 @@ def code_challenge_method_s256(verifier, challenge):
     expected = base64.urlsafe_b64encode(
         hashlib.sha256(verifier.encode()).digest()
     ).decode().rstrip('=')
-    return hmac.compare_digest(expected, challenge)
+    return hmac.compare_digest(expected.encode(), challenge.encode())
 
 
 def code_challenge_method_plain(verifier, challenge):
@@ -60,7 +60,7 @@ def code_challenge_method_plain(verifier, challenge):
 
     .. _`Section 4.3`: https://tools.ietf.org/html/rfc7636#section-4.3
     """
-    return hmac.compare_digest(verifier, challenge)
+    return hmac.compare_digest(verifier.encode(), challenge.encode())
 
 
 class AuthorizationCodeGrant(GrantTypeBase):
