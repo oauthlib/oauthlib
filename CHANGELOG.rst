@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Unreleased
+----------
+OAuth2.0 Provider:
+* #986: ``AuthorizationEndpoint`` now dispatches a ``response_type`` whose
+  space-delimited values are in a different order than the registered
+  spelling (e.g. ``id_token code``) to the same handler, and sets
+  ``request.response_type`` to the registered spelling, as the order of
+  values does not matter per RFC 6749 section 3.1.1. Values with empty or
+  repeated tokens, or an unregistered set of tokens, are handled as before.
+
 4.0.0 (2026-09-28):
 ------------------
 OAuth2.0 Provider:
