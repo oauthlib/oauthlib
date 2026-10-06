@@ -133,3 +133,15 @@ class RevocationEndpointTest(TestCase):
             self.assertEqual(loads(b)['error'], 'invalid_request')
             self.assertIn('query parameters are not allowed', loads(b)['error_description'])
             self.assertEqual(s, 400)
+
+    def test_revoke_bad_content_type(self):
+        endpoint = RevocationEndpoint(self.validator,
+                                      supported_token_types=['access_token'])
+        body = urlencode([('token', 'foo'),
+                          ('token_type_hint', 'refresh_token')])
+        h, b, s = endpoint.create_revocation_response(self.uri,
+                headers={'Content-Type': 'application/json'}, body=body)
+        self.assertEqual(h, self.resp_h)
+        self.assertEqual(loads(b)['error'], 'unsupported_content_type')
+        self.assertIn('application/x-www-form-urlencoded', loads(b)['error_description'])
+        self.assertEqual(s, 400)

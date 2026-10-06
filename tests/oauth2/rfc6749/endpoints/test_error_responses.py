@@ -478,21 +478,21 @@ class ErrorResponseTest(TestCase):
         }
 
         try:
-            _, body, s = self.web.create_token_response(uri,
+            _h, _b, _s = self.web.create_token_response(uri,
                     body='grant_type=access_token&code=123', headers=invalid_headers)
             self.fail('This should have failed with UnsupportedContentTypeError')
         except errors.UnsupportedContentTypeError as ire:
             self.assertIn(expected_content_type, ire.description)
 
         try:
-            _, body, s = self.legacy.create_token_response(uri,
+            _h, _b, _s = self.legacy.create_token_response(uri,
                     body='grant_type=access_token&code=123', headers=invalid_headers)
             self.fail('This should have failed with UnsupportedContentTypeError')
         except errors.UnsupportedContentTypeError as ire:
             self.assertIn(expected_content_type, ire.description)
 
         try:
-            _, body, s = self.backend.create_token_response(uri,
+            _h, _b, _s = self.backend.create_token_response(uri,
                     body='grant_type=access_token&code=123', headers=invalid_headers)
             self.fail('This should have failed with UnsupportedContentTypeError')
         except errors.UnsupportedContentTypeError as ire:
