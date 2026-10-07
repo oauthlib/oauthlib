@@ -16,10 +16,10 @@ Grant types
     custom_grant
 
 Grant types are what make OAuth 2 so flexible. The :doc:`Authorization
-Code grant </oauth2/grants/authcode>` is the default for almost all
-Web Applications, the :doc:`Implicit grant </oauth2/grants/implicit>`
-serves less secure applications such as Mobile Applications or
-Single-Page Applications, the :doc:`Client Credentials grant
+Code grant </oauth2/grants/authcode>` is the default for web applications
+and, with PKCE, for public clients such as mobile apps and single-page
+applications. The :doc:`Implicit grant </oauth2/grants/implicit>` is no
+longer recommended. The :doc:`Client Credentials grant
 </oauth2/grants/credentials>` is excellent for embedded services and
 backend applications. We have also the :doc:`Resource Owner Password
 Credentials grant </oauth2/grants/password>` when there is a high
