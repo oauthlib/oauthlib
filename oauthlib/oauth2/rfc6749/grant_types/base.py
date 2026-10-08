@@ -143,7 +143,7 @@ class GrantTypeBase:
         :type request: oauthlib.common.Request
         """
         # Only add a hybrid access token on auth step if asked for
-        if request.response_type not in ["token", "code token", "id_token token", "code id_token token"]:
+        if 'token' not in (request.response_type or '').split():
             return token
 
         token.update(token_handler.create_token(request, refresh_token=False))

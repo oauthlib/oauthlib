@@ -1,6 +1,23 @@
 Changelog
 =========
 
+Unreleased
+------------------
+OAuth2.0 Provider:
+* #986: ``AuthorizationEndpoint`` now treats the space-delimited values of
+  ``response_type`` as order-insensitive, as required by RFC 6749 section
+  3.1.1. A request such as ``response_type=id_token code`` is dispatched to
+  the handler registered for ``code id_token`` and ``request.response_type``
+  is normalized to the registered spelling before it reaches grants and
+  ``RequestValidator.validate_response_type``. Repeated or unregistered
+  values are not normalized.
+
+OpenID Connect:
+* #986: Security: ``HybridGrant`` now requires ``nonce`` for any ordering of
+  ``code id_token`` and ``code id_token token``. Previously a reordered
+  ``response_type`` could skip the mandatory nonce check when the
+  ``RequestValidator`` compared response types as sets.
+
 4.0.0 (2026-09-28):
 ------------------
 OAuth2.0 Provider:
