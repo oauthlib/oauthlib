@@ -2,6 +2,7 @@
 from unittest import mock
 
 from oauthlib.common import Request
+from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
@@ -59,4 +60,20 @@ class ImplicitGrantTest(TestCase):
         self.assertTrue(self.authval2.called)
 
     def test_error_response(self):
-        pass
+        # RFC 6749 §4.2.2.1: providers that call validate_authorization_request
+        # and redirect with OAuth2Error.in_uri() must place the error in the fragment.
+        self.mock_validator.validate_response_type.return_value = False
+        try:
+            self.auth.validate_authorization_request(self.request)
+            self.fail('expected UnauthorizedClientError')
+        except errors.UnauthorizedClientError as e:
+            self.assertEqual(e.response_mode, 'fragment')
+            error_uri = e.in_uri(self.request.redirect_uri)
+            self.assertIn('#error=unauthorized_client', error_uri)
+            self.assertNotIn('?error=', error_uri)
+
+        bearer = BearerToken(self.mock_validator)
+        h, _b, s = self.auth.create_token_response(self.request, bearer)
+        self.assertEqual(s, 302)
+        self.assertIn('#error=unauthorized_client', h['Location'])
+        self.assertNotIn('?error=', h['Location'])
