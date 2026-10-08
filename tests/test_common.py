@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from unittest import mock
+
 import oauthlib
 from oauthlib.common import (
     CaseInsensitiveDict, Request, add_params_to_uri, extract_params,
@@ -85,6 +87,33 @@ class GeneratorTest(TestCase):
         nonce = generate_nonce()
         for i in range(50):
             self.assertNotEqual(nonce, generate_nonce())
+
+    def test_generate_nonce_entropy(self):
+        """The nonce must draw at least 96 random bits from the CSPRNG.
+
+        RFC 5849 section 3.3 requires the nonce to be unique across all
+        requests sharing a timestamp, so the collision resistance within a
+        single timestamp comes solely from the random component. Assert the
+        random draw is at least 96 bits (up from the previous 64) so the
+        birthday-bound collision probability stays negligible. See
+        https://github.com/oauthlib/oauthlib/issues/946
+        """
+        with mock.patch('oauthlib.common.randbits') as mock_randbits:
+            mock_randbits.return_value = 0
+            generate_nonce()
+        self.assertTrue(mock_randbits.called)
+        requested_bits = mock_randbits.call_args[0][0]
+        self.assertGreaterEqual(requested_bits, 96)
+
+    def test_generate_nonce_length_within_default_limits(self):
+        """The nonce must fit the default RequestValidator.nonce_length.
+
+        The default OAuth1 validator accepts a nonce of 20 to 30 characters,
+        so a generated nonce must land inside that window to remain valid
+        against the library's own defaults.
+        """
+        for _ in range(200):
+            self.assertLessEqual(len(generate_nonce()), 30)
 
     def test_generate_token(self):
         token = generate_token()
