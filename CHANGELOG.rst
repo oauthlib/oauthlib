@@ -1,6 +1,14 @@
 Changelog
 =========
 
+4.0.1 (unreleased):
+------------------
+Misc:
+* ``Request.__repr__`` sanitization now keeps the parameter name instead of
+  replacing it with a ``\x01`` control character (missing ``r`` prefix on the
+  ``re.sub`` replacement template).
+
+
 4.0.0 (2026-09-28):
 ------------------
 OAuth2.0 Provider:
