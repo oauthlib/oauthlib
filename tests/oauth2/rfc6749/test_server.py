@@ -15,7 +15,7 @@ from oauthlib.oauth2.rfc6749.grant_types import (
     ResourceOwnerPasswordCredentialsGrant,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class AuthorizationEndpointTest(TestCase):

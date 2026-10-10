@@ -4,7 +4,7 @@ from oauthlib import signals
 from oauthlib.oauth2.rfc6749.errors import *
 from oauthlib.oauth2.rfc6749.parameters import *
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 @patch('time.time', new=lambda: 1000)

@@ -4,7 +4,7 @@ from unittest import mock
 from oauthlib.oauth2.rfc8628.endpoints import DeviceAuthorizationEndpoint
 from oauthlib.oauth2.rfc8628.request_validator import RequestValidator
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class DeviceAuthorizationEndpointTest(TestCase):
