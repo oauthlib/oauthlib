@@ -2,6 +2,7 @@
 from unittest import mock
 
 from oauthlib.common import Request
+from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types import ImplicitGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
@@ -60,3 +61,10 @@ class ImplicitGrantTest(TestCase):
 
     def test_error_response(self):
         pass
+
+    def test_validate_authorization_request_unauthorized_client_in_fragment(self):
+        self.mock_validator.validate_response_type.return_value = False
+        with self.assertRaises(errors.UnauthorizedClientError) as cm:
+            self.auth.validate_authorization_request(self.request)
+        self.assertEqual(cm.exception.response_mode, 'fragment')
+        self.assertIn('#', cm.exception.in_uri(self.request.redirect_uri))

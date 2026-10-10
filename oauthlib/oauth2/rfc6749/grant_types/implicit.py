@@ -305,6 +305,11 @@ class ImplicitGrant(GrantTypeBase):
         # https://tools.ietf.org/html/rfc6749#section-3.1.2
         self._handle_redirects(request)
 
+        # Non-fatal errors must be returned via the fragment per RFC 6749 section 4.2.2.1.
+        # Set the response_mode now so that any OAuth2Error raised below carries the
+        # correct mode when the caller uses error.in_uri() or error.response_mode.
+        request.response_mode = request.response_mode or self.default_response_mode
+
         # Then check for normal errors.
 
         request_info = self._run_custom_validators(request,
