@@ -19,6 +19,9 @@ OAuth2.0 Provider:
   ``401 invalid_client``.
 * #963: Improved PKCE code comparison
 
+OAuth2.0 Client:
+* #602: Add ``Client.parse_www_authenticate`` to raise the matching error from a Bearer ``WWW-Authenticate`` challenge (RFC 6750).
+
 Misc:
 * #904: Stop installing ``examples`` into ``site-packages``.
 * #930: Add devcontainer, Add Python3.14, Python3.14t.
