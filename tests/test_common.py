@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import oauthlib
 from oauthlib.common import (
-    CaseInsensitiveDict, Request, add_params_to_uri, extract_params,
-    generate_client_id, generate_nonce, generate_timestamp, generate_token,
-    urldecode,
+    CaseInsensitiveDict, Request, add_params_to_uri, decode_params_utf8,
+    extract_params, generate_client_id, generate_nonce, generate_timestamp,
+    generate_token, urldecode,
 )
 
 from tests.unittest import TestCase
@@ -39,6 +39,14 @@ class EncodingTest(TestCase):
         self.assertRaises(ValueError, urldecode, '%RA')
         self.assertRaises(ValueError, urldecode, '%AR')
         self.assertRaises(ValueError, urldecode, '%RR')
+
+    def test_decode_params_utf8_invalid_bytes(self):
+        self.assertEqual(
+            decode_params_utf8([(b'city', b'caf\xc3\xa9')]),
+            [('city', 'café')],
+        )
+        with self.assertRaises(ValueError):
+            decode_params_utf8([(b'q', b'\xe4')])
 
 
 class ParameterTest(TestCase):
