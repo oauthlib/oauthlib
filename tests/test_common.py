@@ -39,6 +39,10 @@ class EncodingTest(TestCase):
         self.assertRaises(ValueError, urldecode, '%RA')
         self.assertRaises(ValueError, urldecode, '%AR')
         self.assertRaises(ValueError, urldecode, '%RR')
+        # Invalid percent-encoded UTF-8 in values and keys
+        self.assertRaises(ValueError, urldecode, 'q=%E4')
+        self.assertRaises(ValueError, urldecode, '%FF=value')
+        self.assertCountEqual(urldecode('q=caf%C3%A9'), [('q', 'café')])
 
     def test_decode_params_utf8_invalid_bytes(self):
         self.assertEqual(
@@ -47,6 +51,8 @@ class EncodingTest(TestCase):
         )
         with self.assertRaises(ValueError):
             decode_params_utf8([(b'q', b'\xe4')])
+        with self.assertRaises(ValueError):
+            decode_params_utf8([(b'\xff', b'value')])
 
 
 class ParameterTest(TestCase):

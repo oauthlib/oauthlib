@@ -132,7 +132,13 @@ def urldecode(query):
 
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
-    params = urlparse.parse_qsl(query, keep_blank_values=True)
+    # errors="strict" so invalid percent-encoded UTF-8 raises instead of
+    # returning U+FFFD replacement characters (default errors="replace").
+    try:
+        params = urlparse.parse_qsl(
+            query, keep_blank_values=True, errors="strict")
+    except UnicodeDecodeError as exc:
+        raise ValueError('Invalid UTF-8 in URL-encoded parameter.') from exc
 
     # unicode all the things
     return decode_params_utf8(params)
