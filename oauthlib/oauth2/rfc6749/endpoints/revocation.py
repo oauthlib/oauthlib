@@ -114,6 +114,10 @@ class RevocationEndpoint(BaseEndpoint):
         """
         self._raise_on_bad_method(request)
         self._raise_on_bad_post_request(request)
+        self._raise_on_bad_content_type(
+            request,
+            allowed_type='application/x-www-form-urlencoded',
+        )
         self._raise_on_missing_token(request)
         self._raise_on_invalid_client(request)
         self._raise_on_unsupported_token(request)

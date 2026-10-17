@@ -117,3 +117,23 @@ class ErrorResponseTest(TestCase):
 
         self.validator.validate_scopes.side_effect = validate_scopes
         self.assert_request_raises(errors.InvalidScopeError, request)
+
+    def test_invalid_content_type(self):
+        request = self.build_request()
+        request.headers["Content-Type"] = "application/json"
+        self.assert_request_raises(
+            errors.UnsupportedContentTypeError,
+            request,
+            "Invalid Content-Type. Must be: application/x-www-form-urlencoded",
+        )
+
+    def test_content_type_with_charset_accepted(self):
+        request = self.build_request()
+        request.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
+        with mock.patch.object(
+            self.device, "create_device_authorization_response", return_value=({}, {}, 200)
+        ):
+            try:
+                self.device.validate_device_authorization_request(request)
+            except errors.OAuth2Error:
+                self.fail("Content-Type with charset parameter should be accepted")
