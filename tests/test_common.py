@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+import hashlib
+import hmac
+import logging
+import os
+import subprocess
+import sys
 import time
 from unittest import mock
 
@@ -6,7 +12,7 @@ import oauthlib
 from oauthlib.common import (
     CaseInsensitiveDict, Request, add_params_to_uri, extract_params,
     generate_client_id, generate_nonce, generate_timestamp, generate_token,
-    safe_string_equals, urldecode,
+    log_safe, safe_string_equals, set_log_safe_key, urldecode,
 )
 
 from tests.unittest import TestCase
@@ -353,3 +359,73 @@ class SafeStringEqualsTest(TestCase):
     def test_unicode_operands(self):
         self.assertTrue(safe_string_equals(u'clé', u'clé'))
         self.assertFalse(safe_string_equals(u'clé', u'clo'))
+
+
+class LogSafeTest(TestCase):
+
+    def tearDown(self):
+        set_log_safe_key(None)
+        super().tearDown()
+
+    def test_log_safe_stable_key_reproducible(self):
+        set_log_safe_key(b'stable-test-key')
+        self.assertEqual(log_safe('secret-token'),
+                         'secr..' + hmac.new(b'stable-test-key', b'secret-token',
+                                             hashlib.sha256).hexdigest()[:12])
+
+    def test_log_safe_default_key_random(self):
+        # default per-process key: same value yields the same fingerprint
+        # within the process, but it is not a known/stable value
+        self.assertEqual(log_safe('secret-token'), log_safe('secret-token'))
+        self.assertNotEqual(log_safe('secret-token'), 'secr..' + hmac.new(
+            b'stable-test-key', b'secret-token', hashlib.sha256).hexdigest()[:12])
+
+    def test_log_safe_dict_and_none(self):
+        set_log_safe_key(b'stable-test-key')
+        sanitized = log_safe({'access_token': 'abcdefgh', 'refresh_token': None})
+        self.assertEqual(sorted(sanitized), ['access_token', 'refresh_token'])
+        self.assertIsNone(sanitized['refresh_token'])
+        self.assertTrue(sanitized['access_token'].startswith('abcd..'))
+        self.assertNotIn('abcdefgh', str(sanitized))
+
+    def test_log_safe_no_secret_fragment(self):
+        set_log_safe_key(b'stable-test-key')
+        token = 's3cr3t-refresh-token-value'
+        out = log_safe(token)
+        self.assertTrue(out.startswith('s3cr..'))
+        self.assertNotIn(token, out)
+        self.assertNotIn(token[4:], out)
+
+    def test_log_safe_eager_evaluation_with_debug_disabled(self):
+        # log_safe is evaluated eagerly as a logging argument; it must not
+        # raise even when the record is filtered out by the logger level
+        set_log_safe_key('stable-test-key')  # str key, not bytes
+        logger = logging.getLogger('oauthlib.test_log_safe')
+        logger.setLevel(logging.CRITICAL)  # DEBUG disabled
+        try:
+            logger.debug('Validating refresh token %s.', log_safe('secret-token'))
+        except TypeError:
+            self.fail('log_safe raised TypeError with a str key and DEBUG disabled')
+
+    def test_log_safe_env_key_regression(self):
+        # Regression: OAUTHLIB_LOG_SAFE_KEY is a str from the environment and
+        # must be usable by hmac.new without raising, even when the logging
+        # call is filtered out (arguments are still evaluated eagerly).
+        code = (
+            "import logging\n"
+            "logging.disable(logging.CRITICAL)\n"
+            "from oauthlib.common import log_safe\n"
+            "logger = logging.getLogger('oauthlib.regression')\n"
+            "try:\n"
+            "    logger.debug('Validating refresh token %s.', log_safe('secret-token'))\n"
+            "except TypeError as e:\n"
+            "    print('TYPEERROR: %s' % e)\n"
+            "else:\n"
+            "    print('OK')\n"
+        )
+        env = dict(os.environ, OAUTHLIB_LOG_SAFE_KEY='stable-test-key')
+        result = subprocess.run(  # noqa: S603 - sys.executable is not untrusted input
+            [sys.executable, '-c', code],
+            env=env, capture_output=True, text=True, check=True,
+        )
+        self.assertEqual(result.stdout.strip(), 'OK')

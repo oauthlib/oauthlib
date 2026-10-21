@@ -56,9 +56,19 @@ def set_log_safe_key(key):
     values. By default a random per-process key is used, which prevents
     offline brute-force of low-entropy values from log output but only
     allows correlation within a single process run.
+
+    Passing None resets the key to a fresh random per-process key.
     """
     global LOG_SAFE_KEY  # noqa: PLW0603
-    LOG_SAFE_KEY = key
+    LOG_SAFE_KEY = key if key is not None else secrets.token_bytes(32)
+
+
+def _get_log_safe_key():
+    """Return the current log_safe key, encoded to bytes for hmac.new()."""
+    key = LOG_SAFE_KEY
+    if isinstance(key, str):
+        key = key.encode('utf-8')
+    return key
 
 
 def log_safe(value):
@@ -82,7 +92,7 @@ def log_safe(value):
     if value is None:
         return None
     value = str(value)
-    digest = hmac.new(LOG_SAFE_KEY, value.encode('utf-8'), hashlib.sha256).hexdigest()[:LOG_SAFE_HASH_LENGTH]
+    digest = hmac.new(_get_log_safe_key(), value.encode('utf-8'), hashlib.sha256).hexdigest()[:LOG_SAFE_HASH_LENGTH]
     prefix = value[:LOG_SAFE_PREFIX_LENGTH] if len(value) > LOG_SAFE_PREFIX_LENGTH else value
     return '%s..%s' % (prefix, digest)
 
