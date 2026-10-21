@@ -24,7 +24,8 @@ import logging
 import urllib.parse as urlparse
 
 from oauthlib.common import (
-    Request, generate_nonce, generate_timestamp, to_unicode, urlencode,
+    Request, generate_nonce, generate_timestamp, log_safe, to_unicode,
+    urlencode,
 )
 
 from . import parameters, signature
@@ -169,24 +170,24 @@ class Client:
             uri_query=urlparse.urlparse(uri).query,
             body=body,
             headers=headers)
-        log.debug("Collected params: {}".format(collected_params))
+        log.debug("Collected params: %s.", log_safe(collected_params))
 
         normalized_params = signature.normalize_parameters(collected_params)
         normalized_uri = signature.base_string_uri(uri, headers.get('Host', None))
-        log.debug("Normalized params: {}".format(normalized_params))
+        log.debug("Normalized params: %s.", log_safe(normalized_params))
         log.debug("Normalized URI: {}".format(normalized_uri))
 
         base_string = signature.signature_base_string(request.http_method,
                                                       normalized_uri, normalized_params)
 
-        log.debug("Signing: signature base string: {}".format(base_string))
+        log.debug("Signing: signature base string: %s.", log_safe(base_string))
 
         if self.signature_method not in self.SIGNATURE_METHODS:
             raise ValueError('Invalid signature method.')
 
         sig = self.SIGNATURE_METHODS[self.signature_method](base_string, self)
 
-        log.debug("Signature: {}".format(sig))
+        log.debug("Signature: %s.", log_safe(sig))
         return sig
 
     def get_oauth_params(self, request):
