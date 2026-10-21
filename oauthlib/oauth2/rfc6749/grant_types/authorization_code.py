@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import json
 import logging
+import re
 
 from oauthlib import common
 
@@ -14,6 +15,37 @@ from .. import errors
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
+
+# RFC 7636 Section 4.1: code_verifier = 43*128unreserved
+# unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
+_code_verifier_re = re.compile(r'[A-Za-z0-9\-._~]{43,128}\Z')
+
+# RFC 7636 Section 4.2: with "plain", the code_challenge has the same
+# syntax as the code_verifier; with "S256" it is the 43-character
+# base64url-encoded SHA-256 digest (always exactly 43 characters).
+_code_challenge_plain_re = _code_verifier_re
+_code_challenge_s256_re = re.compile(r'[A-Za-z0-9\-._~]{43}\Z')
+
+
+def is_valid_code_verifier(code_verifier):
+    """Check a code_verifier against the ABNF of `Section 4.1`_.
+
+    .. _`Section 4.1`: https://tools.ietf.org/html/rfc7636#section-4.1
+    """
+    return isinstance(code_verifier, str) and _code_verifier_re.match(code_verifier) is not None
+
+
+def is_valid_code_challenge(code_challenge, code_challenge_method):
+    """Check a code_challenge against the ABNF of `Section 4.2`_.
+
+    .. _`Section 4.2`: https://tools.ietf.org/html/rfc7636#section-4.2
+    """
+    if not isinstance(code_challenge, str):
+        return False
+    if code_challenge_method == 'S256':
+        return _code_challenge_s256_re.match(code_challenge) is not None
+    # "plain" has the same syntax as the code_verifier.
+    return _code_challenge_plain_re.match(code_challenge) is not None
 
 
 def code_challenge_method_s256(verifier, challenge):
@@ -406,7 +438,6 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.MissingCodeChallengeError(request=request)
 
         if request.code_challenge is not None:
-            request_info["code_challenge"] = request.code_challenge
 
             # OPTIONAL, defaults to "plain" if not present in the request.
             if request.code_challenge_method is None:
@@ -414,6 +445,14 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
             if request.code_challenge_method not in self._code_challenge_methods:
                 raise errors.UnsupportedCodeChallengeMethodError(request=request)
+
+            # RFC 7636 Section 4.2: check the code_challenge syntax
+            if not is_valid_code_challenge(request.code_challenge, request.code_challenge_method):
+                raise errors.InvalidRequestError(
+                    description='Invalid code_challenge parameter.', request=request)
+
+            request_info["code_challenge"] = request.code_challenge
+
             request_info["code_challenge_method"] = request.code_challenge_method
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
@@ -473,6 +512,11 @@ class AuthorizationCodeGrant(GrantTypeBase):
         if challenge is not None:
             if request.code_verifier is None:
                 raise errors.MissingCodeVerifierError(request=request)
+
+            # RFC 7636 Section 4.1: check the code_verifier syntax
+            if not is_valid_code_verifier(request.code_verifier):
+                raise errors.InvalidGrantError(
+                    description='Invalid code_verifier parameter.', request=request)
 
             challenge_method = self.request_validator.get_code_challenge_method(request.code, request)
             if challenge_method is None:
