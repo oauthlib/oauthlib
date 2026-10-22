@@ -1,6 +1,11 @@
 Changelog
 =========
 
+4.0.1 (unreleased):
+------------------
+Misc:
+* #794: Recommend Authorization Code + PKCE instead of Implicit Grant for public clients.
+
 4.0.0 (2026-09-28):
 ------------------
 OAuth2.0 Provider:
