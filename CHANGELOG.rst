@@ -5,6 +5,9 @@ Changelog
 ------------------
 Misc:
 * #794: Recommend Authorization Code + PKCE instead of Implicit Grant for public clients.
+* ``Request.__repr__`` sanitization now keeps the parameter name instead of
+  replacing it with a ``\x01`` control character (missing ``r`` prefix on the
+  ``re.sub`` replacement template).
 
 4.0.0 (2026-09-28):
 ------------------

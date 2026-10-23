@@ -207,6 +207,27 @@ class RequestTest(TestCase):
         self.assertNotIn('bar', repr(r))
         self.assertIn('<SANITIZED>', repr(r))
 
+    def test_sanitizing_keeps_parameter_name(self):
+        """Only the value is replaced; the parameter name is kept.
+
+        ``SANITIZE_PATTERN`` captures the ``<name>=`` prefix precisely so the
+        replacement can put it back, which keeps the repr readable for
+        debugging.
+        """
+        r = Request(URI, body='client_id=foo&refresh_token=bar')
+        self.assertIn('client_id=foo', repr(r))
+        self.assertIn('refresh_token=<SANITIZED>', repr(r))
+
+        r = Request(URI, body='username=foo&password=bar')
+        self.assertIn('username=foo', repr(r))
+        self.assertIn('password=<SANITIZED>', repr(r))
+        self.assertNotIn('bar', repr(r))
+
+    def test_sanitizing_emits_no_control_character(self):
+        """The repr must stay printable, with no stray control characters."""
+        r = Request(URI, body='client_id=foo&refresh_token=bar')
+        self.assertNotIn('\x01', repr(r))
+
     def test_headers_params(self):
         r = Request(URI, headers={'token': 'foobar'}, body='token=banana')
         self.assertEqual(r.headers['token'], 'foobar')
