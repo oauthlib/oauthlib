@@ -52,6 +52,7 @@ from .rfc6749.errors import (
     TokenExpiredError,
     UnauthorizedClientError,
     UnsupportedGrantTypeError,
+    UnsupportedResponseModeError,
     UnsupportedResponseTypeError,
     UnsupportedTokenTypeError,
 )
