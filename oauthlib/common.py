@@ -164,13 +164,20 @@ def generate_nonce():
     Per `section 3.3`_ of the OAuth 1 RFC 5849 spec.
     Per `section 3.2.1`_ of the MAC Access Authentication spec.
 
-    A random 64-bit number is appended to the epoch timestamp for both
-    randomness and to decrease the likelihood of collisions.
+    RFC 5849 section 3.3 requires the nonce to be unique "across all requests
+    with the same timestamp, client credentials, and token combinations". The
+    ``oauth_timestamp`` parameter is sent separately, so embedding the epoch
+    time in the nonce does nothing to distinguish requests that share a
+    timestamp: within a given second the collision resistance comes entirely
+    from the random component. This uses 96 bits drawn from the system CSPRNG
+    (up from the previous 64 bits appended to the timestamp), which keeps the
+    birthday-bound collision probability negligible while the decimal encoding
+    stays within the default nonce length limits.
 
     .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return str(str(randbits(64)) + generate_timestamp())
+    return str(randbits(96))
 
 
 def generate_timestamp():
