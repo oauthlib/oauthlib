@@ -158,6 +158,127 @@ class AuthorizationCodeGrantTest(TestCase):
         self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
                           request)
 
+    def test_unsupported_response_mode(self):
+        self.request.response_mode = 'not-a-mode'
+        bearer = BearerToken(self.mock_validator)
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.validate_authorization_request, self.request)
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.create_authorization_response, self.request, bearer)
+        self.assertFalse(self.mock_validator.validate_response_type.called)
+
+    def test_default_response_mode(self):
+        self.auth.validate_authorization_request(self.request)
+        self.assertEqual(self.request.response_mode, self.auth.default_response_mode)
+
+    def test_error_response_uses_default_response_mode(self):
+        self.mock_validator.validate_scopes.return_value = False
+        bearer = BearerToken(self.mock_validator)
+        separator = '#' if self.auth.default_response_mode == 'fragment' else '?'
+
+        with self.assertRaises(errors.InvalidScopeError) as cm:
+            self.auth.validate_authorization_request(self.request)
+        self.assertEqual(cm.exception.response_mode, self.auth.default_response_mode)
+        self.assertIn(separator + 'error=invalid_scope',
+                      cm.exception.in_uri(self.request.redirect_uri))
+
+        self.request.response_mode = None
+        h, _b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertEqual(s, 302)
+        self.assertIn(separator + 'error=invalid_scope', h['Location'])
+
+    def test_error_response_uses_requested_response_mode(self):
+        self.mock_validator.validate_scopes.return_value = False
+        self.request.response_mode = 'fragment'
+        bearer = BearerToken(self.mock_validator)
+        h, _b, s = self.auth.create_authorization_response(self.request, bearer)
+        self.assertEqual(s, 302)
+        self.assertIn('#error=invalid_scope', h['Location'])
+
+    def test_response_mode_set_by_failing_pre_auth_validator(self):
+        def set_response_mode(request):
+            request.response_mode = 'form_post'
+            raise errors.InvalidRequestError(request=request)
+        self.auth.custom_validators.pre_auth.append(set_response_mode)
+        bearer = BearerToken(self.mock_validator)
+
+        with self.assertRaises(errors.UnsupportedResponseModeError) as cm:
+            self.auth.validate_authorization_request(self.request)
+        # Not reported as raised while handling the normal error.
+        self.assertIsNone(cm.exception.__context__)
+        self.request.response_mode = None
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.create_authorization_response, self.request, bearer)
+
+    def test_response_mode_set_by_post_auth_validator(self):
+        def set_response_mode(request):
+            request.response_mode = 'form_post'
+            return {}
+        self.auth.custom_validators.post_auth.append(set_response_mode)
+        bearer = BearerToken(self.mock_validator)
+
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.validate_authorization_request, self.request)
+        self.request.response_mode = None
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.create_authorization_response, self.request, bearer)
+        self.assertFalse(self.mock_validator.save_token.called)
+        self.assertFalse(self.mock_validator.save_authorization_code.called)
+
+    def test_error_without_request_gets_response_mode(self):
+        def fail(request):
+            raise errors.InvalidRequestError()
+        self.auth.custom_validators.post_auth.append(fail)
+
+        with self.assertRaises(errors.InvalidRequestError) as cm:
+            self.auth.validate_authorization_request(self.request)
+        self.assertEqual(cm.exception.response_mode, self.auth.default_response_mode)
+
+    def test_response_mode_set_by_pre_auth_validator(self):
+        def set_response_mode(request):
+            request.response_mode = 'form_post'
+            return {}
+        self.auth.custom_validators.pre_auth.append(set_response_mode)
+        bearer = BearerToken(self.mock_validator)
+
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.validate_authorization_request, self.request)
+        self.request.response_mode = None
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.create_authorization_response, self.request, bearer)
+        self.assertFalse(self.mock_validator.save_authorization_code.called)
+
+    def test_response_mode_set_by_failing_post_auth_validator(self):
+        def set_response_mode(request):
+            request.response_mode = 'form_post'
+            raise errors.InvalidRequestError(request=request)
+        self.auth.custom_validators.post_auth.append(set_response_mode)
+        bearer = BearerToken(self.mock_validator)
+
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.validate_authorization_request, self.request)
+        self.request.response_mode = None
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.create_authorization_response, self.request, bearer)
+
+    def test_response_mode_set_by_code_modifier(self):
+        def set_response_mode(grant, token_handler, request):
+            request.response_mode = 'form_post'
+            return grant
+        self.auth.register_code_modifier(set_response_mode)
+        bearer = BearerToken(self.mock_validator)
+
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.create_authorization_response, self.request, bearer)
+        self.assertFalse(self.mock_validator.save_token.called)
+        self.assertFalse(self.mock_validator.save_authorization_code.called)
+
+    def test_prepare_authorization_response_unsupported_response_mode(self):
+        self.request.response_mode = 'form_post'
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.prepare_authorization_response,
+                          self.request, {'code': 'abc'}, {}, None, 302)
+
     def test_authentication_required(self):
         """
         ensure client_authentication_required() is properly called
@@ -410,3 +531,50 @@ class AuthorizationCodeGrantTest(TestCase):
         self.mock_validator.is_origin_allowed.assert_called_once_with(
             'abcdef', 'https://foo.bar', self.request
         )
+
+
+class CustomDefaultResponseModeTest(TestCase):
+    """A subclass may support another response mode as its default."""
+
+    class FormPostGrant(AuthorizationCodeGrant):
+        default_response_mode = 'form_post'
+
+        def prepare_authorization_response(self, request, token, headers, body, status):
+            if request.response_mode == 'form_post':
+                return headers, 'form_post:%s' % token['code'], 200
+            return super().prepare_authorization_response(
+                request, token, headers, body, status)
+
+    def setUp(self):
+        self.mock_validator = mock.MagicMock()
+        self.mock_validator.is_pkce_required.return_value = False
+        self.auth = self.FormPostGrant(request_validator=self.mock_validator)
+        self.bearer = BearerToken(self.mock_validator)
+
+    def make_request(self, response_mode):
+        request = Request('http://a.b/path')
+        request.client_id = 'abcdef'
+        request.response_type = 'code'
+        request.redirect_uri = 'https://a.b/cb'
+        request.response_mode = response_mode
+        return request
+
+    @mock.patch('oauthlib.common.generate_token')
+    def test_default_response_mode(self, generate_token):
+        generate_token.return_value = 'abc'
+        for response_mode in (None, 'form_post'):
+            with self.subTest(response_mode=response_mode):
+                _h, b, s = self.auth.create_authorization_response(
+                    self.make_request(response_mode), self.bearer)
+                self.assertEqual((b, s), ('form_post:abc', 200))
+
+    @mock.patch('oauthlib.common.generate_token')
+    def test_other_response_modes(self, generate_token):
+        generate_token.return_value = 'abc'
+        h, _b, s = self.auth.create_authorization_response(
+            self.make_request('query'), self.bearer)
+        self.assertEqual(s, 302)
+        self.assertURLEqual(h['Location'], 'https://a.b/cb?code=abc')
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.auth.create_authorization_response,
+                          self.make_request('web_message'), self.bearer)

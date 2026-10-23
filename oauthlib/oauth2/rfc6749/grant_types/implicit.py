@@ -7,7 +7,7 @@ import logging
 from oauthlib import common
 
 from .. import errors
-from .base import GrantTypeBase
+from .base import GrantTypeBase, revalidate_response_mode
 
 log = logging.getLogger(__name__)
 
@@ -112,6 +112,7 @@ class ImplicitGrant(GrantTypeBase):
     .. _`Section 10.16`: https://tools.ietf.org/html/rfc6749#section-10.16
     """
 
+    default_response_mode = 'fragment'
     response_types = ['token']
     grant_allows_refresh_token = False
 
@@ -227,8 +228,12 @@ class ImplicitGrant(GrantTypeBase):
         # https://tools.ietf.org/html/rfc6749#appendix-B
         except errors.OAuth2Error as e:
             log.debug('Client error during validation of %r. %r.', request, e)
+            # Never redirect using an unsupported response mode.
+            self._validate_response_mode(request)
+            # Unlike the authorization code grant, fall back to the fragment
+            # for response modes other than "query" and "fragment".
             return {'Location': common.add_params_to_uri(request.redirect_uri, e.twotuples,
-                                                         fragment=True)}, None, 302
+                                                         fragment=request.response_mode != "query")}, None, 302
 
         # In OIDC implicit flow it is possible to have a request_type that does not include the access_token!
         # "id_token token" - return the access token and the id token
@@ -240,6 +245,9 @@ class ImplicitGrant(GrantTypeBase):
 
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
+
+        # Reject an unsupported response mode before anything is saved.
+        self._validate_response_mode(request)
 
         # In OIDC implicit flow it is possible to have a request_type that does
         # not include the access_token! In this case there is no need to save a token.
@@ -256,6 +264,7 @@ class ImplicitGrant(GrantTypeBase):
         """
         return self.validate_token_request(request)
 
+    @revalidate_response_mode
     def validate_token_request(self, request):
         """Check the token request for normal and fatal errors.
 
@@ -285,7 +294,7 @@ class ImplicitGrant(GrantTypeBase):
         # invalid redirection URI.
 
         # First check duplicate parameters
-        for param in ('client_id', 'response_type', 'redirect_uri', 'scope', 'state'):
+        for param in ('client_id', 'response_type', 'response_mode', 'redirect_uri', 'scope', 'state'):
             try:
                 duplicate_params = request.duplicate_params
             except ValueError:
@@ -304,6 +313,10 @@ class ImplicitGrant(GrantTypeBase):
         # OPTIONAL. As described in Section 3.1.2.
         # https://tools.ietf.org/html/rfc6749#section-3.1.2
         self._handle_redirects(request)
+
+        # The response mode determines how normal errors are returned, so it
+        # must be validated, and defaulted, before any of them are raised.
+        self._validate_response_mode(request)
 
         # Then check for normal errors.
 

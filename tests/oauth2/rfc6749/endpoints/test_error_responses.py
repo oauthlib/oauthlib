@@ -197,6 +197,39 @@ class ErrorResponseTest(TestCase):
                               self.mobile.create_authorization_response,
                               uri.format('token'), scopes=['foo'])
 
+    def test_invalid_request_duplicate_response_mode(self):
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+        uri = 'https://i.b/auth?client_id=foo&response_mode=query&response_mode=fragment&response_type={0}'
+        description = 'Duplicate response_mode parameter.'
+
+        # Authorization code
+        self.assertRaisesRegex(errors.InvalidRequestFatalError,
+                              description,
+                              self.web.create_authorization_response,
+                              uri.format('code'), scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaisesRegex(errors.InvalidRequestFatalError,
+                              description,
+                              self.mobile.create_authorization_response,
+                              uri.format('token'), scopes=['foo'])
+
+    def test_unsupported_response_mode(self):
+        self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
+        uri = 'https://i.b/auth?client_id=foo&response_mode=form_post&response_type={0}'
+
+        # Authorization code
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.web.validate_authorization_request, uri.format('code'))
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.web.create_authorization_response, uri.format('code'), scopes=['foo'])
+
+        # Implicit grant
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.mobile.validate_authorization_request, uri.format('token'))
+        self.assertRaises(errors.UnsupportedResponseModeError,
+                          self.mobile.create_authorization_response, uri.format('token'), scopes=['foo'])
+
     def test_invalid_request_missing_response_type(self):
 
         self.validator.get_default_redirect_uri.return_value = 'https://i.b/cb'
@@ -236,10 +269,13 @@ class ErrorResponseTest(TestCase):
                 body='grant_type=authorization_code&code=foo')
         self.assertEqual('unauthorized_client', json.loads(body)['error'])
 
-        # Implicit grant
-        self.assertRaises(errors.UnauthorizedClientError,
-                self.mobile.validate_authorization_request,
+        # Implicit grant, errors default to the fragment response mode
+        with self.assertRaises(errors.UnauthorizedClientError) as cm:
+            self.mobile.validate_authorization_request(
                 'https://i.b/auth?response_type=token&client_id=foo')
+        uri = cm.exception.in_uri(cm.exception.redirect_uri)
+        self.assertIn('#error=unauthorized_client', uri)
+        self.assertNotIn('?error=', uri)
 
         # Password credentials grant
         _, body, _ = self.legacy.create_token_response(token_uri,
