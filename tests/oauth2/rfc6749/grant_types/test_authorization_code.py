@@ -11,6 +11,10 @@ from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from tests.unittest import TestCase
 
+# RFC 7636 Section 4.1/4.2 compliant values
+valid_code_verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+valid_code_challenge_plain = valid_code_verifier
+
 
 class AuthorizationCodeGrantTest(TestCase):
 
@@ -363,20 +367,43 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_pkce_default_method(self):
         for required in [True, False]:
             self.mock_validator.is_pkce_required.return_value = required
-            self.request.code_challenge = "present"
+            self.request.code_challenge = valid_code_challenge_plain
             _, ri = self.auth.validate_authorization_request(self.request)
             self.assertIn("code_challenge", ri)
             self.assertIn("code_challenge_method", ri)
-            self.assertEqual(ri["code_challenge"], "present")
+            self.assertEqual(ri["code_challenge"], valid_code_challenge_plain)
             self.assertEqual(ri["code_challenge_method"], "plain")
 
     def test_pkce_wrong_method(self):
         for required in [True, False]:
             self.mock_validator.is_pkce_required.return_value = required
-            self.request.code_challenge = "present"
+            self.request.code_challenge = valid_code_challenge_plain
             self.request.code_challenge_method = "foobar"
             self.assertRaises(errors.UnsupportedCodeChallengeMethodError,
                               self.auth.validate_authorization_request, self.request)
+
+    def test_pkce_invalid_challenge_syntax(self):
+        # RFC 7636 Section 4.2: challenge must be 43*128 unreserved chars
+        for required in [True, False]:
+            self.mock_validator.is_pkce_required.return_value = required
+            for invalid in ["too_short", "\u00e9" + "a" * 42,
+                            "a" * 129, "bad" + "a" * 40 + "=+",
+                            42]:
+                self.request.code_challenge = invalid
+                self.assertRaises(errors.InvalidRequestError,
+                                  self.auth.validate_authorization_request, self.request)
+
+    def test_pkce_valid_s256_challenge_syntax(self):
+        # RFC 7636 Section 4.2: S256 challenge is 43 base64url chars
+        self.request.code_challenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+        self.request.code_challenge_method = "S256"
+        self.auth.validate_authorization_request(self.request)
+
+    def test_pkce_invalid_s256_challenge_syntax(self):
+        self.request.code_challenge = "a" * 44
+        self.request.code_challenge_method = "S256"
+        self.assertRaises(errors.InvalidRequestError,
+                          self.auth.validate_authorization_request, self.request)
 
     # PKCE validate_token_request
     def test_pkce_verifier_missing(self):
@@ -395,60 +422,83 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_pkce_required_verifier_missing_challenge_valid(self):
         self.mock_validator.is_pkce_required.return_value = True
         self.request.code_verifier = None
-        self.mock_validator.get_code_challenge.return_value = "foo"
+        self.mock_validator.get_code_challenge.return_value = valid_code_challenge_plain
         self.assertRaises(errors.MissingCodeVerifierError,
                           self.auth.validate_token_request, self.request)
 
     def test_pkce_required_verifier_valid_challenge_missing(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "foobar"
+        self.request.code_verifier = valid_code_verifier
         self.mock_validator.get_code_challenge.return_value = None
         self.assertRaises(errors.InvalidGrantError,
                           self.auth.validate_token_request, self.request)
 
     def test_pkce_required_verifier_valid_challenge_valid_method_valid(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "foobar"
-        self.mock_validator.get_code_challenge.return_value = "foobar"
+        self.request.code_verifier = valid_code_verifier
+        self.mock_validator.get_code_challenge.return_value = valid_code_verifier
         self.mock_validator.get_code_challenge_method.return_value = "plain"
         self.auth.validate_token_request(self.request)
 
     def test_pkce_required_verifier_invalid_challenge_valid_method_valid(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "foobar"
-        self.mock_validator.get_code_challenge.return_value = "raboof"
+        self.request.code_verifier = valid_code_verifier
+        self.mock_validator.get_code_challenge.return_value = "raboof-raboof-raboof-raboof-raboof-raboof"
         self.mock_validator.get_code_challenge_method.return_value = "plain"
         self.assertRaises(errors.InvalidGrantError,
                           self.auth.validate_token_request, self.request)
 
     def test_pkce_required_verifier_valid_challenge_valid_method_wrong(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "present"
-        self.mock_validator.get_code_challenge.return_value = "foobar"
+        self.request.code_verifier = valid_code_verifier
+        self.mock_validator.get_code_challenge.return_value = valid_code_verifier
         self.mock_validator.get_code_challenge_method.return_value = "cryptic_method"
         self.assertRaises(errors.ServerError,
                           self.auth.validate_token_request, self.request)
 
     def test_pkce_verifier_valid_challenge_valid_method_missing(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "present"
-        self.mock_validator.get_code_challenge.return_value = "foobar"
+        self.request.code_verifier = valid_code_verifier
+        self.mock_validator.get_code_challenge.return_value = valid_code_verifier
         self.mock_validator.get_code_challenge_method.return_value = None
         self.assertRaises(errors.InvalidGrantError,
                           self.auth.validate_token_request, self.request)
 
     def test_pkce_optional_verifier_valid_challenge_missing(self):
         self.mock_validator.is_pkce_required.return_value = False
-        self.request.code_verifier = "present"
+        self.request.code_verifier = valid_code_verifier
         self.mock_validator.get_code_challenge.return_value = None
         self.auth.validate_token_request(self.request)
 
     def test_pkce_optional_verifier_missing_challenge_valid(self):
         self.mock_validator.is_pkce_required.return_value = False
         self.request.code_verifier = None
-        self.mock_validator.get_code_challenge.return_value = "foobar"
+        self.mock_validator.get_code_challenge.return_value = valid_code_verifier
         self.assertRaises(errors.MissingCodeVerifierError,
                           self.auth.validate_token_request, self.request)
+
+    def test_pkce_required_verifier_invalid_syntax(self):
+        # RFC 7636 Section 4.1: verifier must be 43*128 unreserved chars
+        self.mock_validator.is_pkce_required.return_value = True
+        self.mock_validator.get_code_challenge.return_value = valid_code_challenge_plain
+        self.mock_validator.get_code_challenge_method.return_value = "plain"
+        for invalid in ["too_short", "\u00e9" + "a" * 42, "a" * 129,
+                        "bad" + "a" * 40 + "=+", 42, b"a" * 43]:
+            self.request.code_verifier = invalid
+            self.assertRaises(errors.InvalidGrantError,
+                              self.auth.validate_token_request, self.request)
+
+    def test_pkce_validator_returning_invalid_type_raises(self):
+        # A RequestValidator.get_code_challenge implementation returning a
+        # non-string is a server implementation error and must surface as
+        # an internal error, not as invalid_grant.
+        self.mock_validator.is_pkce_required.return_value = True
+        self.request.code_verifier = valid_code_verifier
+        self.mock_validator.get_code_challenge_method.return_value = "plain"
+        for bad in [{"a": 1}, 42, b"a" * 43]:
+            self.mock_validator.get_code_challenge.return_value = bad
+            self.assertRaises((AttributeError, TypeError),
+                              self.auth.validate_token_request, self.request)
 
     # PKCE functions
     def test_wrong_code_challenge_method_plain(self):
@@ -457,8 +507,44 @@ class AuthorizationCodeGrantTest(TestCase):
     def test_correct_code_challenge_method_plain(self):
         self.assertTrue(authorization_code.code_challenge_method_plain("foo", "foo"))
 
+    def test_plain_non_ascii_verifier_matches_non_ascii_challenge(self):
+        # Regression test: non-ASCII values previously raised TypeError
+        # from hmac.compare_digest, causing a server error instead of
+        # invalid_grant. (github issue #988)
+        self.assertTrue(
+            authorization_code.code_challenge_method_plain("verifier-\u00e9", "verifier-\u00e9"))
+        self.assertFalse(
+            authorization_code.code_challenge_method_plain("verifier-\u00e9", "verifier"))
+        self.assertFalse(
+            authorization_code.code_challenge_method_plain("verifier", "verifier-\u00e9"))
+
+    def test_plain_invalid_types_raise(self):
+        # A RequestValidator.get_code_challenge implementation returning
+        # a non-string is a server implementation error and must surface
+        # as such, not as invalid_grant.
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, None, "foo")
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, "foo", None)
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, "foo", {"a": 1})
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, 42, "foo")
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_plain, b"foo", "foo")
+
     def test_wrong_code_challenge_method_s256(self):
         self.assertFalse(authorization_code.code_challenge_method_s256("foo", "bar"))
+
+    def test_s256_non_ascii_verifier_does_not_raise(self):
+        self.assertFalse(
+            authorization_code.code_challenge_method_s256("verifier-\u00e9", "foo"))
+
+    def test_s256_invalid_types_raise(self):
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_s256, None, "foo")
+        self.assertRaises((AttributeError, TypeError),
+                          authorization_code.code_challenge_method_s256, "foo", 42)
 
     def test_correct_code_challenge_method_s256(self):
         # "abcd" as verifier gives a '+' to base64

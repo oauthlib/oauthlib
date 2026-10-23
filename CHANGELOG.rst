@@ -1,9 +1,17 @@
 Changelog
 =========
 
-Unreleased
-----------
+Unreleased:
+------------------
 OAuth2.0 Provider:
+* **Breaking**: #988: PKCE parameters are now validated against RFC 7636
+  syntax. ``code_verifier`` must be 43-128 unreserved ASCII characters
+  (``[A-Za-z0-9-._~]``) at the token endpoint (rejected with ``invalid_grant``)
+  and ``code_challenge`` must be 43-128 unreserved ASCII characters for
+  ``plain`` or exactly 43 for ``S256`` at the authorization endpoint (rejected
+  with ``invalid_request``). Previously, non-ASCII values raised an unhandled
+  ``TypeError``. A ``RequestValidator`` returning a non-string
+  ``code_challenge`` is a server implementation error and still raises.
 * **Breaking**: #983: Authorization requests with an unsupported
   ``response_mode``, such as ``form_post``, now raise the fatal
   ``UnsupportedResponseModeError`` (HTTP 400, no redirect) instead of
