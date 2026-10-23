@@ -81,16 +81,25 @@ def encode_params_utf8(params):
     return encoded
 
 
+def _decode_utf8(value):
+    """Decode a parameter to Unicode.
+
+    Invalid UTF-8 is a malformed request, so raise ``ValueError`` instead of
+    letting ``UnicodeDecodeError`` escape to the caller.
+    """
+    if not isinstance(value, bytes):
+        return value
+    try:
+        return value.decode('utf-8')
+    except UnicodeDecodeError as exc:
+        raise ValueError('Invalid UTF-8 in URL-encoded parameter.') from exc
+
+
 def decode_params_utf8(params):
     """Ensures that all parameters in a list of 2-element tuples are decoded to
     unicode using UTF-8.
     """
-    decoded = []
-    for k, v in params:
-        decoded.append((
-            k.decode('utf-8') if isinstance(k, bytes) else k,
-            v.decode('utf-8') if isinstance(v, bytes) else v))
-    return decoded
+    return [(_decode_utf8(k), _decode_utf8(v)) for k, v in params]
 
 
 urlencoded = set(always_safe) | set('=&;:%+~,*@!()/?\'$')
@@ -123,7 +132,13 @@ def urldecode(query):
 
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
-    params = urlparse.parse_qsl(query, keep_blank_values=True)
+    # errors="strict" so invalid percent-encoded UTF-8 raises instead of
+    # returning U+FFFD replacement characters (default errors="replace").
+    try:
+        params = urlparse.parse_qsl(
+            query, keep_blank_values=True, errors="strict")
+    except UnicodeDecodeError as exc:
+        raise ValueError('Invalid UTF-8 in URL-encoded parameter.') from exc
 
     # unicode all the things
     return decode_params_utf8(params)
