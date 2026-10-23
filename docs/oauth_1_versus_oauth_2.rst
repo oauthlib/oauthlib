@@ -8,7 +8,7 @@ to use should be able to get some help too.
 
 Before choosing it is important to understand a fundamental issue with
 client - server security. **It is technically impossible to store secrets
-on machines out of your control, such as a users desktop or phone.**
+on machines out of your control, such as a user's desktop or phone.**
 Without the ability to secure a secret the ability to authenticate is lost.
 Because of this the provider has no way of knowing whether a request from
 such a client is legitimate or from a malicious party. Great care should be
@@ -35,13 +35,16 @@ taken to restrict non authenticated clients access to resources appropriately.
     **(Client)** Use :doc:`OAuth 1 Client <oauth1/client>`.
 
 * Your clients reside in user controlled devices with the ability to authorize
-  through a web based workflow. This workflow is inherently insecure, restrict
-  the privileges associated with tokens accordingly.
+  through a web based workflow. These are public clients and cannot keep a
+  client secret; restrict the privileges associated with tokens accordingly.
+  Prefer Authorization Code with PKCE; the Implicit grant is no longer
+  recommended.
 
-    **(Provider)** Offer :doc:`oauth2/grants/implicit`.
-    Default in :doc:`MobileApplicationServer <oauth2/preconfigured_servers>`.
+    **(Provider)** Offer :doc:`oauth2/grants/authcode` with PKCE.
+    Default in :doc:`WebApplicationServer <oauth2/preconfigured_servers>`.
 
-    **(Client)** Use :doc:`Mobile Application Client <oauth2/clients/mobileapplicationclient>`.
+    **(Client)** Use :doc:`Web Application Client <oauth2/clients/webapplicationclient>`
+    with PKCE.
 
 * Similar to above but without the ability to use web authorization. These
   clients must have a strong trust relationship with the users although
