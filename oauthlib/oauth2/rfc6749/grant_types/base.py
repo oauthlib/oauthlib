@@ -2,6 +2,7 @@
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
+import functools
 import logging
 from itertools import chain
 
@@ -13,6 +14,37 @@ from ..request_validator import RequestValidator
 from ..utils import is_secure_transport
 
 log = logging.getLogger(__name__)
+
+
+def revalidate_response_mode(validate):
+    """Validate the response mode again once request validation is done.
+
+    Custom validators may set the response mode, e.g. from a request object,
+    so it is validated again after they ran, whether or not they raised.
+    An unsupported response mode then takes precedence over normal errors,
+    which also get the response mode used to return them.
+    """
+    @functools.wraps(validate)
+    def wrapper(self, request, *args, **kwargs):
+        try:
+            result = validate(self, request, *args, **kwargs)
+        except errors.FatalClientError:
+            raise
+        except errors.OAuth2Error as e:
+            error = e
+        else:
+            self._validate_response_mode(request)
+            return result
+        # Validated outside of the except clause, so that an unsupported
+        # response mode is not chained to the normal error it replaces.
+        try:
+            self._validate_response_mode(request)
+            error.response_mode = request.response_mode
+            raise error
+        finally:
+            # Break the reference cycle between the error and this frame.
+            del error
+    return wrapper
 
 
 class ValidatorsContainer:
@@ -76,6 +108,7 @@ class GrantTypeBase:
     error_uri = None
     request_validator = None
     default_response_mode = 'fragment'
+    _response_modes = ('query', 'fragment')
     refresh_token = True
     response_types = ['code']
 
@@ -239,12 +272,7 @@ class GrantTypeBase:
         :param body:
         :param status:
         """
-        request.response_mode = request.response_mode or self.default_response_mode
-
-        if request.response_mode not in ('query', 'fragment'):
-            log.debug('Overriding invalid response mode %s with %s',
-                      request.response_mode, self.default_response_mode)
-            request.response_mode = self.default_response_mode
+        self._validate_response_mode(request)
 
         token_items = token.items()
 
@@ -264,6 +292,28 @@ class GrantTypeBase:
 
         raise NotImplementedError(
             'Subclasses must set a valid default_response_mode')
+
+    def _validate_response_mode(self, request):
+        """Reject unsupported response modes and apply the default one.
+
+        This must run before any error is redirected to the client, since
+        the response mode determines how error parameters are returned.
+        An unsupported response mode is a fatal error: the response cannot
+        be returned in the requested format, and one in another format may
+        not be understood by the client.
+
+        The grant's ``default_response_mode`` is always accepted.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        """
+        if (request.response_mode
+                and request.response_mode not in self._response_modes
+                and request.response_mode != self.default_response_mode):
+            log.debug('Unsupported response mode %s for client %s.',
+                      request.response_mode, request.client_id)
+            raise errors.UnsupportedResponseModeError(request=request)
+        request.response_mode = request.response_mode or self.default_response_mode
 
     def _get_default_headers(self):
         """Create default headers for grant responses."""

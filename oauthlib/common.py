@@ -164,13 +164,20 @@ def generate_nonce():
     Per `section 3.3`_ of the OAuth 1 RFC 5849 spec.
     Per `section 3.2.1`_ of the MAC Access Authentication spec.
 
-    A random 64-bit number is appended to the epoch timestamp for both
-    randomness and to decrease the likelihood of collisions.
+    RFC 5849 section 3.3 requires the nonce to be unique "across all requests
+    with the same timestamp, client credentials, and token combinations". The
+    ``oauth_timestamp`` parameter is sent separately, so embedding the epoch
+    time in the nonce does nothing to distinguish requests that share a
+    timestamp: within a given second the collision resistance comes entirely
+    from the random component. This uses 96 bits drawn from the system CSPRNG
+    (up from the previous 64 bits appended to the timestamp), which keeps the
+    birthday-bound collision probability negligible while the decimal encoding
+    stays within the default nonce length limits.
 
     .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return str(str(randbits(64)) + generate_timestamp())
+    return str(randbits(96))
 
 
 def generate_timestamp():
@@ -265,6 +272,40 @@ def safe_string_equals(a, b):
     for x, y in zip(a, b):
         result |= ord(x) ^ ord(y)
     return result == 0
+
+
+def check_http_header_value(name, value):
+    """Validate that a value is safe to embed in an HTTP header field value.
+
+    Prevents header injection by rejecting characters that allow the value
+    to break out of its header field, per RFC 9110 section 5.5:
+
+    - CR and LF characters, which enable header splitting/injection;
+    - other control characters (CTLs, including NUL), which may corrupt
+      or terminate parsing of the header by downstream intermediaries;
+    - double quotes, which allow a quoted-string parameter in a header
+      value (such as the MAC Authorization header) to break out and
+      inject arbitrary parameters;
+    - non-ASCII characters, which are mangled inconsistently by proxies
+      and gateways and may be re-interpreted as control characters.
+
+    :param name: Name of the parameter, used in error messages.
+    :param value: Candidate header value. ``None`` is allowed and ignored.
+    :raises ValueError: if the value contains unsafe characters.
+    """
+    if value is None:
+        return
+    if not isinstance(value, str):
+        raise ValueError('%s must be a string' % name)
+    for char in value:
+        if char in '\r\n':
+            raise ValueError('%s must not contain CR or LF characters' % name)
+        if ord(char) < 0x20 or ord(char) == 0x7f:
+            raise ValueError('%s must not contain control characters' % name)
+        if char == '"':
+            raise ValueError('%s must not contain double quotes' % name)
+        if ord(char) > 0x7e:
+            raise ValueError('%s must contain ASCII characters only' % name)
 
 
 def to_unicode(data, encoding='UTF-8'):
@@ -408,7 +449,7 @@ class Request:
         body = self.body
         headers = self.headers.copy()
         if body:
-            body = SANITIZE_PATTERN.sub('\1<SANITIZED>', str(body))
+            body = SANITIZE_PATTERN.sub(r'\1<SANITIZED>', str(body))
         if 'Authorization' in headers:
             headers['Authorization'] = '<SANITIZED>'
         return '<oauthlib.Request url="{}", http_method="{}", headers="{}", body="{}">'.format(

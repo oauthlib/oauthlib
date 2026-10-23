@@ -107,6 +107,9 @@ def prepare_mac_header(token, uri, key, http_method,
     http_method = http_method.upper()
     host, port = utils.host_from_uri(uri)
 
+    common.check_http_header_value('nonce', nonce)
+    common.check_http_header_value('ext', ext)
+
     if hash_algorithm.lower() == 'hmac-sha-1':
         h = hashlib.sha1
     elif hash_algorithm.lower() == 'hmac-sha-256':
