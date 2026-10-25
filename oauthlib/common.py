@@ -7,6 +7,8 @@ to all implementations of OAuth.
 """
 import collections
 import datetime
+import hashlib
+import hmac
 import logging
 import re
 import time
@@ -262,16 +264,22 @@ def safe_string_equals(a, b):
     Used in order to avoid timing attacks on sensitive information such
     as secret keys during request verification (`rootLabs`_).
 
+    Both operands are digested with SHA-256 before being compared with
+    :func:`hmac.compare_digest`. Comparing fixed-length digests removes
+    any dependency of the comparison's timing (and control flow) on the
+    length or content of either operand, so callers do not leak the
+    length of server-side secrets such as OAuth1 PLAINTEXT signatures.
+
     .. _`rootLabs`: http://rdist.root.org/2010/01/07/timing-independent-array-comparison/
 
     """
-    if len(a) != len(b):
-        return False
-
-    result = 0
-    for x, y in zip(a, b):
-        result |= ord(x) ^ ord(y)
-    return result == 0
+    if isinstance(a, str):
+        a = a.encode('utf-8')
+    if isinstance(b, str):
+        b = b.encode('utf-8')
+    a_digest = hashlib.sha256(a).digest()
+    b_digest = hashlib.sha256(b).digest()
+    return hmac.compare_digest(a_digest, b_digest)
 
 
 def check_http_header_value(name, value):
