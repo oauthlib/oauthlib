@@ -166,3 +166,21 @@ class OpenIDHybridResponseModeTest(TestCase):
             self.auth.validate_authorization_request(request)
         uri = cm.exception.in_uri(cm.exception.redirect_uri)
         self.assertTrue(uri.startswith('https://client.example/cb#error=invalid_scope'))
+
+
+class OpenIDHybridIdTokenCodeTest(OpenIDHybridCodeIdTokenTest):
+    """The order of response_type values must not matter, also when the
+    grant is used without AuthorizationEndpoint (#986)."""
+
+    def setUp(self):
+        super().setUp()
+        self.request.response_type = 'id_token code'
+
+
+class OpenIDHybridTokenIdTokenCodeTest(OpenIDHybridCodeIdTokenTokenTest):
+    """The order of response_type values must not matter, also when the
+    grant is used without AuthorizationEndpoint (#986)."""
+
+    def setUp(self):
+        super().setUp()
+        self.request.response_type = 'token id_token code'

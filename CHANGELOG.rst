@@ -10,6 +10,11 @@ OAuth2.0 Provider:
   ``request.response_type`` to the registered spelling, as the order of
   values does not matter per RFC 6749 section 3.1.1. Values with empty or
   repeated tokens, or an unregistered set of tokens, are handled as before.
+* #986: ``HybridGrant`` now requires ``nonce`` whenever both ``code`` and
+  ``id_token`` are requested, in any order, and ``GrantTypeBase.add_token``
+  issues an access token whenever ``token`` is requested, in any order. This
+  covers grants used without ``AuthorizationEndpoint``, which do not see the
+  registered spelling of ``response_type``.
 * **Breaking**: #983: Authorization requests with an unsupported
   ``response_mode``, such as ``form_post``, now raise the fatal
   ``UnsupportedResponseModeError`` (HTTP 400, no redirect) instead of
