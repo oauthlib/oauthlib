@@ -404,3 +404,23 @@ class SignatureVerificationTest(TestCase):
         sig = self.sig % (plain_sig, "PLAINTEXT")
         r = self.e._create_request(self.uri, 'GET', sig, URLENCODED)
         self.assertTrue(self.e._check_signature(r))
+
+    def test_realm_outside_header_is_signed(self):
+        client = Client('foo', client_secret='super secret',
+                        resource_owner_key='abcdefghijklmnopqrstuvxyz',
+                        resource_owner_secret='even more secret',
+                        realm='photos')
+        uri, headers, body = client.sign(self.uri, http_method='POST',
+                                         body='realm=alice', headers=URLENCODED)
+        r = self.e._create_request(uri, 'POST', body, headers)
+        self.assertEqual(r.realm, 'photos')
+        self.assertTrue(self.e._check_signature(r))
+
+        uri, headers, body = client.sign(self.uri, http_method='POST',
+                                         body='a=b', headers=URLENCODED)
+        r = self.e._create_request(uri, 'POST', 'a=b&realm=admin', headers)
+        self.assertEqual(r.realm, 'photos')
+        self.assertFalse(self.e._check_signature(r))
+        r = self.e._create_request(uri + '?realm=admin', 'POST', body, headers)
+        self.assertEqual(r.realm, 'photos')
+        self.assertFalse(self.e._check_signature(r))

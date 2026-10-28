@@ -33,6 +33,12 @@ OAuth2.0 Provider:
   ``response_mode`` is ``query``, requested or the grant's default, instead
   of always using the fragment.
 
+OAuth1.0:
+* Provider endpoints no longer drop ``realm`` parameters sent in the query
+  or body from the signature base string when the ``Authorization`` header
+  carries a ``realm``. ``request.realm`` is now taken from the
+  ``Authorization`` header only, per RFC 5849 section 3.5.1.
+
 Misc:
 * #794: Recommend Authorization Code + PKCE instead of Implicit Grant for public clients.
 * ``Request.__repr__`` sanitization now keeps the parameter name instead of
