@@ -465,10 +465,13 @@ class AuthorizationCodeGrantTest(TestCase):
                           self.auth.validate_token_request, self.request)
 
     def test_pkce_optional_verifier_valid_challenge_missing(self):
+        # RFC 9700 Section 4.8.2: reject a code_verifier when the
+        # authorization request had no code_challenge.
         self.mock_validator.is_pkce_required.return_value = False
         self.request.code_verifier = valid_code_verifier
         self.mock_validator.get_code_challenge.return_value = None
-        self.auth.validate_token_request(self.request)
+        self.assertRaises(errors.InvalidGrantError,
+                          self.auth.validate_token_request, self.request)
 
     def test_pkce_optional_verifier_missing_challenge_valid(self):
         self.mock_validator.is_pkce_required.return_value = False

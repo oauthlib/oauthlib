@@ -544,6 +544,13 @@ class AuthorizationCodeGrant(GrantTypeBase):
                                                 request.code_verifier):
                 log.debug('request provided a invalid code_verifier.')
                 raise errors.InvalidGrantError(request=request)
+        elif request.code_verifier is not None:
+            # RFC 9700 Section 4.8.2: a code_verifier MUST NOT be accepted
+            # when the authorization request had no code_challenge, as this
+            # indicates an authorization code injection / PKCE downgrade.
+            raise errors.InvalidGrantError(
+                request=request,
+                description='code_verifier provided but no code_challenge was associated with this authorization code.')
         elif self.request_validator.is_pkce_required(request.client_id, request) is True:
             if request.code_verifier is None:
                 raise errors.MissingCodeVerifierError(request=request)
