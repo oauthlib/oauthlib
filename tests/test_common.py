@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 from unittest import mock
 
 import oauthlib
@@ -239,9 +240,8 @@ class RequestTest(TestCase):
     def test_sanitizing_keeps_parameter_name(self):
         """Only the value is replaced; the parameter name is kept.
 
-        ``SANITIZE_PATTERN`` captures the ``<name>=`` prefix precisely so the
-        replacement can put it back, which keeps the repr readable for
-        debugging.
+        ``_sanitize_body`` keeps the ``<name>=`` prefix in the redacted
+        output, which keeps the repr readable for debugging.
         """
         r = Request(URI, body='client_id=foo&refresh_token=bar')
         self.assertIn('client_id=foo', repr(r))
@@ -256,6 +256,25 @@ class RequestTest(TestCase):
         """The repr must stay printable, with no stray control characters."""
         r = Request(URI, body='client_id=foo&refresh_token=bar')
         self.assertNotIn('\x01', repr(r))
+
+    def test_sanitizing_matches_regex_edge_cases(self):
+        """Values containing '=' are fully redacted; empty values are kept."""
+        r = Request(URI, body='token=abc==')
+        self.assertNotIn('abc', repr(r))
+        self.assertIn('token=<SANITIZED>', repr(r))
+
+        r = Request(URI, body='token=')
+        self.assertIn('token=', repr(r))
+
+    def test_sanitizing_is_linear_time(self):
+        """Adversarial bodies must not cause catastrophic backtracking."""
+        for body in ('a' * 10000, 'a' * 10000 + '=', 'token' * 5000,
+                     'a=b&' * 5000 + 'password=s'):
+            Request(URI, body=body)  # warm up attributes
+            request = Request(URI, body=body)
+            start = time.monotonic()
+            repr(request)
+            self.assertLess(time.monotonic() - start, 1.0)
 
     def test_headers_params(self):
         r = Request(URI, headers={'token': 'foobar'}, body='token=banana')

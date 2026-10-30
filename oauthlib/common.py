@@ -31,7 +31,7 @@ UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
 CLIENT_ID_CHARACTER_SET = (r' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMN'
                            'OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}')
 
-SANITIZE_PATTERN = re.compile(r'([^&;]*(?:password|token)[^=]*=)[^&;]+', re.IGNORECASE)
+SANITIZE_KEY_PATTERN = re.compile(r'password|token', re.IGNORECASE)
 INVALID_HEX_PATTERN = re.compile(r'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]')
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -341,6 +341,21 @@ def to_unicode(data, encoding='UTF-8'):
     return data
 
 
+def _sanitize_body(body):
+    """Redact values of parameters whose name mentions password or token.
+
+    Linear-time replacement for the former SANITIZE_PATTERN regex, whose
+    backtracking made ``repr(Request)`` pathological on adversarial bodies
+    when debug mode is enabled.
+    """
+    parts = re.split(r'([&;])', body)
+    for i in range(0, len(parts), 2):
+        name, sep, value = parts[i].partition('=')
+        if sep and value and SANITIZE_KEY_PATTERN.search(name):
+            parts[i] = name + '=<SANITIZED>'
+    return ''.join(parts)
+
+
 class CaseInsensitiveDict(dict):
 
     """Basic case insensitive dict with strings only keys."""
@@ -457,7 +472,7 @@ class Request:
         body = self.body
         headers = self.headers.copy()
         if body:
-            body = SANITIZE_PATTERN.sub(r'\1<SANITIZED>', str(body))
+            body = _sanitize_body(str(body))
         if 'Authorization' in headers:
             headers['Authorization'] = '<SANITIZED>'
         return '<oauthlib.Request url="{}", http_method="{}", headers="{}", body="{}">'.format(
