@@ -62,8 +62,11 @@ class DeviceClient(Client):
 
         :param body: Existing request body (URL encoded string) to embed parameters
                      into. This may contain extra parameters. Default ''.
-        :param scope:   The scope of the access request as described by
-                        `Section 3.3`_.
+        :param scope:   Optional scope of the access request. Note that per
+                        RFC 8628 Section 3.4 the token request carries no
+                        scope parameter; authorization servers issue the
+                        scopes approved during the device authorization, so
+                        this parameter is ignored by oauthlib-based servers.
 
         :param include_client_id: `True` to send the `client_id` in the
                                   body of the upstream request. This is required

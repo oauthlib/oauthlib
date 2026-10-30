@@ -157,6 +157,13 @@ class DeviceCodeGrant(GrantTypeBase):
                 "Missing device_code parameter.", request=request
             )
 
+        # RFC 8628 Section 3.4: the token request carries no scope. The token
+        # endpoint pre-fills request.scopes from the untrusted scope parameter,
+        # so clear it before the validator runs to guarantee only the scopes
+        # populated from the stored authorization are honored.
+        request.scopes = None
+        request.scope = None
+
         status = self.request_validator.validate_device_code(
             request.client_id, request.device_code, request
         )
@@ -166,7 +173,7 @@ class DeviceCodeGrant(GrantTypeBase):
             # back to the client's default scopes.
             if getattr(request, "user", None) is None:
                 log.debug("request.user was not set on device_code validation.")
-            if getattr(request, "scopes", None) is None and request.scope is None:
+            if getattr(request, "scopes", None) is None:
                 raise rfc6749_errors.ServerError(
                     description="validate_device_code must set request.scopes for an authorized device_code.",
                     request=request,

@@ -60,7 +60,12 @@ def test_custom_pre_and_post_token_validators():
     request: common.Request = create_request()
     request.client = client
     client.client_id = request.client_id
-    validator.validate_device_code.return_value = DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    def authorize(client_id, code, req):
+        req.scopes = ["hello", "world"]
+        return DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    validator.validate_device_code.side_effect = authorize
 
     auth = DeviceCodeGrant(validator)
 
@@ -77,7 +82,12 @@ def test_custom_pre_and_post_token_validators():
 def test_create_token_response():
     validator = mock.MagicMock()
     request: common.Request = create_request()
-    validator.validate_device_code.return_value = DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    def authorize(client_id, code, req):
+        req.scopes = ["hello", "world"]
+        return DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    validator.validate_device_code.side_effect = authorize
 
     auth = DeviceCodeGrant(validator)
 
@@ -362,3 +372,35 @@ def test_missing_device_code():
 
     validator.validate_device_code.assert_not_called()
     validator.save_token.assert_not_called()
+
+
+def test_device_code_ignores_client_supplied_scope_parameter():
+    """A client-supplied scope parameter must not become the granted scopes.
+
+    The token endpoint pre-fills request.scopes from the untrusted ``scope``
+    parameter before the grant runs. Without this guard, a device-flow client
+    could obtain a token for any scope within its own registration whenever
+    validate_device_code did not populate request.scopes from the stored
+    authorization, bypassing the consent-integrity guard for issue #944.
+    """
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+    # Simulate the token endpoint pre-filling scopes from the request
+    # parameter: the client was granted "read" but asks for "admin".
+    request.scope = "admin"
+    request.scopes = ["admin"]
+
+    def authorize(client_id, code, req):
+        req.scopes = ["read"]
+        return DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    validator.validate_device_code.side_effect = authorize
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+    auth.create_token_response(request, bearer)
+
+    validator.get_default_scopes.assert_not_called()
+    validator.validate_scopes.assert_called_once_with(
+        "abcdef", ["read"], request.client, request
+    )
