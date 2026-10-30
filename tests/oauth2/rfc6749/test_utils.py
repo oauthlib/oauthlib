@@ -39,6 +39,16 @@ class UtilsTests(TestCase):
         self.assertEqual(host_from_uri('http://www.example.com'), ('www.example.com', '80'))
         self.assertEqual(host_from_uri('https://www.example.com'), ('www.example.com', '443'))
 
+    def test_host_from_uri_ipv6(self):
+        """IPv6 literals must not be split on the first colon."""
+        self.assertEqual(host_from_uri('https://[::1]:8080/resource'), ('::1', '8080'))
+        self.assertEqual(host_from_uri('http://[2001:db8::1]/resource'), ('2001:db8::1', '80'))
+
+    def test_host_from_uri_userinfo(self):
+        """Userinfo must not be mistaken for the host."""
+        self.assertEqual(host_from_uri('https://user:pass@example.com:8080/x'), ('example.com', '8080'))
+        self.assertEqual(host_from_uri('http://user@example.com/y'), ('example.com', '80'))
+
     def test_is_secure_transport(self):
         """Test check secure uri."""
         if 'OAUTHLIB_INSECURE_TRANSPORT' in os.environ:
