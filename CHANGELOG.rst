@@ -4,6 +4,9 @@ Changelog
 Unreleased
 ----------
 OAuth2.0 Provider:
+* #996: ``RefreshTokenGrant`` now rejects duplicated ``grant_type``,
+  ``refresh_token`` and ``scope`` parameters with ``invalid_request``, as
+  the other grants do (RFC 6749 section 3.2).
 * #986: ``AuthorizationEndpoint`` now dispatches a ``response_type`` whose
   space-delimited values are in a different order than the registered
   spelling (e.g. ``id_token code``) to the same handler, and sets

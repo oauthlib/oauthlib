@@ -89,6 +89,10 @@ class RefreshTokenGrant(GrantTypeBase):
                 description='Missing refresh token parameter.',
                 request=request)
 
+        for param in ('grant_type', 'refresh_token', 'scope'):
+            if param in request.duplicate_params:
+                raise errors.InvalidRequestError(description='Duplicate %s parameter.' % param, request=request)
+
         # Because refresh tokens are typically long-lasting credentials used to
         # request additional access tokens, the refresh token is bound to the
         # client to which it was issued

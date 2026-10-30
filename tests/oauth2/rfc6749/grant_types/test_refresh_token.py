@@ -157,6 +157,12 @@ class RefreshTokenGrantTest(TestCase):
         self.assertRaises(errors.ServerError,
                           self.auth.validate_token_request, self.request)
 
+    def test_invalid_request_duplicates(self):
+        request = Request('http://a.b/path',
+                          body='grant_type=refresh_token&refresh_token=lsdkfhj230&scope=foo&scope=bar')
+        self.assertRaises(errors.InvalidRequestError, self.auth.validate_token_request,
+                          request)
+
     def test_invalid_grant_type(self):
         self.request.grant_type = 'wrong_type'
         self.assertRaises(errors.UnsupportedGrantTypeError,
