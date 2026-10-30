@@ -34,9 +34,13 @@ class RequestValidator(OAuth2RequestValidator):
         ``DeviceCodeGrant`` status constants:
 
         - ``DEVICE_CODE_AUTHORIZED``: the end user approved the request.
-          The implementation should also set ``request.user`` (and any
-          scopes or claims to embed) so they end up on the issued token,
-          which removes the need for a separate token validator.
+          The implementation should also set ``request.user`` and
+          ``request.scopes`` from the scopes approved during the device
+          authorization, so they end up on the issued token. Any scope
+          parameter sent by the client on the token request is ignored, so
+          failing to set ``request.scopes`` here results in a
+          ``server_error`` rather than issuing the client's requested
+          scopes.
         - ``DEVICE_CODE_PENDING``: the user has not yet completed the
           interaction; raises ``AuthorizationPendingError``.
         - ``DEVICE_CODE_SLOW_DOWN``: as pending, but the client is polling
