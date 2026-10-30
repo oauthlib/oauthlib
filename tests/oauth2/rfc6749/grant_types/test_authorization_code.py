@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import base64
+import hashlib
 import json
 from unittest import mock
 
@@ -401,21 +403,21 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def test_pkce_required_verifier_valid_challenge_missing(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "foobar"
+        self.request.code_verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
         self.mock_validator.get_code_challenge.return_value = None
         self.assertRaises(errors.InvalidGrantError,
                           self.auth.validate_token_request, self.request)
 
     def test_pkce_required_verifier_valid_challenge_valid_method_valid(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "foobar"
-        self.mock_validator.get_code_challenge.return_value = "foobar"
+        self.request.code_verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+        self.mock_validator.get_code_challenge.return_value = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
         self.mock_validator.get_code_challenge_method.return_value = "plain"
         self.auth.validate_token_request(self.request)
 
     def test_pkce_required_verifier_invalid_challenge_valid_method_valid(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "foobar"
+        self.request.code_verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
         self.mock_validator.get_code_challenge.return_value = "raboof"
         self.mock_validator.get_code_challenge_method.return_value = "plain"
         self.assertRaises(errors.InvalidGrantError,
@@ -423,30 +425,70 @@ class AuthorizationCodeGrantTest(TestCase):
 
     def test_pkce_required_verifier_valid_challenge_valid_method_wrong(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "present"
-        self.mock_validator.get_code_challenge.return_value = "foobar"
+        self.request.code_verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+        self.mock_validator.get_code_challenge.return_value = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
         self.mock_validator.get_code_challenge_method.return_value = "cryptic_method"
         self.assertRaises(errors.ServerError,
                           self.auth.validate_token_request, self.request)
 
     def test_pkce_verifier_valid_challenge_valid_method_missing(self):
         self.mock_validator.is_pkce_required.return_value = True
-        self.request.code_verifier = "present"
-        self.mock_validator.get_code_challenge.return_value = "foobar"
+        self.request.code_verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+        self.mock_validator.get_code_challenge.return_value = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
         self.mock_validator.get_code_challenge_method.return_value = None
         self.assertRaises(errors.InvalidGrantError,
                           self.auth.validate_token_request, self.request)
 
+    def test_pkce_verifier_length_and_charset_enforced(self):
+        """The code_verifier must match RFC 7636 section 4.1 (43*128unreserved).
+
+        Verifiers that do not conform to the ABNF are rejected with
+        invalid_grant, regardless of the stored challenge, and the
+        authorization code is not invalidated on the failed attempt.
+        """
+        challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(b'z').digest()).decode().rstrip('=')
+        self.assertEqual(len(challenge), 43)
+        self.mock_validator.is_pkce_required.return_value = True
+        self.mock_validator.get_code_challenge.return_value = challenge
+        self.mock_validator.get_code_challenge_method.return_value = 'S256'
+
+        token = BearerToken(self.mock_validator)
+        for verifier in ('z', 'a' * 42, 'a' * 129, 'a' * 42 + '!'):
+            self.request.code_verifier = verifier
+            _, body, status = self.auth.create_token_response(
+                self.request, token)
+            self.assertEqual(status, 400)
+            self.assertEqual(json.loads(body)['error'], 'invalid_grant')
+            self.assertFalse(
+                self.mock_validator.invalidate_authorization_code.called)
+
+    def test_pkce_valid_s256_verifier_still_succeeds(self):
+        verifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'
+        challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(verifier.encode()).digest()).decode().rstrip('=')
+        self.mock_validator.is_pkce_required.return_value = True
+        self.request.code_verifier = verifier
+        self.mock_validator.get_code_challenge.return_value = challenge
+        self.mock_validator.get_code_challenge_method.return_value = 'S256'
+        self.auth.validate_token_request(self.request)
+
+    def test_pkce_s256_malformed_authorization_challenge_rejected(self):
+        self.request.code_challenge = 'short_challenge'
+        self.request.code_challenge_method = 'S256'
+        self.assertRaises(errors.InvalidRequestError,
+                          self.auth.validate_authorization_request, self.request)
+
     def test_pkce_optional_verifier_valid_challenge_missing(self):
         self.mock_validator.is_pkce_required.return_value = False
-        self.request.code_verifier = "present"
+        self.request.code_verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
         self.mock_validator.get_code_challenge.return_value = None
         self.auth.validate_token_request(self.request)
 
     def test_pkce_optional_verifier_missing_challenge_valid(self):
         self.mock_validator.is_pkce_required.return_value = False
         self.request.code_verifier = None
-        self.mock_validator.get_code_challenge.return_value = "foobar"
+        self.mock_validator.get_code_challenge.return_value = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
         self.assertRaises(errors.MissingCodeVerifierError,
                           self.auth.validate_token_request, self.request)
 

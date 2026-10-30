@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import json
 import logging
+import re
 
 from oauthlib import common
 
@@ -14,6 +15,20 @@ from .. import errors
 from .base import GrantTypeBase, revalidate_response_mode
 
 log = logging.getLogger(__name__)
+
+
+# code-verifier = 43*128unreserved
+# https://tools.ietf.org/html/rfc7636#section-4.1
+CODE_VERIFIER_PATTERN = re.compile(r"^[A-Za-z0-9-._~]{43,128}$")
+
+
+def is_valid_code_verifier(verifier):
+    """Validate a code_verifier against the RFC 7636 section 4.1 ABNF.
+
+    code-verifier = 43*128unreserved
+    where unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
+    """
+    return isinstance(verifier, str) and CODE_VERIFIER_PATTERN.match(verifier) is not None
 
 
 def code_challenge_method_s256(verifier, challenge):
@@ -425,6 +440,16 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
             if request.code_challenge_method not in self._code_challenge_methods:
                 raise errors.UnsupportedCodeChallengeMethodError(request=request)
+
+            # Validate the challenge against RFC 7636 section 4.2:
+            # S256 challenges are exactly 43 characters of the unreserved set.
+            if (request.code_challenge_method == "S256"
+                    and (not isinstance(request.code_challenge, str)
+                         or not re.match(r"^[A-Za-z0-9-_]{43}$", request.code_challenge))):
+                raise errors.InvalidRequestError(
+                    request=request,
+                    description="Invalid code_challenge for S256 method.")
+
             request_info["code_challenge_method"] = request.code_challenge_method
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
@@ -494,6 +519,12 @@ class AuthorizationCodeGrant(GrantTypeBase):
                     description="code_challenge_method {} is not supported.".format(challenge_method),
                     request=request
                 )
+
+            # RFC 7636 section 4.1 requires code-verifier = 43*128unreserved.
+            if not is_valid_code_verifier(request.code_verifier):
+                log.debug('request provided a malformed code_verifier.')
+                raise errors.InvalidGrantError(
+                    request=request, description="Invalid code_verifier.")
 
             if not self.validate_code_challenge(challenge,
                                                 challenge_method,
