@@ -3,6 +3,9 @@ Changelog
 
 Unreleased:
 ------------------
+OAuth2.0 Common:
+* #959: RFC 8707: expose repeated ``resource`` parameters as a list instead of collapsing to the last value.
+
 OAuth2.0 Provider:
 * **Breaking**: #988: PKCE parameters are now validated against RFC 7636
   syntax. ``code_verifier`` must be 43-128 unreserved ASCII characters
