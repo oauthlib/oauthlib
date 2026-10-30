@@ -5,7 +5,7 @@ import oauthlib
 from oauthlib.common import (
     CaseInsensitiveDict, Request, add_params_to_uri, extract_params,
     generate_client_id, generate_nonce, generate_timestamp, generate_token,
-    urldecode,
+    safe_string_equals, urldecode,
 )
 
 from tests.unittest import TestCase
@@ -307,3 +307,30 @@ class CaseInsensitiveDictTest(TestCase):
         cid = CaseInsensitiveDict({})
         cid.update({'KeY': 'value'})
         self.assertEqual(cid['kEy'], 'value')
+
+
+class SafeStringEqualsTest(TestCase):
+
+    def test_equal_strings(self):
+        self.assertTrue(safe_string_equals('secret', 'secret'))
+
+    def test_different_strings_same_length(self):
+        self.assertFalse(safe_string_equals('secret', 'secrat'))
+
+    def test_different_strings_different_length(self):
+        self.assertFalse(safe_string_equals('secret', 'secrets'))
+
+    def test_empty_strings(self):
+        self.assertTrue(safe_string_equals('', ''))
+
+    def test_bytes_operands(self):
+        self.assertTrue(safe_string_equals(b'secret', b'secret'))
+        self.assertFalse(safe_string_equals(b'secret', b'secrat'))
+
+    def test_mixed_str_and_bytes_operands(self):
+        self.assertTrue(safe_string_equals('secret', b'secret'))
+        self.assertFalse(safe_string_equals('secret', b'secrat'))
+
+    def test_unicode_operands(self):
+        self.assertTrue(safe_string_equals(u'clé', u'clé'))
+        self.assertFalse(safe_string_equals(u'clé', u'clo'))
