@@ -3,6 +3,9 @@ Changelog
 
 Unreleased:
 ------------------
+
+5.0.0 (2026-11-06):
+------------------
 OAuth2.0 Provider:
 * **Breaking**: #988: PKCE parameters are now validated against RFC 7636
   syntax. ``code_verifier`` must be 43-128 unreserved ASCII characters
@@ -40,12 +43,80 @@ OAuth2.0 Provider:
   validation when omitted, and implicit grant errors use the query when the
   ``response_mode`` is ``query``, requested or the grant's default, instead
   of always using the fragment.
+* #999: The token endpoint now rejects a ``code_verifier`` with
+  ``invalid_grant`` when the authorization code was issued without a
+  ``code_challenge``, preventing a PKCE downgrade and authorization code
+  injection per RFC 9700 sections 2.1.1 and 4.8.2. Previously the verifier was
+  silently ignored.
+* #989: ``code_verifier``/``code_challenge`` comparison no longer raises on
+  non-ASCII input; both operands are encoded to UTF-8 before comparison.
+* #929, #981: The token, revocation and introspection endpoints now validate
+  the request ``Content-Type`` and return ``InvalidRequestFatalError`` with a
+  descriptive message when it is not ``application/x-www-form-urlencoded``.
+* #982: MAC header ``nonce`` and ``ext`` values are now rejected if they
+  contain CR or LF, preventing HTTP header injection.
+* #954: The device workflow now follows the same pattern as the
+  authorization code workflow, with the endpoint doing its work through the
+  grant type handler, and scopes are validated during device authorization.
+  This includes the fix for **CVE-2026-49272** (also released as 4.0.1),
+  where the device code flow token endpoint did not validate the
+  ``device_code`` parameter: a new required
+  ``RequestValidator.validate_device_code()`` hook now rejects missing or
+  unknown device codes per RFC 8628 Section 3.5. See the 4.0.1 entry below
+  for the upgrade note for device flow integrators.
+* **Breaking**: #1002: The device token endpoint now ignores a client-supplied
+  ``scope`` and fails loudly unless the stored device authorization populates
+  ``request.scopes``, closing a scope bypass where a client could obtain a
+  token for any registered scope.
+* #985: Log statements that interpolate raw tokens, secrets or user
+  identifiers now use ``oauthlib.common.log_safe``, a non-reversible short
+  prefix plus truncated SHA-256 digest, applied recursively to dicts and
+  lists.
+* #1000: ``Request.__repr__`` body sanitization is now linear-time, fixing a
+  regular-expression denial of service on adversarial request bodies.
 
 Misc:
+
+Misc:
+* #960: ``generate_nonce()`` now uses 64 random bits without the embedded
+  timestamp, which added nothing to same-timestamp uniqueness per RFC 5849
+  section 3.3.
 * #794: Recommend Authorization Code + PKCE instead of Implicit Grant for public clients.
-* ``Request.__repr__`` sanitization now keeps the parameter name instead of
+* #970: ``Request.__repr__`` sanitization now keeps the parameter name instead of
   replacing it with a ``\x01`` control character (missing ``r`` prefix on the
   ``re.sub`` replacement template).
+* #992: ``safe_string_equals`` now compares SHA-256 digests with
+  ``hmac.compare_digest`` so it no longer leaks operand length or content
+  through timing, and accepts ``bytes`` operands.
+* #1001: ``host_from_uri`` now returns the correct host and port for URIs
+  with IPv6 literals or userinfo (previously the netloc was split on the
+  first colon).
+* #980: Packaging metadata migrated to ``pyproject.toml`` (PEP 621);
+  coverage configuration moved to ``pyproject.toml``.
+* #943, #961, #974: Documentation fixes: clarified ``introspect_token()``
+  return values and fixed typos.
+
+4.0.1 (2026-11-04):
+------------------
+OAuth2.0 Provider (Security):
+* **Security**: CVE-2026-49272 / GHSA-3jp2-3mrg-2vxc: The device code flow
+  token endpoint did not validate the ``device_code`` parameter. A request
+  with a known ``client_id`` and a bogus ``device_code`` could obtain a
+  bearer token. ``DeviceCodeGrant.validate_token_request`` now calls a new
+  ``DeviceCodeGrant.validate_device_code()`` which rejects missing or
+  unknown device codes (``400 invalid_request`` / ``400 invalid_grant``)
+  and delegates the code's authorization status to a new required
+  ``RequestValidator.validate_device_code()`` hook, per RFC 8628
+  Section 3.5. (cherry-picked from #954, merged as 1c91d64)
+
+  **Upgrade note for device flow integrators**: custom
+  ``RequestValidator`` implementations using the device flow must now
+  implement ``validate_device_code(client_id, code, request)``. Return one
+  of the ``DeviceCodeGrant.DEVICE_CODE_*`` statuses (``AUTHORIZED``,
+  ``PENDING``, ``SLOW_DOWN`` or ``EXPIRED``) for known codes, or ``None``
+  for an unknown code. When returning ``AUTHORIZED``, the validator must
+  also populate ``request.user`` and ``request.scopes`` from the stored
+  authorization.
 
 4.0.0 (2026-09-28):
 ------------------
