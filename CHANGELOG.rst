@@ -1,6 +1,28 @@
 Changelog
 =========
 
+4.0.1 (2026-11-04):
+------------------
+OAuth2.0 Provider (Security):
+* **Security**: CVE-2026-49272 / GHSA-3jp2-3mrg-2vxc: The device code flow
+  token endpoint did not validate the ``device_code`` parameter. A request
+  with a known ``client_id`` and a bogus ``device_code`` could obtain a
+  bearer token. ``DeviceCodeGrant.validate_token_request`` now calls a new
+  ``DeviceCodeGrant.validate_device_code()`` which rejects missing or
+  unknown device codes (``400 invalid_request`` / ``400 invalid_grant``)
+  and delegates the code's authorization status to a new required
+  ``RequestValidator.validate_device_code()`` hook, per RFC 8628
+  Section 3.5. (cherry-picked from #954, merged as 1c91d64)
+
+  **Upgrade note for device flow integrators**: custom
+  ``RequestValidator`` implementations using the device flow must now
+  implement ``validate_device_code(client_id, code, request)``. Return one
+  of the ``DeviceCodeGrant.DEVICE_CODE_*`` statuses (``AUTHORIZED``,
+  ``PENDING``, ``SLOW_DOWN`` or ``EXPIRED``) for known codes, or ``None``
+  for an unknown code. When returning ``AUTHORIZED``, the validator must
+  also populate ``request.user`` and ``request.scopes`` from the stored
+  authorization.
+
 4.0.0 (2026-09-28):
 ------------------
 OAuth2.0 Provider:
