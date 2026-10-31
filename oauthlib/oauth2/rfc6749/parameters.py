@@ -464,7 +464,13 @@ def validate_token_parameters(params):
             old=params.old_scope, new=params.scope,
         )
         scope_changed.send(message=message, old=params.old_scopes, new=params.scopes)
-        if not os.environ.get('OAUTHLIB_RELAX_TOKEN_SCOPE', None):
+        # A server may grant additional scopes on top of the ones the
+        # client requested; that alone is not an error. Only raise when
+        # a requested scope is missing from the granted token, i.e. the
+        # client ended up with fewer privileges than asked for.
+        # See https://github.com/oauthlib/oauthlib/issues/888
+        if params.missing_scopes and not os.environ.get(
+                'OAUTHLIB_RELAX_TOKEN_SCOPE', None):
             w = Warning(message)
             w.token = params
             w.old_scope = params.old_scopes
