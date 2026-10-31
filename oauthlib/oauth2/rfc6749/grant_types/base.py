@@ -208,9 +208,9 @@ class GrantTypeBase:
 
         if request.client is None or \
             not hasattr(request.client, 'client_id'):
-            raise NotImplementedError('Authenticate client must set the '
-                                      'request.client.client_id attribute '
-                                      'in authenticate_client.')
+            raise NotImplementedError('authenticate_client_id must set the '
+                                      'request.client attribute to a client '
+                                      'object with a client_id attribute.')
 
         if not request.client_id:
             request.client_id = request.client.client_id

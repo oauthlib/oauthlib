@@ -56,8 +56,14 @@ the device authorization endpoint.
         "verification_uri_complete":
             "https://example.com/device?user_code=WDJB-MJHT",
         "expires_in": 1800,
-        "interval": 5
+        "interval": 5,
+        "scope": "example_scope"
     }
+
+The ``scope`` key is not part of RFC 8628. It holds the scopes resolved for the
+request — either what the device asked for or what ``get_default_scopes``
+returned — so you can persist them alongside the ``device_code`` and
+``user_code``. It is omitted when no scopes were resolved.
 
 
 .. autoclass:: oauthlib.oauth2.DeviceAuthorizationEndpoint
