@@ -91,7 +91,7 @@ class MetadataEndpoint(BaseEndpoint):
         parameter passed to the token endpoint defined in the grant type
         definition.
         """
-        self._grant_types.extend(endpoint._grant_types.keys())
+        self._grant_types_supported.extend(endpoint._grant_types.keys())
         claims.setdefault("token_endpoint_auth_methods_supported", ["client_secret_post", "client_secret_basic"])
 
         self.validate_metadata(claims, "token_endpoint_auth_methods_supported", is_list=True)
@@ -107,7 +107,7 @@ class MetadataEndpoint(BaseEndpoint):
         # using the "token" endpoint, as such, we have to add it explicitly to
         # the list of "grant_types_supported" when enabled.
         if "token" in claims["response_types_supported"]:
-            self._grant_types.append("implicit")
+            self._grant_types_supported.append("implicit")
 
         self.validate_metadata(claims, "response_types_supported", is_required=True, is_list=True)
         self.validate_metadata(claims, "response_modes_supported", is_list=True)
@@ -220,7 +220,7 @@ class MetadataEndpoint(BaseEndpoint):
         self.validate_metadata(claims, "op_policy_uri", is_url=True)
         self.validate_metadata(claims, "op_tos_uri", is_url=True)
 
-        self._grant_types = []
+        self._grant_types_supported = []
         for endpoint in self.endpoints:
             if isinstance(endpoint, TokenEndpoint):
                 self.validate_metadata_token(claims, endpoint)
@@ -233,6 +233,6 @@ class MetadataEndpoint(BaseEndpoint):
 
         # "grant_types_supported" is a combination of all OAuth2 grant types
         # allowed in the current provider implementation.
-        claims.setdefault("grant_types_supported", self._grant_types)
+        claims.setdefault("grant_types_supported", self._grant_types_supported)
         self.validate_metadata(claims, "grant_types_supported", is_list=True)
         return claims
