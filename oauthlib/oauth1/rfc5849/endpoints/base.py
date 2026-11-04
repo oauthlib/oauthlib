@@ -29,9 +29,9 @@ class BaseEndpoint:
         is set to the source in which parameters were found.
         """
         # Per RFC5849, only the Authorization header may contain the 'realm'
-        # optional parameter.
+        # optional parameter, and it is excluded from the signature base string.
         header_params = signature.collect_parameters(headers=request.headers,
-                                                     exclude_oauth_signature=False, with_realm=True)
+                                                     exclude_oauth_signature=False)
         body_params = signature.collect_parameters(body=request.body,
                                                    exclude_oauth_signature=False)
         query_params = signature.collect_parameters(uri_query=request.uri_query,
@@ -91,16 +91,13 @@ class BaseEndpoint:
         request.redirect_uri = oauth_params.get('oauth_callback')
         request.verifier = oauth_params.get('oauth_verifier')
         request.signature_method = oauth_params.get('oauth_signature_method')
-        request.realm = dict(params).get('realm')
+        request.realm = dict(signature.collect_parameters(
+            headers=request.headers, with_realm=True)).get('realm')
         request.oauth_params = oauth_params
 
         # Parameters to Client depend on signature method which may vary
         # for each request. Note that HMAC-SHA1 and PLAINTEXT share parameters
         request.params = [(k, v) for k, v in params if k != "oauth_signature"]
-
-        if 'realm' in request.headers.get('Authorization', ''):
-            request.params = [(k, v)
-                              for k, v in request.params if k != "realm"]
 
         return request
 
