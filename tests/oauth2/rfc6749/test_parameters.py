@@ -93,6 +93,12 @@ class ParameterTests(TestCase):
     error_wrongstate = 'https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA&state=abc'
     error_denied = 'https://client.example.com/cb?error=access_denied&state=xyz'
     error_invalid = 'https://client.example.com/cb?error=invalid_request&state=xyz'
+    error_dup_code = ('https://client.example.com/cb?code=GOOD_CODE&'
+                      'code=EVIL_CODE&state=xyz')
+    error_dup_state = ('https://client.example.com/cb?'
+                       'code=SplxlOBeZQQYbYS6WxSbIA&state=xyz&state=abc')
+    error_dup_error = ('https://client.example.com/cb?error=access_denied&'
+                       'error=invalid_request&state=xyz')
 
     implicit_base = 'https://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA&scope=abc&'
     implicit_response = implicit_base + 'state={}&token_type=example&expires_in=3600'.format(state)
@@ -233,6 +239,16 @@ class ParameterTests(TestCase):
                 self.error_nostate, state=self.state)
         self.assertRaises(MismatchingStateError, parse_authorization_code_response,
                 self.error_wrongstate, state=self.state)
+
+        # Duplicate security-sensitive response parameters are ambiguous and
+        # must be rejected instead of being collapsed to a single value. See
+        # https://github.com/oauthlib/oauthlib/issues/948
+        self.assertRaises(InvalidRequestError, parse_authorization_code_response,
+                self.error_dup_code)
+        self.assertRaises(InvalidRequestError, parse_authorization_code_response,
+                self.error_dup_state)
+        self.assertRaises(InvalidRequestError, parse_authorization_code_response,
+                self.error_dup_error)
 
     def test_implicit_token_response(self):
         """Verify correct parameter parsing and validation for implicit responses."""
