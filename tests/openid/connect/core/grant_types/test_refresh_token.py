@@ -8,7 +8,7 @@ from oauthlib.openid.connect.core.grant_types import RefreshTokenGrant
 from tests.oauth2.rfc6749.grant_types.test_refresh_token import (
     RefreshTokenGrantTest,
 )
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 def get_id_token_mock(token, token_handler, request):

@@ -15,7 +15,7 @@ from oauthlib.common import (
     log_safe, safe_string_equals, set_log_safe_key, urldecode,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 PARAMS_DICT = {'foo': 'bar', 'baz': '123', }
 PARAMS_TWOTUPLE = [('foo', 'bar'), ('baz', '123')]

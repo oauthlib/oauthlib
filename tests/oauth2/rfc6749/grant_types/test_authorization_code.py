@@ -9,7 +9,7 @@ from oauthlib.oauth2.rfc6749.grant_types import (
 )
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 # RFC 7636 Section 4.1/4.2 compliant values
 valid_code_verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"

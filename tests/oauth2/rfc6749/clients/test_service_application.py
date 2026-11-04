@@ -8,7 +8,7 @@ import jwt
 from oauthlib.common import Request
 from oauthlib.oauth2 import ServiceApplicationClient
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class ServiceApplicationClientTest(TestCase):

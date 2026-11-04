@@ -6,7 +6,7 @@ from oauthlib.oauth2.rfc6749.utils import (
     params_from_uri, scope_to_list,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class ScopeObject:

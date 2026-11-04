@@ -5,7 +5,7 @@ from oauthlib.oauth1.rfc5849.parameters import (
     prepare_request_uri_query,
 )
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 
 class ParameterTests(TestCase):

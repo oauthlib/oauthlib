@@ -11,7 +11,7 @@ from oauthlib.oauth2 import (
 )
 from oauthlib.oauth2.rfc6749 import errors
 
-from tests.unittest import TestCase
+from tests.unittests import TestCase
 
 from .test_utils import get_fragment_credentials, get_query_credentials
 
