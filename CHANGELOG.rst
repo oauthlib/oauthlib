@@ -4,6 +4,11 @@ Changelog
 Unreleased:
 ------------------
 OAuth2.0 Provider:
+* #996: ``RefreshTokenGrant`` now rejects duplicated ``grant_type``,
+  ``refresh_token`` and ``scope`` parameters with ``invalid_request``, as
+  RFC 6749 section 3.2 requires and as the other grants already did. A
+  repeated ``scope`` was previously accepted and the last value silently
+  used.
 * **Breaking**: #988: PKCE parameters are now validated against RFC 7636
   syntax. ``code_verifier`` must be 43-128 unreserved ASCII characters
   (``[A-Za-z0-9-._~]``) at the token endpoint (rejected with ``invalid_grant``)
