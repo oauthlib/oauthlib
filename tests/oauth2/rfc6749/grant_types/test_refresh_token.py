@@ -26,6 +26,34 @@ class RefreshTokenGrantTest(TestCase):
         self.auth = RefreshTokenGrant(
                 request_validator=self.mock_validator)
 
+    def _request_with_duplicates(self, duplicate_params):
+        # Request.duplicate_params is read-only and derived from the URI, so
+        # build a stub for the validation call instead of rewriting the query.
+        request = mock.MagicMock()
+        request.grant_type = 'refresh_token'
+        request.refresh_token = 'lsdkfhj230'
+        request.client_id = 'abcdef'
+        request.client = self.request.client
+        request.scope = 'foo'
+        request.duplicate_params = duplicate_params
+        return request
+
+    def test_invalid_request_duplicates(self):
+        for duplicate in ('grant_type', 'refresh_token', 'scope'):
+            request = self._request_with_duplicates([duplicate])
+            try:
+                self.auth.validate_token_request(request)
+            except errors.InvalidRequestError as e:
+                self.assertEqual(e.description, 'Duplicate %s parameter.' % duplicate)
+            else:
+                self.fail('Duplicate %r was accepted' % duplicate)
+
+    def test_duplicate_unrelated_parameter_is_allowed(self):
+        # Only the parameters this grant consumes are rejected, matching the
+        # other grant types.
+        self.mock_validator.validate_grant_type.return_value = True
+        self.auth.validate_token_request(self._request_with_duplicates(['client_id']))
+
     def test_create_token_response(self):
         self.mock_validator.get_original_scopes.return_value = ['foo', 'bar']
         bearer = BearerToken(self.mock_validator)
