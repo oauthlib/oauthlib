@@ -4,6 +4,10 @@ Changelog
 Unreleased:
 ------------------
 OAuth2.0 Provider:
+* #1009: ``MetadataEndpoint`` no longer emits ``grant_types_supported`` as an
+  empty array when no endpoint contributes a grant type (for example a
+  revocation- or introspection-only metadata document). RFC 8414 section 3.2
+  requires claims with zero elements to be omitted from the response.
 * **Breaking**: #988: PKCE parameters are now validated against RFC 7636
   syntax. ``code_verifier`` must be 43-128 unreserved ASCII characters
   (``[A-Za-z0-9-._~]``) at the token endpoint (rejected with ``invalid_grant``)

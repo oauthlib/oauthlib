@@ -62,6 +62,21 @@ class MetadataEndpointTest(TestCase):
         self.assertIn("grant_types_supported", metadata.claims)
         self.assertEqual(metadata.claims["grant_types_supported"], ["password"])
 
+    def test_grant_types_supported_omitted_when_empty(self):
+        # RFC 8414 section 3.2: claims with zero elements MUST be omitted.
+        # A revocation-only metadata document contributes no grant types.
+        from oauthlib.oauth2 import RequestValidator  # noqa: PLC0415
+        from oauthlib.oauth2.rfc6749.endpoints.revocation import (  # noqa: PLC0415
+            RevocationEndpoint,
+        )
+
+        endpoint = RevocationEndpoint(RequestValidator())
+        metadata = MetadataEndpoint([endpoint], {
+            "issuer": 'https://foo.bar',
+            "revocation_endpoint": "https://foo.bar/revoke",
+        })
+        self.assertNotIn("grant_types_supported", metadata.claims)
+
     def test_token_endpoint_overridden(self):
         endpoint = TokenEndpoint(None, None, grant_types={"password": None})
         metadata = MetadataEndpoint([endpoint], {
