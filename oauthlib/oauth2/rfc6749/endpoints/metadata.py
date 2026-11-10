@@ -232,7 +232,11 @@ class MetadataEndpoint(BaseEndpoint):
                 self.validate_metadata_introspection(claims, endpoint)
 
         # "grant_types_supported" is a combination of all OAuth2 grant types
-        # allowed in the current provider implementation.
-        claims.setdefault("grant_types_supported", self._grant_types)
+        # allowed in the current provider implementation. RFC 8414 section 3.2
+        # requires claims with zero elements to be omitted, so only set it when
+        # at least one grant type is available (e.g. a revocation- or
+        # introspection-only metadata document has none).
+        if self._grant_types:
+            claims.setdefault("grant_types_supported", self._grant_types)
         self.validate_metadata(claims, "grant_types_supported", is_list=True)
         return claims
