@@ -14,11 +14,11 @@ import warnings
 from oauthlib.common import UNICODE_ASCII_CHARACTER_SET, generate_token
 from oauthlib.oauth2.rfc6749 import tokens
 from oauthlib.oauth2.rfc6749.errors import (
-    InsecureTransportError, TokenExpiredError,
+    InsecureTransportError, TokenExpiredError, raise_from_error,
 )
 from oauthlib.oauth2.rfc6749.parameters import (
     parse_expires,
-    parse_token_response, prepare_token_request,
+    parse_token_response, parse_www_authenticate, prepare_token_request,
     prepare_token_revocation_request,
 )
 from oauthlib.oauth2.rfc6749.utils import is_secure_transport
@@ -409,6 +409,35 @@ class Client:
         self.token = parse_token_response(body, scope=scope)
         self.populate_token_attributes(self.token)
         return self.token
+
+    def parse_www_authenticate(self, www_authenticate):
+        """Parse a ``WWW-Authenticate`` header and raise on a Bearer error.
+
+        When a request to a protected resource fails, the resource server
+        responds with a ``401 Unauthorized`` and describes the problem in the
+        ``WWW-Authenticate`` header, for example::
+
+            WWW-Authenticate: Bearer error="invalid_token",
+                              error_description="The access token expired"
+
+        Rather than inspecting the header yourself, pass its value here to have
+        the matching :py:class:`oauthlib.oauth2.OAuth2Error` raised, so a
+        ``Bearer error="invalid_token"`` challenge becomes an
+        :py:class:`InvalidTokenError`.
+
+        :param www_authenticate: The value of the ``WWW-Authenticate`` header.
+        :return: The Bearer challenge auth-params as a dict, which is empty when
+            no Bearer challenge is present. Only returned when the challenge does
+            not carry an ``error``.
+        :raises: :py:class:`oauthlib.oauth2.OAuth2Error` when the challenge
+            reports an error.
+
+        .. _`Section 3`: https://tools.ietf.org/html/rfc6750#section-3
+        """
+        params = parse_www_authenticate(www_authenticate)
+        if 'error' in params:
+            raise_from_error(params.get('error'), params)
+        return params
 
     def prepare_refresh_body(self, body='', refresh_token=None, scope=None, **kwargs):
         """Prepare an access token request, using a refresh token.

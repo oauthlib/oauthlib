@@ -7,6 +7,9 @@ from oauthlib import common
 from oauthlib.oauth2 import Client, InsecureTransportError, TokenExpiredError
 from oauthlib.oauth2.rfc6749 import utils
 from oauthlib.oauth2.rfc6749.clients import AUTH_HEADER, BODY, URI_QUERY
+from oauthlib.oauth2.rfc6749.errors import (
+    CustomOAuth2Error, InsufficientScopeError, InvalidTokenError,
+)
 
 from tests.unittest import TestCase
 
@@ -369,3 +372,30 @@ class ClientTest(TestCase):
 
         self.assertEqual(response['expires_at'], expected_expires_at)
         self.assertEqual(client._expires_at, expected_expires_at)
+
+    def test_parse_www_authenticate_raises_matching_error(self):
+        client = Client(self.client_id)
+
+        with self.assertRaises(InvalidTokenError) as cm:
+            client.parse_www_authenticate(
+                ('Bearer error="invalid_token", '
+                 'error_description="The access token expired", '
+                 'error_uri="https://example.com/e"'))
+        self.assertEqual(cm.exception.description, "The access token expired")
+        self.assertEqual(cm.exception.uri, "https://example.com/e")
+
+        self.assertRaises(InsufficientScopeError,
+                          client.parse_www_authenticate,
+                          'Bearer error="insufficient_scope"')
+
+        self.assertRaises(CustomOAuth2Error,
+                          client.parse_www_authenticate,
+                          'Bearer error="some_provider_error"')
+
+    def test_parse_www_authenticate_without_error(self):
+        client = Client(self.client_id)
+
+        self.assertEqual(
+            {'realm': 'example'},
+            client.parse_www_authenticate('Bearer realm="example"'))
+        self.assertEqual({}, client.parse_www_authenticate(None))

@@ -41,6 +41,9 @@ OAuth2.0 Provider:
   ``response_mode`` is ``query``, requested or the grant's default, instead
   of always using the fragment.
 
+OAuth2.0 Client:
+* #602: Add ``Client.parse_www_authenticate`` to raise the matching error from a Bearer ``WWW-Authenticate`` challenge (RFC 6750).
+
 Misc:
 * #794: Recommend Authorization Code + PKCE instead of Implicit Grant for public clients.
 * ``Request.__repr__`` sanitization now keeps the parameter name instead of
