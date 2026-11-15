@@ -117,6 +117,34 @@ def test_create_token_response():
     validator.save_token.assert_called_once()
 
 
+def test_create_token_response_applies_token_modifiers():
+    validator = mock.MagicMock()
+    request: common.Request = create_request()
+
+    def authorize(client_id, code, req):
+        req.scopes = ["hello", "world"]
+        return DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    validator.validate_device_code.side_effect = authorize
+
+    def modifier(token, token_handler, req):
+        token["extra"] = "value"
+        return token
+
+    modifier_mock = mock.Mock(side_effect=modifier)
+    auth = DeviceCodeGrant(validator)
+    auth.register_token_modifier(modifier_mock)
+
+    bearer = BearerToken(validator)
+    _headers, body, status_code = auth.create_token_response(request, bearer)
+
+    assert status_code == 200
+    assert json.loads(body)["extra"] == "value"
+    modifier_mock.assert_called_once_with(mock.ANY, bearer, request)
+    saved = validator.save_token.call_args[0][0]
+    assert saved["extra"] == "value"
+
+
 def test_invalid_client_authentication_error_confidential_client():
     validator = mock.MagicMock()
     request: common.Request = create_request()
@@ -404,3 +432,22 @@ def test_device_code_ignores_client_supplied_scope_parameter():
     validator.validate_scopes.assert_called_once_with(
         "abcdef", ["read"], request.client, request
     )
+
+
+def test_create_authorization_response_issues_one_token():
+    validator = mock.MagicMock()
+
+    def authorize(client_id, code, req):
+        req.scopes = ["read"]
+        return DeviceCodeGrant.DEVICE_CODE_AUTHORIZED
+
+    validator.validate_device_code.side_effect = authorize
+    request: common.Request = create_request()
+
+    auth = DeviceCodeGrant(validator)
+    bearer = BearerToken(validator)
+    headers, body, status_code = auth.create_authorization_response(request, bearer)
+
+    assert status_code == 200
+    assert "access_token" in json.loads(body)
+    validator.save_token.assert_called_once()

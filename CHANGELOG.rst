@@ -3,6 +3,11 @@ Changelog
 
 Unreleased:
 ------------------
+OpenID Connect Provider:
+* #968: The pre-configured OpenID Connect ``Server`` now returns an
+  ``id_token`` from the device code grant when ``openid`` is in scope.
+  ``DeviceCodeGrant.create_authorization_response`` now issues a single
+  token by delegating to ``create_token_response``.
 OAuth2.0 Provider:
 * **Breaking**: #988: PKCE parameters are now validated against RFC 7636
   syntax. ``code_verifier`` must be 43-128 unreserved ASCII characters
