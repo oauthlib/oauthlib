@@ -19,11 +19,11 @@ from oauthlib.oauth2.rfc6749.grant_types import (
     ImplicitGrant as OAuth2ImplicitGrant,
     ResourceOwnerPasswordCredentialsGrant,
 )
-from oauthlib.oauth2.rfc8628.grant_types import DeviceCodeGrant
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 
 from ..grant_types import (
     AuthorizationCodeGrant,
+    DeviceCodeGrant,
     HybridGrant,
     ImplicitGrant,
     RefreshTokenGrant,
