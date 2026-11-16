@@ -337,3 +337,37 @@ class ParameterTests(TestCase):
                     "expires_at": arg[1]
                 }
                 self.assertEqual(expected, parse_expires(params))
+
+    def test_token_response_additional_scopes_allowed(self):
+        """Extra scopes granted by the server must not raise.
+
+        Regression test for issue #888: only a *missing* requested scope
+        is an error; a superset of the requested scope is fine and does
+        not require OAUTHLIB_RELAX_TOKEN_SCOPE.
+        """
+        self.assertNotIn('OAUTHLIB_RELAX_TOKEN_SCOPE', os.environ)
+        # json_response grants scopes abc+def; request a subset of them
+        token = parse_token_response(self.json_response, scope='abc')
+        self.assertEqual(set(token.scopes), {'abc', 'def'})
+        self.assertEqual(token.additional_scopes, ['def'])
+        self.assertEqual(token.missing_scopes, [])
+
+    def test_token_response_missing_scope_still_raises(self):
+        """A granted token missing a requested scope still raises."""
+        self.assertNotIn('OAUTHLIB_RELAX_TOKEN_SCOPE', os.environ)
+        # 'xyz' was requested but is not in the granted abc+def scope
+        self.assertRaises(Warning, parse_token_response,
+                          self.json_response, scope='abc xyz')
+        # nothing requested overlaps at all
+        self.assertRaises(Warning, parse_token_response,
+                          self.json_response, scope='xyz')
+
+    def test_implicit_response_additional_scopes_allowed(self):
+        """The implicit flow (parse_implicit_response) behaves the same."""
+        uri = ('https://example.com/callback#access_token=sometoken'
+               '&token_type=Bearer&expires_in=3600&scope=abc%20def'
+               '&state={}'.format(self.state))
+        token = parse_implicit_response(uri, state=self.state, scope='abc')
+        self.assertEqual(set(token.scopes), {'abc', 'def'})
+        self.assertRaises(Warning, parse_implicit_response, uri,
+                          state=self.state, scope='abc xyz')
