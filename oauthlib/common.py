@@ -513,8 +513,13 @@ class Request:
             "login_hint": None,
             "acr_values": None
         }
-        self._params.update(dict(urldecode(self.uri_query)))
-        self._params.update(dict(self.decoded_body or []))
+        # These are set by oauthlib or the request validator once the client
+        # and resource owner are known; the query and body must not seed them.
+        params = dict(urldecode(self.uri_query))
+        params.update(self.decoded_body or [])
+        for name in ('client', 'extra_credentials', 'scopes', 'user'):
+            params.pop(name, None)
+        self._params.update(params)
 
     def __getattr__(self, name):
         if name in self._params:

@@ -164,6 +164,15 @@ class RequestTest(TestCase):
         self.assertEqual(r.decoded_body, [('you', 'shall pass')])
         self.assertEqual(r.headers, {'a': 'b'})
 
+    def test_server_attributes_not_set_from_params(self):
+        params = 'client=c&extra_credentials=e&scopes=admin&user=alice&scope=read'
+        r = Request(URI + '?' + params, body=params)
+        self.assertIsNone(r.client)
+        self.assertIsNone(r.extra_credentials)
+        self.assertIsNone(r.scopes)
+        self.assertIsNone(r.user)
+        self.assertEqual(r.scope, 'read')
+
     def test_none_body(self):
         r = Request(URI)
         self.assertIsNone(r.decoded_body)

@@ -40,6 +40,10 @@ OAuth2.0 Provider:
   validation when omitted, and implicit grant errors use the query when the
   ``response_mode`` is ``query``, requested or the grant's default, instead
   of always using the fragment.
+* ``Request`` no longer initializes ``client``, ``user``, ``scopes`` or
+  ``extra_credentials`` from query or body parameters. A client could
+  previously send e.g. ``user=alice`` on a client credentials token request
+  and have ``request.user`` reach ``save_bearer_token`` set to that value.
 
 Misc:
 * #794: Recommend Authorization Code + PKCE instead of Implicit Grant for public clients.
