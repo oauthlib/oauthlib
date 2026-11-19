@@ -17,4 +17,5 @@ jobs:
       - run: mkdir --parents --verbose .mypy_cache
       - run: mypy --ignore-missing-imports --install-types --non-interactive . || true
       - run: pytest
-      - run: pipx run safety check
+      - run: pip install pip-audit
+      - run: pip-audit --skip-editable
