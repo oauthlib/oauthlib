@@ -322,7 +322,11 @@ class BearerToken(TokenBase):
             token['scope'] = ' '.join(request.scopes)
 
         if refresh_token:
-            if (request.refresh_token and
+            # Only a refresh token grant may keep the refresh token it was
+            # given. Other grants never validate request.refresh_token, so a
+            # client supplied value must not be issued as the refresh token.
+            if (request.grant_type == 'refresh_token' and
+                    request.refresh_token and
                     not self.request_validator.rotate_refresh_token(request)):
                 token['refresh_token'] = request.refresh_token
             else:

@@ -40,6 +40,11 @@ OAuth2.0 Provider:
   validation when omitted, and implicit grant errors use the query when the
   ``response_mode`` is ``query``, requested or the grant's default, instead
   of always using the fragment.
+* ``BearerToken.create_token`` only reuses ``request.refresh_token`` for
+  ``refresh_token`` grant requests. Previously, when
+  ``rotate_refresh_token`` returned ``False``, a ``refresh_token`` parameter
+  sent on an authorization code, password or device code token request was
+  issued and saved as the new refresh token without being validated.
 
 Misc:
 * #794: Recommend Authorization Code + PKCE instead of Implicit Grant for public clients.

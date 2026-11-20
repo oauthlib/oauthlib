@@ -219,3 +219,26 @@ class TokenTest(TestCase):
                 self.assertEqual(result, 9)
             else:
                 self.assertEqual(result, 0)
+
+    def test_create_token_keeps_refresh_token_on_refresh_grant(self):
+        request_validator = mock.MagicMock()
+        request_validator.rotate_refresh_token.return_value = False
+        request = Request("/", body="grant_type=refresh_token&refresh_token=abc")
+        token = BearerToken(request_validator=request_validator).create_token(
+            request, refresh_token=True
+        )
+        self.assertEqual(token['refresh_token'], 'abc')
+
+    def test_create_token_ignores_refresh_token_on_other_grants(self):
+        request_validator = mock.MagicMock()
+        request_validator.rotate_refresh_token.return_value = False
+        for grant_type in ('authorization_code', 'password',
+                           'urn:ietf:params:oauth:grant-type:device_code'):
+            request = Request(
+                "/", body="grant_type=%s&refresh_token=abc" % grant_type
+            )
+            token = BearerToken(request_validator=request_validator).create_token(
+                request, refresh_token=True
+            )
+            self.assertIn('refresh_token', token)
+            self.assertNotEqual(token['refresh_token'], 'abc')
