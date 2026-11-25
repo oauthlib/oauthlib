@@ -78,7 +78,7 @@ class BackendApplicationClientTest(TestCase):
             client.parse_request_body_response(self.token_json, scope="invalid")
             self.assertEqual(len(scope_changes_recorded), 1)
             message, old, new = scope_changes_recorded[0]
-            self.assertEqual(message, 'Scope has changed from "invalid" to "/profile".')
+            self.assertEqual(message, 'Scope has changed. Difference:\n- invalid\n+ /profile')
             self.assertEqual(old, ['invalid'])
             self.assertEqual(new, ['/profile'])
         finally:
