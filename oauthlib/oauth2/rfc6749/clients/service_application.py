@@ -68,6 +68,7 @@ class ServiceApplicationClient(Client):
                              audience=None,
                              expires_at=None,
                              issued_at=None,
+                             extra_jwt_headers=None,
                              extra_claims=None,
                              body='',
                              scope=None,
@@ -96,7 +97,11 @@ class ServiceApplicationClient(Client):
         :param issued_at: A unix timestamp of when the JWT was created.
                           Defaults to now, i.e. ``time.time()``.
 
-        :param extra_claims: A dict of additional claims to include in the JWT.
+        :param extra_jwt_headers: A dict of additional headers to include
+                                  in the JWT header.
+
+        :param extra_claims: A dict of additional claims to include
+                             in the JWT payload.
 
         :param body: Existing request body (URL encoded string) to embed parameters
                      into. This may contain extra parameters. Default ''.
@@ -176,7 +181,7 @@ class ServiceApplicationClient(Client):
 
         claim.update(extra_claims or {})
 
-        assertion = jwt.encode(claim, key, 'RS256')
+        assertion = jwt.encode(claim, key, 'RS256', extra_jwt_headers)
         assertion = to_unicode(assertion)
 
         kwargs['client_id'] = self.client_id
