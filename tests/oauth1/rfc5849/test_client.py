@@ -255,6 +255,13 @@ class SigningTest(TestCase):
                         'Content-Type': 'application/x-www-form-urlencoded'
                     })
 
+    def test_sign_debug_logging(self):
+        client = Client('client_key', nonce='abc', timestamp='1234567890')
+        with self.assertLogs('oauthlib.oauth1.rfc5849', level='DEBUG') as logs:
+            client.sign('http://i.b/path')
+        self.assertEqual(len(logs.output), 5)
+        self.assertIn('Normalized URI: http://i.b/path', logs.output[2])
+
     def test_sign_unicode(self):
         client = Client('client_key', nonce='abc', timestamp='abc')
         _, h, b = client.sign('http://i.b/path', http_method='POST',
